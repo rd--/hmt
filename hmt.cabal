@@ -13,6 +13,7 @@ Tested-With:      GHC
 Build-Depends:    base
 GHC-Options:      -Wall -O
 Exposed-modules:  Music.Theory
+                  Music.Theory.Encode
                   Music.Theory.Forte
                   Music.Theory.Pitch
                   Music.Theory.Prime

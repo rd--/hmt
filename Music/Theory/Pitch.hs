@@ -95,6 +95,5 @@ subsequence p q = not (isNothing r)
     where r = find (isPrefixOf p) (tails q)
 
 -- | The standard t-matrix of p.
-t_matrix :: (Integral a) => [a] -> [[a]]
-t_matrix p = map ((flip transpose) p) (transposeTo 0 (invertSelf p))
-
+tmatrix :: (Integral a) => [a] -> [[a]]
+tmatrix p = map ((flip transpose) p) (transposeTo 0 (invertSelf p))

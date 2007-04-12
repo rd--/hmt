@@ -1,18 +1,12 @@
 module Music.Theory.Rahn (prime) where
 
-import Music.Theory.Pitch (transpose, invert)
-import Data.Bits
+import qualified Music.Theory.Prime as P
 
--- Binary encoding prime form algorithm, not equal to Forte.
+-- | Rahn comparison is rightmost inwards.
+prime :: (Integral a) => [a] -> [a]
+prime = P.prime cmp
 
-encode :: (Integral a) => [a] -> a
-encode s = sum (map (2 ^) s)
-
-decode :: (Bits a, Integral a) => a -> [a]
-decode n = map (fromIntegral . fst) (filter snd (map f [0..11]))
-    where f i = (i, testBit n i)
-
-prime :: (Integral a, Bits a) => [a] -> [a]
-prime s = decode (minimum (map encode c))
-    where t = map ((flip transpose) s) [0..11]
-          c = t ++ (map (invert 0) t)
+cmp :: (Ord t) => [t] -> [t] -> Ordering
+cmp [] [] = EQ
+cmp p  q  = if r == EQ then cmp p q else r
+    where r = compare (last p) (last q)
