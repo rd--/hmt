@@ -1,5 +1,6 @@
 module Music.Theory.Pitch where
 
+import Music.Theory.Set
 import Data.Maybe
 import Data.List hiding (transpose)
 
@@ -97,3 +98,11 @@ subsequence p q = not (isNothing r)
 -- | The standard t-matrix of p.
 tmatrix :: (Integral a) => [a] -> [[a]]
 tmatrix p = map ((flip transpose) p) (transposeTo 0 (invertSelf p))
+
+-- | Interval class vector.
+icv :: (Integral a) => [a] -> [a]
+icv s = map (fromMaybe 0) k
+    where i = map (ic . uncurry (-)) (dyads s)
+          j = map f (group (sort i))
+          k = map ((flip lookup) j) [1..6]
+          f l = (head l, genericLength l)
