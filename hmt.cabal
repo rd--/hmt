@@ -19,3 +19,4 @@ Exposed-modules:  Music.Theory
                   Music.Theory.Prime
                   Music.Theory.Rahn
                   Music.Theory.Set
+                  Music.Theory.Table
