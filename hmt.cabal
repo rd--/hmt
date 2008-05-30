@@ -1,22 +1,28 @@
-Name:             hmt
-Version:          0.1
-License:          GPL
-Copyright:        Rohan Drape, 2006-2007
-Author:           Rohan Drape
-Maintainer:       rd@slavepianos.org
-Stability:        Experimental
-Homepage:         http://www.slavepianos.org/rd/
-Synopsis:         Haskell Music Theory
-Description:      Haskell music theory library
-Category:         Music
-Tested-With:      GHC
-Build-Depends:    base
-GHC-Options:      -Wall -O
-Exposed-modules:  Music.Theory
-                  Music.Theory.Encode
-                  Music.Theory.Forte
-                  Music.Theory.Pitch
-                  Music.Theory.Prime
-                  Music.Theory.Rahn
-                  Music.Theory.Set
-                  Music.Theory.Table
+Name:              hmt
+Version:           0.1
+Synopsis:          Haskell Music Theory
+Description:       Haskell music theory library
+License:           GPL
+Category:          Music
+Copyright:         Rohan Drape, 2006-2008
+Author:            Rohan Drape
+Maintainer:        rd@slavepianos.org
+Stability:         Experimental
+Homepage:          http://www.slavepianos.org/rd/
+Tested-With:       GHC==6.8.2
+Build-Type:        Simple
+Cabal-Version:     >= 1.2
+
+Data-files:        README
+
+Library
+  Build-Depends:   base
+  GHC-Options:     -Wall -fwarn-tabs -O
+  Exposed-modules: Music.Theory
+                   Music.Theory.Encode
+                   Music.Theory.Forte
+                   Music.Theory.Pitch
+                   Music.Theory.Prime
+                   Music.Theory.Rahn
+                   Music.Theory.Set
+                   Music.Theory.Table
