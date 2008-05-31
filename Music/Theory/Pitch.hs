@@ -58,8 +58,37 @@ rotate_right n = rotate (negate n)
 
 -- | All rotations.
 rotations :: [a] -> [[a]]
-rotations p = map f [0..length p - 1]
-     where f i = rotate i p
+rotations p = map ((flip rotate) p) [0 .. length p - 1]
+
+-- | Modulo 12 multiplication
+mn :: (Integral a) => a -> [a] -> [a]
+mn n = map (pc . (* n))
+
+-- | M5
+m5 :: (Integral a) => [a] -> [a]
+m5 = mn 5
+
+-- | Serial Operator
+type SRO a = (a, Bool, a, Bool, Bool)
+
+-- | Serial operation.
+sro :: (Integral a) => SRO a -> [a] -> [a]
+sro (r,r',t,m,i) x = let x1 = if i then invert 0 x else x
+                         x2 = if m then m5 x1 else x1
+                         x3 = tn t x2
+                         x4 = if r' then reverse x3 else x3
+                     in rotate r x4
+
+sros :: (Integral a) => [a] -> [(SRO a, [a])]
+sros x = [ let o = (r,r',t,m,i) in (o, sro o x) | 
+           r <- [0 .. genericLength x - 1], 
+           r' <- [False, True], 
+           t <- [0 .. 11], 
+           m <- [False, True], 
+           i <- [False, True] ]
+
+rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
+rsg x y = filter (\(_,x') -> x' == y) (sros x)
 
 -- | Intervals to values, zero is n.
 dx_d :: (Num a) => a -> [a] -> [a]
