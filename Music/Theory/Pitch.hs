@@ -52,6 +52,10 @@ rotate n p = a ++ b
      where m = n `mod` genericLength p
            (b, a) = genericSplitAt m p
 
+-- | Rotate right by n places.
+rotate_right :: (Integral n) => n -> [a] -> [a]
+rotate_right n = rotate (negate n)
+
 -- | All rotations.
 rotations :: [a] -> [[a]]
 rotations p = map f [0..length p - 1]
