@@ -102,3 +102,7 @@ icv s = map (fromMaybe 0) k
           j = map f (group (sort i))
           k = map ((flip lookup) j) [1..6]
           f l = (head l, genericLength l)
+
+-- | Basic interval pattern.
+bip :: (Integral a) => [a] -> [a]
+bip = sort . map ic . iseg
