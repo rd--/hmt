@@ -77,10 +77,6 @@ ic :: (Integral a) => a -> a
 ic i = if i' <= 6 then i' else 12 - i'
     where i' = mod12 i
 
--- | Set union.
-union :: (Integral a) => [a] -> [a] -> [a]
-union p q= pcset (p ++ q)
-
 -- | Elements of p not in q
 difference :: (Eq a) => [a] -> [a] -> [a]
 difference p q = filter f p
