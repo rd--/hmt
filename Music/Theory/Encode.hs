@@ -1,12 +1,12 @@
 module Music.Theory.Encode (prime) where
 
-import Music.Theory.Pitch (transpose, invert)
 import Data.Bits
+import Music.Theory.Pitch
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 prime :: (Integral a, Bits a) => [a] -> [a]
 prime s = decode (minimum (map encode c))
-    where t = map ((flip transpose) s) [0..11]
+    where t = map ((flip tn) s) [0..11]
           c = t ++ (map (invert 0) t)
 
 encode :: (Integral a) => [a] -> a

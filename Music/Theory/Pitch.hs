@@ -2,7 +2,7 @@ module Music.Theory.Pitch where
 
 import Music.Theory.Set
 import Data.Maybe
-import Data.List hiding (transpose)
+import Data.List
 
 -- | Modulo twelve.
 mod12 :: (Integral a) => a -> a
@@ -18,20 +18,20 @@ set = sort . nub
 
 -- | Map to pitch-class and reduce to set.
 pcset :: (Integral a) => [a] -> [a]
-pcset = set. map pc
+pcset = set . map pc
 
 -- | Transpose by n.
-transpose :: (Integral a) => a -> [a] -> [a]
-transpose n = map (pc . (+ n))
+tn :: (Integral a) => a -> [a] -> [a]
+tn n = map (pc . (+ n))
 
 -- | Transpose so first element is n.
 transposeTo :: (Integral a) => a -> [a] -> [a]
 transposeTo _ [] = []
-transposeTo n (x:xs) = n : transpose (n - x) xs
+transposeTo n (x:xs) = n : tn (n - x) xs
 
 -- | All transpositions.
 transpositions :: (Integral a) => [a] -> [[a]]
-transpositions p = map ((flip transpose) p) [0..11]
+transpositions p = map ((flip tn) p) [0..11]
 
 -- | Invert about n.
 invert :: (Integral a) => a -> [a] -> [a]
@@ -42,11 +42,14 @@ invertSelf :: (Integral a) => [a] -> [a]
 invertSelf [] = []
 invertSelf (x:xs) = invert x (x:xs)
 
+-- | Composition on inversion about zero and transpose.
+tni :: (Integral a) => a -> [a] -> [a]
+tni n = tn n . invert 0
 
 -- | Rotate left by n places.
-rotate :: Int -> [a] -> [a]
+rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p = a ++ b 
-     where m = n `mod` length p
+     where m = n `mod` genericLength p
            (b, a) = genericSplitAt m p
 
 -- | All rotations.
@@ -58,19 +61,24 @@ rotations p = map f [0..length p - 1]
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d n = scanl (+) n
 
--- | 
+-- | Morris INT operator.
 d_dx :: (Num a) => [a] -> [a]
 d_dx []     = []
 d_dx [_]    = []
 d_dx (x:xs) = zipWith (-) xs (x:xs)
 
+-- | Morris INT operator.
+int :: (Num a) => [a] -> [a]
+int = d_dx
+
 -- | Interval segment.
 iseg :: (Integral a) => [a] -> [a]
-iseg = (map pc) . d_dx
+iseg = (map mod12) . d_dx
 
 -- | Cyclic interval segment.
 ciseg :: (Integral a) => [a] -> [a]
-ciseg p = iseg (p ++ [head p])
+ciseg [] = []
+ciseg (x:xs) = iseg ((x:xs) ++ [x])
 
 -- | Interval class.
 ic :: (Integral a) => a -> a
@@ -93,7 +101,7 @@ subsequence p q = not (isNothing r)
 
 -- | The standard t-matrix of p.
 tmatrix :: (Integral a) => [a] -> [[a]]
-tmatrix p = map ((flip transpose) p) (transposeTo 0 (invertSelf p))
+tmatrix p = map ((flip tn) p) (transposeTo 0 (invertSelf p))
 
 -- | Interval class vector.
 icv :: (Integral a) => [a] -> [a]
