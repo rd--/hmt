@@ -1,7 +1,7 @@
 module Music.Theory.Prime (prime) where
 
-import Music.Theory.Pitch (pcset, invert, rotations, transposeTo)
-import Data.List (minimumBy)
+import Data.List
+import Music.Theory.Pitch
 
 prime :: (Integral a) => ([a] -> [a] -> Ordering) -> [a] -> [a]
 prime _ [] = []

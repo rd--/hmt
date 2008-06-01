@@ -95,15 +95,15 @@ rsg x y = filter (\(_,x') -> x' == y) (sros x)
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d n = scanl (+) n
 
--- | Morris INT operator.
+-- | Integrate.
 d_dx :: (Num a) => [a] -> [a]
 d_dx []     = []
 d_dx [_]    = []
 d_dx (x:xs) = zipWith (-) xs (x:xs)
 
 -- | Morris INT operator.
-int :: (Num a) => [a] -> [a]
-int = d_dx
+int :: (Integral a) => [a] -> [a]
+int = map mod12 . d_dx
 
 -- | Interval segment.
 iseg :: (Integral a) => [a] -> [a]
