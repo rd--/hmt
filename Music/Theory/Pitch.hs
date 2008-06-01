@@ -69,18 +69,19 @@ m5 :: (Integral a) => [a] -> [a]
 m5 = mn 5
 
 -- | Serial Operator
-type SRO a = (a, Bool, a, Bool, Bool)
+data SRO a = SRO a Bool a Bool Bool
+             deriving (Eq, Show)
 
 -- | Serial operation.
 sro :: (Integral a) => SRO a -> [a] -> [a]
-sro (r,r',t,m,i) x = let x1 = if i then invert 0 x else x
-                         x2 = if m then m5 x1 else x1
-                         x3 = tn t x2
-                         x4 = if r' then reverse x3 else x3
-                     in rotate r x4
+sro (SRO r r' t m i) x = let x1 = if i then invert 0 x else x
+                             x2 = if m then m5 x1 else x1
+                             x3 = tn t x2
+                             x4 = if r' then reverse x3 else x3
+                         in rotate r x4
 
 sros :: (Integral a) => [a] -> [(SRO a, [a])]
-sros x = [ let o = (r,r',t,m,i) in (o, sro o x) | 
+sros x = [ let o = (SRO r r' t m i) in (o, sro o x) | 
            r <- [0 .. genericLength x - 1], 
            r' <- [False, True], 
            t <- [0 .. 11], 
