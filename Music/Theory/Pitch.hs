@@ -148,3 +148,20 @@ icv s = map (fromMaybe 0) k
 -- | Basic interval pattern.
 bip :: (Integral a) => [a] -> [a]
 bip = sort . map ic . iseg
+
+-- | Cardinality filter
+cf :: (Integral n) => [n] -> [[a]] -> [[a]]
+cf ns = filter (\p -> genericLength p `elem` ns)
+
+-- | Is p a subset of q.
+is_subset :: Eq a => [a] -> [a] -> Bool
+is_subset p q = p `intersect` q == p
+
+-- | Is p a superset of q.
+is_superset :: Eq a => [a] -> [a] -> Bool
+is_superset = flip is_subset
+
+-- | Can the set-class q (under prime form pf) be drawn from the pcset p.
+has_sc :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
+has_sc pf q p = let n = length q
+                in q `elem` map pf (filter ((== n) . length) (powerset p))
