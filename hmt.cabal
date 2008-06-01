@@ -14,6 +14,7 @@ Build-Type:        Simple
 Cabal-Version:     >= 1.2
 
 Data-files:        README
+                   Help/hmt.help.lhs
 
 Library
   Build-Depends:   base
