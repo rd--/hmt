@@ -1,0 +1,164 @@
+> import Control.Arrow
+> import Data.List
+> import Data.Maybe
+> import Music.Theory
+
+$ sro T4 156
+59A
+
+> tn 4 [1,5,6]
+
+$ sro T4I 156
+3BA
+
+> tni 4 [1,5,6]
+
+$ echo 156 | sro T4  | sro T0I
+732
+
+> let f n = invert 0 . tn n
+> in f 4 [1,5,6]
+
+$ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
+145
+
+> (sort . nub . map ic . iseg) [0,1,5,4,9]
+
+$ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
+1345
+
+> let icv_icset x = let f x y = if x > 0 then Just y else Nothing
+>                   in catMaybes (zipWith f x [1..6])
+> in (icv_icset . icv . forte_prime) [0,1,5,4,9]
+
+Allen Forte "The Basic Interval Patterns" JMT 17/2 (1973):234-272
+
+$ function bip { pcom pcseg iseg $ | pcom iseg icseg | nrm -r }
+$ bip 0t95728e3416
+11223344556
+$
+
+> bip [0,10,9,5,7,2,8,11,3,4,1,6]
+
+$ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
+  pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
+  comm 5-Z17.bip 5-Z37.bip -1 -2 | wc -l
+16
+$
+
+> let f = nub . map bip . permutations . sc 
+> in f "5-Z17" `intersect` f "5-Z37"
+
+$ cat ../db.sh
+for sc in $(fl -c $1)
+do
+  pg $sc | bip | sort -u > $sc
+done
+$ sh ../db.sh 4
+$ ls
+4-1   4-12  4-16  4-19  4-21  4-24  4-27  4-4   4-7   4-Z15
+4-10  4-13  4-17  4-2   4-22  4-25  4-28  4-5   4-8   4-Z29
+4-11  4-14  4-18  4-20  4-23  4-26  4-3   4-6   4-9
+$
+
+> let { s = filter ((== 4) . length) scs
+>     ; x = map permutations s }
+> in zip (map name s) (map (sort . nub . (map bip)) x)
+
+$ cat view.sh
+for i in $(fl -c $1 | pg | bip | sort -u)
+do
+  echo $i":" $(grep -l $i * | sort -t '-' +1  -n | tr "\n" " ")
+done
+$ sh view.sh 4
+111: 4-1
+112: 4-1 4-2 4-3
+113: 4-1 4-3 4-4 4-7
+...
+$
+
+> let { n = 4
+>     ; s = filter ((== n) . length) scs
+>     ; x = map permutations s
+>     ; z = zip (map name s) (map (sort . nub . (map bip)) x)
+>     ; f b (s, bs) = if b `elem` bs then Just s else Nothing
+>     ; g b = catMaybes (map (f b) z) 
+>     ; a = sort (nub (map bip (concat x))) }
+> in zip a (map g a)
+
+$ cyc <  ~/src/pct/lib/scs | epmq \
+> "in cset 89" "is icset 12" "hasnt icseg 11" | scdb
+7-34    ascending melodic minor collection
+7-35    diatonic collection (d)
+8-28    octotonic collection (Messiaen Mode II)
+$
+
+> let { cyc xs = xs ++ [head xs]
+>     ; a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
+>     ; b = filter (\p -> sort (nub (int p)) == [1,2]) a
+>     ; c = filter (\p -> not ([1,1] `isInfixOf` int p)) b }
+> in map name c
+
+$ epmq < ~/src/pct/lib/univ "in cset 6" "in pcset 579t024" \
+> "has sc 5-35" "hasnt sc 2-6" "notin pcset 024579e"
+02579A
+$
+
+> let { a = cf [6] (powerset [0..11])
+>     ; b = filter (is_superset [0,2,4,5,7,9,10]) a
+>     ; c = filter (has_sc forte_prime (sc "5-35")) b
+>     ; d = filter (not . has_sc forte_prime (sc "2-6")) c }
+> in filter (not . is_superset [0,2,4,5,7,9,11]) d
+
+$ echo 024579 | sro RT4I
+79B024
+
+> sro (SRO 0 True 4 False True) [0,2,4,5,7,9]
+
+$ sro T4I 156
+3BA
+
+> sro (SRO 0 False 4 False True) [1,5,6]
+
+$ echo 156 | sro T0I | sro T4
+3BA
+
+> (sro (SRO 0 False 0 False True) >>> sro (SRO 0 False 4 False False)) [1,5,6]
+
+$ echo 156 | sro T4  | sro T0I
+732
+
+> (sro (SRO 0 False 0 False True) . sro (SRO 0 False 4 False False)) [1,5,6]
+
+$ rsg 156 3BA
+T4I
+
+> rsg [1,5,6] [3,11,10]
+
+$ rsg 0123 05t3
+T0M
+
+> rsg [0,1,2,3] [0,5,10,3]
+
+$ rsg 0123 4e61
+RT1M
+
+> rsg [0,1,2,3] [4,11,6,1]
+
+$ echo e614 | rsg 0123
+r3RT1M
+
+note: pct uses right rotation rotation.
+
+> rsg [0,1,2,3] [11,6,1,4]
+
+> sro (SRO 1 True 1 True False) [0,1,2,3]
+
+> sro (SRO 1 False 4 True True) [0,1,2,3]
+
+T0 = T0M1; Tn = TnM1
+I = MB; TnI = TnMB,
+M = M5; TnM = TnM5,
+MI = IM = M7 = MBM5; TnMI = TnM7
+
+> mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
