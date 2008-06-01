@@ -233,7 +233,7 @@ table = [ ("0-1",   [])
 
 -- | Lookup a set-class name given a set-class.
 name :: (Integral a) => [a] -> String
-name p = fst (fromJust (find (\(_, q) -> prime p == q) table))
+name p = fst (fromJust (find (\(_, q) -> forte_prime p == q) table))
 
 -- | Lookup a set-class given a set-class name.
 sc :: (Integral a) => String -> [a]

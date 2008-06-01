@@ -1,10 +1,8 @@
-module Music.Theory.Rahn (prime) where
+module Music.Theory.Rahn (rahn_prime) where
 
-import qualified Music.Theory.Prime as P
+import Music.Theory.Prime
 
 -- | Rahn comparison is rightmost inwards.
-prime :: (Integral a) => [a] -> [a]
-prime = P.prime cmp
+rahn_prime :: (Integral a) => [a] -> [a]
+rahn_prime = prime (\p q -> compare (reverse p) (reverse q))
 
-cmp :: (Ord t) => [t] -> [t] -> Ordering
-cmp p q = compare (reverse p) (reverse q)

@@ -1,6 +1,6 @@
-module Music.Theory.Forte (prime) where
+module Music.Theory.Forte (forte_prime) where
 
-import qualified Music.Theory.Prime as P
+import Music.Theory.Prime
 
 cmp :: (Ord t) => [t] -> [t] -> Ordering
 cmp [] [] = EQ
@@ -8,5 +8,5 @@ cmp p  q  = if r == EQ then compare p q else r
     where r = compare (last p) (last q)
 
 -- | Forte comparison is rightmost first then leftmost outwards.
-prime :: (Integral a) => [a] -> [a]
-prime = P.prime cmp
+forte_prime :: (Integral a) => [a] -> [a]
+forte_prime = prime cmp
