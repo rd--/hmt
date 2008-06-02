@@ -164,4 +164,4 @@ is_superset = flip is_subset
 -- | Can the set-class q (under prime form pf) be drawn from the pcset p.
 has_sc :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc pf q p = let n = length q
-                in q `elem` map pf (filter ((== n) . length) (powerset p))
+                in q `elem` map pf (cf [n] (powerset p))
