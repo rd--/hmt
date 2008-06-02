@@ -22,7 +22,7 @@ $ echo 156 | sro T4  | sro T0I
 $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 145
 
-> (sort . nub . map ic . iseg) [0,1,5,4,9]
+> (set . map ic . iseg) [0,1,5,4,9]
 
 $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 1345
@@ -63,7 +63,7 @@ $
 
 > let { s = filter ((== 4) . length) scs
 >     ; x = map permutations s }
-> in zip (map name s) (map (sort . nub . (map bip)) x)
+> in zip (map name s) (map (set . (map bip)) x)
 
 $ cat view.sh
 for i in $(fl -c $1 | pg | bip | sort -u)
@@ -80,10 +80,10 @@ $
 > let { n = 4
 >     ; s = filter ((== n) . length) scs
 >     ; x = map permutations s
->     ; z = zip (map name s) (map (sort . nub . (map bip)) x)
+>     ; z = zip (map name s) (map (set . (map bip)) x)
 >     ; f b (s, bs) = if b `elem` bs then Just s else Nothing
 >     ; g b = catMaybes (map (f b) z) 
->     ; a = sort (nub (map bip (concat x))) }
+>     ; a = set (map bip (concat x)) }
 > in zip a (map g a)
 
 $ cyc <  ~/src/pct/lib/scs | epmq \
@@ -95,7 +95,7 @@ $
 
 > let { cyc xs = xs ++ [head xs]
 >     ; a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
->     ; b = filter (\p -> sort (nub (int p)) == [1,2]) a
+>     ; b = filter (\p -> set (int p) == [1,2]) a
 >     ; c = filter (\p -> not ([1,1] `isInfixOf` int p)) b }
 > in map name c
 
