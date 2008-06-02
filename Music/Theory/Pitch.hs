@@ -6,7 +6,7 @@ import Data.List
 
 -- | Modulo twelve.
 mod12 :: (Integral a) => a -> a
-mod12 = (flip mod) 12
+mod12 = (`mod` 12)
 
 -- | Pitch class.
 pc :: (Integral a) => a -> a
@@ -31,7 +31,7 @@ transposeTo n (x:xs) = n : tn (n - x) xs
 
 -- | All transpositions.
 transpositions :: (Integral a) => [a] -> [[a]]
-transpositions p = map ((flip tn) p) [0..11]
+transpositions p = map (`tn` p) [0..11]
 
 -- | Invert about n.
 invert :: (Integral a) => a -> [a] -> [a]
@@ -58,7 +58,7 @@ rotate_right n = rotate (negate n)
 
 -- | All rotations.
 rotations :: [a] -> [[a]]
-rotations p = map ((flip rotate) p) [0 .. length p - 1]
+rotations p = map (`rotate` p) [0 .. length p - 1]
 
 -- | Modulo 12 multiplication
 mn :: (Integral a) => a -> [a] -> [a]
@@ -135,14 +135,14 @@ subsequence p q = not (isNothing r)
 
 -- | The standard t-matrix of p.
 tmatrix :: (Integral a) => [a] -> [[a]]
-tmatrix p = map ((flip tn) p) (transposeTo 0 (invertSelf p))
+tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))
 
 -- | Interval class vector.
 icv :: (Integral a) => [a] -> [a]
 icv s = map (fromMaybe 0) k
     where i = map (ic . uncurry (-)) (dyads s)
           j = map f (group (sort i))
-          k = map ((flip lookup) j) [1..6]
+          k = map (`lookup` j) [1..6]
           f l = (head l, genericLength l)
 
 -- | Basic interval pattern.
