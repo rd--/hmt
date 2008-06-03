@@ -99,8 +99,8 @@ dx_d n = scanl (+) n
 
 -- | Integrate.
 d_dx :: (Num a) => [a] -> [a]
-d_dx []     = []
-d_dx [_]    = []
+d_dx [] = []
+d_dx (_:[]) = []
 d_dx (x:xs) = zipWith (-) xs (x:xs)
 
 -- | Morris INT operator.
