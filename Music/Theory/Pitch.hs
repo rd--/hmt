@@ -132,8 +132,7 @@ complement = difference [0..11]
 
 -- | Is p a subsequence of q.
 subsequence :: (Eq a) => [a] -> [a] -> Bool
-subsequence p q = not (isNothing r)
-    where r = find (isPrefixOf p) (tails q)
+subsequence = isInfixOf
 
 -- | The standard t-matrix of p.
 tmatrix :: (Integral a) => [a] -> [[a]]
