@@ -68,7 +68,7 @@ mn n = map (pc . (* n))
 m5 :: (Integral a) => [a] -> [a]
 m5 = mn 5
 
--- | Serial Operator
+-- | Serial Operator, of the form rRTMI.
 data SRO a = SRO a Bool a Bool Bool
              deriving (Eq, Show)
 
@@ -80,6 +80,7 @@ sro (SRO r r' t m i) x = let x1 = if i then invert 0 x else x
                              x4 = if r' then reverse x3 else x3
                          in rotate r x4
 
+-- | The total set of serial operations.
 sros :: (Integral a) => [a] -> [(SRO a, [a])]
 sros x = [ let o = (SRO r r' t m i) in (o, sro o x) | 
            r <- [0 .. genericLength x - 1], 
@@ -88,6 +89,7 @@ sros x = [ let o = (SRO r r' t m i) in (o, sro o x) |
            m <- [False, True], 
            i <- [False, True] ]
 
+-- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
 
@@ -105,7 +107,7 @@ d_dx (x:xs) = zipWith (-) xs (x:xs)
 int :: (Integral a) => [a] -> [a]
 int = map mod12 . d_dx
 
--- | Interval segment.
+-- | Interval segment (INT).
 iseg :: (Integral a) => [a] -> [a]
 iseg = (map mod12) . d_dx
 
