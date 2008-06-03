@@ -22,7 +22,7 @@ $ echo 156 | sro T4  | sro T0I
 $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 145
 
-> (set . map ic . iseg) [0,1,5,4,9]
+> (set . map ic . int) [0,1,5,4,9]
 
 $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 1345
