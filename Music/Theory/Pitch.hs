@@ -109,12 +109,12 @@ int = map mod12 . d_dx
 
 -- | Interval segment (INT).
 iseg :: (Integral a) => [a] -> [a]
-iseg = (map mod12) . d_dx
+iseg = int
 
 -- | Cyclic interval segment.
 ciseg :: (Integral a) => [a] -> [a]
 ciseg [] = []
-ciseg (x:xs) = iseg ((x:xs) ++ [x])
+ciseg (x:xs) = int ((x:xs) ++ [x])
 
 -- | Interval class.
 ic :: (Integral a) => a -> a
@@ -149,7 +149,7 @@ icv s = map (fromMaybe 0) k
 
 -- | Basic interval pattern.
 bip :: (Integral a) => [a] -> [a]
-bip = sort . map ic . iseg
+bip = sort . map ic . int
 
 -- | Cardinality filter
 cf :: (Integral n) => [n] -> [[a]] -> [[a]]
