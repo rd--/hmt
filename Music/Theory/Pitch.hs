@@ -210,3 +210,8 @@ dim p = let f = filter (\(i,q) -> is_subset p (tn i q)) . zip [0..11] . repeat
 -- | Diatonic interval set to interval set.
 dis :: (Integral t) => [Int] -> [t]
 dis = concatMap (\j -> [[], [], [1,2], [3,4], [5,6], [6,7], [8,9], [10,11]] !! j)
+
+-- | Degree of intersection.
+doi :: (Integral a) => Int -> [a] -> [a] -> [[a]]
+doi n p q = let xs = concatMap (\j -> [pcset (tn j p), pcset (tni j p)]) [0..11]
+            in set (filter (\x -> length (x `intersect` q) == n) xs)

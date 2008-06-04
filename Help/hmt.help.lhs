@@ -235,3 +235,11 @@ $
 
 > dis [2,4]
 
+$ echo 024579e | doi 6 | sort -u
+024579A
+024679B
+$ echo 01234 | doi 2 7-35 | sort -u
+13568AB
+$
+
+> let p = [0,2,4,5,7,9,11] in doi 6 p p
