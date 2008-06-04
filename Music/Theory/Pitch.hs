@@ -111,10 +111,14 @@ int = map mod12 . d_dx
 iseg :: (Integral a) => [a] -> [a]
 iseg = int
 
+-- | Form cycle.
+cyc :: [a] -> [a]
+cyc [] = []
+cyc (x:xs) = (x:xs) ++ [x]
+
 -- | Cyclic interval segment.
 ciseg :: (Integral a) => [a] -> [a]
-ciseg [] = []
-ciseg (x:xs) = int ((x:xs) ++ [x])
+ciseg = int . cyc
 
 -- | Interval class.
 ic :: (Integral a) => a -> a
