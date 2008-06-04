@@ -26,6 +26,3 @@ se :: (Ord a) => Int -> [a] -> [[a]]
 se n xs = if length xs == n 
           then [xs] 
           else nub (concatMap (se n) [sort (y : xs) | y <- xs])
-
-cmpl :: (Integral a) => [a] -> [a]
-cmpl = ([0..11] \\)
