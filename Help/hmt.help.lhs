@@ -162,3 +162,40 @@ M = M5; TnM = TnM5,
 MI = IM = M7 = MBM5; TnMI = TnM7
 
 > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
+
+$ se -c5 123
+12333
+12233
+12223
+11233
+11223
+11123
+$
+
+> se 5 [1,2,3]
+
+$ ici -c 123
+123
+129
+1A3
+1A9
+$
+
+> ici_c [1,2,3]
+
+> ici [1,2,3]
+
+> cgg [[0],[1,11],[2,10],[3,9],[4,8],[5,7],[6]]
+
+$ se -c5 1245 | pg | ici | pcom iseg sc | \
+  sort -u | epmq "in cset 6" | wc -l
+42
+$
+
+> let { a = se 5 [1,2,4,5]
+>     ; b = concatMap permutations a
+>     ; c = concatMap ici b 
+>     ; d = map (forte_prime . dx_d 0) c
+>     ; e = nub d 
+>     ; f = cf [6] e }
+> in length f
