@@ -206,3 +206,7 @@ dim p = let f = filter (\(i,q) -> is_subset p (tn i q)) . zip [0..11] . repeat
             m = [0,2,3,5,7,9,11]
             o = [0,1,3,4,6,7,9,10]
         in f d ++ f m ++ f o
+
+-- | Diatonic interval set to interval set.
+dis :: (Integral t) => [Int] -> [t]
+dis = concatMap (\j -> [[], [], [1,2], [3,4], [5,6], [6,7], [8,9], [10,11]] !! j)
