@@ -63,7 +63,7 @@ $
 
 > let { s = filter ((== 4) . length) scs
 >     ; x = map permutations s }
-> in zip (map name s) (map (set . (map bip)) x)
+> in zip (map sc_name s) (map (set . (map bip)) x)
 
 $ cat view.sh
 for i in $(fl -c $1 | pg | bip | sort -u)
@@ -80,7 +80,7 @@ $
 > let { n = 4
 >     ; s = filter ((== n) . length) scs
 >     ; x = map permutations s
->     ; z = zip (map name s) (map (set . (map bip)) x)
+>     ; z = zip (map sc_name s) (map (set . (map bip)) x)
 >     ; f b (s, bs) = if b `elem` bs then Just s else Nothing
 >     ; g b = catMaybes (map (f b) z) 
 >     ; a = set (map bip (concat x)) }
@@ -97,7 +97,7 @@ $
 >     ; a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
 >     ; b = filter (\p -> set (int p) == [1,2]) a
 >     ; c = filter (\p -> not ([1,1] `isInfixOf` int p)) b }
-> in map name c
+> in map sc_name c
 
 $ epmq < ~/src/pct/lib/univ "in cset 6" "in pcset 579t024" \
 > "has sc 5-35" "hasnt sc 2-6" "notin pcset 024579e"

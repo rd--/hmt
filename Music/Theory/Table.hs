@@ -233,8 +233,8 @@ sc_table =
     , ("12-1",  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) ]
 
 -- | Lookup a set-class name given a set-class.
-name :: (Integral a) => [a] -> String
-name p = fst (fromJust (find (\(_, q) -> forte_prime p == q) sc_table))
+sc_name :: (Integral a) => [a] -> String
+sc_name p = fst (fromJust (find (\(_, q) -> forte_prime p == q) sc_table))
 
 -- | Lookup a set-class given a set-class name.
 sc :: (Integral a) => String -> [a]
