@@ -198,3 +198,11 @@ cg_r n x = cf [n] (cg x)
 -- | pcset complement.
 cmpl :: (Integral a) => [a] -> [a]
 cmpl = ([0..11] \\) . pcset
+
+-- | Diatonic implications.
+dim :: (Integral a) => [a] -> [(a, [a])]
+dim p = let f = filter (\(i,q) -> is_subset p (tn i q)) . zip [0..11] . repeat
+            d = [0,2,4,5,7,9,11]
+            m = [0,2,3,5,7,9,11]
+            o = [0,1,3,4,6,7,9,10]
+        in f d ++ f m ++ f o
