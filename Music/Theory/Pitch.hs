@@ -166,3 +166,16 @@ is_superset = flip is_subset
 has_sc :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc pf q p = let n = length q
                 in q `elem` map pf (cf [n] (powerset p))
+
+ici :: (Num t) => [Int] -> [[t]]
+ici xs = let is j = [[0], [1,11], [2,10], [3,9], [4,8], [5,7], [6]] !! j
+             ys = map is xs
+         in cgg ys
+
+ici_c :: [Int] -> [[Int]]
+ici_c [] = []
+ici_c (x:xs) = map (x:) (ici xs)
+
+cgg :: [[a]] -> [[a]]
+cgg [] = [[]]
+cgg (x:xs) = [ y:z | y <- x, z <- cgg xs ]
