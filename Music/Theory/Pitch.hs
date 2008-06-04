@@ -179,3 +179,12 @@ ici_c (x:xs) = map (x:) (ici xs)
 cgg :: [[a]] -> [[a]]
 cgg [] = [[]]
 cgg (x:xs) = [ y:z | y <- x, z <- cgg xs ]
+
+-- | Combinations generator (cg == poweset)
+cg :: [a] -> [[a]]
+cg = powerset
+
+-- | Powerset filtered by cardinality.
+cg_r :: (Integral n) => n -> [a] -> [[a]]
+cg_r n x = cf [n] (cg x)
+
