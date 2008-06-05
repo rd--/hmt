@@ -20,10 +20,8 @@ Library
   Build-Depends:   base
   GHC-Options:     -Wall -fwarn-tabs -O
   Exposed-modules: Music.Theory
-                   Music.Theory.Encode
-                   Music.Theory.Forte
+                   Music.Theory.Pct
                    Music.Theory.Pitch
                    Music.Theory.Prime
-                   Music.Theory.Rahn
                    Music.Theory.Set
                    Music.Theory.Table

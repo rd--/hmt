@@ -1,8 +1,8 @@
 module Music.Theory.Table where
 
-import Music.Theory.Forte
 import Data.List
 import Data.Maybe
+import Music.Theory.Prime
 
 -- | The set-class table (Forte prime forms).
 sc_table :: (Integral a) => [(String, [a])]

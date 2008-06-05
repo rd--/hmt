@@ -12,10 +12,6 @@ mod12 = (`mod` 12)
 pc :: (Integral a) => a -> a
 pc = mod12
 
--- | Remove duplicate elements and sort.
-set :: (Ord a) => [a] -> [a]
-set = sort . nub
-
 -- | Map to pitch-class and reduce to set.
 pcset :: (Integral a) => [a] -> [a]
 pcset = set . map pc
@@ -89,10 +85,6 @@ sros x = [ let o = (SRO r r' t m i) in (o, sro o x) |
            m <- [False, True], 
            i <- [False, True] ]
 
--- | Relate segments.
-rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
-rsg x y = filter (\(_,x') -> x' == y) (sros x)
-
 -- | Intervals to values, zero is n.
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d n = scanl (+) n
@@ -106,19 +98,6 @@ d_dx (x:xs) = zipWith (-) xs (x:xs)
 -- | Morris INT operator.
 int :: (Integral a) => [a] -> [a]
 int = map mod12 . d_dx
-
--- | Interval segment (INT).
-iseg :: (Integral a) => [a] -> [a]
-iseg = int
-
--- | Form cycle.
-cyc :: [a] -> [a]
-cyc [] = []
-cyc (x:xs) = (x:xs) ++ [x]
-
--- | Cyclic interval segment.
-ciseg :: (Integral a) => [a] -> [a]
-ciseg = int . cyc
 
 -- | Interval class.
 ic :: (Integral a) => a -> a
@@ -150,14 +129,6 @@ icv s = map (fromMaybe 0) k
           k = map (`lookup` j) [1..6]
           f l = (head l, genericLength l)
 
--- | Basic interval pattern.
-bip :: (Integral a) => [a] -> [a]
-bip = sort . map ic . int
-
--- | Cardinality filter
-cf :: (Integral n) => [n] -> [[a]] -> [[a]]
-cf ns = filter (\p -> genericLength p `elem` ns)
-
 -- | Is p a subset of q.
 is_subset :: Eq a => [a] -> [a] -> Bool
 is_subset p q = p `intersect` q == p
@@ -166,52 +137,4 @@ is_subset p q = p `intersect` q == p
 is_superset :: Eq a => [a] -> [a] -> Bool
 is_superset = flip is_subset
 
--- | Can the set-class q (under prime form pf) be drawn from the pcset p.
-has_sc :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
-has_sc pf q p = let n = length q
-                in q `elem` map pf (cf [n] (powerset p))
 
--- | Interval class set to interval sets.
-ici :: (Num t) => [Int] -> [[t]]
-ici xs = let is j = [[0], [1,11], [2,10], [3,9], [4,8], [5,7], [6]] !! j
-             ys = map is xs
-         in cgg ys
-
--- | Interval class set to interval sets, concise variant.
-ici_c :: [Int] -> [[Int]]
-ici_c [] = []
-ici_c (x:xs) = map (x:) (ici xs)
-
-cgg :: [[a]] -> [[a]]
-cgg [] = [[]]
-cgg (x:xs) = [ y:z | y <- x, z <- cgg xs ]
-
--- | Combinations generator (cg == poweset)
-cg :: [a] -> [[a]]
-cg = powerset
-
--- | Powerset filtered by cardinality.
-cg_r :: (Integral n) => n -> [a] -> [[a]]
-cg_r n x = cf [n] (cg x)
-
-
--- | pcset complement.
-cmpl :: (Integral a) => [a] -> [a]
-cmpl = ([0..11] \\) . pcset
-
--- | Diatonic implications.
-dim :: (Integral a) => [a] -> [(a, [a])]
-dim p = let f = filter (\(i,q) -> is_subset p (tn i q)) . zip [0..11] . repeat
-            d = [0,2,4,5,7,9,11]
-            m = [0,2,3,5,7,9,11]
-            o = [0,1,3,4,6,7,9,10]
-        in f d ++ f m ++ f o
-
--- | Diatonic interval set to interval set.
-dis :: (Integral t) => [Int] -> [t]
-dis = concatMap (\j -> [[], [], [1,2], [3,4], [5,6], [6,7], [8,9], [10,11]] !! j)
-
--- | Degree of intersection.
-doi :: (Integral a) => Int -> [a] -> [a] -> [[a]]
-doi n p q = let xs = concatMap (\j -> [pcset (tn j p), pcset (tni j p)]) [0..11]
-            in set (filter (\x -> length (x `intersect` q) == n) xs)

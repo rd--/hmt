@@ -3,6 +3,10 @@ module Music.Theory.Set where
 import Control.Monad
 import Data.List
 
+-- | Remove duplicate elements and sort.
+set :: (Ord a) => [a] -> [a]
+set = sort . nub
+
 -- | Powerset, ie. set of all all subsets.
 powerset :: [a] -> [[a]]
 powerset = filterM (const [True, False])
