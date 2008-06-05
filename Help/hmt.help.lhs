@@ -106,8 +106,8 @@ $
 
 > let { a = cf [6] (powerset [0..11])
 >     ; b = filter (is_superset [0,2,4,5,7,9,10]) a
->     ; c = filter (has_sc forte_prime (sc "5-35")) b
->     ; d = filter (not . has_sc forte_prime (sc "2-6")) c }
+>     ; c = filter (`has_sc` (sc "5-35")) b
+>     ; d = filter (not . (`has_sc` (sc "2-6"))) c }
 > in filter (not . is_superset [0,2,4,5,7,9,11]) d
 
 $ echo 024579 | sro RT4I

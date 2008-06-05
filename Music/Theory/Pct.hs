@@ -1,6 +1,6 @@
 module Music.Theory.Pct where
 
---import Music.Theory.Prime
+import Music.Theory.Prime
 import Music.Theory.Pitch
 import Music.Theory.Set
 --import Music.Theory.Table
@@ -58,9 +58,13 @@ doi n p q = let xs = concatMap (\j -> [pcset (tn j p), pcset (tni j p)]) [0..11]
             in set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Can the set-class q (under prime form pf) be drawn from the pcset p.
-has_sc :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
-has_sc pf q p = let n = length q
+has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
+has_sc_pf pf p q = let n = length q
                 in q `elem` map pf (cf [n] (powerset p))
+
+-- | Can the set-class q (under prime form pf) be drawn from the pcset p.
+has_sc :: (Integral a) => [a] -> [a] -> Bool
+has_sc = has_sc_pf forte_prime
 
 -- | Interval class set to interval sets.
 ici :: (Num t) => [Int] -> [[t]]
