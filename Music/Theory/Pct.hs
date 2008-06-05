@@ -3,8 +3,7 @@ module Music.Theory.Pct where
 import Music.Theory.Prime
 import Music.Theory.Pitch
 import Music.Theory.Set
---import Music.Theory.Table
---import Data.Maybe
+import Music.Theory.Table
 import Data.List
 
 -- | Basic interval pattern.
@@ -84,3 +83,9 @@ iseg = int
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
+
+-- | Super set-class.
+spsc :: (Integral a) => [[a]] -> [String]
+spsc xs = let f y = all (y `has_sc`) xs
+              g p q = length p == length q
+          in (map sc_name . head . groupBy g . filter f) scs
