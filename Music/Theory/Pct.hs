@@ -79,6 +79,10 @@ has_sc_pf pf p q = let n = length q
 has_sc :: (Integral a) => [a] -> [a] -> Bool
 has_sc = has_sc_pf forte_prime
 
+-- | Interval cycle filter.
+icf :: (Num a) => [[a]] -> [[a]]
+icf = filter ((== 12) . sum)
+
 -- | Interval class set to interval sets.
 ici :: (Num t) => [Int] -> [[t]]
 ici xs = let is j = [[0], [1,11], [2,10], [3,9], [4,8], [5,7], [6]] !! j
@@ -89,6 +93,10 @@ ici xs = let is j = [[0], [1,11], [2,10], [3,9], [4,8], [5,7], [6]] !! j
 ici_c :: [Int] -> [[Int]]
 ici_c [] = []
 ici_c (x:xs) = map (x:) (ici xs)
+
+-- | Interval-class segment.
+icseg :: (Integral a) => [a] -> [a]
+icseg = map ic . iseg
 
 -- | Interval segment (INT).
 iseg :: (Integral a) => [a] -> [a]
