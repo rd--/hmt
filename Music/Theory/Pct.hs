@@ -56,6 +56,20 @@ doi :: (Integral a) => Int -> [a] -> [a] -> [[a]]
 doi n p q = let xs = concatMap (\j -> [pcset (tn j p), pcset (tni j p)]) [0..11]
             in set (filter (\x -> length (x `intersect` q) == n) xs)
 
+-- | Forte name.
+fn :: (Integral a) => [a] -> String
+fn = sc_name
+
+-- | p `has_ess` q is true iff p can embed q in sequence.
+has_ess :: (Integral a) => [a] -> [a] -> Bool
+has_ess _ [] = True
+has_ess [] _ = False
+has_ess (p:ps) (q:qs) = if p == q then has_ess ps qs else has_ess ps (q:qs)
+
+-- | Embedded segment search.
+ess :: (Integral a) => [a] -> [a] -> [[a]]
+ess p q = filter (`has_ess` p) (all_RTnMI q)
+
 -- | Can the set-class q (under prime form pf) be drawn from the pcset p.
 has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc_pf pf p q = let n = length q
