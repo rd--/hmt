@@ -130,6 +130,12 @@ pci :: (Integral a) => [a] -> [a] -> [[a]]
 pci p i = let f q = set (map (q `genericIndex`) i)
           in filter (\q -> f q == f p) (all_RTnI p)
 
+-- | Relate sets.
+rs :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
+rs x y = let xs = map (\o -> (o, o `sro` x)) sro_TnMI
+             q = set y
+         in filter (\(_,p) -> set p == q) xs
+
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
