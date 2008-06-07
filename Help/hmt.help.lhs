@@ -327,3 +327,16 @@ $
 
 > rs [0,1,2,3] [6,4,1,11]
 
+$ sb 6-32 6-8 | fn | pfmt
+1-1
+2-1 2-2 2-3 2-4 2-5
+3-2 3-4 3-6 3-7 3-9 3-11
+4-10 4-11 4-14 4-22 4-23
+5-23
+$ for i in `cat ~/src/pct/lib/scs | cf 6 | fn` ; \
+  do echo $i >> LIST ; sb $i | cf 3 | wc -l >> LIST ; done
+$
+
+> map sc_name (sb [sc "6-32", sc "6-8"])
+
+> map (\p -> let xs = cf [3] (sb [p]) in (sc_name p, length xs)) (cf [6] scs)

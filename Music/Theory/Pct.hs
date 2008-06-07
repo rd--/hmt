@@ -75,7 +75,7 @@ has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc_pf pf p q = let n = length q
                 in q `elem` map pf (cf [n] (powerset p))
 
--- | Can the set-class q (under prime form pf) be drawn from the pcset p.
+-- | Can the set-class q be drawn from the pcset p.
 has_sc :: (Integral a) => [a] -> [a] -> Bool
 has_sc = has_sc_pf forte_prime
 
@@ -139,6 +139,11 @@ rs x y = let xs = map (\o -> (o, o `sro` x)) sro_TnMI
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
+
+-- | Subsets.
+sb :: (Integral a) => [[a]] -> [[a]]
+sb xs = let f p = all id (map (`has_sc` p) xs)
+        in filter f scs
 
 -- | Super set-class.
 spsc :: (Integral a) => [[a]] -> [String]
