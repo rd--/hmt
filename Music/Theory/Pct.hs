@@ -107,6 +107,12 @@ imb :: (Integral n) => [n] -> [a] -> [[a]]
 imb cs p = let f ps n = filter ((== n) . genericLength) (map (genericTake n) ps)
            in concatMap (f (tails p)) cs
 
+-- | p `issb` q print gives the set-classes that can append to p to give q.
+issb :: (Integral a) => [a] -> [a] -> [String]
+issb p q = let k = length q - length p
+               f r = any id (map (\x -> forte_prime (p ++ x) == q) (all_TnI r))
+           in map sc_name (filter f (cf [k] scs))
+
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
