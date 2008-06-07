@@ -103,6 +103,34 @@ sros x = [ let o = (SRO r r' t m i) in (o, sro o x) |
            m <- [False, True], 
            i <- [False, True] ]
 
+sro_Tn :: (Integral a) => [SRO a]
+sro_Tn = [ SRO 0 False n False False | 
+           n <- [0..11] ]
+
+sro_TnI :: (Integral a) => [SRO a]
+sro_TnI = [ SRO 0 False n False i | 
+            n <- [0..11], 
+            i <- [False, True] ]
+
+sro_RTnI :: (Integral a) => [SRO a]
+sro_RTnI = [ SRO 0 r n False i | 
+             r <- [True, False],
+             n <- [0..11], 
+             i <- [False, True] ] 
+
+sro_TnMI :: (Integral a) => [SRO a]
+sro_TnMI = [ SRO 0 False n m i | 
+             n <- [0..11], 
+             m <- [True, False], 
+             i <- [True, False] ]
+
+sro_RTnMI :: (Integral a) => [SRO a]
+sro_RTnMI = [ SRO 0 r n m i | 
+              r <- [True, False],
+              n <- [0..11],
+              m <- [True, False],
+              i <- [True, False] ]
+
 -- | Intervals to values, zero is n.
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d n = scanl (+) n
