@@ -102,6 +102,11 @@ icseg = map ic . iseg
 iseg :: (Integral a) => [a] -> [a]
 iseg = int
 
+-- | Imbrications.
+imb :: (Integral n) => [n] -> [a] -> [[a]]
+imb cs p = let f ps n = filter ((== n) . genericLength) (map (genericTake n) ps)
+           in concatMap (f (tails p)) cs
+
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
