@@ -113,6 +113,23 @@ issb p q = let k = length q - length p
                f r = any id (map (\x -> forte_prime (p ++ x) == q) (all_TnI r))
            in map sc_name (filter f (cf [k] scs))
 
+-- | Matrix search.
+mxs :: (Integral a) => [a] -> [a] -> [[a]]
+mxs p q = filter (q `isInfixOf`) (all_RTnI p)
+
+-- | Normalize.
+nrm :: (Ord a) => [a] -> [a]
+nrm = set
+
+-- | Normalize, retain duplicate elements.
+nrm_r :: (Ord a) => [a] -> [a]
+nrm_r = sort
+
+-- | Pitch-class invariances.
+pci :: (Integral a) => [a] -> [a] -> [[a]]
+pci p i = let f q = set (map (q `genericIndex`) i)
+          in filter (\q -> f q == f p) (all_RTnI p)
+
 -- | Relate segments.
 rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rsg x y = filter (\(_,x') -> x' == y) (sros x)
