@@ -64,6 +64,24 @@ mn n = map (pc . (* n))
 m5 :: (Integral a) => [a] -> [a]
 m5 = mn 5
 
+all_Tn :: (Integral a) => [a] -> [[a]]
+all_Tn p = map (`tn` p) [0..11]
+
+all_TnI :: (Integral a) => [a] -> [[a]]
+all_TnI p = let ps = all_Tn p in ps ++ map (invert 0) ps
+
+all_RTnI :: (Integral a) => [a] -> [[a]]
+all_RTnI p = let ps = all_TnI p in ps ++ map reverse ps
+
+all_TnMI :: (Integral a) => [a] -> [[a]]
+all_TnMI p = let ps = all_TnI p in ps ++ map m5 ps
+
+all_RTnMI :: (Integral a) => [a] -> [[a]]
+all_RTnMI p = let ps = all_TnMI p in ps ++ map reverse ps
+
+all_rRTnMI :: (Integral a) => [a] -> [[a]]
+all_rRTnMI p = map snd (sros p)
+
 -- | Serial Operator, of the form rRTMI.
 data SRO a = SRO a Bool a Bool Bool
              deriving (Eq, Show)
@@ -136,5 +154,3 @@ is_subset p q = p `intersect` q == p
 -- | Is p a superset of q.
 is_superset :: Eq a => [a] -> [a] -> Bool
 is_superset = flip is_subset
-
-
