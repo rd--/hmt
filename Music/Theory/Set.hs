@@ -11,15 +11,6 @@ set = sort . nub
 powerset :: [a] -> [[a]]
 powerset = filterM (const [True, False])
 
--- | Permutations.
-permutations :: [a] -> [[a]]
-permutations [] = [[]]
-permutations (x:xs) = [ zs | ys <- permutations xs , zs <- everywhere x ys ]
-    
-everywhere :: a -> [a] -> [[a]]
-everywhere x [] = [[x]]
-everywhere x (y:ys) = (x:y:ys) : [ y:zs | zs <- everywhere x ys ]
-
 -- | Two element subsets (cf [2] . powerset).
 dyads :: [a] -> [(a,a)]
 dyads [] = []
