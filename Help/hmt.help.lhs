@@ -340,3 +340,8 @@ $
 > map sc_name (sb [sc "6-32", sc "6-8"])
 
 > map (\p -> let xs = cf [3] (sb [p]) in (sc_name p, length xs)) (cf [6] scs)
+
+$ echo 024579 | sro RT4I
+79B024
+
+> sro (rnrtnmi "RT4I") [0,2,4,5,7,9]
