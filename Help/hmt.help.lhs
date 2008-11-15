@@ -1,6 +1,3 @@
-> import Control.Arrow
-> import Data.List
-> import Data.Maybe
 > import Music.Theory
 
 $ sro T4 156
@@ -27,6 +24,8 @@ $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 1345
 
+> import Data.Maybe
+
 > let icv_icset x = let f x y = if x > 0 then Just y else Nothing
 >                   in catMaybes (zipWith f x [1..6])
 > in (icv_icset . icv . forte_prime) [0,1,5,4,9]
@@ -45,6 +44,8 @@ $ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
   comm 5-Z17.bip 5-Z37.bip -1 -2 | wc -l
 16
 $
+
+> import Data.List
 
 > let f = nub . map bip . permutations . sc 
 > in f "5-Z17" `intersect` f "5-Z37"
@@ -122,6 +123,8 @@ $ sro T4I 156
 
 $ echo 156 | sro T0I | sro T4
 3BA
+
+> import Control.Arrow
 
 > (sro (SRO 0 False 0 False True) >>> sro (SRO 0 False 4 False False)) [1,5,6]
 
