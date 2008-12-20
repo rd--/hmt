@@ -1,17 +1,18 @@
 module Music.Theory.Parse (rnrtnmi) where
 
+import Control.Monad
 import Music.Theory.Pitch
 import Text.ParserCombinators.Parsec
 
 type P a = GenParser Char () a
 
 is_char :: Char -> P Bool
-is_char c = option '_' (char c) >>= return . f
+is_char c = liftM f (option '_' (char c))
   where f '_' = False
         f _ = True
 
 get_int :: P Int
-get_int = many1 digit >>= return . read
+get_int = liftM read (many1 digit)
 
 rnrtnmi :: String -> SRO Int
 rnrtnmi s = either 

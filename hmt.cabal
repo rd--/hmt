@@ -18,7 +18,7 @@ Data-files:        README
 
 Library
   Build-Depends:   base >= 4.0, parsec
-  GHC-Options:     -Wall -fwarn-tabs -O
+  GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
                    Music.Theory.Parse
                    Music.Theory.Pct

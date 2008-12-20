@@ -32,10 +32,10 @@ rahn_prime = cmp_prime (\p q -> compare (reverse p) (reverse q))
 encode_prime :: (Integral a, Bits a) => [a] -> [a]
 encode_prime s = decode (minimum (map encode c))
     where t = map (`tn` s) [0..11]
-          c = t ++ (map (invert 0) t)
+          c = t ++ map (invert 0) t
 
 encode :: (Integral a) => [a] -> a
-encode s = sum (map (2 ^) s)
+encode = sum . map (2 ^)
 
 decode :: (Bits a, Integral a) => a -> [a]
 decode n = map (fromIntegral . fst) (filter snd (map f [0..11]))

@@ -1,10 +1,11 @@
 module Music.Theory.Pct where
 
+import Data.Function
+import Data.List
 import Music.Theory.Prime
 import Music.Theory.Pitch
 import Music.Theory.Set
 import Music.Theory.Table
-import Data.List
 
 -- | Basic interval pattern.
 bip :: (Integral a) => [a] -> [a]
@@ -24,7 +25,7 @@ cg = powerset
 
 -- | Powerset filtered by cardinality.
 cg_r :: (Integral n) => n -> [a] -> [[a]]
-cg_r n x = cf [n] (cg x)
+cg_r n = cf [n] . cg
 
 -- | Cyclic interval segment.
 ciseg :: (Integral a) => [a] -> [a]
@@ -68,7 +69,7 @@ has_ess (p:ps) (q:qs) = if p == q then has_ess ps qs else has_ess ps (q:qs)
 
 -- | Embedded segment search.
 ess :: (Integral a) => [a] -> [a] -> [[a]]
-ess p q = filter (`has_ess` p) (all_RTnMI q)
+ess p = filter (`has_ess` p) . all_RTnMI
 
 -- | Can the set-class q (under prime form pf) be drawn from the pcset p.
 has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
@@ -110,7 +111,7 @@ imb cs p = let f ps n = filter ((== n) . genericLength) (map (genericTake n) ps)
 -- | p `issb` q print gives the set-classes that can append to p to give q.
 issb :: (Integral a) => [a] -> [a] -> [String]
 issb p q = let k = length q - length p
-               f r = any id (map (\x -> forte_prime (p ++ x) == q) (all_TnI r))
+               f = any id . map (\x -> forte_prime (p ++ x) == q) . all_TnI
            in map sc_name (filter f (cf [k] scs))
 
 -- | Matrix search.
@@ -148,5 +149,5 @@ sb xs = let f p = all id (map (`has_sc` p) xs)
 -- | Super set-class.
 spsc :: (Integral a) => [[a]] -> [String]
 spsc xs = let f y = all (y `has_sc`) xs
-              g p q = length p == length q
+              g = (==) `on` length
           in (map sc_name . head . groupBy g . filter f) scs

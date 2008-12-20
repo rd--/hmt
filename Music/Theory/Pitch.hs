@@ -50,7 +50,7 @@ rotate n p = a ++ b
 
 -- | Rotate right by n places.
 rotate_right :: (Integral n) => n -> [a] -> [a]
-rotate_right n = rotate (negate n)
+rotate_right = rotate . negate
 
 -- | All rotations.
 rotations :: [a] -> [[a]]
@@ -80,7 +80,7 @@ all_RTnMI :: (Integral a) => [a] -> [[a]]
 all_RTnMI p = let ps = all_TnMI p in ps ++ map reverse ps
 
 all_rRTnMI :: (Integral a) => [a] -> [[a]]
-all_rRTnMI p = map snd (sros p)
+all_rRTnMI = map snd . sros
 
 -- | Serial Operator, of the form rRTMI.
 data SRO a = SRO a Bool a Bool Bool
@@ -133,7 +133,7 @@ sro_RTnMI = [ SRO 0 r n m i |
 
 -- | Intervals to values, zero is n.
 dx_d :: (Num a) => a -> [a] -> [a]
-dx_d n = scanl (+) n
+dx_d = scanl (+)
 
 -- | Integrate.
 d_dx :: (Num a) => [a] -> [a]
