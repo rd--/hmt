@@ -17,7 +17,7 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base >= 4.0, parsec
+  Build-Depends:   base, parsec
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
                    Music.Theory.Parse
