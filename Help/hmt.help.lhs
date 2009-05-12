@@ -47,7 +47,7 @@ $
 
 > import Data.List
 
-> let f = nub . map bip . permutations . sc 
+> let f = nub . map bip . permutations . sc
 > in f "5-Z17" `intersect` f "5-Z37"
 
 $ cat ../db.sh
@@ -83,7 +83,7 @@ $
 >     ; x = map permutations s
 >     ; z = zip (map sc_name s) (map (set . (map bip)) x)
 >     ; f b (s, bs) = if b `elem` bs then Just s else Nothing
->     ; g b = catMaybes (map (f b) z) 
+>     ; g b = catMaybes (map (f b) z)
 >     ; a = set (map bip (concat x)) }
 > in zip a (map g a)
 
@@ -126,12 +126,16 @@ $ echo 156 | sro T0I | sro T4
 
 > import Control.Arrow
 
-> (sro (SRO 0 False 0 False True) >>> sro (SRO 0 False 4 False False)) [1,5,6]
+> let { i = SRO 0 False 0 False True
+>     ; t4 = SRO 0 False 4 False False }
+> in (sro i >>> sro t4) [1,5,6]
 
 $ echo 156 | sro T4  | sro T0I
 732
 
-> (sro (SRO 0 False 0 False True) . sro (SRO 0 False 4 False False)) [1,5,6]
+> let { i = SRO 0 False 0 False True
+>     ; t4 = SRO 0 False 4 False False }
+> in (sro i . sro t4) [1,5,6]
 
 $ rsg 156 3BA
 T4I
@@ -197,9 +201,9 @@ $
 
 > let { a = se 5 [1,2,4,5]
 >     ; b = concatMap permutations a
->     ; c = concatMap ici b 
+>     ; c = concatMap ici b
 >     ; d = map (forte_prime . dx_d 0) c
->     ; e = nub d 
+>     ; e = nub d
 >     ; f = cf [6] e }
 > in length f
 
@@ -342,7 +346,9 @@ $
 
 > map sc_name (sb [sc "6-32", sc "6-8"])
 
-> map (\p -> let xs = cf [3] (sb [p]) in (sc_name p, length xs)) (cf [6] scs)
+> let f p = let xs = cf [3] (sb [p]) 
+>           in (sc_name p, length xs)
+> in map f (cf [6] scs)
 
 $ echo 024579 | sro RT4I
 79B024
