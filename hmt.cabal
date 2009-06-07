@@ -9,15 +9,15 @@ Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
 Homepage:          http://www.slavepianos.org/rd/
-Tested-With:       GHC==6.8.2
+Tested-With:       GHC == 6.8.2
 Build-Type:        Simple
-Cabal-Version:     >= 1.2
+Cabal-Version:     >= 1.6
 
 Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base==3.*,
+  Build-Depends:   base == 3.*,
                    containers,
                    parsec,
                    permutation
