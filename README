@@ -1,4 +1,7 @@
 hmt - haskell music theory
 
+Music theory operations in haskell, primarily
+focussed on 'set theory'.
+
 (c) rohan drape, 2006-2009
     gpl, http://gnu.org/copyleft/
