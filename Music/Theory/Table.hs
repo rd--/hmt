@@ -234,7 +234,9 @@ sc_table =
 
 -- | Lookup a set-class name given a set-class.
 sc_name :: (Integral a) => [a] -> String
-sc_name p = fst (fromJust (find (\(_, q) -> forte_prime p == q) sc_table))
+sc_name p =
+    let n = find (\(_, q) -> forte_prime p == q) sc_table
+    in fst (fromJust n)
 
 -- | Lookup a set-class given a set-class name.
 sc :: (Integral a) => String -> [a]
@@ -271,10 +273,10 @@ sc_db =
     , ("4-28", "dimished-seventh chord")
     , ("4-26", "minor-seventh chord")
     , ("4-27", "half-dimished seventh(P)/dominant-seventh(I) chord")
-    , ("6-30", "Petrushka Chord {0476a1}, two members of 3-11 at T6")
+    , ("6-30", "Petrushka Chord {0476a1}, 3-11 at T6")
     , ("6-34", "Mystic Chord {06a492}")
-    , ("6-Z44", "Schoenberg Signature Set, two members of 3-3 at T5 or T7")
-    , ("6-Z19", "complement of 6-Z44, two members of 3-11 at T1 or TB")
+    , ("6-Z44", "Schoenberg Signature Set, 3-3 at T5 or T7")
+    , ("6-Z19", "complement of 6-Z44, 3-11 at T1 or TB")
     , ("9-12", "Messiaen Mode III (nontonic collection)")
     , ("8-9", "Messian Mode IV")
     , ("7-31", "The only seven-element subset of 8-28. ")

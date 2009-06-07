@@ -44,9 +44,10 @@ tni n = tn n . invert 0
 
 -- | Rotate left by n places.
 rotate :: (Integral n) => n -> [a] -> [a]
-rotate n p = a ++ b 
-     where m = n `mod` genericLength p
-           (b, a) = genericSplitAt m p
+rotate n p =
+    let m = n `mod` genericLength p
+        (b, a) = genericSplitAt m p
+    in a ++ b
 
 -- | Rotate right by n places.
 rotate_right :: (Integral n) => n -> [a] -> [a]
@@ -68,16 +69,24 @@ all_Tn :: (Integral a) => [a] -> [[a]]
 all_Tn p = map (`tn` p) [0..11]
 
 all_TnI :: (Integral a) => [a] -> [[a]]
-all_TnI p = let ps = all_Tn p in ps ++ map (invert 0) ps
+all_TnI p =
+    let ps = all_Tn p 
+    in ps ++ map (invert 0) ps
 
 all_RTnI :: (Integral a) => [a] -> [[a]]
-all_RTnI p = let ps = all_TnI p in ps ++ map reverse ps
+all_RTnI p =
+    let ps = all_TnI p
+    in ps ++ map reverse ps
 
 all_TnMI :: (Integral a) => [a] -> [[a]]
-all_TnMI p = let ps = all_TnI p in ps ++ map m5 ps
+all_TnMI p =
+    let ps = all_TnI p
+    in ps ++ map m5 ps
 
 all_RTnMI :: (Integral a) => [a] -> [[a]]
-all_RTnMI p = let ps = all_TnMI p in ps ++ map reverse ps
+all_RTnMI p =
+    let ps = all_TnMI p
+    in ps ++ map reverse ps
 
 all_rRTnMI :: (Integral a) => [a] -> [[a]]
 all_rRTnMI = map snd . sros
@@ -88,11 +97,12 @@ data SRO a = SRO a Bool a Bool Bool
 
 -- | Serial operation.
 sro :: (Integral a) => SRO a -> [a] -> [a]
-sro (SRO r r' t m i) x = let x1 = if i then invert 0 x else x
-                             x2 = if m then m5 x1 else x1
-                             x3 = tn t x2
-                             x4 = if r' then reverse x3 else x3
-                         in rotate r x4
+sro (SRO r r' t m i) x =
+    let x1 = if i then invert 0 x else x
+        x2 = if m then m5 x1 else x1
+        x3 = tn t x2
+        x4 = if r' then reverse x3 else x3
+    in rotate r x4
 
 -- | The total set of serial operations.
 sros :: (Integral a) => [a] -> [(SRO a, [a])]
@@ -147,13 +157,15 @@ int = map mod12 . d_dx
 
 -- | Interval class.
 ic :: (Integral a) => a -> a
-ic i = if i' <= 6 then i' else 12 - i'
-    where i' = mod12 i
+ic i =
+    let i' = mod12 i
+    in if i' <= 6 then i' else 12 - i'
 
 -- | Elements of p not in q
 difference :: (Eq a) => [a] -> [a] -> [a]
-difference p q = filter f p
-     where f e = e `notElem` q
+difference p q =
+    let f e = e `notElem` q
+    in filter f p
 
 -- | Pitch classes not in set.
 complement :: (Integral a) => [a] -> [a]
@@ -169,11 +181,12 @@ tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))
 
 -- | Interval class vector.
 icv :: (Integral a) => [a] -> [a]
-icv s = map (fromMaybe 0) k
-    where i = map (ic . uncurry (-)) (dyads s)
-          j = map f (group (sort i))
-          k = map (`lookup` j) [1..6]
-          f l = (head l, genericLength l)
+icv s =
+    let i = map (ic . uncurry (-)) (dyads s)
+        j = map f (group (sort i))
+        k = map (`lookup` j) [1..6]
+        f l = (head l, genericLength l)
+    in map (fromMaybe 0) k
 
 -- | Is p a subset of q.
 is_subset :: Eq a => [a] -> [a] -> Bool
