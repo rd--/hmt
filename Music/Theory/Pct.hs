@@ -117,8 +117,8 @@ iseg = int
 -- | Imbrications.
 imb :: (Integral n) => [n] -> [a] -> [[a]]
 imb cs p =
-    let g = (== n) . genericLength
-        f ps n = filter g (map (genericTake n) ps)
+    let g n = (== n) . genericLength
+        f ps n = filter (g n) (map (genericTake n) ps)
     in concatMap (f (tails p)) cs
 
 -- | p `issb` q gives the set-classes that can append to p to give q.
