@@ -17,7 +17,10 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base, containers, parsec, permutation
+  Build-Depends:   base==3.*,
+                   containers,
+                   parsec,
+                   permutation
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
                    Music.Theory.Parse
