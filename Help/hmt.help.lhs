@@ -5,16 +5,22 @@ $ sro T4 156
 
 > tn 4 [1,5,6]
 
+> sro (rnrtnmi "T4") (pco "156")
+
 $ sro T4I 156
 3BA
 
 > tni 4 [1,5,6]
+
+> sro (rnrtnmi "T4I") (pco "156")
 
 $ echo 156 | sro T4  | sro T0I
 732
 
 > let f n = invert 0 . tn n
 > in f 4 [1,5,6]
+
+> (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156")
 
 $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 145
@@ -38,6 +44,8 @@ $ bip 0t95728e3416
 $
 
 > bip [0,10,9,5,7,2,8,11,3,4,1,6]
+
+> bip (pco "0t95728e3416")
 
 $ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
   pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
@@ -353,4 +361,4 @@ $
 $ echo 024579 | sro RT4I
 79B024
 
-> sro (rnrtnmi "RT4I") [0,2,4,5,7,9]
+> sro (rnrtnmi "RT4I") (pco "024579")
