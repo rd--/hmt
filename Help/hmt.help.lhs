@@ -55,6 +55,9 @@ $
 
 > import Data.List
 
+> let f g = sort (g [1..4])
+> in f Music.Theory.Permutations.permutations == f permutations
+
 > let f = nub . map bip . permutations . sc
 > in f "5-Z17" `intersect` f "5-Z37"
 
