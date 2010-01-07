@@ -38,7 +38,7 @@ invertSelf :: (Integral a) => [a] -> [a]
 invertSelf [] = []
 invertSelf (x:xs) = invert x (x:xs)
 
--- | Composition on inversion about zero and transpose.
+-- | Composition of inversion about zero and transpose.
 tni :: (Integral a) => a -> [a] -> [a]
 tni n = tn n . invert 0
 
