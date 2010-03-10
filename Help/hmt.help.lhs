@@ -89,6 +89,8 @@ $ sh view.sh 4
 ...
 $
 
+> import Data.Maybe
+
 > let { n = 4
 >     ; s = filter ((== n) . length) scs
 >     ; x = map permutations s
