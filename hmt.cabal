@@ -30,3 +30,7 @@ Library
                    Music.Theory.Set
                    Music.Theory.Table
                    Music.Theory.Permutations
+
+Source-Repository  head
+  Type:            darcs
+  Location:        http://slavepianos.org/rd/sw/hmt
