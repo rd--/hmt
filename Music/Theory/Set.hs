@@ -7,7 +7,7 @@ import Data.List
 set :: (Ord a) => [a] -> [a]
 set = sort . nub
 
--- | Powerset, ie. set of all all subsets.
+-- | Powerset, ie. set of all subsets.
 powerset :: [a] -> [[a]]
 powerset = filterM (const [True, False])
 
