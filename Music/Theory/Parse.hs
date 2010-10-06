@@ -21,7 +21,7 @@ rnrtnmi :: String -> SRO Int
 rnrtnmi s =
   let p = do { r <- rot
              ; r' <- is_char 'R'
-             ; char 'T'
+             ; _ <- char 'T'
              ; t <- get_int
              ; m <- is_char 'M'
              ; i <- is_char 'I'
