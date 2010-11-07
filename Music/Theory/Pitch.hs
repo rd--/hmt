@@ -78,6 +78,14 @@ all_RTnI p =
     let ps = all_TnI p
     in ps ++ map reverse ps
 
+all_rR :: (Integral a) => [a] -> [[a]]
+all_rR p = rotations p ++ rotations (reverse p)
+
+all_rRTnI :: (Integral a) => [a] -> [[a]]
+all_rRTnI p =
+    let ps = all_RTnI p
+    in ps ++ concatMap rotations ps
+
 all_TnMI :: (Integral a) => [a] -> [[a]]
 all_TnMI p =
     let ps = all_TnI p
