@@ -23,6 +23,7 @@ Library
                    permutation
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
+                   Music.Theory.Duration
                    Music.Theory.Interval
                    Music.Theory.Parse
                    Music.Theory.Pct
