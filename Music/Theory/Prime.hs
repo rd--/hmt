@@ -5,7 +5,7 @@ module Music.Theory.Prime ( cmp_prime
 
 import Data.Bits
 import Data.List
-import Music.Theory.Pitch
+import Music.Theory.PitchClass
 
 -- | Prime form rule requiring comparator.
 cmp_prime :: (Integral a) => ([a] -> [a] -> Ordering) -> [a] -> [a]

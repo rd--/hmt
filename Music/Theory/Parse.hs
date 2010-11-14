@@ -2,7 +2,7 @@ module Music.Theory.Parse (rnrtnmi, pco) where
 
 import Control.Monad
 import Data.Char
-import Music.Theory.Pitch
+import Music.Theory.PitchClass
 import Text.ParserCombinators.Parsec
 
 type P a = GenParser Char () a

@@ -25,7 +25,7 @@ Library
   Exposed-modules: Music.Theory
                    Music.Theory.Parse
                    Music.Theory.Pct
-                   Music.Theory.Pitch
+                   Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set
                    Music.Theory.Table

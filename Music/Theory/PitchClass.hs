@@ -1,4 +1,4 @@
-module Music.Theory.Pitch where
+module Music.Theory.PitchClass where
 
 import Music.Theory.Set
 import Data.Maybe
