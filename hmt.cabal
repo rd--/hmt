@@ -9,7 +9,7 @@ Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
 Homepage:          http://slavepianos.org/rd/?t=hmt
-Tested-With:       GHC == 6.10.3
+Tested-With:       GHC == 6.12.1
 Build-Type:        Simple
 Cabal-Version:     >= 1.6
 
