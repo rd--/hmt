@@ -29,6 +29,10 @@ data Pitch = Pitch { note :: Note_T
 set_alt_rule :: Alteration_Rule -> Pitch -> Pitch
 set_alt_rule x (Pitch n a _ o) = Pitch n a (Just x) o
 
+-- | Clear alteration rule at pitch.
+clear_alt_rule :: Pitch -> Pitch
+clear_alt_rule (Pitch n a _ o) = Pitch n a Nothing o
+
 note_to_pc :: Note_T -> Integer
 note_to_pc n =
     case n of
