@@ -82,3 +82,14 @@ octpc_to_pitch (o,pc) =
                   11 -> (B,Natural)
                   _ -> error ("octpc_to_pitch: " ++ show pc)
     in Pitch n a Nothing o
+
+octpc_nrm :: (Octave, PitchClass) -> (Octave, PitchClass)
+octpc_nrm (o,pc) =
+    if pc > 11
+    then octpc_nrm (o+1,pc-12)
+    else if pc < 0
+         then octpc_nrm (o-1,pc+12)
+         else (o,pc)
+
+octpc_trs :: Integer -> (Octave, PitchClass) -> (Octave, PitchClass)
+octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
