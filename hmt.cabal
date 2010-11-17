@@ -20,9 +20,11 @@ Library
   Build-Depends:   base == 4.*,
                    containers,
                    parsec,
-                   permutation
+                   permutation,
+                   split
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
+                   Music.Theory.Bjorklund
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
                    Music.Theory.Interval
