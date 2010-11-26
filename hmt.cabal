@@ -34,6 +34,7 @@ Library
                    Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set
+                   Music.Theory.Spelling
                    Music.Theory.Table
                    Music.Theory.Permutations
 
