@@ -30,13 +30,14 @@ Library
                    Music.Theory.Interval
                    Music.Theory.Parse
                    Music.Theory.Pct
+                   Music.Theory.Permutations
                    Music.Theory.Pitch
                    Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set
                    Music.Theory.Spelling
                    Music.Theory.Table
-                   Music.Theory.Permutations
+                   Music.Theory.Tuning
 
 Source-Repository  head
   Type:            darcs
