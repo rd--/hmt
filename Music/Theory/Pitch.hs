@@ -54,10 +54,26 @@ alteration_to_diff a =
       DoubleSharp -> 2
       _ -> error "alteration_to_diff: quarter tone"
 
+alteration_to_fdiff :: Alteration_T -> Double
+alteration_to_fdiff a =
+    case a of
+      ThreeQuarterToneFlat -> -1.5
+      QuarterToneFlat -> -0.5
+      QuarterToneSharp -> 0.5
+      ThreeQuarterToneSharp -> 1.5
+      _ -> fromIntegral (alteration_to_diff a)
+
 pitch_to_octpc :: Pitch -> (Octave, PitchClass)
 pitch_to_octpc (Pitch n a _ o) =
     let a' = alteration_to_diff a
     in (o, (note_to_pc n + a') `mod` 12)
+
+pitch_to_fmidi :: Pitch -> Double
+pitch_to_fmidi (Pitch n a _ o) =
+    let a' = alteration_to_fdiff a
+        o' = fromIntegral o
+        n' = fromIntegral (note_to_pc n)
+    in 12 + o' * 12 + n' + a'
 
 pitch_to_pc :: Pitch -> PitchClass
 pitch_to_pc = snd . pitch_to_octpc
