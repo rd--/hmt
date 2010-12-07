@@ -3,6 +3,7 @@ module Music.Theory.Tuning where
 import Data.List
 import Data.Ratio
 
+type Approximate_Ratio = Double
 type Cents = Double
 
 -- | Harmonic series (folded)
@@ -15,8 +16,8 @@ harmonic_series_folded n =
     in nub (sort (map fold hs))
 
 -- | Pythagorean tuning
-pythagorean :: [Rational]
-pythagorean =
+pythagorean_r :: [Rational]
+pythagorean_r =
     [1%1,243%256 {- 2048%2187 -}
     ,8%9,27%32
     ,64%81
@@ -26,21 +27,81 @@ pythagorean =
     ,128%243
     ,1%2]
 
+-- | Pythagorean tuning
+pythagorean_c :: [Cents]
+pythagorean_c = map (to_cents.approximate_ratio) pythagorean_r
+
 -- | Werckmeister III, Andreas Werckmeister (1645-1706)
-werckmeister_iii :: [Cents]
-werckmeister_iii =
-    [0,90.225
-    ,192.18,294.135
-    ,390.225
-    ,498.045,588.27
-    ,696.09,792.18
-    ,888.27,996.09
-    ,1092.18
-    ,1200]
+werckmeister_iii_ar :: [Approximate_Ratio]
+werckmeister_iii_ar =
+    let c0 = 2 ** (1/2)
+        c1 = 2 ** (1/4)
+        c2 = 8 ** (1/4)
+    in [1,256/243
+       ,64/81 * c0,32/27
+       ,256/243 * c1
+       ,4/3,1024/729
+       ,8/9 * c2,128/81
+       ,1024/729 * c1,16/9
+       ,128/81 * c1]
+
+-- | Werckmeister III, Andreas Werckmeister (1645-1706)
+werckmeister_iii_c :: [Cents]
+werckmeister_iii_c = map to_cents werckmeister_iii_ar
+
+-- | Werckmeister IV, Andreas Werckmeister (1645-1706)
+werckmeister_iv_ar :: [Approximate_Ratio]
+werckmeister_iv_ar =
+    let c0 = 2 ** (1/3)
+        c1 = 4 ** (1/3)
+    in [1,16384/19683 * c0
+       ,8/9 * c0,32/27
+       ,64/81 * c1
+       ,4/3,1024/729
+       ,32/27 * c0,8192/6561 * c0
+       ,256/243 * c1,9/(4*c0)
+       ,4096/2187]
+
+-- | Werckmeister IV, Andreas Werckmeister (1645-1706)
+werckmeister_iv_c :: [Cents]
+werckmeister_iv_c = map to_cents werckmeister_iv_ar
+
+-- | Werckmeister V, Andreas Werckmeister (1645-1706)
+werckmeister_v_ar :: [Approximate_Ratio]
+werckmeister_v_ar =
+    let c0 = 2 ** (1/4)
+        c1 = 2 ** (1/2)
+        c2 = 8 ** (1/4)
+    in [1,8/9 * c0
+       ,9/8,c0
+       ,8/9 * c1
+       ,9/8 * c0,c1
+       ,3/2,128/81
+       ,c2,3/c2
+       ,4/3 * c1]
+
+-- | Werckmeister V, Andreas Werckmeister (1645-1706)
+werckmeister_v_c :: [Cents]
+werckmeister_v_c = map to_cents werckmeister_v_ar
+
+-- | Werckmeister VI, Andreas Werckmeister (1645-1706)
+werckmeister_vi_r :: [Rational]
+werckmeister_vi_r =
+    [1,98%93
+    ,28%25,196%165
+    ,49%39
+    ,4%3,196%139
+    ,196%131,49%31
+    ,196%117,98%55
+    ,49%26]
+
+-- | Werckmeister VI, Andreas Werckmeister (1645-1706)
+werckmeister_vi_c :: [Cents]
+werckmeister_vi_c = map (to_cents.approximate_ratio) werckmeister_vi_r
 
 -- | Pietro Aaron (1523) - Meantone temperament
-pietro_aaron_1523 :: [Cents]
-pietro_aaron_1523 =
+pietro_aaron_1523_c :: [Cents]
+pietro_aaron_1523_c =
     [0,76.0
     ,193.2,310.3
     ,386.3
@@ -51,8 +112,8 @@ pietro_aaron_1523 =
     ,1200]
 
 -- | Thomas Young (1799) - Well Temperament
-thomas_young_1799 :: [Cents]
-thomas_young_1799 =
+thomas_young_1799_c :: [Cents]
+thomas_young_1799_c =
     [0,93.9
     ,195.8,297.8
     ,391.7
@@ -63,8 +124,8 @@ thomas_young_1799 =
     ,1200]
 
 -- | Five-limit tuning
-five_limit_tuning :: [Rational]
-five_limit_tuning =
+five_limit_tuning_r :: [Rational]
+five_limit_tuning_r =
     [1%1,15%16
     ,8%9,5%6
     ,4%5
@@ -74,8 +135,11 @@ five_limit_tuning =
     ,8%15
     ,1%2]
 
-equal_temperament :: [Cents]
-equal_temperament = [0, 100 .. 1200]
+five_limit_tuning_c :: [Cents]
+five_limit_tuning_c = map (to_cents.approximate_ratio) five_limit_tuning_r
+
+equal_temperament_c :: [Cents]
+equal_temperament_c = [0, 100 .. 1200]
 
 mk_isomorphic_layout :: Integral a => a -> a -> (a,a) -> [[(a,a)]]
 mk_isomorphic_layout n_row n_col top_left =
@@ -95,11 +159,11 @@ mk_syntonic_tuning b =
       t = map (rank_two_regular_temperament 1200 b) l
   in nub (sort (map (\x -> fromIntegral (x `mod` 1200)) (concat t)))
 
-syntonic_697 :: [Cents]
-syntonic_697 = mk_syntonic_tuning 697
+syntonic_697_c :: [Cents]
+syntonic_697_c = mk_syntonic_tuning 697
 
-syntonic_702 :: [Cents]
-syntonic_702 = mk_syntonic_tuning 702
+syntonic_702_c :: [Cents]
+syntonic_702_c = mk_syntonic_tuning 702
 
 syntonic_comma :: Rational
 syntonic_comma = 81 % 80
@@ -112,8 +176,11 @@ pythagorean_comma = 531441 % 524288
 mercators_comma :: Rational
 mercators_comma = 19383245667680019896796723 % 19342813113834066795298816
 
-to_cents :: [Rational] -> [Cents]
-to_cents = map ((+ (-1200)) . (* 1200) . fromRational)
+approximate_ratio :: Rational -> Approximate_Ratio
+approximate_ratio = fromRational
+
+to_cents :: Approximate_Ratio -> Cents
+to_cents x = 1200 * logBase 2 x
 
 nth_root :: (Floating a) => a -> a -> a
 nth_root n x =
