@@ -64,9 +64,13 @@ alteration_to_fdiff a =
       _ -> fromIntegral (alteration_to_diff a)
 
 pitch_to_octpc :: Pitch -> (Octave, PitchClass)
-pitch_to_octpc (Pitch n a _ o) =
+pitch_to_octpc = midi_to_octpc . pitch_to_midi
+
+pitch_to_midi :: Pitch -> Integer
+pitch_to_midi (Pitch n a _ o) =
     let a' = alteration_to_diff a
-    in (o, (note_to_pc n + a') `mod` 12)
+        n' = note_to_pc n
+    in 12 + o * 12 + n' + a'
 
 pitch_to_fmidi :: Pitch -> Double
 pitch_to_fmidi (Pitch n a _ o) =
@@ -112,3 +116,6 @@ octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
 
 octpc_to_midi :: (Octave, PitchClass) -> Integer
 octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
+
+midi_to_octpc :: Integer -> (Octave, PitchClass)
+midi_to_octpc n = (n - 12) `divMod` 12
