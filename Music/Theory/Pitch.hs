@@ -110,5 +110,5 @@ octpc_nrm (o,pc) =
 octpc_trs :: Integer -> (Octave, PitchClass) -> (Octave, PitchClass)
 octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
 
-octpc_midi :: (Octave, PitchClass) -> Integer
-octpc_midi (o,pc) = 60 + ((o - 4) * 12) + pc
+octpc_to_midi :: (Octave, PitchClass) -> Integer
+octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
