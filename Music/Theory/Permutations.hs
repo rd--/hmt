@@ -19,5 +19,5 @@ permutations :: [a] -> [[a]]
 permutations xs =
     let m = M.fromList (zip [0..] xs)
         ps = n_ps (M.size m)
-        r = map (\i -> M.findWithDefault undefined i m)
+        r = map (\i -> M.findWithDefault (error "permutations") i m)
     in map r ps
