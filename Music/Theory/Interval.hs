@@ -1,5 +1,6 @@
 module Music.Theory.Interval where
 
+import Data.List (unfoldr)
 import Music.Theory.Pitch
 
 data Interval_T = Unison | Second | Third | Fourth
@@ -140,3 +141,14 @@ transpose i ip =
         qd = quality_difference qu i_q * i_d'
         p_a' = toEnum (fromEnum p_a + (qd * 2))
     in ip' { alteration = p_a' }
+
+circle_of_fifths :: ([Pitch], [Pitch])
+circle_of_fifths =
+    let c4 = Pitch C Natural Nothing 4
+        p4 = Interval Fourth Perfect LT 0
+        p5 = Interval Fifth Perfect LT 0
+        mk y = unfoldr (\(x,i) -> if i == 12
+                                  then Nothing
+                                  else let x' = transpose y x
+                                       in Just (x',(x',i+1))) (c4,0)
+    in (mk p4,mk p5)
