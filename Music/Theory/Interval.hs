@@ -1,6 +1,5 @@
 module Music.Theory.Interval where
 
-import Data.List (unfoldr)
 import Music.Theory.Pitch
 
 data Interval_T = Unison | Second | Third | Fourth
@@ -147,8 +146,5 @@ circle_of_fifths =
     let c4 = Pitch C Natural Nothing 4
         p4 = Interval Fourth Perfect LT 0
         p5 = Interval Fifth Perfect LT 0
-        mk y = unfoldr (\(x,i) -> if i == 12
-                                  then Nothing
-                                  else let x' = transpose y x
-                                       in Just (x',(x',i+1))) (c4,0)
+        mk y = take 12 (iterate (transpose y) c4)
     in (mk p4,mk p5)
