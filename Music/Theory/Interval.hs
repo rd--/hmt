@@ -141,10 +141,9 @@ transpose i ip =
         p_a' = toEnum (fromEnum p_a + (qd * 2))
     in ip' { alteration = p_a' }
 
-circle_of_fifths :: ([Pitch], [Pitch])
-circle_of_fifths =
-    let c4 = Pitch C Natural Nothing 4
-        p4 = Interval Fourth Perfect LT 0
+circle_of_fifths :: Pitch -> ([Pitch], [Pitch])
+circle_of_fifths x =
+    let p4 = Interval Fourth Perfect LT 0
         p5 = Interval Fifth Perfect LT 0
-        mk y = take 12 (iterate (transpose y) c4)
+        mk y = take 12 (iterate (transpose y) x)
     in (mk p4,mk p5)
