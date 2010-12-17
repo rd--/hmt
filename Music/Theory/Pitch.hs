@@ -106,3 +106,6 @@ octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 midi_to_octpc :: Integer -> (Octave, PitchClass)
 midi_to_octpc n = (n - 12) `divMod` 12
+
+pitch_edit_octave :: (Integer -> Integer) -> Pitch -> Pitch
+pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
