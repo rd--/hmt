@@ -72,8 +72,8 @@ invert_ordering x =
 interval :: Pitch -> Pitch -> Interval
 interval p1 p2 =
     let c = pitch_cmp p1 p2
-        (Pitch n1 _ _ o1) = p1
-        (Pitch n2 _ _ o2) = p2
+        (Pitch n1 _ o1) = p1
+        (Pitch n2 _ o2) = p2
         p1' = pitch_to_pc p1
         p2' = pitch_to_pc p2
         st = (p2' - p1') `mod` 12
@@ -116,7 +116,7 @@ quality_difference a b =
 
 transpose :: Interval -> Pitch -> Pitch
 transpose i ip =
-    let (Pitch p_n p_a p_ar p_o) = ip
+    let (Pitch p_n p_a p_o) = ip
         (Interval i_t i_q i_d i_o) = i
         i_d' = if i_d == GT
                then -1
@@ -128,7 +128,7 @@ transpose i ip =
              else if p_n' < p_n && i_d == LT
                   then 1
                   else 0
-        ip' = Pitch p_n' p_a p_ar (p_o + i_o + oa)
+        ip' = Pitch p_n' p_a (p_o + i_o + oa)
         st = if i_d == GT
              then (pitch_to_pc ip - pitch_to_pc ip') `mod` 12
              else (pitch_to_pc ip' - pitch_to_pc ip) `mod` 12

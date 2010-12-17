@@ -32,6 +32,7 @@ Library
                    Music.Theory.Pct
                    Music.Theory.Permutations
                    Music.Theory.Pitch
+                   Music.Theory.Pitch.Name
                    Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set

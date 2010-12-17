@@ -15,23 +15,10 @@ data Alteration_T = DoubleFlat
                   | DoubleSharp
                     deriving (Eq, Ord, Enum, Show)
 
-data Alteration_Rule = ReminderAccidental
-                     | CautionaryAccidental
-                       deriving (Eq, Ord, Show)
-
 data Pitch = Pitch { note :: Note_T
                    , alteration :: Alteration_T
-                   , alteration_rule :: (Maybe Alteration_Rule)
                    , octave :: Octave }
            deriving (Eq, Show)
-
--- | Set alteration rule at pitch.
-set_alt_rule :: Alteration_Rule -> Pitch -> Pitch
-set_alt_rule x (Pitch n a _ o) = Pitch n a (Just x) o
-
--- | Clear alteration rule at pitch.
-clear_alt_rule :: Pitch -> Pitch
-clear_alt_rule (Pitch n a _ o) = Pitch n a Nothing o
 
 note_to_pc :: Note_T -> Integer
 note_to_pc n =
@@ -67,13 +54,13 @@ pitch_to_octpc :: Pitch -> (Octave, PitchClass)
 pitch_to_octpc = midi_to_octpc . pitch_to_midi
 
 pitch_to_midi :: Pitch -> Integer
-pitch_to_midi (Pitch n a _ o) =
+pitch_to_midi (Pitch n a o) =
     let a' = alteration_to_diff a
         n' = note_to_pc n
     in 12 + o * 12 + n' + a'
 
 pitch_to_fmidi :: Pitch -> Double
-pitch_to_fmidi (Pitch n a _ o) =
+pitch_to_fmidi (Pitch n a o) =
     let a' = alteration_to_fdiff a
         o' = fromIntegral o
         n' = fromIntegral (note_to_pc n)
@@ -101,7 +88,7 @@ octpc_to_pitch (o,pc) =
                   10 -> (B,Flat)
                   11 -> (B,Natural)
                   _ -> error ("octpc_to_pitch: " ++ show pc)
-    in Pitch n a Nothing o
+    in Pitch n a o
 
 octpc_nrm :: (Octave, PitchClass) -> (Octave, PitchClass)
 octpc_nrm (o,pc) =
