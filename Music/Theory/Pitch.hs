@@ -6,7 +6,7 @@ type PitchClass = Integer
 type Octave = Integer
 
 data Note_T = C | D | E | F | G | A | B
-              deriving (Eq, Ord, Enum, Show)
+              deriving (Eq, Ord, Enum, Bounded, Show)
 
 data Alteration_T = DoubleFlat
                   | ThreeQuarterToneFlat | Flat | QuarterToneFlat
@@ -112,3 +112,9 @@ midi_to_octpc n = (n - 12) `divMod` 12
 
 pitch_edit_octave :: (Integer -> Integer) -> Pitch -> Pitch
 pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
+
+note_t_transpose :: Note_T -> Int -> Note_T
+note_t_transpose x n =
+    let x' = fromEnum x
+        n' = fromEnum (maxBound::Note_T) + 1
+    in toEnum ((x' + n) `mod` n')
