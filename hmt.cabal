@@ -28,6 +28,7 @@ Library
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
                    Music.Theory.Interval
+                   Music.Theory.Key
                    Music.Theory.Parse
                    Music.Theory.Pct
                    Music.Theory.Permutations

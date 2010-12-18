@@ -1,5 +1,7 @@
 module Music.Theory.Duration where
 
+import Data.Ratio
+
 data Duration = Duration { division :: Integer
                          , dots :: Integer
                          , multiplier :: Rational }
@@ -92,3 +94,24 @@ sum_dur' y0 y1 =
 {-
 zipWith sum_dur [e,q,q'] [e,e,e]
 -}
+
+-- | Rational number of quarter notes to duration value.
+rq_to_duration :: Rational -> Maybe Duration
+rq_to_duration x =
+    case (numerator x,denominator x) of
+      (1,8) -> Just thirtysecond_note
+      (3,16) -> Just dotted_thirtysecond_note
+      (1,4) -> Just sixteenth_note
+      (3,8) -> Just dotted_sixteenth_note
+      (1,2) -> Just eighth_note
+      (3,4) -> Just dotted_eighth_note
+      (1,1) -> Just quarter_note
+      (3,2) -> Just dotted_quarter_note
+      (2,1) -> Just half_note
+      (3,1) -> Just dotted_half_note
+      (4,1) -> Just whole_note
+      (6,1) -> Just dotted_whole_note
+      (8,1) -> Just breve
+      (12,1) -> Just dotted_breve
+      _ -> Nothing
+
