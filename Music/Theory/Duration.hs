@@ -1,11 +1,16 @@
 module Music.Theory.Duration where
 
+import Data.Function
+import Data.List
 import Data.Ratio
 
 data Duration = Duration { division :: Integer
                          , dots :: Integer
                          , multiplier :: Rational }
                   deriving (Eq, Show)
+
+instance Ord Duration where
+    compare = duration_compare
 
 -- * Constants
 
@@ -27,23 +32,36 @@ dotted_eighth_note = Duration 8 1 1
 dotted_sixteenth_note = Duration 16 1 1
 dotted_thirtysecond_note = Duration 32 1 1
 
+double_dotted_breve,double_dotted_whole_note,double_dotted_half_note,double_dotted_quarter_note,double_dotted_eighth_note,double_dotted_sixteenth_note,double_dotted_thirtysecond_note :: Duration
+double_dotted_breve = Duration 0 2 1
+double_dotted_whole_note = Duration 2 2 1
+double_dotted_half_note = Duration 2 2 1
+double_dotted_quarter_note = Duration 4 2 1
+double_dotted_eighth_note = Duration 8 2 1
+double_dotted_sixteenth_note = Duration 16 2 1
+double_dotted_thirtysecond_note = Duration 32 2 1
+
 -- * Operations
 
--- | Compare durations.
-dur_cmp :: Duration -> Duration -> Ordering
-dur_cmp y0 y1 =
+duration_compare :: Duration -> Duration -> Ordering
+duration_compare = compare `on` duration_to_rq
+
+
+-- | Compare durations with equal multipliers.
+duration_compare_meq :: Duration -> Duration -> Ordering
+duration_compare_meq y0 y1 =
     if y0 == y1
     then EQ
     else let (Duration x0 n0 m0) = y0
              (Duration x1 n1 m1) = y1
          in if m0 /= m1
-            then error "dur_cmp: non-equal multipliers"
+            then error "duration_compare_meq: non-equal multipliers"
             else if x0 == x1
                  then compare n0 n1
                  else compare x1 x0
 
 {-
-zipWith dur_cmp [e,e,e,e'] [e,s,q,e]
+zipWith duration_compare_meq [e,e,e,e'] [e,s,q,e]
 -}
 
 sort_pair :: (t -> t -> Ordering) -> (t, t) -> (t, t)
@@ -79,7 +97,7 @@ sum_dur_dotted (x0, n0, x1, n1)
 --   algorithm is not exhaustive.
 sum_dur :: Duration -> Duration -> Maybe Duration
 sum_dur y0 y1 =
-    let (x0,x1) = sort_pair dur_cmp (y0,y1)
+    let (x0,x1) = sort_pair duration_compare_meq (y0,y1)
     in if no_dots (x0,x1)
        then sum_dur_undotted (division x0, division x1)
        else sum_dur_dotted (division x0, dots x0
@@ -94,6 +112,8 @@ sum_dur' y0 y1 =
 {-
 zipWith sum_dur [e,q,q'] [e,e,e]
 -}
+
+-- * RQ (Rational Quarter Note Count)
 
 -- | Rational number of quarter notes to duration value.
 --   It is a mistake to hope this could handle tuplets
@@ -118,3 +138,24 @@ rq_to_duration x =
       (12,1) -> Just dotted_breve
       _ -> Nothing
 
+-- | Convert a whole note division integer to a RQ.
+whole_note_division_to_rq :: Integer -> Rational
+whole_note_division_to_rq x =
+    let f = (* 4) . recip . (%1)
+    in case x of
+         0 -> 8
+         -1 -> 16
+         _ -> f x
+
+-- | Apply `d' dots to the duration `n'.
+rq_apply_dots :: Rational -> Integer -> Rational
+rq_apply_dots n d =
+    let m = iterate (\x -> x / 2) n
+    in sum (genericTake (d + 1) m)
+
+-- | Convert duration to RQ value, see rq_to_duration for partial
+--   inverse.
+duration_to_rq :: Duration -> Rational
+duration_to_rq (Duration n d m) =
+    let x = whole_note_division_to_rq n
+    in rq_apply_dots x d * m

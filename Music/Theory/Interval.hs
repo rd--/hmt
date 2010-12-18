@@ -71,7 +71,7 @@ invert_ordering x =
 
 interval :: Pitch -> Pitch -> Interval
 interval p1 p2 =
-    let c = pitch_cmp p1 p2
+    let c = compare p1 p2
         (Pitch n1 _ o1) = p1
         (Pitch n2 _ o2) = p2
         p1' = pitch_to_pc p1

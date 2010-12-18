@@ -20,6 +20,9 @@ data Pitch = Pitch { note :: Note_T
                    , octave :: Octave }
            deriving (Eq, Show)
 
+instance Ord Pitch where
+    compare = pitch_compare
+
 note_to_pc :: Note_T -> Integer
 note_to_pc n =
     case n of
@@ -69,8 +72,8 @@ pitch_to_fmidi (Pitch n a o) =
 pitch_to_pc :: Pitch -> PitchClass
 pitch_to_pc = snd . pitch_to_octpc
 
-pitch_cmp :: Pitch -> Pitch -> Ordering
-pitch_cmp = compare `on` pitch_to_octpc
+pitch_compare :: Pitch -> Pitch -> Ordering
+pitch_compare = compare `on` pitch_to_octpc
 
 octpc_to_pitch :: (Octave, PitchClass) -> Pitch
 octpc_to_pitch (o,pc) =
