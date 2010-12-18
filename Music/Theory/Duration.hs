@@ -96,6 +96,9 @@ zipWith sum_dur [e,q,q'] [e,e,e]
 -}
 
 -- | Rational number of quarter notes to duration value.
+--   It is a mistake to hope this could handle tuplets
+--   directly, ie. a 3:2 dotted note will be of the same
+--   duration as a plain undotted note.
 rq_to_duration :: Rational -> Maybe Duration
 rq_to_duration x =
     case (numerator x,denominator x) of
