@@ -27,6 +27,7 @@ Library
                    Music.Theory.Bjorklund
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
+                   Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Interval
                    Music.Theory.Key
                    Music.Theory.Parse

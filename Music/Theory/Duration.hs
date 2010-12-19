@@ -159,3 +159,29 @@ duration_to_rq :: Duration -> Rational
 duration_to_rq (Duration n d m) =
     let x = whole_note_division_to_rq n
     in rq_apply_dots x d * m
+
+-- | 
+whole_note_division_to_musicxml_type :: Integer -> String
+whole_note_division_to_musicxml_type x =
+    case x of
+      256 -> "256th"
+      128 -> "128th"
+      64 -> "64th"
+      32 -> "32nd"
+      16 -> "16th"
+      8 -> "eighth"
+      4 -> "quarter"
+      2 -> "half"
+      1 -> "whole"
+      0 -> "breve"
+      -1 -> "long"
+      _ -> error ("whole_note_division_to_musicxml_type: " ++ show x)
+
+duration_to_musicxml_type :: Duration -> String
+duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
+
+-- Note the duration multiplier is *not* written.
+duration_to_lilypond_type :: Duration -> String
+duration_to_lilypond_type (Duration dv d _) =
+    let dv' = if dv == 0 then "\\breve" else show dv
+    in dv' ++ replicate (fromIntegral d) '.'
