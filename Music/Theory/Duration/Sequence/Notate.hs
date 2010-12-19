@@ -1,7 +1,8 @@
 module Music.Theory.Duration.Sequence.Notate
     (Duration_A,Annotation
     ,notate
-    ,ascribe) where
+    ,ascribe
+    ,group_boundary) where
 
 import Data.List
 import Data.Ratio
@@ -10,7 +11,7 @@ import Music.Theory.Duration
 type R = Rational
 type D = (R,R,Bool,Bool) {- start_time duration tied_left tied_right -}
 data Annotation = Begin_Tie | End_Tie
-                | Begin_Tuplet (Integer,Integer) | End_Tuplet 
+                | Begin_Tuplet (Integer,Integer) | End_Tuplet
                   deriving (Eq,Show)
 type Duration_A = (Duration,[Annotation])
 
@@ -39,7 +40,7 @@ r_mod i j
 -- i = phase
 sep_at :: R -> R -> R -> [D]
 sep_at =
-    let go l n i x = 
+    let go l n i x =
             let i' = n - (i `r_mod` n)
             in if x > i'
                then let d = (i,i',l,True)
@@ -83,8 +84,8 @@ separate n xs =
     in concatMap sep_unrep_d (concat (zipWith (sep_at n) is xs))
 
 -- | group to n, or to multiple of
-group_boundary :: (a -> R) -> R -> [a] -> [[a]]
-group_boundary dur_f n =
+group_boundary_fn :: (a -> R) -> R -> [a] -> [[a]]
+group_boundary_fn dur_f n =
     let go _ js [] = [reverse js]
         go _ js [x] = [reverse (x:js)]
         go c js (x:xs) = let c' = c + dur_f x
@@ -94,10 +95,10 @@ group_boundary dur_f n =
     in go 0 []
 
 group_boundary_d :: R -> [D] -> [[D]]
-group_boundary_d = group_boundary d_duration
+group_boundary_d = group_boundary_fn d_duration
 
-group_boundary_da :: R -> [Duration_A] -> [[Duration_A]]
-group_boundary_da = group_boundary (duration_to_rq . fst)
+group_boundary :: R -> [Duration_A] -> [[Duration_A]]
+group_boundary = group_boundary_fn (duration_to_rq . fst)
 
 {-
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
@@ -178,15 +179,14 @@ notate_sec xs =
                 Just t -> tuplet t (map (to_duration . un_tuplet t) ds)
     in zipWith add_ties_from xs xs'
 
-notate :: R -> [R] -> [[Duration_A]]
+notate :: R -> [R] -> [Duration_A]
 notate n xs =
     let xs' = simplify n (separate 1 xs)
-        ys = concatMap notate_sec (group_boundary_d 1 xs')
-    in group_boundary_da n ys
+    in concatMap notate_sec (group_boundary_d 1 xs')
 
 {-
 let i = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
-in map (map (\(x,y) -> (duration_to_lilypond_type x,y))) (notate 3 i)
+in map (\(x,y) -> (duration_to_lilypond_type x,y)) (notate 3 i)
 -}
 
 ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
