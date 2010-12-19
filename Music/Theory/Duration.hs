@@ -190,3 +190,15 @@ duration_to_lilypond_type :: Duration -> String
 duration_to_lilypond_type (Duration dv d _) =
     let dv' = if dv == 0 then "\\breve" else show dv
     in dv' ++ replicate (fromIntegral d) '.'
+
+whole_note_division_to_beam_count :: Integer -> Maybe Integer
+whole_note_division_to_beam_count x =
+    let t = [(256,6),(128,5),(64,4),(32,3),(16,2),(8,1)
+            ,(4,0),(2,0),(1,0),(0,0),(-1,0)]
+    in lookup x t
+
+duration_beam_count :: Duration -> Integer
+duration_beam_count (Duration x _ _) =
+    case whole_note_division_to_beam_count x of
+      Nothing -> error "duration_beam_count"
+      Just x' -> x'
