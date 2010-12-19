@@ -1,5 +1,5 @@
 module Music.Theory.Duration.Sequence.Notate
-    (Duration_A,Annotation
+    (Duration_A,D_Annotation(..)
     ,notate
     ,ascribe
     ,group_boundary) where
@@ -10,10 +10,10 @@ import Music.Theory.Duration
 
 type R = Rational
 type D = (R,R,Bool,Bool) {- start_time duration tied_left tied_right -}
-data Annotation = Begin_Tie | End_Tie
-                | Begin_Tuplet (Integer,Integer) | End_Tuplet
-                  deriving (Eq,Show)
-type Duration_A = (Duration,[Annotation])
+data D_Annotation = Begin_Tie | End_Tie
+                         | Begin_Tuplet (Integer,Integer) | End_Tuplet
+                           deriving (Eq,Show)
+type Duration_A = (Duration,[D_Annotation])
 
 d_duration :: D -> R
 d_duration (_,x,_,_) = x
@@ -84,8 +84,8 @@ separate n xs =
     in concatMap sep_unrep_d (concat (zipWith (sep_at n) is xs))
 
 -- | group to n, or to multiple of
-group_boundary_fn :: (a -> R) -> R -> [a] -> [[a]]
-group_boundary_fn dur_f n =
+group_boundary :: (a -> R) -> R -> [a] -> [[a]]
+group_boundary dur_f n =
     let go _ js [] = [reverse js]
         go _ js [x] = [reverse (x:js)]
         go c js (x:xs) = let c' = c + dur_f x
@@ -95,10 +95,7 @@ group_boundary_fn dur_f n =
     in go 0 []
 
 group_boundary_d :: R -> [D] -> [[D]]
-group_boundary_d = group_boundary_fn d_duration
-
-group_boundary :: R -> [Duration_A] -> [[Duration_A]]
-group_boundary = group_boundary_fn (duration_to_rq . fst)
+group_boundary_d = group_boundary d_duration
 
 {-
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
