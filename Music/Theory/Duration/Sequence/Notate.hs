@@ -1,5 +1,5 @@
 module Music.Theory.Duration.Sequence.Notate
-    (Duration_A,D_Annotation(..)
+    (Duration_A
     ,notate
     ,ascribe
     ,group_boundary) where
@@ -10,9 +10,6 @@ import Music.Theory.Duration
 
 type R = Rational
 type D = (R,R,Bool,Bool) {- start_time duration tied_left tied_right -}
-data D_Annotation = Tie_Right | Tie_Left
-                  | Begin_Tuplet (Integer,Integer) | End_Tuplet
-                    deriving (Eq,Show)
 type Duration_A = (Duration,[D_Annotation])
 
 d_duration :: D -> R

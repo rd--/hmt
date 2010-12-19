@@ -12,6 +12,11 @@ data Duration = Duration { division :: Integer
 instance Ord Duration where
     compare = duration_compare
 
+-- | Duration annotations
+data D_Annotation = Tie_Right | Tie_Left
+                  | Begin_Tuplet (Integer,Integer) | End_Tuplet
+                    deriving (Eq,Show)
+
 -- * Constants
 
 breve,whole_note,half_note,quarter_note,eighth_note,sixteenth_note,thirtysecond_note :: Duration
