@@ -10,16 +10,16 @@ import Music.Theory.Duration
 
 type R = Rational
 type D = (R,R,Bool,Bool) {- start_time duration tied_left tied_right -}
-data D_Annotation = Begin_Tie | End_Tie
-                         | Begin_Tuplet (Integer,Integer) | End_Tuplet
-                           deriving (Eq,Show)
+data D_Annotation = Tie_Right | Tie_Left
+                  | Begin_Tuplet (Integer,Integer) | End_Tuplet
+                    deriving (Eq,Show)
 type Duration_A = (Duration,[D_Annotation])
 
 d_duration :: D -> R
 d_duration (_,x,_,_) = x
 
 da_tied_right :: Duration_A -> Bool
-da_tied_right = elem Begin_Tie . snd
+da_tied_right = elem Tie_Right . snd
 
 -- | dx -> d
 integrate :: (Num a) => [a] -> [a]
@@ -168,8 +168,8 @@ notate_sec :: [D] -> [Duration_A]
 notate_sec xs =
     let ds = map d_duration xs
         add_ties_from (_,_,l,r) (d,fs) =
-            let l' = if l then [End_Tie] else []
-                r' = if r then [Begin_Tie] else []
+            let l' = if l then [Tie_Left] else []
+                r' = if r then [Tie_Right] else []
             in (d,l' ++ r' ++ fs)
         xs' = case derive_tuplet xs of
                 Nothing -> map (\d -> (to_duration d,[])) ds
