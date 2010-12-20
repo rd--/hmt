@@ -6,7 +6,7 @@ import Music.Theory.Pitch.Name
 import Music.Theory.Interval
 
 data Mode_T = Minor_Mode | Major_Mode
-              deriving (Eq, Show)
+              deriving (Eq,Ord,Show)
 
 key_fifths :: (Note_T,Alteration_T,Mode_T) -> Int
 key_fifths (n,a,m) =
