@@ -169,7 +169,7 @@ separate ns xs =
 -- | group to n, or to multiple of
 group_boundary :: (a -> R) -> [R] -> [a] -> [[a]]
 group_boundary dur_f =
-    let go _ _ [] xs = error "group_boundary: no boundaries?"
+    let go _ _ [] _ = error "group_boundary: no boundaries?"
         go _ js _ [] = [reverse js]
         go _ js _ [x] = [reverse (x:js)]
         go c js (n:ns) (x:xs) =
@@ -215,12 +215,13 @@ in map derive_tuplet (group_boundary_d 1 (separate 1 i))
 un_tuplet :: (Integer,Integer) -> R -> R
 un_tuplet (i,j) x = x * (i%j)
 
--- this assumes that input is aligned
+-- note: this should not assume that input is aligned
 d_join :: D -> D -> Maybe D
 d_join (s1,x1,l1,r1) (_,x2,_,r2)
-    | x1 == 1 && r1 && x2 == 1%2 = Just (s1,x1+x2,l1,r2)
-    | x1 == 1 && r1 && x2 == 1 = Just (s1,x1+x2,l1,r2)
-    | x1 == 2 && r1 && x2 == 1 = Just (s1,x1+x2,l1,r2)
+    | x1 == 1%2 && r1 && x2 `elem` [1%2,1,3%2] = Just (s1,x1+x2,l1,r2)
+    | x1 == 1 && r1 && x2 `elem` [1%2,1,2] = Just (s1,x1+x2,l1,r2)
+    | x1 == 3%2 && r1 && x2 `elem` [1%2,3%2] = Just (s1,x1+x2,l1,r2)
+    | x1 == 2 && r1 && x2 `elem` [1,2] = Just (s1,x1+x2,l1,r2)
     | (s1 `r_mod` 1) == 2%3 && x1 == 1%3 && r1 &&
       x2 == 1%3 = Just (s1,x1+x2,l1,r2)
     | otherwise = Nothing
@@ -234,10 +235,13 @@ coalesce f xs =
       _ -> xs
 
 -- ns = boundaries
+-- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
 simplify :: [R] -> [D] -> [D]
 simplify ns xs =
     let xs' = group_boundary_d ns xs
-    in concatMap (coalesce d_join) xs'
+        pass :: [[D]] -> [[D]]
+        pass = map (coalesce d_join)
+    in concat ((pass . pass) xs')
 
 to_duration :: R -> Duration
 to_duration = maybe (error "to_duration") id . rq_to_duration
