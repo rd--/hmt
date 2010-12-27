@@ -25,6 +25,87 @@ integrate (x:xs) =
     let fn i c = (i + c, i + c)
     in x : snd (mapAccumL fn x xs)
 
+-- d = duration
+-- xs = boundaries
+step_dur :: (Ord a, Num a) => a -> [a] -> ([a], [a])
+step_dur _ [] = error "step_dur: no boundaries"
+step_dur 0 _ = error "step_dur: zero duration"
+step_dur d (x:xs) =
+    let jn a (a',b) = (a:a',b)
+    in case compare d x of
+         EQ -> ([d],xs)
+         LT -> ([d],(x-d):xs)
+         GT -> jn x (step_dur (d - x) xs)
+
+{-
+step_dur 5 [2,1,3]
+-}
+
+-- d(s) = duration(s)
+-- xs = boundaries
+boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
+boundaries =
+    let go [] _ = []
+        go _ [] = []
+        go (d:ds) xs =
+            let (d',xs') = step_dur d xs
+            in d' : go ds xs'
+    in go
+
+-- i = initial start time
+-- xs = durations
+with_start_times :: (Num a) => a -> [a] -> [(a,a)]
+with_start_times i xs =
+    let is = map (+i) (0 : integrate xs)
+    in zip is xs
+
+-- variant starting at zero and processing sets of durations
+with_start_times' :: (Num a) => [[a]] -> [[(a, a)]]
+with_start_times' xs =
+    let is = 0 : map sum xs
+    in zipWith with_start_times is xs
+
+{-
+with_start_times 0 [4,3,5]
+with_start_times' [[4,3,5],[2,1]]
+with_start_times' (boundaries [4,3,5,2,1] [3,3,3,3,3])
+-}
+
+-- split list into first element, possibly empty 'middle' elements,
+-- and end element
+start_middle_end :: [x] -> (x,[x],x)
+start_middle_end xs =
+    case xs of
+      (_:_:_) -> let n = length xs
+                     x0 = xs !! 0
+                     xn = xs !! (n - 1)
+                 in (x0,take (n - 2) (drop 1 xs),xn)
+      _ -> error "start_middle_end: list must have at least two elements"
+
+{-
+start_middle_end []
+start_middle_end [1..6]
+-}
+
+-- xs = [(start-time,duration)]
+tied_r_to_d :: [(R,R)] -> [D]
+tied_r_to_d xs =
+    case xs of
+      [] -> []
+      [(s,d)] -> [(s,d,False,False)]
+      _ -> let ((s0,d0),xs',(sn,dn)) = start_middle_end xs
+               f (s,d) = (s,d,True,True)
+            in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
+
+boundaries_d :: [R] -> [R] -> [D]
+boundaries_d ds xs =
+    let bs = boundaries ds xs
+    in concatMap tied_r_to_d (with_start_times' bs)
+
+{-
+boundaries_d [4,3,5,2,1,7,2] [3,3,3,3,3,3,3,3]
+-}
+
 -- | rational modulo
 r_mod :: R -> R -> R
 r_mod i j
@@ -33,6 +114,7 @@ r_mod i j
     | i > j = r_mod (i - j) j
     | otherwise = i
 
+{-
 -- n = boundary
 -- i = phase
 sep_at :: R -> R -> R -> [D]
@@ -49,7 +131,11 @@ sep_at =
 sep_at 1 (1%2) 1
 sep_at 1 (1%3) (6%3)
 -}
+-}
 
+-- unrep = un-representable by single cmn duration (ie. requires tie)
+-- i = phase
+-- x = duration
 sep_unrep :: R -> R -> Maybe (R,R)
 sep_unrep i x =
     let i' = denominator i == 1
@@ -75,23 +161,26 @@ zipWith sep_unrep [1,3%8,1] [5%4,5%8,4]
 zipWith (\i x -> sep_unrep_d (i,x,False,False)) [1,3%8,1] [5%4,5%8,4]
 -}
 
-separate :: R -> [R] -> [D]
-separate n xs =
-    let is = 0 : integrate xs
-    in concatMap sep_unrep_d (concat (zipWith (sep_at n) is xs))
+separate :: [R] -> [R] -> [D]
+separate ns xs =
+    let xs' = boundaries_d xs ns
+    in concatMap sep_unrep_d xs'
 
 -- | group to n, or to multiple of
-group_boundary :: (a -> R) -> R -> [a] -> [[a]]
-group_boundary dur_f n =
-    let go _ js [] = [reverse js]
-        go _ js [x] = [reverse (x:js)]
-        go c js (x:xs) = let c' = c + dur_f x
-                         in if c' >= n && c' `r_mod` n == 0
-                            then reverse (x:js) : go 0 [] xs
-                            else go c' (x:js) xs
+group_boundary :: (a -> R) -> [R] -> [a] -> [[a]]
+group_boundary dur_f =
+    let go _ _ [] xs = error "group_boundary: no boundaries?"
+        go _ js _ [] = [reverse js]
+        go _ js _ [x] = [reverse (x:js)]
+        go c js (n:ns) (x:xs) =
+            let c' = c + dur_f x
+            in case compare c' n of
+                 EQ -> reverse (x:js) : go 0 [] ns xs
+                 LT -> go c' (x:js) (n:ns) xs
+                 GT -> go (c' - n) (x:js) ns xs
     in go 0 []
 
-group_boundary_d :: R -> [D] -> [[D]]
+group_boundary_d :: [R] -> [D] -> [[D]]
 group_boundary_d = group_boundary d_duration
 
 {-
@@ -144,10 +233,10 @@ coalesce f xs =
                        Just x' -> coalesce f (x':xs')
       _ -> xs
 
--- n = boundary
-simplify :: R -> [D] -> [D]
-simplify n xs =
-    let xs' = group_boundary_d n xs
+-- ns = boundaries
+simplify :: [R] -> [D] -> [D]
+simplify ns xs =
+    let xs' = group_boundary_d ns xs
     in concatMap (coalesce d_join) xs'
 
 to_duration :: R -> Duration
@@ -173,10 +262,13 @@ notate_sec xs =
                 Just t -> tuplet t (map (to_duration . un_tuplet t) ds)
     in zipWith add_ties_from xs xs'
 
-notate :: R -> [R] -> [Duration_A]
-notate n xs =
-    let xs' = simplify n (separate 1 xs)
-    in concatMap notate_sec (group_boundary_d 1 xs')
+-- is = unit divisions (must not conflict with ns)
+-- ns = boundaries (ie. measures)
+-- xs = durations
+notate :: [R] -> [R] -> [R] -> [Duration_A]
+notate is ns xs =
+    let xs' = simplify ns (separate is xs)
+    in concatMap notate_sec (group_boundary_d is xs')
 
 {-
 let i = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
