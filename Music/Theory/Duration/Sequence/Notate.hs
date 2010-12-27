@@ -27,30 +27,34 @@ integrate (x:xs) =
 
 -- d = duration
 -- xs = boundaries
-step_dur :: (Ord a, Num a) => a -> [a] -> ([a], [a])
-step_dur _ [] = error "step_dur: no boundaries"
-step_dur 0 _ = error "step_dur: zero duration"
-step_dur d (x:xs) =
+step_dur :: (Ord a, Num a) => [a] -> a -> ([a], [a])
+step_dur [] _ = error "step_dur: no boundaries"
+step_dur _ 0 = error "step_dur: zero duration"
+step_dur (x:xs) d =
     let jn a (a',b) = (a:a',b)
     in case compare d x of
          EQ -> ([d],xs)
          LT -> ([d],(x-d):xs)
-         GT -> jn x (step_dur (d - x) xs)
+         GT -> jn x (step_dur xs (d - x))
 
 {-
 step_dur 5 [2,1,3]
 -}
 
--- d(s) = duration(s)
 -- xs = boundaries
+-- d(s) = duration(s)
 boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
 boundaries =
     let go [] _ = []
         go _ [] = []
-        go (d:ds) xs =
-            let (d',xs') = step_dur d xs
-            in d' : go ds xs'
+        go xs (d:ds) =
+            let (d',xs') = step_dur xs d
+            in d' : go xs' ds
     in go
+
+{-
+boundaries (repeat 3) [1..5]
+-}
 
 -- i = initial start time
 -- xs = durations
@@ -68,7 +72,7 @@ with_start_times' xs =
 {-
 with_start_times 0 [4,3,5]
 with_start_times' [[4,3,5],[2,1]]
-with_start_times' (boundaries [4,3,5,2,1] [3,3,3,3,3])
+with_start_times' (boundaries [3,3,3,3,3] [4,3,5,2,1])
 -}
 
 -- split list into first element, possibly empty 'middle' elements,
@@ -98,12 +102,12 @@ tied_r_to_d xs =
             in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
 
 boundaries_d :: [R] -> [R] -> [D]
-boundaries_d ds xs =
-    let bs = boundaries ds xs
+boundaries_d xs ds =
+    let bs = boundaries xs ds
     in concatMap tied_r_to_d (with_start_times' bs)
 
 {-
-boundaries_d [4,3,5,2,1,7,2] [3,3,3,3,3,3,3,3]
+boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
 -}
 
 -- | rational modulo
@@ -162,14 +166,13 @@ zipWith (\i x -> sep_unrep_d (i,x,False,False)) [1,3%8,1] [5%4,5%8,4]
 -}
 
 separate :: [R] -> [R] -> [D]
-separate ns xs =
-    let xs' = boundaries_d xs ns
-    in concatMap sep_unrep_d xs'
+separate ns = concatMap sep_unrep_d . boundaries_d ns
 
 -- | group to n, or to multiple of
 group_boundary :: (a -> R) -> [R] -> [a] -> [[a]]
 group_boundary dur_f =
-    let go _ _ [] _ = error "group_boundary: no boundaries?"
+    let go _ [] [] _ = []
+        go _ _ [] _ = error "group_boundary: no boundaries?"
         go _ js _ [] = [reverse js]
         go _ js _ [x] = [reverse (x:js)]
         go c js (n:ns) (x:xs) =
@@ -184,8 +187,10 @@ group_boundary_d :: [R] -> [D] -> [[D]]
 group_boundary_d = group_boundary d_duration
 
 {-
+group_boundary id [3,3,3] (cycle [1,2,3])
+
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
-in group_boundary_d 1 (separate 1 i)
+in group_boundary_d (repeat 1) (separate (repeat 1) i)
 -}
 
 derive_tuplet :: [D] -> Maybe (Integer,Integer)
