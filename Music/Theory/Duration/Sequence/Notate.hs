@@ -220,14 +220,25 @@ in map derive_tuplet (group_boundary_d 1 (separate 1 i))
 un_tuplet :: (Integer,Integer) -> R -> R
 un_tuplet (i,j) x = x * (i%j)
 
--- note: this should not assume that input is aligned
-d_join :: D -> D -> Maybe D
-d_join (s1,x1,l1,r1) (_,x2,_,r2)
-    | x1 == 1%2 && r1 && x2 `elem` [1%2,1,3%2] = Just (s1,x1+x2,l1,r2)
-    | x1 == 1 && r1 && x2 `elem` [1%2,1,2] = Just (s1,x1+x2,l1,r2)
-    | x1 == 3%2 && r1 && x2 `elem` [1%2,3%2] = Just (s1,x1+x2,l1,r2)
-    | x1 == 2 && r1 && x2 `elem` [1,2] = Just (s1,x1+x2,l1,r2)
-    | (s1 `r_mod` 1) == 2%3 && x1 == 1%3 && r1 &&
+d_join_aligned :: D -> D -> Maybe D
+d_join_aligned (s1,x1,l1,r1) (_,x2,_,r2)
+    | (x1 == (1%4) && r1 && x2 `elem` [1%4,1%2,3%4]) ||
+      (x1 == (1%2) && r1 && x2 `elem` [1%4,1%2,1,3%2]) ||
+      (x1 == 1 && r1 && x2 `elem` [1%2,1,2]) ||
+      (x1 == (3%2) && r1 && x2 `elem` [1%2,3%2]) ||
+      (x1 == 2 && r1 && x2 `elem` [1,2]) = Just (s1,x1+x2,l1,r2)
+    | otherwise = Nothing
+
+divisible_by :: R -> R -> Bool
+divisible_by i j = denominator (i / j) == 1
+
+-- partial/incomplete/inaccurate
+d_join :: R -> D -> D -> Maybe D
+d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
+    | s1 `divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
+    | (s1 `r_mod` 1) == 2%3 &&
+      x1 == 1%3 &&
+      r1 &&
       x2 == 1%3 = Just (s1,x1+x2,l1,r2)
     | otherwise = Nothing
 
@@ -239,13 +250,14 @@ coalesce f xs =
                        Just x' -> coalesce f (x':xs')
       _ -> xs
 
+-- a = alignment
 -- ns = boundaries
 -- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
-simplify :: [R] -> [D] -> [D]
-simplify ns xs =
+simplify :: R -> [R] -> [D] -> [D]
+simplify a ns xs =
     let xs' = group_boundary_d ns xs
         pass :: [[D]] -> [[D]]
-        pass = map (coalesce d_join)
+        pass = map (coalesce (d_join a))
     in concat ((pass . pass) xs')
 
 to_duration :: R -> Duration
@@ -274,9 +286,10 @@ notate_sec xs =
 -- is = unit divisions (must not conflict with ns)
 -- ns = boundaries (ie. measures)
 -- xs = durations
+-- note: alignments are not handled correctly
 notate :: [R] -> [R] -> [R] -> [Duration_A]
 notate is ns xs =
-    let xs' = simplify ns (separate is xs)
+    let xs' = simplify (head is) ns (separate is xs)
     in concatMap notate_sec (group_boundary_d is xs')
 
 {-
