@@ -254,6 +254,10 @@ divisible_by i j = denominator (i / j) == 1
 d_join :: R -> D -> D -> Maybe D
 d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
     | s1 `divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
+    | denominator (s1 `r_mod` 1) == 4 &&
+      x1 == 1%4 &&
+      r1 &&
+      x2 == 1%4 = Just (s1,x1+x2,l1,r2)
     | s1 `r_mod` 1 == 2%3 &&
       x1 == 1%3 &&
       r1 &&
