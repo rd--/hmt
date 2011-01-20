@@ -14,7 +14,7 @@ powerset = filterM (const [True, False])
 -- | Two element subsets (cf [2] . powerset).
 dyads :: [a] -> [(a,a)]
 dyads [] = []
-dyads (x:xs) = dyads xs ++ [ (x,y) | y <- xs ]
+dyads (x:xs) = [(x,y) | y <- xs] ++ dyads xs
 
 -- | Set expansion
 se :: (Ord a) => Int -> [a] -> [[a]]
