@@ -26,6 +26,7 @@ Library
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory
                    Music.Theory.Bjorklund
+                   Music.Theory.Contour.Polansky_1992
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Sequence.Notate
