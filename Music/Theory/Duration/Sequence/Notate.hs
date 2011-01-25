@@ -13,6 +13,7 @@ import Debug.Trace
 debug :: (Show a) => a -> x -> x
 debug = traceShow
 -}
+
 debug :: (Show a) => a -> x -> x
 debug _ x = x
 
@@ -198,8 +199,15 @@ group_boundary dur_f =
             in case compare c' n of
                  EQ -> reverse (x:js) : go 0 [] ns xs
                  LT -> go c' (x:js) (n:ns) xs
-                 GT -> go (c' - n) (x:js) ns xs
+                 GT -> let c'' = c' - n
+                       in if c'' `divisible_by` n
+                          then reverse (x:js) : go 0 [] ns xs
+                          else go c'' (x:js) ns xs
     in go 0 []
+
+{-
+group_boundary id [1,1,1] [2,1%2,1%2]
+-}
 
 group_boundary_d :: [R] -> [D] -> [[D]]
 group_boundary_d = group_boundary d_duration
@@ -257,12 +265,31 @@ d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
     | denominator (s1 `r_mod` 1) == 4 &&
       x1 == 1%4 &&
       r1 &&
-      x2 == 1%4 = Just (s1,x1+x2,l1,r2)
+      x2 == 1%4 &&
+      not (s2 `divisible_by` a) =
+      debug ("non-aligned-join",a,s1,x1) (Just (s1,x1+x2,l1,r2))
     | s1 `r_mod` 1 == 2%3 &&
       x1 == 1%3 &&
       r1 &&
-      x2 == 1%3 = Just (s1,x1+x2,l1,r2)
-    | otherwise = debug ("non-aligned",a,s1,x1) Nothing
+      x2 == 1%3 =
+      debug ("non-aligned-join",a,s1,x1) (Just (s1,x1+x2,l1,r2))
+    | otherwise = debug ("non-aligned-no-join",a,s1,x1) Nothing
+
+{-
+d_join 1 (7 % 4,1 % 4,False,True) (2 % 1,1 % 4,True,False)
+-}
+
+{-
+-- error checking variant
+d_join' :: R -> D -> D -> Maybe D
+d_join' a d1 d2 =
+    case d_join a d1 d2 of
+      Nothing -> Nothing
+      Just x -> let (_,y,_,_) = x
+                in case rq_to_duration y of
+                     Nothing -> error ("d_join' :" ++ show (a,d1,d2,x))
+                     Just _ -> Just x
+-}
 
 coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
 coalesce f xs =
@@ -282,9 +309,10 @@ simplify a ns xs =
         pass = map (coalesce (d_join a))
     in concat ((pass . pass) xs')
 
-to_duration :: R -> Duration
-to_duration n =
-    let err = error ("to_duration:" ++ show n)
+-- erroring variant of rq_to_duration
+to_duration :: Show a => a -> R -> Duration
+to_duration msg n =
+    let err = error ("to_duration:" ++ show (msg,n))
     in maybe err id (rq_to_duration n)
 
 tuplet :: (Integer,Integer) -> [Duration] -> [Duration_A]
@@ -303,8 +331,10 @@ notate_sec xs =
                 r' = if r then [Tie_Right] else []
             in (d,l' ++ r' ++ fs)
         xs' = case derive_tuplet xs of
-                Nothing -> map (\d -> (to_duration d,[])) ds
-                Just t -> tuplet t (map (to_duration . un_tuplet t) ds)
+                Nothing -> let f = to_duration ("no-tuplet",ds)
+                           in map (\d -> (f d,[])) ds
+                Just t -> let f = to_duration ("tuplet",t,ds)
+                          in tuplet t (map (f . un_tuplet t) ds)
     in zipWith add_ties_from xs xs'
 
 -- is = unit divisions (must not conflict with ns)
@@ -317,8 +347,16 @@ notate is ns xs =
     in concatMap notate_sec (group_boundary_d is xs')
 
 {-
-let i = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
-in map (\(x,y) -> (duration_to_lilypond_type x,y)) (notate 3 i)
+let xs = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
+let xs = map (%4) [1,6,2,3]
+let xs = [2 % 1, 3 % 5, 2 % 5]
+let is = repeat (1%1)
+let ns = repeat (3%1)
+
+map (\(x,y) -> (duration_to_lilypond_type x,y)) (notate is ns xs)
+separate is xs
+let xs' = simplify (head is) ns (separate is xs)
+group_boundary_d is xs'
 -}
 
 ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
