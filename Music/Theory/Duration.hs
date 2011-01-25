@@ -137,6 +137,7 @@ rq_to_duration x =
       (3,2) -> Just dotted_quarter_note
       (2,1) -> Just half_note
       (3,1) -> Just dotted_half_note
+      (7,2) -> Just double_dotted_half_note
       (4,1) -> Just whole_note
       (6,1) -> Just dotted_whole_note
       (8,1) -> Just breve
