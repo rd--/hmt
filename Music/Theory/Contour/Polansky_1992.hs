@@ -27,7 +27,7 @@ contour_matrix =
 
 data Contour_Half_Matrix = Contour_Half_Matrix {
       contour_half_matrix_n :: Int
-    , contour_half_matrix_m :: [[Ordering]] }
+    , contour_half_matrix_m :: [[Ordering]] } deriving (Eq)
 
 -- p.264
 contour_half_matrix :: Ord a => [a] -> Contour_Half_Matrix
@@ -55,7 +55,7 @@ int_to_ord = toEnum . fromIntegral
 
 data Contour_Description = Contour_Description {
       contour_description_n :: Int
-    , contour_description_m :: M.Map (Int,Int) Ordering }
+    , contour_description_m :: M.Map (Int,Int) Ordering } deriving (Eq)
 
 adjacent_indices :: Integral i => i -> [(i,i)]
 adjacent_indices n = zip [0..n-2] [1..n-1]
