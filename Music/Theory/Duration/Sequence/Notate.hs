@@ -283,7 +283,9 @@ simplify a ns xs =
     in concat ((pass . pass) xs')
 
 to_duration :: R -> Duration
-to_duration = maybe (error "to_duration") id . rq_to_duration
+to_duration n =
+    let err = error ("to_duration:" ++ show n)
+    in maybe err id (rq_to_duration n)
 
 tuplet :: (Integer,Integer) -> [Duration] -> [Duration_A]
 tuplet (d,n) xs =
