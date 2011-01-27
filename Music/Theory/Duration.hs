@@ -14,7 +14,7 @@ instance Ord Duration where
 
 -- | Duration annotations
 data D_Annotation = Tie_Right | Tie_Left
-                  | Begin_Tuplet (Integer,Integer) | End_Tuplet
+                  | Begin_Tuplet (Integer,Integer,Duration) | End_Tuplet
                     deriving (Eq,Show)
 
 -- * Constants

@@ -319,7 +319,8 @@ tuplet :: (Integer,Integer) -> [Duration] -> [Duration_A]
 tuplet (d,n) xs =
     let fn x = x { multiplier = n%d }
         xn = length xs
-        t0 = [Begin_Tuplet (d,n)]
+        (Just ty) = rq_to_duration (sum (map duration_to_rq xs) / (d%1))
+        t0 = [Begin_Tuplet (d,n,ty)]
         ts = [t0] ++ replicate (xn - 2) [] ++ [[End_Tuplet]]
     in zip (map fn xs) ts
 
