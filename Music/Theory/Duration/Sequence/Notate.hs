@@ -324,6 +324,9 @@ tuplet (d,n) xs =
         ts = [t0] ++ replicate (xn - 2) [] ++ [[End_Tuplet]]
     in zip (map fn xs) ts
 
+-- the d0:dN distinction is to catch, for instance, dotted 1/4 and
+-- tuplet 1/16.  it'd be better to not simplify to that, however
+-- simplifier does not look ahead.
 notate_sec :: [D] -> [Duration_A]
 notate_sec xs =
     let ds = map d_duration xs
@@ -335,7 +338,10 @@ notate_sec xs =
                 Nothing -> let f = to_duration ("no-tuplet",ds)
                            in map (\d -> (f d,[])) ds
                 Just t -> let f = to_duration ("tuplet",t,ds)
-                          in tuplet t (map (f . un_tuplet t) ds)
+                              (d0:dN) = ds
+                          in if denominator d0 == 2
+                             then (f d0,[]) : tuplet t (map (f . un_tuplet t) dN)
+                             else tuplet t (map (f . un_tuplet t) ds)
     in zipWith add_ties_from xs xs'
 
 -- is = unit divisions (must not conflict with ns)
