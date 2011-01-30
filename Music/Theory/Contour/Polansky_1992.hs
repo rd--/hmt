@@ -18,23 +18,37 @@ import qualified Music.Theory.Permutations as T
 compare_adjacent :: Ord a => [a] -> [Ordering]
 compare_adjacent xs = zipWith compare xs (tail xs)
 
+matrix_f :: (a -> a -> b) -> [a] -> [[b]]
+matrix_f f =
+    let g (x,xs) = map (\x' -> f x x') xs
+        h xs = map (\x -> (x,xs)) xs
+    in map g . h
+
 -- p.263
 contour_matrix :: Ord a => [a] -> [[Ordering]]
-contour_matrix =
-    let fn1 (x,xs) = map (\x' -> compare x x') xs
-        fn0 xs = map (\x -> (x,xs)) xs
-    in map fn1 . fn0
+contour_matrix = matrix_f compare
 
 data Contour_Half_Matrix = Contour_Half_Matrix {
       contour_half_matrix_n :: Int
     , contour_half_matrix_m :: [[Ordering]] } deriving (Eq)
 
+half_matrix_f :: (a -> a -> b) -> [a] -> [[b]]
+half_matrix_f f xs =
+    let drop_last = reverse . drop 1 . reverse
+        m = drop_last (matrix_f f  xs)
+    in map (\(i,ns) -> drop i ns) (zip [1..] m)
+
+{-
+half_matrix_f (flip (-)) [2,10,6,7]
+==> [[8,4,5],[-4,-3],[1]]
+half_matrix_f (flip (-)) [5,0,3,2]
+==> [[-5,-2,-3],[3,2],[-1]]
+-}
+
 -- p.264
 contour_half_matrix :: Ord a => [a] -> Contour_Half_Matrix
 contour_half_matrix xs =
-    let drop_last = reverse . drop 1 . reverse
-        m = drop_last (contour_matrix xs)
-        hm = map (\(i,ns) -> drop i ns) (zip [1..] m)
+    let hm = half_matrix_f compare xs
     in Contour_Half_Matrix (length xs) hm
 
 contour_half_matrix_str :: Contour_Half_Matrix -> String
