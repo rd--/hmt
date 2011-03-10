@@ -24,8 +24,7 @@ Library
                    permutation,
                    split
   GHC-Options:     -Wall -fwarn-tabs
-  Exposed-modules: Music.Theory
-                   Music.Theory.Bjorklund
+  Exposed-modules: Music.Theory.Bjorklund
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Duration
                    Music.Theory.Duration.Name

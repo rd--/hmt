@@ -11,7 +11,7 @@ import Data.List.Split
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Ratio
-import qualified Music.Theory as T
+import qualified Music.Theory.Set as T
 import qualified Music.Theory.Permutations as T
 
 -- p.262
