@@ -30,6 +30,7 @@ Library
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Interval
+                   Music.Theory.Interval.Name
                    Music.Theory.Key
                    Music.Theory.Parse
                    Music.Theory.Pct
