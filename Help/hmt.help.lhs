@@ -1,9 +1,15 @@
-> import Music.Theory
+This file illustrates equivalent expressions in pct and hmt terms.
+
+The file imports modules as required and so must be traversed in order.
 
 $ sro T4 156
 59A
 
+> import Music.Theory.PitchClass
+
 > tn 4 [1,5,6]
+
+> import Music.Theory.Parse
 
 > sro (rnrtnmi "T4") (pco "156")
 
@@ -25,12 +31,15 @@ $ echo 156 | sro T4  | sro T0I
 $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 145
 
+> import Music.Theory.Set
+
 > (set . map ic . int) [0,1,5,4,9]
 
 $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 1345
 
 > import Data.Maybe
+> import Music.Theory.Prime
 
 > let icv_icset x = let f x y = if x > 0 then Just y else Nothing
 >                   in catMaybes (zipWith f x [1..6])
@@ -42,6 +51,8 @@ $ function bip { pcom pcseg iseg $ | pcom iseg icseg | nrm -r }
 $ bip 0t95728e3416
 11223344556
 $
+
+> import Music.Theory.Pct
 
 > bip [0,10,9,5,7,2,8,11,3,4,1,6]
 
@@ -57,6 +68,8 @@ $
 
 > let f g = sort (g [1..4])
 > in f Music.Theory.Permutations.permutations == f permutations
+
+> import Music.Theory.Table
 
 > let f = nub . map bip . permutations . sc
 > in f "5-Z17" `intersect` f "5-Z37"
