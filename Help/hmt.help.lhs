@@ -65,9 +65,10 @@ $ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
 $
 
 > import Data.List
+> import Music.Theory.Permutations
 
 > let f g = sort (g [1..4])
-> in f Music.Theory.Permutations.permutations == f permutations
+> in f permutations_l == f permutations
 
 > import Music.Theory.Table
 
