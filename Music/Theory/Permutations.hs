@@ -19,12 +19,17 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
--- | Generate the permutation from `p' to `q'.
+-- | Generate the permutation from `p' to `q', that is the permutation
+--   that, applied to `p' will give `q'.
 permutation :: (Eq a) => [a] -> [a] -> P.Permute
 permutation p q =
     let n = length p
         f x = elem_index_unique x p
     in P.listPermute n (map f q)
+
+-- | Apply permutation `f' to `p'.
+apply_permutation :: (Eq a) => P.Permute -> [a] -> [a]
+apply_permutation f p = map (p !!) (P.elems f)
 
 -- | True if the inverse of `p' is `p'.
 non_invertible :: P.Permute -> Bool
@@ -41,10 +46,6 @@ permutations_n n =
               in maybe [p] (\np -> p : f np) r
     in f (P.permute n)
 
--- | Apply permutation `p' to `x'.
-apply_permutation :: (Eq a) => P.Permute -> [a] -> [a]
-apply_permutation p x = map (x !!) (P.elems p)
-
 -- | Generate all permutations of `i'.
 permutations_l :: (Eq a) => [a] -> [[a]]
 permutations_l i =
@@ -59,7 +60,7 @@ multiset_permutations = C.permutations . C.fromList
 compose :: P.Permute -> P.Permute -> P.Permute
 compose p q =
     let n = P.size q
-        i = [0 .. n-1]
+        i = [1 .. n]
         j = apply_permutation p i
         k = apply_permutation q j
     in permutation i k
@@ -83,23 +84,33 @@ multiplication_table n =
     in map f ps
 
 {-
-let p = permutation [1..4] [4,3,2,1]
-let q = permutation [1..4] [2,3,4,1]
-(non_invertible p,P.cycles p,apply_permutation p [1..4])
-(non_invertible q,P.cycles q,apply_permutation q [1..4])
-map P.cycles (permutations_n 4)
-partition not (map non_invertible (permutations_n 4))
-P.cycles (permutation [1..5] [3,2,1,5,4])
-P.cycles (permutation [1..5] [2,5,4,3,1])
-P.cycles (permutation [1..5] [2,4,5,1,3])
+let p = permutation [1..4] [4,3,2,1] -- [[0,3],[1,2]]
+let q = permutation [1..4] [2,3,4,1] -- [[0,1,2,3]]
+(p,non_invertible p,P.cycles p,apply_permutation p [1..4])
+(q,non_invertible q,P.cycles q,apply_permutation q [1..4])
+
+let f = from_cycles [[0,3],[1,2]]
+let g = from_cycles [[0,1,2,3]]
+apply_permutation f [1..4] -- [4,3,2,1]
+apply_permutation g [1..4] -- [2,3,4,1]
+
+let p = permutation [1..5] [3,2,1,5,4] -- [[0,2],[1],[3,4]]
+let q = permutation [1..5] [2,5,4,3,1] -- [[0,1,4],[2,3]]
+let r = permutation [1..5] [2,4,5,1,3] -- [[0,1,3],[2,4]]
+(non_invertible p,P.cycles p,apply_permutation p [1..5])
+(non_invertible q,P.cycles q,apply_permutation q [1..5])
+(non_invertible r,P.cycles r,apply_permutation r [1..5])
+
 let f = from_cycles ([[0,2],[1],[3,4]])
 let g = from_cycles ([[0,1,4],[2,3]])
 let h = from_cycles ([[0,1,3],[2,4]])
+let i = f `compose` g
 apply_permutation f [1..5] -- [3,2,1,5,4]
 apply_permutation g [1..5] -- [2,5,4,3,1]
 apply_permutation h [1..5] -- [2,4,5,1,3]
-P.cycles (compose f g)
-map one_line [f,g,h]
+apply_permutation i [1..5] -- [2,4,5,1,3]
+map one_line [f,g,h,i]
+
 map one_line (permutations_n 3)
 map (map one_line) (multiplication_table 3)
 
@@ -109,4 +120,7 @@ map (map one_line) (multiplication_table 3)
   231 213 321 312 123 132
   312 321 132 123 231 213
   321 312 231 213 132 123
+
+map P.cycles (permutations_n 4)
+partition not (map non_invertible (permutations_n 4))
 -}
