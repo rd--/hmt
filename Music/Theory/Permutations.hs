@@ -1,4 +1,5 @@
 module Music.Theory.Permutations (permutation
+                                 ,apply_permutation
                                  ,non_invertible
                                  ,from_cycles
                                  ,two_line,one_line
