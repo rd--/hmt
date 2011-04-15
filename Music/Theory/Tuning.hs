@@ -15,6 +15,12 @@ harmonic_series_folded n =
                  else fold (x * 2)
     in nub (sort (map fold hs))
 
+-- | Harmonic series (folded, cents)
+harmonic_series_folded_c :: Integer -> [Cents]
+harmonic_series_folded_c =
+    let f = to_cents . approximate_ratio
+    in map f . harmonic_series_folded
+
 -- | Pythagorean tuning
 pythagorean_r :: [Rational]
 pythagorean_r =
@@ -27,7 +33,7 @@ pythagorean_r =
     ,128%243
     ,1%2]
 
--- | Pythagorean tuning
+-- | Pythagorean tuning (cents)
 pythagorean_c :: [Cents]
 pythagorean_c = map (to_cents.approximate_ratio) pythagorean_r
 

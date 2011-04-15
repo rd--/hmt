@@ -31,16 +31,17 @@ Library
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Interval
                    Music.Theory.Interval.Name
+                   Music.Theory.Interval.Spelling
                    Music.Theory.Key
                    Music.Theory.Parse
                    Music.Theory.Pct
                    Music.Theory.Permutations
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
+                   Music.Theory.Pitch.Spelling
                    Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set
-                   Music.Theory.Spelling
                    Music.Theory.Table
                    Music.Theory.Tuning
 

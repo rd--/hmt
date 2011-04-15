@@ -75,22 +75,11 @@ pitch_to_pc = snd . pitch_to_octpc
 pitch_compare :: Pitch -> Pitch -> Ordering
 pitch_compare = compare `on` pitch_to_octpc
 
-octpc_to_pitch :: (Octave, PitchClass) -> Pitch
-octpc_to_pitch (o,pc) =
-    let (n,a) = case pc of
-                  0 -> (C,Natural)
-                  1 -> (C,Sharp)
-                  2 -> (D,Natural)
-                  3 -> (E,Flat)
-                  4 -> (E,Natural)
-                  5 -> (F,Natural)
-                  6 -> (F,Sharp)
-                  7 -> (G,Natural)
-                  8 -> (A,Flat)
-                  9 -> (A,Natural)
-                  10 -> (B,Flat)
-                  11 -> (B,Natural)
-                  _ -> error ("octpc_to_pitch: " ++ show pc)
+type Spelling = PitchClass -> (Note_T, Alteration_T)
+
+octpc_to_pitch :: Spelling -> (Octave, PitchClass) -> Pitch
+octpc_to_pitch sp (o,pc) =
+    let (n,a) = sp pc
     in Pitch n a o
 
 octpc_nrm :: (Octave, PitchClass) -> (Octave, PitchClass)
