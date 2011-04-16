@@ -1,6 +1,6 @@
 module Music.Theory.Duration.Sequence.Notate
     (Duration_A
-    ,simplify
+    ,Simplify,simplify
     ,notate
     ,ascribe
     ,group_boundary) where
@@ -300,12 +300,12 @@ coalesce f xs =
                        Just x' -> coalesce f (x':xs')
       _ -> xs
 
-type SIMPLIFY_F = (R -> [R] -> [D] -> [D])
+type Simplify = (R -> [R] -> [D] -> [D])
 
 -- a = alignment
 -- ns = boundaries
 -- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
-simplify :: SIMPLIFY_F
+simplify :: Simplify
 simplify a ns xs =
     let xs' = group_boundary_d ns xs
         pass :: [[D]] -> [[D]]
@@ -350,10 +350,10 @@ notate_sec xs =
 -- is = unit divisions (must not conflict with ns)
 -- ns = boundaries (ie. measures)
 -- xs = durations
--- note: alignments are not handled correctly
-notate :: Maybe SIMPLIFY_F -> [R] -> [R] -> [R] -> [Duration_A]
-notate mf is ns xs =
-    let xs' = case mf of
+-- IMPORTANT NOTE: alignments are not handled correctly
+notate :: Maybe Simplify -> [R] -> [R] -> [R] -> [Duration_A]
+notate smp is ns xs =
+    let xs' = case smp of
                 Nothing -> separate is xs
                 Just f -> f (head is) ns (separate is xs)
     in concatMap notate_sec (group_boundary_d is xs')
