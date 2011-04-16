@@ -1,5 +1,6 @@
 module Music.Theory.Duration.Sequence.Notate
     (Duration_A
+    ,simplify
     ,notate
     ,ascribe
     ,group_boundary) where
@@ -299,10 +300,12 @@ coalesce f xs =
                        Just x' -> coalesce f (x':xs')
       _ -> xs
 
+type SIMPLIFY_F = (R -> [R] -> [D] -> [D])
+
 -- a = alignment
 -- ns = boundaries
 -- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
-simplify :: R -> [R] -> [D] -> [D]
+simplify :: SIMPLIFY_F
 simplify a ns xs =
     let xs' = group_boundary_d ns xs
         pass :: [[D]] -> [[D]]
@@ -319,7 +322,7 @@ tuplet :: (Integer,Integer) -> [Duration] -> [Duration_A]
 tuplet (d,n) xs =
     let fn x = x { multiplier = n%d }
         xn = length xs
-        (Just ty) = rq_to_duration (sum (map duration_to_rq xs) / (d%1))
+        ty = to_duration "tuplet" (sum (map duration_to_rq xs) / (d%1))
         t0 = [Begin_Tuplet (d,n,ty)]
         ts = [t0] ++ replicate (xn - 2) [] ++ [[End_Tuplet]]
     in zip (map fn xs) ts
@@ -335,9 +338,9 @@ notate_sec xs =
                 r' = if r then [Tie_Right] else []
             in (d,l' ++ r' ++ fs)
         xs' = case derive_tuplet xs of
-                Nothing -> let f = to_duration ("no-tuplet",ds)
+                Nothing -> let f = to_duration ("notate-sec:no-tuplet",ds)
                            in map (\d -> (f d,[])) ds
-                Just t -> let f = to_duration ("tuplet",t,ds)
+                Just t -> let f = to_duration ("notate-sec:tuplet",t,ds)
                               (d0:dN) = ds
                           in if denominator d0 == 2
                              then (f d0,[]) : tuplet t (map (f . un_tuplet t) dN)
@@ -348,9 +351,11 @@ notate_sec xs =
 -- ns = boundaries (ie. measures)
 -- xs = durations
 -- note: alignments are not handled correctly
-notate :: [R] -> [R] -> [R] -> [Duration_A]
-notate is ns xs =
-    let xs' = simplify (head is) ns (separate is xs)
+notate :: Maybe SIMPLIFY_F -> [R] -> [R] -> [R] -> [Duration_A]
+notate mf is ns xs =
+    let xs' = case mf of
+                Nothing -> separate is xs
+                Just f -> f (head is) ns (separate is xs)
     in concatMap notate_sec (group_boundary_d is xs')
 
 {-
@@ -364,6 +369,10 @@ map (\(x,y) -> (duration_to_lilypond_type x,y)) (notate is ns xs)
 separate is xs
 let xs' = simplify (head is) ns (separate is xs)
 group_boundary_d is xs'
+
+let is = [1,1,1,1%2,1%2,1,1]
+let ns = [2%5,1%5,1%5,1%5+1%2,1%2,1,1%10,1%10,1%10,1%10,1%10,1%6,1%6,1%6+1%7,2%7,4%7,1]
+notate (Just simplify) is [1,5] ns == notate Nothing is [1,5] ns
 -}
 
 ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
