@@ -3,7 +3,7 @@ module Music.Theory.Duration.Sequence.Notate
     ,Simplify,simplify
     ,notate
     ,ascribe
-    ,group_boundary) where
+    ,group_boundary_lenient,group_boundary_strict) where
 
 import Data.List
 import Data.Ratio
@@ -30,10 +30,11 @@ da_tied_right = elem Tie_Right . snd
 
 -- | dx -> d
 integrate :: (Num a) => [a] -> [a]
-integrate [] = []
-integrate (x:xs) =
-    let fn i c = (i + c, i + c)
-    in x : snd (mapAccumL fn x xs)
+integrate ns =
+    case ns of
+      [] -> []
+      (x:xs) -> let fn i c = (i + c, i + c)
+                in x : snd (mapAccumL fn x xs)
 
 -- xs = boundaries
 -- d = duration
@@ -189,10 +190,10 @@ separate (repeat (1%2)) xs
 -}
 
 -- | group to n, or to multiple of
-group_boundary :: (a -> R) -> [R] -> [a] -> [[a]]
-group_boundary dur_f =
+group_boundary_lenient :: (a -> R) -> [R] -> [a] -> [[a]]
+group_boundary_lenient dur_f =
     let go _ [] [] _ = []
-        go _ _ [] _ = error "group_boundary: no boundaries?"
+        go _ _ [] _ = error "group_boundary_lenient: no boundaries?"
         go _ js _ [] = [reverse js]
         go _ js _ [x] = [reverse (x:js)]
         go c js (n:ns) (x:xs) =
@@ -207,17 +208,43 @@ group_boundary dur_f =
     in go 0 []
 
 {-
-group_boundary id [1,1,1] [2,1%2,1%2]
+group_boundary_lenient id [1,1,1] [2,1%2,1%2]
 -}
 
-group_boundary_d :: [R] -> [D] -> [[D]]
-group_boundary_d = group_boundary d_duration
+group_boundary_lenient_d :: [R] -> [D] -> [[D]]
+group_boundary_lenient_d = group_boundary_lenient d_duration
 
 {-
-group_boundary id [3,3,3] (cycle [1,2,3])
+group_boundary_lenient id [3,3,3] (cycle [1,2,3])
 
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
-in group_boundary_d (repeat 1) (separate (repeat 1) i)
+in group_boundary_lenient_d (repeat 1) (separate (repeat 1) i)
+-}
+
+with_sum :: (Num i) => (a -> i) -> [a] -> [(i,a)]
+with_sum f =
+    let go _ [] = []
+        go i (x:xs) = (i,x) : go (i + f x) xs
+    in go 0
+
+to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
+to_boundary f b = span (\(i,j) -> i + f j <= b)
+
+-- this needs to keep the zero duration chord element in the same measure!
+group_boundary_strict' :: (Ord i,Num i) => (a->i) -> [i] -> [a] -> [[(i,a)]]
+group_boundary_strict' f bs is =
+    let is' = with_sum f is
+        bs' = integrate bs
+        go [] _ = []
+        go (j:js) zs = let (x,y) = to_boundary f j zs
+                       in x : go js y
+    in go bs' is'
+
+group_boundary_strict :: (Ord a, Num a) => (b -> a) -> [a] -> [b] -> [[b]]
+group_boundary_strict f bs = map (map snd) . group_boundary_strict' f bs
+
+{-
+group_boundary_strict' id [3,2,3] [1,0,1,1,0,2,0,1,1,1]
 -}
 
 derive_tuplet :: [D] -> Maybe (Integer,Integer)
@@ -238,7 +265,7 @@ derive_tuplet xs =
 
 {-
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
-in map derive_tuplet (group_boundary_d 1 (separate 1 i))
+in map derive_tuplet (group_boundary_lenient_d 1 (separate 1 i))
 -}
 
 -- remove tuplet multiplier from value (ie. to give notated duration)
@@ -307,7 +334,7 @@ type Simplify = (R -> [R] -> [D] -> [D])
 -- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
 simplify :: Simplify
 simplify a ns xs =
-    let xs' = group_boundary_d ns xs
+    let xs' = group_boundary_lenient_d ns xs
         pass :: [[D]] -> [[D]]
         pass = map (coalesce (d_join a))
     in concat ((pass . pass) xs')
@@ -356,7 +383,7 @@ notate smp is ns xs =
     let xs' = case smp of
                 Nothing -> separate is xs
                 Just f -> f (head is) ns (separate is xs)
-    in concatMap notate_sec (group_boundary_d is xs')
+    in concatMap notate_sec (group_boundary_lenient_d is xs')
 
 {-
 let xs = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
@@ -368,7 +395,7 @@ let ns = repeat (3%1)
 map (\(x,y) -> (duration_to_lilypond_type x,y)) (notate is ns xs)
 separate is xs
 let xs' = simplify (head is) ns (separate is xs)
-group_boundary_d is xs'
+group_boundary_lenient_d is xs'
 
 let is = [1,1,1,1%2,1%2,1,1]
 let ns = [2%5,1%5,1%5,1%5+1%2,1%2,1,1%10,1%10,1%10,1%10,1%10,1%6,1%6,1%6+1%7,2%7,4%7,1]
