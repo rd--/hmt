@@ -122,7 +122,7 @@ data SRO a = SRO a Bool a Bool Bool
 --
 -- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
 --
--- >> echo 024579 | sro RT4I
+-- >>> echo 024579 | sro RT4I
 -- 79B024
 --
 -- > sro (rnrtnmi "RT4I") (pco "024579") == [7,9,11,0,2,4]
