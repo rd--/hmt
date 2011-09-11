@@ -17,6 +17,8 @@ pcset :: (Integral a) => [a] -> [a]
 pcset = set . map pc
 
 -- | Transpose by n.
+--
+-- > tn 4 [1,5,6] == [5,9,10]
 tn :: (Integral a) => a -> [a] -> [a]
 tn n = map (pc . (+ n))
 
@@ -38,7 +40,10 @@ invertSelf :: (Integral a) => [a] -> [a]
 invertSelf [] = []
 invertSelf (x:xs) = invert x (x:xs)
 
--- | Composition of inversion about zero and transpose.
+-- | Composition of 'invert' about 0 and 'tn'.
+--
+-- > tni 4 [1,5,6] == [3,11,10]
+-- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
 tni :: (Integral a) => a -> [a] -> [a]
 tni n = tn n . invert 0
 
@@ -58,6 +63,8 @@ rotations :: [a] -> [[a]]
 rotations p = map (`rotate` p) [0 .. length p - 1]
 
 -- | Modulo 12 multiplication
+--
+-- > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
 mn :: (Integral a) => a -> [a] -> [a]
 mn n = map (pc . (* n))
 
@@ -70,7 +77,7 @@ all_Tn p = map (`tn` p) [0..11]
 
 all_TnI :: (Integral a) => [a] -> [[a]]
 all_TnI p =
-    let ps = all_Tn p 
+    let ps = all_Tn p
     in ps ++ map (invert 0) ps
 
 all_RTnI :: (Integral a) => [a] -> [[a]]
@@ -104,6 +111,24 @@ data SRO a = SRO a Bool a Bool Bool
              deriving (Eq, Show)
 
 -- | Serial operation.
+--
+-- >>> echo 024579 | sro RT4I
+-- 79B024
+--
+-- > sro (SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
+--
+-- >>> sro T4I 156
+-- 3BA
+--
+-- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
+--
+-- >> echo 024579 | sro RT4I
+-- 79B024
+--
+-- > sro (rnrtnmi "RT4I") (pco "024579") == [7,9,11,0,2,4]
+--
+-- > sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
+-- > sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
 sro :: (Integral a) => SRO a -> [a] -> [a]
 sro (SRO r r' t m i) x =
     let x1 = if i then invert 0 x else x
@@ -114,36 +139,36 @@ sro (SRO r r' t m i) x =
 
 -- | The total set of serial operations.
 sros :: (Integral a) => [a] -> [(SRO a, [a])]
-sros x = [ let o = (SRO r r' t m i) in (o, sro o x) | 
-           r <- [0 .. genericLength x - 1], 
-           r' <- [False, True], 
-           t <- [0 .. 11], 
-           m <- [False, True], 
+sros x = [ let o = (SRO r r' t m i) in (o, sro o x) |
+           r <- [0 .. genericLength x - 1],
+           r' <- [False, True],
+           t <- [0 .. 11],
+           m <- [False, True],
            i <- [False, True] ]
 
 sro_Tn :: (Integral a) => [SRO a]
-sro_Tn = [ SRO 0 False n False False | 
+sro_Tn = [ SRO 0 False n False False |
            n <- [0..11] ]
 
 sro_TnI :: (Integral a) => [SRO a]
-sro_TnI = [ SRO 0 False n False i | 
-            n <- [0..11], 
+sro_TnI = [ SRO 0 False n False i |
+            n <- [0..11],
             i <- [False, True] ]
 
 sro_RTnI :: (Integral a) => [SRO a]
-sro_RTnI = [ SRO 0 r n False i | 
+sro_RTnI = [ SRO 0 r n False i |
              r <- [True, False],
-             n <- [0..11], 
-             i <- [False, True] ] 
+             n <- [0..11],
+             i <- [False, True] ]
 
 sro_TnMI :: (Integral a) => [SRO a]
-sro_TnMI = [ SRO 0 False n m i | 
-             n <- [0..11], 
-             m <- [True, False], 
+sro_TnMI = [ SRO 0 False n m i |
+             n <- [0..11],
+             m <- [True, False],
              i <- [True, False] ]
 
 sro_RTnMI :: (Integral a) => [SRO a]
-sro_RTnMI = [ SRO 0 r n m i | 
+sro_RTnMI = [ SRO 0 r n m i |
               r <- [True, False],
               n <- [0..11],
               m <- [True, False],

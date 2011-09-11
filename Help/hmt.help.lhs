@@ -1,39 +1,43 @@
 This file illustrates equivalent expressions in pct and hmt terms.
 
-The file imports modules as required and so must be traversed in order.
+> import Control.Arrow
+> import Data.List
+> import Data.Maybe
+> import Music.Theory.Parse
+> import Music.Theory.Pct
+> import Music.Theory.Permutations
+> import Music.Theory.PitchClass
+> import Music.Theory.Prime
+> import Music.Theory.Table
+> import Music.Theory.Set
 
-$ sro T4 156
-59A
+The file also imports modules as required and so may be traversed in order.
+
+    $ sro T4 156
+    59A
 
 > import Music.Theory.PitchClass
-
-> tn 4 [1,5,6]
-
 > import Music.Theory.Parse
+> tn 4 [1,5,6] == [5,9,10]
+> sro (rnrtnmi "T4") (pco "156") == [5,9,10]
 
-> sro (rnrtnmi "T4") (pco "156")
+    $ sro T4I 156
+    3BA
 
-$ sro T4I 156
-3BA
+> tni 4 [1,5,6] == [3,11,10]
+> sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
 
-> tni 4 [1,5,6]
+    $ echo 156 | sro T4  | sro T0I
+    732
 
-> sro (rnrtnmi "T4I") (pco "156")
-
-$ echo 156 | sro T4  | sro T0I
-732
-
-> let f n = invert 0 . tn n
-> in f 4 [1,5,6]
-
-> (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156")
+> (invert 0 . tn  4) [1,5,6] == [7,3,2]
+> (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
 
 $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
 145
 
 > import Music.Theory.Set
-
-> (set . map ic . int) [0,1,5,4,9]
+> (set . map ic . int) [0,1,5,4,9] == [1,4,5]
 
 $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 1345
@@ -43,20 +47,7 @@ $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
 
 > let icv_icset x = let f x y = if x > 0 then Just y else Nothing
 >                   in catMaybes (zipWith f x [1..6])
-> in (icv_icset . icv . forte_prime) [0,1,5,4,9]
-
-Allen Forte "The Basic Interval Patterns" JMT 17/2 (1973):234-272
-
-$ function bip { pcom pcseg iseg $ | pcom iseg icseg | nrm -r }
-$ bip 0t95728e3416
-11223344556
-$
-
-> import Music.Theory.Pct
-
-> bip [0,10,9,5,7,2,8,11,3,4,1,6]
-
-> bip (pco "0t95728e3416")
+> in (icv_icset . icv . forte_prime) [0,1,5,4,9] == [1,3,4,5]
 
 $ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
   pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
@@ -103,8 +94,6 @@ $ sh view.sh 4
 ...
 $
 
-> import Data.Maybe
-
 > let { n = 4
 >     ; s = filter ((== n) . length) scs
 >     ; x = map permutations s
@@ -137,16 +126,6 @@ $
 >     ; c = filter (`has_sc` (sc "5-35")) b
 >     ; d = filter (not . (`has_sc` (sc "2-6"))) c }
 > in filter (not . is_superset [0,2,4,5,7,9,11]) d
-
-$ echo 024579 | sro RT4I
-79B024
-
-> sro (SRO 0 True 4 False True) [0,2,4,5,7,9]
-
-$ sro T4I 156
-3BA
-
-> sro (SRO 0 False 4 False True) [1,5,6]
 
 $ echo 156 | sro T0I | sro T4
 3BA
@@ -185,10 +164,8 @@ r3RT1M
 note: pct uses right rotation rotation.
 
 > rsg [0,1,2,3] [11,6,1,4]
-
-> sro (SRO 1 True 1 True False) [0,1,2,3]
-
-> sro (SRO 1 False 4 True True) [0,1,2,3]
+> sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
+> sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
 
 T0 = T0M1; Tn = TnM1
 I = MB; TnI = TnMB,
@@ -208,17 +185,7 @@ $
 
 > se 5 [1,2,3]
 
-$ ici -c 123
-123
-129
-1A3
-1A9
-$
-
-> ici_c [1,2,3]
-
 > ici [1,2,3]
-
 > cgg [[0],[1,11],[2,10],[3,9],[4,8],[5,7],[6]]
 
 $ se -c5 1245 | pg | ici | pcom iseg sc | \
@@ -234,27 +201,6 @@ $
 >     ; f = cf [6] e }
 > in length f
 
-$ cg -r3 0159
-015
-019
-059
-159
-$
-
-> cg_r 3 [0,1,5,9]
-
-$ cmpl 02468t
-13579B
-$
-
-> cmpl [0,2,4,6,8,10]
-
-$ cyc 056
-0560
-$
-
-> cyc [0,5,6]
-
 $ dim 016
 T1d
 T1m
@@ -263,93 +209,12 @@ $
 
 > dim [0,1,6]
 
-$ dis 24
-1256
-$
-
-> dis [2,4]
-
-$ echo 024579e | doi 6 | sort -u
-024579A
-024679B
-$ echo 01234 | doi 2 7-35 | sort -u
-13568AB
-$
-
-> let p = [0,2,4,5,7,9,11] in doi 6 p p
-
-> doi 2 (sc "7-35") [0,1,2,3,4]
-
-$ spsc 4-11 4-12
-5-26[02458]
-$ spsc 3-11 3-8
-4-27[0258]
-4-Z29[0137]
-$ spsc `fl 3`
-6-Z17[012478]
-$
-
-> spsc [sc "4-11", sc "4-12"]
-
-> spsc [sc "3-11", sc "3-8"]
-
-> spsc (cf [3] scs)
-
-$ echo 23a | ess 0164325
-2B013A9
-923507A
-$
-
-> ess [2,3,10] [0,1,6,4,3,2,5]
-
-$ echo 22341 | icf
-22341
-$
-
-> icf [[2,2,3,4,1]]
-
-$ icseg 013265e497t8
-12141655232
-$
-
-> icseg [0,1,3,2,6,5,11,4,9,7,10,8]
-
 $ imb -c34 024579 | pfmt
 024 245 457 579
 0245 2457 4579
 $
 
 > imb [3,4] [0,2,4,5,7,9]
-
-$ issb 3-7 6-32
-3-7
-3-2
-3-11
-$
-
-> issb (sc "3-7") (sc "6-32")
-
-$ mxs 024579 642 | sort -u
-6421B9
-B97642
-$
-
-> set (mxs [0,2,4,5,7,9] [6,4,2])
-
-$ nrm 0123456543210
-0123456
-$
-
-> nrm [0,1,2,3,4,5,6,5,4,3,2,1,0]
-
-$ pi 0236 12
-0236
-6320
-532B
-B235
-$
-
-> pci [0,2,3,6] [1,2]
 
 $ rs 0123 e614
 T1M
@@ -373,11 +238,6 @@ $
 
 > map sc_name (sb [sc "6-32", sc "6-8"])
 
-> let f p = let xs = cf [3] (sb [p]) 
+> let f p = let xs = cf [3] (sb [p])
 >           in (sc_name p, length xs)
 > in map f (cf [6] scs)
-
-$ echo 024579 | sro RT4I
-79B024
-
-> sro (rnrtnmi "RT4I") (pco "024579")
