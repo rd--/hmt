@@ -2,6 +2,7 @@ module Music.Theory.Pct where
 
 import Data.Function
 import Data.List
+import Data.Maybe
 import Music.Theory.Prime
 import Music.Theory.PitchClass
 import Music.Theory.Set
@@ -65,6 +66,16 @@ cyc :: [a] -> [a]
 cyc [] = []
 cyc (x:xs) = (x:xs) ++ [x]
 
+-- | Diatonic set name. 'd' for diatonic set, 'm' for melodic minor
+-- set, 'o' for octotonic set.
+d_nm :: (Integral a) => [a] -> Maybe Char
+d_nm x =
+    case x of
+      [0,2,4,5,7,9,11] -> Just 'd'
+      [0,2,3,5,7,9,11] -> Just 'm'
+      [0,1,3,4,6,7,9,10] -> Just 'o'
+      _ -> Nothing
+
 -- | Diatonic implications.
 dim :: (Integral a) => [a] -> [(a, [a])]
 dim p =
@@ -74,6 +85,19 @@ dim p =
         m = [0,2,3,5,7,9,11]
         o = [0,1,3,4,6,7,9,10]
     in f d ++ f m ++ f o
+
+-- | Variant of 'dim' that is closer to the 'pct' form.
+--
+-- >>> dim 016
+-- T1d
+-- T1m
+-- T0o
+--
+-- > dim_nm [0,1,6] == [(1,'d'),(1,'m'),(0,'o')]
+dim_nm :: (Integral a) => [a] -> [(a,Char)]
+dim_nm =
+    let pk f (i,j) = (i,f j)
+    in nubBy ((==) `on` snd) . map (pk (fromJust.d_nm)) . dim
 
 -- | Diatonic interval set to interval set.
 --

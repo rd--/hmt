@@ -150,13 +150,6 @@ Note that pct uses right rotation rotation.
 >     ;f = cf [6] e}
 > in length f == 42
 
-    $ dim 016
-    T1d
-    T1m
-    T0o
-
-> nubBy ((==) `on` (sc_name . snd)) (dim [0,1,6])
-
     $ imb -c34 024579 | pfmt
     024 245 457 579
     0245 2457 4579
