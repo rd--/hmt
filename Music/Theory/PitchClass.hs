@@ -49,6 +49,10 @@ invertSelf (x:xs) = invert x (x:xs)
 -- 3BA
 --
 -- > tni 4 [1,5,6] == [3,11,10]
+--
+-- >>> echo 156 | sro T4  | sro T0I
+-- 732
+--
 -- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
 tni :: (Integral a) => a -> [a] -> [a]
 tni n = tn n . invert 0
@@ -133,6 +137,11 @@ data SRO a = SRO a Bool a Bool Bool
 --
 -- > sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
 -- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
+--
+-- >>> echo 156 | sro T4  | sro T0I
+-- 732
+--
+-- > (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
 --
 -- >>> echo 024579 | sro RT4I
 -- 79B024

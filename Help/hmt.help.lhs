@@ -14,18 +14,6 @@
 
 This file illustrates equivalent expressions in pct and hmt terms.
 
-    $ sro T4I 156
-    3BA
-
-> tni 4 [1,5,6] == [3,11,10]
-> sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
-
-    $ echo 156 | sro T4  | sro T0I
-    732
-
-> (invert 0 . tn  4) [1,5,6] == [7,3,2]
-> (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
-
     $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
     145
 
@@ -47,7 +35,7 @@ This file illustrates equivalent expressions in pct and hmt terms.
 > in f permutations_l == f permutations
 
 > let f = nub . map bip . permutations . sc
-> in f "5-Z17" `intersect` f "5-Z37"
+> in length (f "5-Z17" `intersect` f "5-Z37") == 16
 
     $ cat ../db.sh
     for sc in $(fl -c $1)
@@ -121,37 +109,21 @@ This file illustrates equivalent expressions in pct and hmt terms.
 >     ;t4 = SRO 0 False 4 False False}
 > in (sro i . sro t4) [1,5,6] == [7,3,2]
 
-    $ rsg 156 3BA
-    T4I
-
-> rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
-
-    $ rsg 0123 05t3
-    T0M
-
-> rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
-
-    $ rsg 0123 4e61
-    RT1M
-
-> rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
-
-    $ echo e614 | rsg 0123
-    r3RT1M
-
-> rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
-
 Note that pct uses right rotation rotation.
 
 > sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
 > sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
 
-    T0 = T0M1; Tn = TnM1
     I = MB; TnI = TnMB,
-    M = M5; TnM = TnM5,
-    MI = IM = M7 = MBM5; TnMI = TnM7
 
 > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
+
+    MI = IM = M7 = MBM5; TnMI = TnM7
+
+> sro (rnrtnmi "T0MI") [0,1,4,9] == mn 7 [0,1,4,9]
+
+    T0 = T0M1; Tn = TnM1
+    M = M5; TnM = TnM5,
 
     $ se -c5 123
     12333
@@ -190,12 +162,6 @@ Note that pct uses right rotation rotation.
     0245 2457 4579
 
 > imb [3,4] [0,2,4,5,7,9]
-
-    $ rs 0123 641e
-    T1M
-
-> rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
->                            ,(rnrtnmi "T4MI",[4,11,6,1])]
 
     $ rs 0123 e614
     T1M

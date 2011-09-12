@@ -241,6 +241,12 @@ pci p i =
     in filter (\q -> f q == f p) (all_RTnI p)
 
 -- | Relate sets.
+--
+-- >>> rs 0123 641e
+-- T1M
+--
+-- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
+-- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
 rs :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
 rs x y =
     let xs = map (\o -> (o, o `sro` x)) sro_TnMI
@@ -248,6 +254,27 @@ rs x y =
     in filter (\(_,p) -> set p == q) xs
 
 -- | Relate segments.
+--
+-- >>> rsg 156 3BA
+-- T4I
+--
+-- > rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
+--
+-- >>> rsg 0123 05t3
+-- T0M
+--
+-- > rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
+--
+-- >>> rsg 0123 4e61
+-- RT1M
+--
+-- > rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
+--
+-- >>> echo e614 | rsg 0123
+-- r3RT1M
+--
+-- > rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
+--
 rsg :: (Integral a) => [a] -> [a] -> [SRO a]
 rsg x y = map fst (filter (\(_,x') -> x' == y) (sros x))
 
