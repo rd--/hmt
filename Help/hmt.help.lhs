@@ -1,6 +1,7 @@
-This file illustrates equivalent expressions in pct and hmt terms.
+# Pct
 
 > import Control.Arrow
+> import Data.Function
 > import Data.List
 > import Data.Maybe
 > import Music.Theory.Parse
@@ -11,15 +12,7 @@ This file illustrates equivalent expressions in pct and hmt terms.
 > import Music.Theory.Table
 > import Music.Theory.Set
 
-The file also imports modules as required and so may be traversed in order.
-
-    $ sro T4 156
-    59A
-
-> import Music.Theory.PitchClass
-> import Music.Theory.Parse
-> tn 4 [1,5,6] == [5,9,10]
-> sro (rnrtnmi "T4") (pco "156") == [5,9,10]
+This file illustrates equivalent expressions in pct and hmt terms.
 
     $ sro T4I 156
     3BA
@@ -33,211 +26,193 @@ The file also imports modules as required and so may be traversed in order.
 > (invert 0 . tn  4) [1,5,6] == [7,3,2]
 > (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
 
-$ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
-145
+    $ pcom pcseg iseg 01549 | pcom iseg icseg | pcom icseg icset
+    145
 
-> import Music.Theory.Set
 > (set . map ic . int) [0,1,5,4,9] == [1,4,5]
 
-$ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
-1345
-
-> import Data.Maybe
-> import Music.Theory.Prime
+    $ pcom pcseg pcset 01549 | pcom pcset sc | pcom sc icv | pcom icv icset
+    1345
 
 > let icv_icset x = let f x y = if x > 0 then Just y else Nothing
 >                   in catMaybes (zipWith f x [1..6])
 > in (icv_icset . icv . forte_prime) [0,1,5,4,9] == [1,3,4,5]
 
-$ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
-  pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
-  comm 5-Z17.bip 5-Z37.bip -1 -2 | wc -l
-16
-$
-
-> import Data.List
-> import Music.Theory.Permutations
+    $ pg 5-Z17 | bip | sort -u > 5-Z17.bip ; \
+      pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
+      comm 5-Z17.bip 5-Z37.bip -1 -2 | wc -l
+    16
 
 > let f g = sort (g [1..4])
 > in f permutations_l == f permutations
 
-> import Music.Theory.Table
-
 > let f = nub . map bip . permutations . sc
 > in f "5-Z17" `intersect` f "5-Z37"
 
-$ cat ../db.sh
-for sc in $(fl -c $1)
-do
-  pg $sc | bip | sort -u > $sc
-done
-$ sh ../db.sh 4
-$ ls
-4-1   4-12  4-16  4-19  4-21  4-24  4-27  4-4   4-7   4-Z15
-4-10  4-13  4-17  4-2   4-22  4-25  4-28  4-5   4-8   4-Z29
-4-11  4-14  4-18  4-20  4-23  4-26  4-3   4-6   4-9
-$
+    $ cat ../db.sh
+    for sc in $(fl -c $1)
+    do
+      pg $sc | bip | sort -u > $sc
+    done
+    $ sh ../db.sh 4
+    $ ls
+    4-1   4-12  4-16  4-19  4-21  4-24  4-27  4-4   4-7   4-Z15
+    4-10  4-13  4-17  4-2   4-22  4-25  4-28  4-5   4-8   4-Z29
+    4-11  4-14  4-18  4-20  4-23  4-26  4-3   4-6   4-9
 
-> let { s = filter ((== 4) . length) scs
->     ; x = map permutations s }
+> let {s = filter ((== 4) . length) scs
+>     ;x = map permutations s}
 > in zip (map sc_name s) (map (set . (map bip)) x)
 
-$ cat view.sh
-for i in $(fl -c $1 | pg | bip | sort -u)
-do
-  echo $i":" $(grep -l $i * | sort -t '-' +1  -n | tr "\n" " ")
-done
-$ sh view.sh 4
-111: 4-1
-112: 4-1 4-2 4-3
-113: 4-1 4-3 4-4 4-7
-...
-$
+    $ cat view.sh
+    for i in $(fl -c $1 | pg | bip | sort -u)
+    do
+      echo $i":" $(grep -l $i * | sort -t '-' +1  -n | tr "\n" " ")
+    done
+    $ sh view.sh 4
+    111: 4-1
+    112: 4-1 4-2 4-3
+    113: 4-1 4-3 4-4 4-7
+    ...
 
-> let { n = 4
->     ; s = filter ((== n) . length) scs
->     ; x = map permutations s
->     ; z = zip (map sc_name s) (map (set . (map bip)) x)
->     ; f b (s, bs) = if b `elem` bs then Just s else Nothing
->     ; g b = catMaybes (map (f b) z)
->     ; a = set (map bip (concat x)) }
+> let {n = 4
+>     ;s = filter ((== n) . length) scs
+>     ;x = map permutations s
+>     ;z = zip (map sc_name s) (map (set . (map bip)) x)
+>     ;f b (s,bs) = if b `elem` bs then Just s else Nothing
+>     ;g b = catMaybes (map (f b) z)
+>     ;a = set (map bip (concat x))}
 > in zip a (map g a)
 
-$ cyc <  ~/src/pct/lib/scs | epmq \
-> "in cset 89" "is icset 12" "hasnt icseg 11" | scdb
-7-34    ascending melodic minor collection
-7-35    diatonic collection (d)
-8-28    octotonic collection (Messiaen Mode II)
-$
+    $ cyc <  ~/src/pct/lib/scs | epmq \
+    > "in cset 89" "is icset 12" "hasnt icseg 11" | scdb
+    7-34    ascending melodic minor collection
+    7-35    diatonic collection (d)
+    8-28    octotonic collection (Messiaen Mode II)
 
-> let { cyc xs = xs ++ [head xs]
->     ; a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
->     ; b = filter (\p -> set (int p) == [1,2]) a
->     ; c = filter (\p -> not ([1,1] `isInfixOf` int p)) b }
-> in map sc_name c
+> let {cyc xs = xs ++ [head xs]
+>     ;a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
+>     ;b = filter (\p -> set (int p) == [1,2]) a
+>     ;c = filter (\p -> not ([1,1] `isInfixOf` int p)) b}
+> in map sc_name c == ["7-34","7-35","8-28"]
 
-$ epmq < ~/src/pct/lib/univ "in cset 6" "in pcset 579t024" \
-> "has sc 5-35" "hasnt sc 2-6" "notin pcset 024579e"
-02579A
-$
+    $ epmq < ~/src/pct/lib/univ "in cset 6" "in pcset 579t024" \
+    > "has sc 5-35" "hasnt sc 2-6" "notin pcset 024579e"
+    02579A
 
-> let { a = cf [6] (powerset [0..11])
->     ; b = filter (is_superset [0,2,4,5,7,9,10]) a
->     ; c = filter (`has_sc` (sc "5-35")) b
->     ; d = filter (not . (`has_sc` (sc "2-6"))) c }
-> in filter (not . is_superset [0,2,4,5,7,9,11]) d
+> let {a = cf [6] (powerset [0..11])
+>     ;b = filter (is_superset [0,2,4,5,7,9,10]) a
+>     ;c = filter (`has_sc` (sc "5-35")) b
+>     ;d = filter (not . (`has_sc` (sc "2-6"))) c
+>     ;e = filter (not . is_superset [0,2,4,5,7,9,11]) d}
+> in e == [[0,2,5,7,9,10]]
 
-$ echo 156 | sro T0I | sro T4
-3BA
+    $ echo 156 | sro T0I | sro T4
+    3BA
 
-> import Control.Arrow
+> let {i = SRO 0 False 0 False True
+>     ;t4 = SRO 0 False 4 False False}
+> in (sro i >>> sro t4) [1,5,6] == [3,11,10]
 
-> let { i = SRO 0 False 0 False True
->     ; t4 = SRO 0 False 4 False False }
-> in (sro i >>> sro t4) [1,5,6]
+    $ echo 156 | sro T4  | sro T0I
+    732
 
-$ echo 156 | sro T4  | sro T0I
-732
+> let {i = SRO 0 False 0 False True
+>     ;t4 = SRO 0 False 4 False False}
+> in (sro i . sro t4) [1,5,6] == [7,3,2]
 
-> let { i = SRO 0 False 0 False True
->     ; t4 = SRO 0 False 4 False False }
-> in (sro i . sro t4) [1,5,6]
+    $ rsg 156 3BA
+    T4I
 
-$ rsg 156 3BA
-T4I
+> rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
 
-> rsg [1,5,6] [3,11,10]
+    $ rsg 0123 05t3
+    T0M
 
-$ rsg 0123 05t3
-T0M
+> rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
 
-> rsg [0,1,2,3] [0,5,10,3]
+    $ rsg 0123 4e61
+    RT1M
 
-$ rsg 0123 4e61
-RT1M
+> rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
 
-> rsg [0,1,2,3] [4,11,6,1]
+    $ echo e614 | rsg 0123
+    r3RT1M
 
-$ echo e614 | rsg 0123
-r3RT1M
+> rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
 
-note: pct uses right rotation rotation.
+Note that pct uses right rotation rotation.
 
-> rsg [0,1,2,3] [11,6,1,4]
 > sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
 > sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
 
-T0 = T0M1; Tn = TnM1
-I = MB; TnI = TnMB,
-M = M5; TnM = TnM5,
-MI = IM = M7 = MBM5; TnMI = TnM7
+    T0 = T0M1; Tn = TnM1
+    I = MB; TnI = TnMB,
+    M = M5; TnM = TnM5,
+    MI = IM = M7 = MBM5; TnMI = TnM7
 
 > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
 
-$ se -c5 123
-12333
-12233
-12223
-11233
-11223
-11123
-$
+    $ se -c5 123
+    12333
+    12233
+    12223
+    11233
+    11223
+    11123
 
 > se 5 [1,2,3]
 
 > ici [1,2,3]
 > cgg [[0],[1,11],[2,10],[3,9],[4,8],[5,7],[6]]
 
-$ se -c5 1245 | pg | ici | pcom iseg sc | \
-  sort -u | epmq "in cset 6" | wc -l
-42
-$
+    $ se -c5 1245 | pg | ici | pcom iseg sc | \
+      sort -u | epmq "in cset 6" | wc -l
+    42
 
-> let { a = se 5 [1,2,4,5]
->     ; b = concatMap permutations a
->     ; c = concatMap ici b
->     ; d = map (forte_prime . dx_d 0) c
->     ; e = nub d
->     ; f = cf [6] e }
-> in length f
+> let {a = se 5 [1,2,4,5]
+>     ;b = concatMap permutations a
+>     ;c = concatMap ici b
+>     ;d = map (forte_prime . dx_d 0) c
+>     ;e = nub d
+>     ;f = cf [6] e}
+> in length f == 42
 
-$ dim 016
-T1d
-T1m
-T0o
-$
+    $ dim 016
+    T1d
+    T1m
+    T0o
 
-> dim [0,1,6]
+> nubBy ((==) `on` (sc_name . snd)) (dim [0,1,6])
 
-$ imb -c34 024579 | pfmt
-024 245 457 579
-0245 2457 4579
-$
+    $ imb -c34 024579 | pfmt
+    024 245 457 579
+    0245 2457 4579
 
 > imb [3,4] [0,2,4,5,7,9]
 
-$ rs 0123 e614
-T1M
-$ rs 0123 641e
-T1M
-$ rs 0123 641e416
-T1M
-$
+    $ rs 0123 641e
+    T1M
 
-> rs [0,1,2,3] [6,4,1,11]
+> rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
+>                            ,(rnrtnmi "T4MI",[4,11,6,1])]
 
-$ sb 6-32 6-8 | fn | pfmt
-1-1
-2-1 2-2 2-3 2-4 2-5
-3-2 3-4 3-6 3-7 3-9 3-11
-4-10 4-11 4-14 4-22 4-23
-5-23
-$ for i in `cat ~/src/pct/lib/scs | cf 6 | fn` ; \
-  do echo $i >> LIST ; sb $i | cf 3 | wc -l >> LIST ; done
-$
+    $ rs 0123 e614
+    T1M
+    $ rs 0123 641e416
+    T1M
 
-> map sc_name (sb [sc "6-32", sc "6-8"])
+    $ sb 6-32 6-8 | fn | pfmt
+    1-1
+    2-1 2-2 2-3 2-4 2-5
+    3-2 3-4 3-6 3-7 3-9 3-11
+    4-10 4-11 4-14 4-22 4-23
+    5-23
+    $ for i in `cat ~/src/pct/lib/scs | cf 6 | fn` ; \
+      do echo $i >> LIST ; sb $i | cf 3 | wc -l >> LIST ; done
+
+> map sc_name (sb [sc "6-32",sc "6-8"])
 
 > let f p = let xs = cf [3] (sb [p])
->           in (sc_name p, length xs)
+>           in (sc_name p,length xs)
 > in map f (cf [6] scs)

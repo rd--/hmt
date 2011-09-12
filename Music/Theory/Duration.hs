@@ -166,7 +166,7 @@ duration_to_rq (Duration n d m) =
     let x = whole_note_division_to_rq n
     in rq_apply_dots x d * m
 
--- | 
+-- |
 whole_note_division_to_musicxml_type :: Integer -> String
 whole_note_division_to_musicxml_type x =
     case x of

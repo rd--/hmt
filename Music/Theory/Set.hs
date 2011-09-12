@@ -13,11 +13,13 @@ powerset = filterM (const [True, False])
 
 -- | Two element subsets (cf [2] . powerset).
 dyads :: [a] -> [(a,a)]
-dyads [] = []
-dyads (x:xs) = [(x,y) | y <- xs] ++ dyads xs
+dyads s =
+    case s of
+      [] -> []
+      x:xs -> [(x,y) | y <- xs] ++ dyads xs
 
 -- | Set expansion
 se :: (Ord a) => Int -> [a] -> [[a]]
-se n xs = if length xs == n 
-          then [xs] 
+se n xs = if length xs == n
+          then [xs]
           else nub (concatMap (se n) [sort (y : xs) | y <- xs])

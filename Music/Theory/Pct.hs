@@ -248,8 +248,8 @@ rs x y =
     in filter (\(_,p) -> set p == q) xs
 
 -- | Relate segments.
-rsg :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
-rsg x y = filter (\(_,x') -> x' == y) (sros x)
+rsg :: (Integral a) => [a] -> [a] -> [SRO a]
+rsg x y = map fst (filter (\(_,x') -> x' == y) (sros x))
 
 -- | Subsets.
 sb :: (Integral a) => [[a]] -> [[a]]

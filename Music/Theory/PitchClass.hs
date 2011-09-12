@@ -18,6 +18,9 @@ pcset = set . map pc
 
 -- | Transpose by n.
 --
+-- >>> sro T4 156
+-- 59A
+--
 -- > tn 4 [1,5,6] == [5,9,10]
 tn :: (Integral a) => a -> [a] -> [a]
 tn n = map (pc . (+ n))
@@ -41,6 +44,9 @@ invertSelf [] = []
 invertSelf (x:xs) = invert x (x:xs)
 
 -- | Composition of 'invert' about 0 and 'tn'.
+--
+-- >>> sro T4I 156
+-- 3BA
 --
 -- > tni 4 [1,5,6] == [3,11,10]
 -- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
@@ -112,6 +118,11 @@ data SRO a = SRO a Bool a Bool Bool
 
 -- | Serial operation.
 --
+-- >>> sro T4 156
+-- 59A
+--
+-- > sro (rnrtnmi "T4") (pco "156") == [5,9,10]
+--
 -- >>> echo 024579 | sro RT4I
 -- 79B024
 --
@@ -120,6 +131,7 @@ data SRO a = SRO a Bool a Bool Bool
 -- >>> sro T4I 156
 -- 3BA
 --
+-- > sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
 -- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
 --
 -- >>> echo 024579 | sro RT4I

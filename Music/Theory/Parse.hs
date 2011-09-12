@@ -28,9 +28,9 @@ rnrtnmi s =
              ; eof
              ; return (SRO r r' t m i) }
       rot = option 0 (char 'r' >> get_int)
-  in either 
-         (\e -> error ("rnRTnMI parse failed\n" ++ show e)) 
-         id 
+  in either
+         (\e -> error ("rnRTnMI parse failed\n" ++ show e))
+         id
          (parse p "" s)
 
 pco :: String -> [Int]
