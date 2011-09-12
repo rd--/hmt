@@ -19,7 +19,11 @@ debug :: (Show a) => a -> x -> x
 debug _ x = x
 
 type R = Rational
-type D = (R,R,Bool,Bool) {- start_time duration tied_left tied_right -}
+
+-- (start time,duration,tied_left,tied_right)
+type D = (R,R,Bool,Bool)
+
+-- | Annotated 'Duration'
 type Duration_A = (Duration,[D_Annotation])
 
 d_duration :: D -> R
@@ -36,25 +40,26 @@ integrate ns =
       (x:xs) -> let fn i c = (i + c, i + c)
                 in x : snd (mapAccumL fn x xs)
 
--- xs = boundaries
--- d = duration
+-- | l = boundaries, d = duration
+--
+-- > step_dur [2,1,3] 5 == ([2,1,2],[1])
+-- > step_dur [3%2,3%2,3%2] 2 == ([3%2,1%2],[1%1,3%2])
 step_dur :: (Ord a, Num a) => [a] -> a -> ([a], [a])
-step_dur [] _ = error "step_dur: no boundaries"
-step_dur _ 0 = error "step_dur: zero duration"
-step_dur (x:xs) d =
-    let jn a (a',b) = (a:a',b)
-    in case compare d x of
-         EQ -> ([d],xs)
-         LT -> ([d],(x-d):xs)
-         GT -> jn x (step_dur xs (d - x))
+step_dur l d =
+    case d of
+      0 -> error "step_dur: zero duration"
+      _ -> case l of
+             [] -> error "step_dur: no boundaries"
+             x:xs -> let jn a (a',b) = (a:a',b)
+                     in case compare d x of
+                          EQ -> ([d],xs)
+                          LT -> ([d],(x-d):xs)
+                          GT -> jn x (step_dur xs (d - x))
 
-{-
-step_dur [2,1,3] 5
-step_dur [3%2,3%2,3%2] 2
--}
-
--- xs = boundaries
--- d(s) = duration(s)
+-- | xs = boundaries, d(s) = duration(s)
+--
+-- > boundaries (repeat 3) [1..5] == [[1],[2],[3],[3,1],[2,3]]
+-- > boundaries (repeat (3%2)) [1%2,1..5]
 boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
 boundaries =
     let go [] _ = []
@@ -63,11 +68,6 @@ boundaries =
             let (d',xs') = step_dur xs d
             in d' : go xs' ds
     in go
-
-{-
-boundaries (repeat 3) [1..5]
-boundaries (repeat (3%2)) [1%2,1..5]
--}
 
 -- i = initial start time
 -- xs = durations
@@ -83,7 +83,7 @@ with_start_times' xs =
     in zipWith with_start_times is xs
 
 {-
-with_start_times 0 [4,3,5,2,1]
+with_start_times 0 [4,3,5,2,1] == [(0,4),(4,3),(7,5),(12,2),(14,1)]
 with_start_times' [[4,3,5],[2,1],[6,3]]
 with_start_times' (boundaries [3,3,3,3,3] [4,3,5,2,1])
 let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
@@ -91,8 +91,11 @@ with_start_times 0 xs
 with_start_times' (boundaries (repeat (3%2)) xs)
 -}
 
--- split list into first element, possibly empty 'middle' elements,
--- and end element
+-- | Split /xs/ into first, possibly empty 'middle', and last parts.
+-- /xs/ must have at least two elements.
+--
+-- > start_middle_end []
+-- > start_middle_end [1..6] == (1,[2,3,4,5],6)
 start_middle_end :: [x] -> (x,[x],x)
 start_middle_end xs =
     case xs of
@@ -101,11 +104,6 @@ start_middle_end xs =
                      xn = xs !! (n - 1)
                  in (x0,take (n - 2) (drop 1 xs),xn)
       _ -> error "start_middle_end: list must have at least two elements"
-
-{-
-start_middle_end []
-start_middle_end [1..6]
--}
 
 -- xs = [(start-time,duration)]
 tied_r_to_d :: [(R,R)] -> [D]
@@ -163,7 +161,7 @@ sep_unrep i x =
               5 -> Just (1,4)
               7 -> Just (3,4)
               _ -> Nothing
-        f (n,m) = (n % denominator x,m % denominator x)
+        f (n,m) = (n%denominator x,m%denominator x)
         swap (a,b) = (b,a)
     in case j of
          Nothing -> Nothing
@@ -177,7 +175,7 @@ sep_unrep_d d =
          Just (x0,x1) -> [(i,x0,l,True),(i+x0,x1,True,r)]
 
 {-
-zipWith sep_unrep [1,3%8,1] [5%4,5%8,4]
+zipWith sep_unrep [1,3%8,1] [5%4,5%8,4] == [Just (1%1,1%4),Just (1%8,1%2),Nothing]
 zipWith (\i x -> sep_unrep_d (i,x,False,False)) [1,3%8,1] [5%4,5%8,4]
 -}
 
@@ -190,6 +188,8 @@ separate (repeat (1%2)) xs
 -}
 
 -- | group to n, or to multiple of
+--
+-- > group_boundary_lenient id [1,1,1] [2,1%2,1%2] == [[2%1],[1%2,1%2]]
 group_boundary_lenient :: (a -> R) -> [R] -> [a] -> [[a]]
 group_boundary_lenient dur_f =
     let go _ [] [] _ = []
@@ -206,10 +206,6 @@ group_boundary_lenient dur_f =
                           then reverse (x:js) : go 0 [] ns xs
                           else go c'' (x:js) ns xs
     in go 0 []
-
-{-
-group_boundary_lenient id [1,1,1] [2,1%2,1%2]
--}
 
 group_boundary_lenient_d :: [R] -> [D] -> [[D]]
 group_boundary_lenient_d = group_boundary_lenient d_duration
@@ -286,7 +282,9 @@ d_join_aligned (s1,x1,l1,r1) (_,x2,_,r2)
 divisible_by :: R -> R -> Bool
 divisible_by i j = denominator (i / j) == 1
 
--- partial/incomplete/inaccurate
+-- | partial/incomplete/inaccurate
+--
+-- > d_join 1 (7%4,1%4,False,True) (2%1,1%4,True,False) == Nothing
 d_join :: R -> D -> D -> Maybe D
 d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
     | s1 `divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
@@ -302,10 +300,6 @@ d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
       x2 == 1%3 =
       debug ("non-aligned-join",a,s1,x1) (Just (s1,x1+x2,l1,r2))
     | otherwise = debug ("non-aligned-no-join",a,s1,x1) Nothing
-
-{-
-d_join 1 (7 % 4,1 % 4,False,True) (2 % 1,1 % 4,True,False)
--}
 
 {-
 -- error checking variant
@@ -327,11 +321,12 @@ coalesce f xs =
                        Just x' -> coalesce f (x':xs')
       _ -> xs
 
+-- | Type of function used by 'notate' to simplify duration sequence.
+--   Arguments specify /alignment/ and /boundaries/.
 type Simplify = (R -> [R] -> [D] -> [D])
 
--- a = alignment
--- ns = boundaries
--- two pass, ie. [2,1%2,1%2] becomes [2,1] becomes [3]
+-- | Simple minded two pass 'Simplify' function.  The two pass
+-- structure is so that @[2,1%2,1%2]@ becomes @[2,1]@ becomes @[3]@.
 simplify :: Simplify
 simplify a ns xs =
     let xs' = group_boundary_lenient_d ns xs
@@ -374,9 +369,10 @@ notate_sec xs =
                              else tuplet t (map (f . un_tuplet t) ds)
     in zipWith add_ties_from xs xs'
 
--- is = unit divisions (must not conflict with ns)
--- ns = boundaries (ie. measures)
--- xs = durations
+-- | Notate sequence of rational quarter note durations given a
+-- 'Simplify' function, a list of /unit divisions/ which must not
+-- conflict with a list of /boundaries/ (ie. measures).
+--
 -- IMPORTANT NOTE: alignments are not handled correctly
 notate :: Maybe Simplify -> [R] -> [R] -> [R] -> [Duration_A]
 notate smp is ns xs =
@@ -388,7 +384,7 @@ notate smp is ns xs =
 {-
 let xs = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
 let xs = map (%4) [1,6,2,3]
-let xs = [2 % 1, 3 % 5, 2 % 5]
+let xs = [2%1, 3%5, 2%5]
 let is = repeat (1%1)
 let ns = repeat (3%1)
 

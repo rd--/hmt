@@ -1,4 +1,4 @@
-module Music.Theory.Parse (rnrtnmi, pco) where
+module Music.Theory.Parse (rnrtnmi,pco) where
 
 import Control.Monad
 import Data.Char
@@ -17,6 +17,8 @@ get_int :: P Int
 get_int = liftM read (many1 digit)
 
 -- | Parse a Morris format serial operator descriptor.
+--
+-- > rnrtnmi "r2RT3MI" == SRO 2 True 3 True True
 rnrtnmi :: String -> SRO Int
 rnrtnmi s =
   let p = do { r <- rot
@@ -33,6 +35,12 @@ rnrtnmi s =
          id
          (parse p "" s)
 
+-- | Parse a /pitch class object/ string.  Each 'Char' is either a
+-- number, a space which is ignored, or a letter name for the numbers
+-- 10 ('t' or 'a' or 'A') or 11 ('e' or 'B' or 'b').
+--
+-- > pco "13te" == [1,3,10,11]
+-- > pco "13te" == pco "13ab"
 pco :: String -> [Int]
 pco s =
     let s' = dropWhile isSpace s

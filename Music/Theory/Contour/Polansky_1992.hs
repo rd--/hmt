@@ -1,10 +1,8 @@
+-- | Polansky, Larry and Bassein, Richard
+-- \"Possible and Impossible Melody: Some Formal Aspects of Contour\"
+-- /JMT/ 36/2, 1992 (pp.259-284)
+-- (<http://www.jstor.org/pss/843933>)
 module Music.Theory.Contour.Polansky_1992 where
-
-{-
-Polansky, Larry and Bassein, Richard
-"Possible and Impossible Melody: Some Formal Aspects of Contour"
-JMT 36/2, 1992 (pp.259-284)
--}
 
 import Data.List
 import Data.List.Split
@@ -32,18 +30,15 @@ data Contour_Half_Matrix = Contour_Half_Matrix {
       contour_half_matrix_n :: Int
     , contour_half_matrix_m :: [[Ordering]] } deriving (Eq)
 
+-- | Half matrix of contour given comparison function /f/.
+--
+-- > half_matrix_f (flip (-)) [2,10,6,7] == [[8,4,5],[-4,-3],[1]]
+-- > half_matrix_f (flip (-)) [5,0,3,2] == [[-5,-2,-3],[3,2],[-1]]
 half_matrix_f :: (a -> a -> b) -> [a] -> [[b]]
 half_matrix_f f xs =
     let drop_last = reverse . drop 1 . reverse
         m = drop_last (matrix_f f  xs)
     in map (\(i,ns) -> drop i ns) (zip [1..] m)
-
-{-
-half_matrix_f (flip (-)) [2,10,6,7]
-==> [[8,4,5],[-4,-3],[1]]
-half_matrix_f (flip (-)) [5,0,3,2]
-==> [[-5,-2,-3],[3,2],[-1]]
--}
 
 -- p.264
 contour_half_matrix :: Ord a => [a] -> Contour_Half_Matrix

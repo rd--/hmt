@@ -23,14 +23,21 @@ forte_cmp p  q  =
     in if r == EQ then compare p q else r
 
 -- | Forte prime form.
+--
+-- > forte_prime [0,1,3,6,8,9] == [0,1,3,6,8,9]
+-- > forte_prime [0,1,3,6,8,9] /= rahn_prime [0,1,3,6,8,9]
 forte_prime :: (Integral a) => [a] -> [a]
 forte_prime = cmp_prime forte_cmp
 
 -- | Rahn prime form (comparison is rightmost inwards).
+--
+-- > rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
 rahn_prime :: (Integral a) => [a] -> [a]
 rahn_prime = cmp_prime (\p q -> compare (reverse p) (reverse q))
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
+--
+-- > encode_prime [0,1,3,6,8,9] == rahn_prime [0,1,3,6,8,9]
 encode_prime :: (Integral a, Bits a) => [a] -> [a]
 encode_prime s =
     let t = map (`tn` s) [0..11]

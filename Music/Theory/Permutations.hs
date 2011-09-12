@@ -105,10 +105,10 @@ let f = from_cycles ([[0,2],[1],[3,4]])
 let g = from_cycles ([[0,1,4],[2,3]])
 let h = from_cycles ([[0,1,3],[2,4]])
 let i = f `compose` g
-apply_permutation f [1..5] -- [3,2,1,5,4]
-apply_permutation g [1..5] -- [2,5,4,3,1]
-apply_permutation h [1..5] -- [2,4,5,1,3]
-apply_permutation i [1..5] -- [2,4,5,1,3]
+apply_permutation f [1..5] == [3,2,1,5,4]
+apply_permutation g [1..5] == [2,5,4,3,1]
+apply_permutation h [1..5] == [2,4,5,1,3]
+apply_permutation i [1..5] == [2,4,5,1,3]
 map one_line [f,g,h,i]
 
 map one_line (permutations_n 3)
