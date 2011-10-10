@@ -1,7 +1,7 @@
 module Music.Theory.Duration.Sequence.Notate
     (Duration_A
     ,Simplify,simplify
-    ,notate
+    ,notate,notate'
     ,ascribe
     ,group_boundary_lenient,group_boundary_strict) where
 
@@ -18,29 +18,30 @@ debug = traceShow
 debug :: (Show a) => a -> x -> x
 debug _ x = x
 
+-- | Synonym for 'Rational'.
 type R = Rational
 
--- (start time,duration,tied_left,tied_right)
+-- | Tuple of /start-time/, /duration/, /tied-left/ and /tied-right/.
 type D = (R,R,Bool,Bool)
 
 -- | Annotated 'Duration'
 type Duration_A = (Duration,[D_Annotation])
 
+-- | Duration of 'D'.
 d_duration :: D -> R
 d_duration (_,x,_,_) = x
 
+-- | Is 'Duration_A' tied to the the right?
 da_tied_right :: Duration_A -> Bool
 da_tied_right = elem Tie_Right . snd
 
 -- | dx -> d
+--
+-- > integrate [1,2,3,4] == [1,3,6,10]
 integrate :: (Num a) => [a] -> [a]
-integrate ns =
-    case ns of
-      [] -> []
-      (x:xs) -> let fn i c = (i + c, i + c)
-                in x : snd (mapAccumL fn x xs)
+integrate = scanl1 (+)
 
--- | l = boundaries, d = duration
+-- | Given /boundaries/ and /duration/ calculate step.
 --
 -- > step_dur [2,1,3] 5 == ([2,1,2],[1])
 -- > step_dur [3%2,3%2,3%2] 2 == ([3%2,1%2],[1%1,3%2])
@@ -69,22 +70,25 @@ boundaries =
             in d' : go xs' ds
     in go
 
--- i = initial start time
--- xs = durations
+-- | Given an initial start time and a list of durations make
+-- /start-time/ and /duration/ pairs.
+--
+-- > with_start_times 0 [4,3,5,2,1] == [(0,4),(4,3),(7,5),(12,2),(14,1)]
 with_start_times :: (Num a) => a -> [a] -> [(a,a)]
 with_start_times i xs =
     let is = map (+i) (0 : integrate xs)
     in zip is xs
 
--- variant starting at zero and processing sets of durations
+-- | Variant starting at zero and processing sets of durations.
+--
+-- > with_start_times' [[4,3],[2,1]] == [[(0,4),(4,3)],[(7,2),(9,1)]]
+-- > last (with_start_times' [[4,3,5],[2,1],[6,3]]) == [(15,6),(21,3)]
 with_start_times' :: (Num a) => [[a]] -> [[(a, a)]]
 with_start_times' xs =
     let is = 0 : integrate (map sum xs)
     in zipWith with_start_times is xs
 
 {-
-with_start_times 0 [4,3,5,2,1] == [(0,4),(4,3),(7,5),(12,2),(14,1)]
-with_start_times' [[4,3,5],[2,1],[6,3]]
 with_start_times' (boundaries [3,3,3,3,3] [4,3,5,2,1])
 let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
 with_start_times 0 xs
@@ -124,7 +128,9 @@ boundaries_d xs ds =
 boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
 -}
 
--- | rational modulo
+-- | Rational modulo
+--
+-- > map (r_mod (5/2)) [3/2,3/4] == [1,1/4]
 r_mod :: R -> R -> R
 r_mod i j
     | i == j = 0
@@ -145,15 +151,14 @@ sep_at =
                else [(i,x,l,False)]
     in go False
 
-{-
 sep_at 1 (1%2) 1
 sep_at 1 (1%3) (6%3)
 -}
--}
 
--- unrep = un-representable by single cmn duration (ie. requires tie)
--- i = phase
--- x = duration
+-- | Given /phase/ separate a /RQ/ duration if un-representable by a
+-- single /CMN/ duration (ie. requires tie).
+--
+-- > sep_unrep 0 5 == Just (4,1)
 sep_unrep :: R -> R -> Maybe (R,R)
 sep_unrep i x =
     let i' = denominator i == 1
@@ -190,6 +195,7 @@ separate (repeat (1%2)) xs
 -- | group to n, or to multiple of
 --
 -- > group_boundary_lenient id [1,1,1] [2,1%2,1%2] == [[2%1],[1%2,1%2]]
+-- > group_boundary_lenient id [3,3,3] (cycle [1,2,3]) == [[1,2],[3],[1,2]]
 group_boundary_lenient :: (a -> R) -> [R] -> [a] -> [[a]]
 group_boundary_lenient dur_f =
     let go _ [] [] _ = []
@@ -211,8 +217,6 @@ group_boundary_lenient_d :: [R] -> [D] -> [[D]]
 group_boundary_lenient_d = group_boundary_lenient d_duration
 
 {-
-group_boundary_lenient id [3,3,3] (cycle [1,2,3])
-
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
 in group_boundary_lenient_d (repeat 1) (separate (repeat 1) i)
 -}
@@ -226,7 +230,7 @@ with_sum f =
 to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
 to_boundary f b = span (\(i,j) -> i + f j <= b)
 
--- this needs to keep the zero duration chord element in the same measure!
+-- | Keeps the /zero/ duration chord element in the same measure.
 group_boundary_strict' :: (Ord i,Num i) => (a->i) -> [i] -> [a] -> [[(i,a)]]
 group_boundary_strict' f bs is =
     let is' = with_sum f is
@@ -236,12 +240,12 @@ group_boundary_strict' f bs is =
                        in x : go js y
     in go bs' is'
 
+-- | Variant on 'group_boundary_lenient'.
+--
+-- > let g = group_boundary_strict id
+-- > in g [3,2,3] [1,0,1,1,0,2,0,1,1,1] == [[1,0,1,1,0],[2,0],[1,1,1]]
 group_boundary_strict :: (Ord a, Num a) => (b -> a) -> [a] -> [b] -> [[b]]
 group_boundary_strict f bs = map (map snd) . group_boundary_strict' f bs
-
-{-
-group_boundary_strict' id [3,2,3] [1,0,1,1,0,2,0,1,1,1]
--}
 
 derive_tuplet :: [D] -> Maybe (Integer,Integer)
 derive_tuplet xs =
@@ -264,9 +268,9 @@ let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
 in map derive_tuplet (group_boundary_lenient_d 1 (separate 1 i))
 -}
 
--- remove tuplet multiplier from value (ie. to give notated duration)
--- this seems odd but is neccessary to avoid ambiguity (ie. is 1 a
--- quarter note or a 3:2 tuplet dotted-quarter-note etc.
+-- | Remove tuplet multiplier from value, ie. to give notated
+-- duration.  This seems odd but is neccessary to avoid ambiguity.
+-- Ie. is 1 a quarter note or a 3:2 tuplet dotted-quarter-note etc.
 un_tuplet :: (Integer,Integer) -> R -> R
 un_tuplet (i,j) x = x * (i%j)
 
@@ -334,7 +338,7 @@ simplify a ns xs =
         pass = map (coalesce (d_join a))
     in concat ((pass . pass) xs')
 
--- erroring variant of rq_to_duration
+-- | Variant of 'rq_to_duration' with error message.
 to_duration :: Show a => a -> R -> Duration
 to_duration msg n =
     let err = error ("to_duration:" ++ show (msg,n))
@@ -349,9 +353,9 @@ tuplet (d,n) xs =
         ts = [t0] ++ replicate (xn - 2) [] ++ [[End_Tuplet]]
     in zip (map fn xs) ts
 
--- the d0:dN distinction is to catch, for instance, dotted 1/4 and
--- tuplet 1/16.  it'd be better to not simplify to that, however
--- simplifier does not look ahead.
+-- | The @d0:dN@ distinction is to catch, for instance, dotted @1\/4@
+-- and tuplet @1\/16@.  It'd be better to not simplify to that,
+-- however the simplifier does not look ahead.
 notate_sec :: [D] -> [Duration_A]
 notate_sec xs =
     let ds = map d_duration xs
@@ -374,12 +378,22 @@ notate_sec xs =
 -- conflict with a list of /boundaries/ (ie. measures).
 --
 -- IMPORTANT NOTE: alignments are not handled correctly
+--
+-- > let n = notate (Just simplify) (repeat 1) (repeat 4)
+-- > in n [3,3] == [(dotted_half_note,[]),(quarter_note,[Tie_Right]),(half_note,[Tie_Left])]
 notate :: Maybe Simplify -> [R] -> [R] -> [R] -> [Duration_A]
 notate smp is ns xs =
     let xs' = case smp of
                 Nothing -> separate is xs
                 Just f -> f (head is) ns (separate is xs)
     in concatMap notate_sec (group_boundary_lenient_d is xs')
+
+-- | Variant with default 'simplify' function and constant unit
+-- division of @1@.
+--
+-- > map (duration_to_rq . fst) (notate' [4,4] [3,3,2]) == [3,1,2,2]
+notate' :: [R] -> [R] -> [Duration_A]
+notate' = notate (Just simplify) (repeat 1)
 
 {-
 let xs = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
@@ -406,5 +420,9 @@ ascribe_fn fn =
                            in (x,i) : go xs is'
     in go
 
+-- | Zip a list of 'Duration_A' elements duplicating elements of the
+-- right hand sequence for tied durations.
+--
+-- > map snd (ascribe (notate' [4,4] [3,3,2]) "xyz") == "xyyz"
 ascribe :: [Duration_A] -> [x] -> [(Duration_A,x)]
 ascribe = ascribe_fn da_tied_right
