@@ -21,6 +21,14 @@ union = foldl1 Union
 intersection :: [Sieve] -> Sieve
 intersection = foldl1 Intersection
 
+-- | Unicode synonym for 'Union'.
+(∪) :: Sieve -> Sieve -> Sieve
+(∪) = Union
+
+-- | Unicode synonym for 'Intersection'.
+(∩) :: Sieve -> Sieve -> Sieve
+(∩) = Intersection
+
 -- | Variant of 'L', ie. 'curry' 'L'.
 --
 -- > l 15 19 == L (15,19)
@@ -85,6 +93,12 @@ build s =
          Union s0 s1 -> u_f (merge compare (build s0) (build s1))
          Intersection s0 s1 -> i_f (merge compare (build s0) (build s1))
 
+-- | Variant of 'build' that gives the first /n/ places.
+--
+-- > buildn 6 (union (map (l 8) [0,3,6])) == [0,3,6,8,11,14]
+buildn :: Int -> Sieve -> [I]
+buildn n = take n . build
+
 -- | Standard differentiation function.
 --
 -- > differentiate [1,3,6,10] == [2,3,4]
@@ -126,10 +140,10 @@ reduce_intersection (m1,i1) (m2,i2) =
 
 -- | Reduce the number of nodes at a 'Sieve'.
 --
--- > reduce (L (3,2) `Union` Empty) == L (3,2)
--- > reduce (L (3,2) `Intersection` Empty) == L (3,2)
--- > reduce (L (3,2) `Intersection` L (4,7)) == L (12,11)
--- > reduce (L (6,9) `Intersection` L (15,18)) == L (30,3)
+-- > reduce (L (3,2) ∪ Empty) == L (3,2)
+-- > reduce (L (3,2) ∩ Empty) == L (3,2)
+-- > reduce (L (3,2) ∩ L (4,7)) == L (12,11)
+-- > reduce (L (6,9) ∩ L (15,18)) == L (30,3)
 reduce :: Sieve -> Sieve
 reduce s =
     let f g s1 s2 =
