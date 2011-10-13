@@ -31,6 +31,7 @@ bjorklund' (n,x) =
 -- possible among the (/n/ - /k/) zeroes.
 --
 -- > bjorklund (5,9) == [True,False,True,False,True,False,True,False,True]
+-- > xdot (bjorklund (5,9)) == "x.x.x.x.x"
 --
 -- > let es = [(2,3),(2,5)
 -- >          ,(3,4),(3,5),(3,8)

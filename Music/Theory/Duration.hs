@@ -19,35 +19,6 @@ data D_Annotation = Tie_Right | Tie_Left
                   | Begin_Tuplet (Integer,Integer,Duration) | End_Tuplet
                     deriving (Eq,Show)
 
--- * Constants
-
-breve,whole_note,half_note,quarter_note,eighth_note,sixteenth_note,thirtysecond_note :: Duration
-breve = Duration 0 0 1
-whole_note = Duration 1 0 1
-half_note = Duration 2 0 1
-quarter_note = Duration 4 0 1
-eighth_note = Duration 8 0 1
-sixteenth_note = Duration 16 0 1
-thirtysecond_note = Duration 32 0 1
-
-dotted_breve,dotted_whole_note,dotted_half_note,dotted_quarter_note,dotted_eighth_note,dotted_sixteenth_note,dotted_thirtysecond_note :: Duration
-dotted_breve = Duration 0 1 1
-dotted_whole_note = Duration 1 1 1
-dotted_half_note = Duration 2 1 1
-dotted_quarter_note = Duration 4 1 1
-dotted_eighth_note = Duration 8 1 1
-dotted_sixteenth_note = Duration 16 1 1
-dotted_thirtysecond_note = Duration 32 1 1
-
-double_dotted_breve,double_dotted_whole_note,double_dotted_half_note,double_dotted_quarter_note,double_dotted_eighth_note,double_dotted_sixteenth_note,double_dotted_thirtysecond_note :: Duration
-double_dotted_breve = Duration 0 2 1
-double_dotted_whole_note = Duration 2 2 1
-double_dotted_half_note = Duration 2 2 1
-double_dotted_quarter_note = Duration 4 2 1
-double_dotted_eighth_note = Duration 8 2 1
-double_dotted_sixteenth_note = Duration 16 2 1
-double_dotted_thirtysecond_note = Duration 32 2 1
-
 -- * Operations
 
 -- | 'Ord' 'compare' function for 'Duration'.
@@ -69,11 +40,10 @@ duration_compare_meq y0 y1 =
                  then compare n0 n1
                  else compare x1 x0
 
-{-
-zipWith duration_compare_meq [e,e,e,e'] [e,s,q,e]
--}
-
-sort_pair :: (t -> t -> Ordering) -> (t, t) -> (t, t)
+-- | Sort a pair of equal type values using given comparison function.
+--
+-- > sort_pair compare ('b','a') == ('a','b')
+sort_pair :: (t -> t -> Ordering) -> (t,t) -> (t,t)
 sort_pair fn (x,y) =
     case fn x y of
       LT -> (x,y)
@@ -112,15 +82,12 @@ sum_dur y0 y1 =
        else sum_dur_dotted (division x0, dots x0
                            ,division x1, dots x1)
 
+-- | Erroring variant of 'sum_dur'.
 sum_dur' :: Duration -> Duration -> Duration
 sum_dur' y0 y1 =
     let y2 = sum_dur y0 y1
         err = error ("sum_dur': " ++ show (y0,y1))
     in maybe err id y2
-
-{-
-zipWith sum_dur [e,q,q'] [e,e,e]
--}
 
 -- * RQ (Rational Quarter-Note)
 
@@ -197,10 +164,15 @@ whole_note_division_to_musicxml_type x =
       -1 -> "long"
       _ -> error ("whole_note_division_to_musicxml_type: " ++ show x)
 
+-- | Variant of 'whole_note_division_to_musicxml_type' extracting
+-- 'division' from 'Duration'.
+--
+-- > duration_to_musicxml_type quarter_note == "quarter"
 duration_to_musicxml_type :: Duration -> String
 duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
 
--- | Note that the duration multiplier is /not/ written.
+-- | Give /Lilypond/ notation for 'Duration'.  Note that the duration
+-- multiplier is /not/ written.
 --
 -- > map duration_to_lilypond_type [half_note,dotted_quarter_note] == ["2","4."]
 duration_to_lilypond_type :: Duration -> String
@@ -225,3 +197,32 @@ duration_beam_count (Duration x _ _) =
     case whole_note_division_to_beam_count x of
       Nothing -> error "duration_beam_count"
       Just x' -> x'
+
+-- * Constants
+
+breve,whole_note,half_note,quarter_note,eighth_note,sixteenth_note,thirtysecond_note :: Duration
+breve = Duration 0 0 1
+whole_note = Duration 1 0 1
+half_note = Duration 2 0 1
+quarter_note = Duration 4 0 1
+eighth_note = Duration 8 0 1
+sixteenth_note = Duration 16 0 1
+thirtysecond_note = Duration 32 0 1
+
+dotted_breve,dotted_whole_note,dotted_half_note,dotted_quarter_note,dotted_eighth_note,dotted_sixteenth_note,dotted_thirtysecond_note :: Duration
+dotted_breve = Duration 0 1 1
+dotted_whole_note = Duration 1 1 1
+dotted_half_note = Duration 2 1 1
+dotted_quarter_note = Duration 4 1 1
+dotted_eighth_note = Duration 8 1 1
+dotted_sixteenth_note = Duration 16 1 1
+dotted_thirtysecond_note = Duration 32 1 1
+
+double_dotted_breve,double_dotted_whole_note,double_dotted_half_note,double_dotted_quarter_note,double_dotted_eighth_note,double_dotted_sixteenth_note,double_dotted_thirtysecond_note :: Duration
+double_dotted_breve = Duration 0 2 1
+double_dotted_whole_note = Duration 2 2 1
+double_dotted_half_note = Duration 2 2 1
+double_dotted_quarter_note = Duration 4 2 1
+double_dotted_eighth_note = Duration 8 2 1
+double_dotted_sixteenth_note = Duration 16 2 1
+double_dotted_thirtysecond_note = Duration 32 2 1

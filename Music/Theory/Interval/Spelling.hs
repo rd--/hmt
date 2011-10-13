@@ -1,8 +1,12 @@
+-- | Spelling rules for 'Interval' values.
 module Music.Theory.Interval.Spelling where
 
 import Music.Theory.Interval
 
--- ambiguous for 6 (aug.4,dim.5)
+-- | Simplest spelling for semitone intervals.  This is ambiguous for
+-- @6@ which could be either /aug.4/ or /dim.5/.
+--
+-- > map i_to_interval [0..11]
 i_to_interval :: Int -> Interval
 i_to_interval x =
     let iv ty qu = Interval ty qu LT 0
@@ -21,7 +25,10 @@ i_to_interval x =
          11 -> iv Seventh Major
          _ -> error ("i_to_interval: " ++ show x)
 
--- for non-tonal music some spellings are poor, ie. (f,g#)
+-- | Perform some interval simplifications.  For non-tonal music some
+-- spellings are poor, ie. (f,g#).
+--
+-- > interval_simplify (Interval Second Augmented LT 0) == Interval Third Minor LT 0
 interval_simplify :: Interval -> Interval
 interval_simplify x =
     let (Interval ty qu d o) = x
@@ -36,7 +43,3 @@ interval_simplify x =
                      -- (Augmented,Seventh) -> (Perfect,Octave)
                      _ -> (qu,ty)
     in Interval ty' qu' d o
-
-{-
-map i_to_interval [0..11]
--}

@@ -4,8 +4,11 @@ import Data.List
 import Data.Maybe
 import Music.Theory.Prime
 
+-- | Synonym for 'String'.
+type SC_Name = String
+
 -- | The set-class table (Forte prime forms).
-sc_table :: (Integral a) => [(String,[a])]
+sc_table :: (Integral a) => [(SC_Name,[a])]
 sc_table =
     [("0-1",[])
     ,("1-1",[0])
@@ -232,22 +235,31 @@ sc_table =
     ,("11-1",[0,1,2,3,4,5,6,7,8,9,10])
     ,("12-1",[0,1,2,3,4,5,6,7,8,9,10,11])]
 
--- | Lookup a set-class name given a set-class.
-sc_name :: (Integral a) => [a] -> String
+-- | Lookup a set-class name.  The input set is subject to
+-- 'forte_prime' before lookup.
+--
+-- > sc_name [0,1,4,6,7,8] == "6-Z17"
+sc_name :: (Integral a) => [a] -> SC_Name
 sc_name p =
     let n = find (\(_,q) -> forte_prime p == q) sc_table
     in fst (fromJust n)
 
 -- | Lookup a set-class given a set-class name.
-sc :: (Integral a) => String -> [a]
+--
+-- > sc "6-Z17" == [0,1,2,4,7,8]
+sc :: (Integral a) => SC_Name -> [a]
 sc n = snd (fromJust (find (\(m,_) -> n == m) sc_table))
 
 -- | List of set classes.
 scs :: (Integral a) => [[a]]
 scs = map snd sc_table
 
--- | Set class database.
-sc_db :: [(String,String)]
+-- | Set class database with descriptors for historically and
+-- theoretically significant set classes.
+--
+-- > lookup "6-Z17" sc_db == Just "All-Trichord Hexachord"
+-- > lookup "7-35" sc_db == Just "diatonic collection (d)"
+sc_db :: [(SC_Name,String)]
 sc_db =
     [ ("4-Z15","All-Interval Tetrachord (see also 4-Z29)")
     ,("4-Z29","All-Interval Tetrachord (see also 4-Z15)")

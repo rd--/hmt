@@ -1,3 +1,4 @@
+-- | Constants names for 'Interval' values.
 module Music.Theory.Interval.Name where
 
 import Music.Theory.Interval

@@ -5,7 +5,6 @@ module Music.Theory.Duration.Sequence.Notate
     ,ascribe
     ,group_boundary_lenient,group_boundary_strict) where
 
-import Data.List
 import Data.Ratio
 import Music.Theory.Duration
 

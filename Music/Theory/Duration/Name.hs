@@ -1,8 +1,17 @@
+-- | Abbreviated names for 'Duration' values when written as literals.
+-- There are /letter/ names where 'w' is 'whole_note' and so on, and
+-- /numerical/ names where '_4' is 'quarter_note' and so on.  In both
+-- cases a @'@ extension means a @dot@ so that 'e''' is a double
+-- dotted 'eighth_note'.
+--
+-- > zipWith duration_compare_meq [e,e,e,e'] [e,s,q,e] == [EQ,GT,LT,GT]
+-- > zipWith sum_dur [e,q,q'] [e,e,e] == [Just q,Just q',Just h]
+-- > zipWith sum_dur' [e,q,q'] [e,e,e] == [q,q',h]
 module Music.Theory.Duration.Name where
 
 import Music.Theory.Duration
 
--- * w,h,q,e,s
+-- * Letter names
 
 w,h,q,e,s :: Duration
 w = whole_note
@@ -25,7 +34,7 @@ q'' = Duration 4 2 1
 e'' = Duration 8 2 1
 s'' = Duration 16 2 1
 
--- * _1,_2,_4,_8,_16,_32
+-- * Numerical names
 
 _1,_2,_4,_8,_16,_32 :: Duration
 _1 = whole_note

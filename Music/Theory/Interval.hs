@@ -1,26 +1,36 @@
+-- | Common music notation intervals.
 module Music.Theory.Interval where
 
 import Music.Theory.Pitch
 
+-- | Interval type or degree.
 data Interval_T = Unison | Second | Third | Fourth
                 | Fifth | Sixth | Seventh
-                  deriving (Eq, Ord, Enum, Show)
+                  deriving (Eq,Enum,Bounded,Ord,Show)
 
+-- | Interval quality.
 data Interval_Q = Diminished | Minor
                 | Perfect
                 | Major | Augmented
-                  deriving (Eq, Ord, Enum, Show)
+                  deriving (Eq,Enum,Bounded,Ord,Show)
 
-data Interval = Interval { interval_type :: Interval_T
-                         , interval_quality :: Interval_Q
-                         , interval_direction :: Ordering
-                         , interval_octave :: Octave }
-                deriving (Eq, Show)
+-- | Common music notation interval.
+data Interval = Interval {interval_type :: Interval_T
+                         ,interval_quality :: Interval_Q
+                         ,interval_direction :: Ordering
+                         ,interval_octave :: Octave}
+                deriving (Eq,Show)
 
+-- | Interval type between 'Note_T' values.
+--
+-- > map (interval_ty C) [E,B] == [Third,Seventh]
 interval_ty :: Note_T -> Note_T -> Interval_T
 interval_ty n1 n2 = toEnum ((fromEnum n2 - fromEnum n1) `mod` 7)
 
-interval_q_tbl :: [(Interval_T, [(Int, Interval_Q)])]
+-- | Table of interval qualities.  For each 'Interval_T' gives
+-- directed semitone interval counts for each allowable 'Interval_Q'.
+-- For lookup function see 'interval_q'.
+interval_q_tbl :: [(Interval_T, [(Int,Interval_Q)])]
 interval_q_tbl =
     [(Unison,[(11,Diminished)
              ,(0,Perfect)
@@ -48,12 +58,22 @@ interval_q_tbl =
               ,(11,Major)
               ,(12,Augmented)])]
 
+-- | Lookup 'Interval_Q' for given 'Interval_T' and semitone count.
+--
+-- > interval_q Unison 11 == Just Diminished
+-- > interval_q Third 5 == Just Augmented
 interval_q :: Interval_T -> Int -> Maybe Interval_Q
 interval_q i n =
     case lookup i interval_q_tbl of
       Just t -> lookup n t
       Nothing -> Nothing
 
+-- | Inclusive set of 'Note_T' within indicated interval.  This is not
+-- equal to 'enumFromTo' which is not circular.
+--
+-- > note_span E B == [E,F,G,A,B]
+-- > note_span B D == [B,C,D]
+-- > enumFromTo B D == []
 note_span :: Note_T -> Note_T -> [Note_T]
 note_span n1 n2 =
     let fn x = toEnum (x `mod` 7)
@@ -62,6 +82,9 @@ note_span n1 n2 =
         n2'' = if n1' > n2' then n2' + 7 else n2'
     in map fn [n1' .. n2'']
 
+-- | Invert 'Ordering', ie. 'GT' becomes 'LT' and vice versa.
+--
+-- > map invert_ordering [LT,EQ,GT] == [GT,EQ,LT]
 invert_ordering :: Ordering -> Ordering
 invert_ordering x =
     case x of
@@ -69,6 +92,10 @@ invert_ordering x =
       LT -> GT
       EQ -> EQ
 
+-- | Determine 'Interval' between two 'Pitch'es.
+--
+-- > interval (Pitch C Sharp 4) (Pitch D Flat 4) == Interval Second Diminished EQ 0
+-- > interval (Pitch C Sharp 4) (Pitch E Sharp 5) == Interval Third Major LT 1
 interval :: Pitch -> Pitch -> Interval
 interval p1 p2 =
     let c = compare p1 p2
@@ -84,14 +111,23 @@ interval p1 p2 =
          GT -> (interval p2 p1) { interval_direction = GT }
          _ -> Interval ty qu c (o2 - o1 + o_a)
 
+-- | Apply 'invert_ordering' to 'interval_direction' of 'Interval'.
+--
+-- > invert_interval (Interval Third Major LT 1) == Interval Third Major GT 1
 invert_interval :: Interval -> Interval
 invert_interval (Interval t qu d o) =
     let d' = invert_ordering d
     in Interval t qu d' o
 
--- can this be written without knowing the Interval_T?
-quality_difference :: Interval_Q -> Interval_Q -> Int
-quality_difference a b =
+-- | The signed difference in semitones between two 'Interval_Q'
+-- values when applied to the same 'Interval_T'.  Can this be written
+-- correctly without knowing the Interval_T?
+--
+-- > quality_difference_m Minor Augmented == Just 2
+-- > quality_difference_m Augmented Diminished == Just (-3)
+-- > quality_difference_m Major Perfect == Nothing
+quality_difference_m :: Interval_Q -> Interval_Q -> Maybe Int
+quality_difference_m a b =
     let rule (x,y) =
             if x == y
             then Just 0
@@ -107,13 +143,22 @@ quality_difference a b =
                    _ -> Nothing
         fwd = rule (a,b)
         rvs = rule (b,a)
-        err = error ("quality_difference: " ++ show (a,b))
     in case fwd of
-         Just n -> n
+         Just n -> Just n
          Nothing -> case rvs of
-                      Just n -> negate n
-                      Nothing -> err
+                      Just n -> Just (negate n)
+                      Nothing -> Nothing
 
+-- | Erroring variant of 'quality_difference_m'.
+quality_difference :: Interval_Q -> Interval_Q -> Int
+quality_difference a b =
+    case quality_difference_m a b of
+      Just n -> n
+      Nothing -> error ("quality_difference: " ++ show (a,b))
+
+-- | Transpose a 'Pitch' by an 'Interval'.
+--
+-- > transpose (Interval Third Diminished LT 0) (Pitch C Sharp 4) == Pitch E Flat 4
 transpose :: Interval -> Pitch -> Pitch
 transpose i ip =
     let (Pitch p_n p_a p_o) = ip
@@ -141,6 +186,7 @@ transpose i ip =
         p_a' = toEnum (fromEnum p_a + (qd * 2))
     in ip' { alteration = p_a' }
 
+-- > circle_of_fifths (Pitch F Sharp 4)
 circle_of_fifths :: Pitch -> ([Pitch], [Pitch])
 circle_of_fifths x =
     let p4 = Interval Fourth Perfect LT 0

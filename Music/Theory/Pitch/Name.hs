@@ -1,3 +1,7 @@
+-- | Constants names for 'Pitch' values.  /eses/ indicates double
+-- flat, /eseh/ three quarter tone flat, /es/ flat, /eh/ quarter tone
+-- flat, /ih/ quarter tone sharp, /is/ sharp, /isih/ three quarter
+-- tone sharp and /isis/ double sharp.
 module Music.Theory.Pitch.Name where
 
 import Music.Theory.Pitch
