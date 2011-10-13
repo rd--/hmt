@@ -1,7 +1,7 @@
-module Music.Theory.Prime ( cmp_prime
-                          , forte_prime
-                          , rahn_prime
-                          , encode_prime ) where
+module Music.Theory.Prime (cmp_prime
+                          ,forte_cmp,forte_prime
+                          ,rahn_cmp,rahn_prime
+                          ,encode_prime) where
 
 import Data.Bits
 import Data.List
@@ -15,14 +15,16 @@ cmp_prime f p =
         r = rotations (pcset p) ++ rotations (pcset q)
     in minimumBy f (map (transposeTo 0) r)
 
--- | Forte comparison (rightmost first then leftmost outwards).
+-- | Forte comparison function (rightmost first then leftmost outwards).
+--
+-- > forte_cmp [0,1,3,6,8,9] [0,2,3,6,7,9] == LT
 forte_cmp :: (Ord t) => [t] -> [t] -> Ordering
 forte_cmp [] [] = EQ
 forte_cmp p  q  =
     let r = compare (last p) (last q)
     in if r == EQ then compare p q else r
 
--- | Forte prime form.
+-- | Forte prime form, ie. 'cmp_prime' of 'forte_cmp'.
 --
 -- > forte_prime [0,1,3,6,8,9] == [0,1,3,6,8,9]
 -- > forte_prime [0,1,3,6,8,9] /= rahn_prime [0,1,3,6,8,9]
@@ -31,9 +33,15 @@ forte_prime = cmp_prime forte_cmp
 
 -- | Rahn prime form (comparison is rightmost inwards).
 --
+-- > rahn_cmp [0,1,3,6,8,9] [0,2,3,6,7,9] == GT
+rahn_cmp :: Ord a => [a] -> [a] -> Ordering
+rahn_cmp p q = compare (reverse p) (reverse q)
+
+-- | Rahn prime form, ie. 'cmp_prime' of 'rahn_cmp'.
+--
 -- > rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
 rahn_prime :: (Integral a) => [a] -> [a]
-rahn_prime = cmp_prime (\p q -> compare (reverse p) (reverse q))
+rahn_prime = cmp_prime rahn_cmp
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --

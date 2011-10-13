@@ -129,6 +129,8 @@ pitch_compare = compare `on` pitch_to_fmidi
 -- | Function to spell a 'PitchClass'.
 type Spelling = PitchClass -> (Note_T, Alteration_T)
 
+-- | Given 'Spelling' function translate from /octpc/ notation to
+-- 'Pitch'.
 octpc_to_pitch :: Spelling -> (Octave, PitchClass) -> Pitch
 octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc

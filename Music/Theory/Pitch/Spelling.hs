@@ -47,8 +47,9 @@ pc_spell_ks pc =
 
 -- | Use always sharp (♯) spelling.
 --
--- >  map pc_spell_sharp [6,8] == [(F,Sharp),(G,Sharp)]
--- >  Data.List.nub (map (snd . pc_spell_sharp) [1,3,6,8,10]) == [Sharp]
+-- > map pc_spell_sharp [6,8] == [(F,Sharp),(G,Sharp)]
+-- > Data.List.nub (map (snd . pc_spell_sharp) [1,3,6,8,10]) == [Sharp]
+-- > octpc_to_pitch pc_spell_sharp (4,6) == Pitch F Sharp 4
 pc_spell_sharp :: Spelling
 pc_spell_sharp pc =
     case pc of

@@ -5,14 +5,18 @@ import Data.Maybe
 import Data.List
 
 -- | Modulo twelve.
+--
+-- > map mod12 [11,12,-1] == [11,0,11]
 mod12 :: (Integral a) => a -> a
 mod12 = (`mod` 12)
 
--- | Pitch class.
+-- | Pitch class, synonym for 'mod12'.
 pc :: (Integral a) => a -> a
 pc = mod12
 
 -- | Map to pitch-class and reduce to set.
+--
+-- > pcset [1,13] == [1]
 pcset :: (Integral a) => [a] -> [a]
 pcset = set . map pc
 
@@ -26,24 +30,35 @@ tn :: (Integral a) => a -> [a] -> [a]
 tn n = map (pc . (+ n))
 
 -- | Transpose so first element is n.
+--
+-- > transposeTo 5 [0,1,3] == [5,6,8]
 transposeTo :: (Integral a) => a -> [a] -> [a]
-transposeTo _ [] = []
-transposeTo n (x:xs) = n : tn (n - x) xs
+transposeTo n p =
+    case p of
+      [] -> []
+      x:xs -> n : tn (n - x) xs
 
 -- | All transpositions.
 transpositions :: (Integral a) => [a] -> [[a]]
 transpositions p = map (`tn` p) [0..11]
 
 -- | Invert about n.
+--
+-- > invert 6 [4,5,6] == [8,7,6]
+-- > invert 0 [0,1,3] == [0,11,9]
 invert :: (Integral a) => a -> [a] -> [a]
 invert n = map (pc . (\p -> n - (p - n)))
 
 -- | Invert about first element.
+--
+-- > map invertSelf [[0,1,3],[3,4,6]] == [[0,11,9],[3,2,0]]
 invertSelf :: (Integral a) => [a] -> [a]
-invertSelf [] = []
-invertSelf (x:xs) = invert x (x:xs)
+invertSelf p =
+    case p of
+      [] -> []
+      x:xs -> invert x (x:xs)
 
--- | Composition of 'invert' about 0 and 'tn'.
+-- | Composition of 'invert' about @0@ and 'tn'.
 --
 -- >>> sro T4I 156
 -- 3BA
@@ -57,18 +72,24 @@ invertSelf (x:xs) = invert x (x:xs)
 tni :: (Integral a) => a -> [a] -> [a]
 tni n = tn n . invert 0
 
--- | Rotate left by n places.
+-- | Rotate left by /n/ places.
+--
+-- > rotate 3 [1..5] == [4,5,1,2,3]
 rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p =
     let m = n `mod` genericLength p
         (b, a) = genericSplitAt m p
     in a ++ b
 
--- | Rotate right by n places.
+-- | Rotate right by /n/ places.
+--
+-- > rotate_right 3 [1..5] == [3,4,5,1,2]
 rotate_right :: (Integral n) => n -> [a] -> [a]
 rotate_right = rotate . negate
 
 -- | All rotations.
+--
+-- > rotations [0,1,3] == [[0,1,3],[1,3,0],[3,0,1]]
 rotations :: [a] -> [[a]]
 rotations p = map (`rotate` p) [0 .. length p - 1]
 
@@ -78,7 +99,9 @@ rotations p = map (`rotate` p) [0 .. length p - 1]
 mn :: (Integral a) => a -> [a] -> [a]
 mn n = map (pc . (* n))
 
--- | M5
+-- | M5, ie. 'mn' @5@.
+--
+-- > m5 [0,1,3] == [0,5,3]
 m5 :: (Integral a) => [a] -> [a]
 m5 = mn 5
 
@@ -167,15 +190,18 @@ sros x = [ let o = (SRO r r' t m i) in (o, sro o x) |
            m <- [False, True],
            i <- [False, True] ]
 
+-- | The set of transposition 'SRO's.
 sro_Tn :: (Integral a) => [SRO a]
 sro_Tn = [ SRO 0 False n False False |
            n <- [0..11] ]
 
+-- | The set of transposition and inversion 'SRO's.
 sro_TnI :: (Integral a) => [SRO a]
 sro_TnI = [ SRO 0 False n False i |
             n <- [0..11],
             i <- [False, True] ]
 
+-- | The set of retrograde and transposition and inversion 'SRO's.
 sro_RTnI :: (Integral a) => [SRO a]
 sro_RTnI = [ SRO 0 r n False i |
              r <- [True, False],
@@ -205,35 +231,49 @@ d_dx [] = []
 d_dx (_:[]) = []
 d_dx (x:xs) = zipWith (-) xs (x:xs)
 
--- | Morris INT operator.
+-- | Morris @INT@ operator.
+--
+-- > int [0,1,3,6,10] == [1,2,3,4]
 int :: (Integral a) => [a] -> [a]
 int = map mod12 . d_dx
 
 -- | Interval class.
+--
+-- > map ic [5,6,7] == [5,6,5]
 ic :: (Integral a) => a -> a
 ic i =
     let i' = mod12 i
     in if i' <= 6 then i' else 12 - i'
 
--- | Elements of p not in q
+-- | Elements of /p/ not in /q/.
+--
+-- > [1,2,3] `difference` [1,2] == [3]
 difference :: (Eq a) => [a] -> [a] -> [a]
 difference p q =
     let f e = e `notElem` q
     in filter f p
 
 -- | Pitch classes not in set.
+--
+-- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
 complement :: (Integral a) => [a] -> [a]
 complement = difference [0..11]
 
--- | Is p a subsequence of q.
+-- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
+--
+-- > subsequence [1,2] [1,2,3] == True
 subsequence :: (Eq a) => [a] -> [a] -> Bool
 subsequence = isInfixOf
 
--- | The standard t-matrix of p.
+-- | The standard t-matrix of /p/.
+--
+-- > tmatrix [0,1,3] == [[0,1,3],[11,0,2],[9,10,0]]
 tmatrix :: (Integral a) => [a] -> [[a]]
 tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))
 
 -- | Interval class vector.
+--
+-- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
 icv :: (Integral a) => [a] -> [a]
 icv s =
     let i = map (ic . uncurry (-)) (dyads s)
@@ -242,10 +282,14 @@ icv s =
         f l = (head l, genericLength l)
     in map (fromMaybe 0) k
 
--- | Is p a subset of q.
+-- | Is /p/ a subset of /q/.
+--
+-- > is_subset [1,2] [1,2,3] == True
 is_subset :: Eq a => [a] -> [a] -> Bool
 is_subset p q = p `intersect` q == p
 
--- | Is p a superset of q.
+-- | Is /p/ a superset of /q/.
+--
+-- > is_superset [1,2,3] [1,2] == True
 is_superset :: Eq a => [a] -> [a] -> Bool
 is_superset = flip is_subset

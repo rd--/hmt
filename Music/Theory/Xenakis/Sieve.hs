@@ -1,4 +1,6 @@
--- | I.Xenakis /Sieve/ Theory
+-- | \"Sieves\" by Iannis Xenakis and John Rahn
+-- /Perspectives of New Music/
+-- Vol. 28, No. 1 (Winter, 1990), pp. 58-78
 module Music.Theory.Xenakis.Sieve where
 
 import qualified Data.List as L
@@ -106,11 +108,18 @@ buildn n = take n . build
 differentiate :: (Num a) => [a] -> [a]
 differentiate x = zipWith (-) (tail x) x
 
+
+-- | Euclid's algorithm for computing the greatest common divisor.
+--
+-- > euclid 1989 867 == 51
 euclid :: (Integral a) => a -> a -> a
 euclid i j =
     let k = i `mod` j
     in if k == 0 then j else euclid j k
 
+-- | Bachet De Méziriac's algorithm.
+--
+-- > de_meziriac 15 4 == 3 && euclid 15 4 == 1
 de_meziriac :: (Integral a) => a -> a -> a
 de_meziriac i j =
     let f t = if (t * i) `mod` j /= 1
