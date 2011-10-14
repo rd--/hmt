@@ -56,8 +56,8 @@ line :: [P] -> C.Render ()
 line l =
     case l of
       [] -> return ()
-      (x0,y0):l -> do C.moveTo x0 y0
-                      mapM_ (\(x,y) -> C.lineTo x y) l
+      (x0,y0):l' -> do C.moveTo x0 y0
+                       mapM_ (\(x,y) -> C.lineTo x y) l'
 
 -- | Render rectangle given colour 'C', upper-left 'P' and
 -- /(width,height)/.
