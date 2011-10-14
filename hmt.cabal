@@ -18,14 +18,18 @@ Data-files:        README
 
 Library
   Build-Depends:   base == 4.*,
-                   containers,
+                   cairo,containers,
+                   html-minimalist,
                    multiset-comb,
                    parsec,
                    permutation,
-                   split
+                   split,
+                   utf8-string,
+                   xml
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Bjorklund
                    Music.Theory.Contour.Polansky_1992
+                   Music.Theory.Diagram.Grid
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Sequence.Notate
