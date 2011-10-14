@@ -1,6 +1,6 @@
 -- | Polansky, Larry and Bassein, Richard
 -- \"Possible and Impossible Melody: Some Formal Aspects of Contour\"
--- /JMT/ 36/2, 1992 (pp.259-284)
+-- /Journal of Music Theory/ 36/2, 1992 (pp.259-284)
 -- (<http://www.jstor.org/pss/843933>)
 module Music.Theory.Contour.Polansky_1992 where
 
@@ -12,40 +12,56 @@ import Data.Ratio
 import qualified Music.Theory.Set as T
 import qualified Music.Theory.Permutations as T
 
--- p.262
+-- | Compare adjacent elements (p.262).
+--
+-- > compare_adjacent [0,1,3,2] == [LT,LT,GT]
 compare_adjacent :: Ord a => [a] -> [Ordering]
 compare_adjacent xs = zipWith compare xs (tail xs)
 
-matrix_f :: (a -> a -> b) -> [a] -> [[b]]
+-- | A list notation for matrices.
+type Matrix a = [[a]]
+
+-- | Apply /f/ to construct 'Matrix' from sequence.
+--
+-- > matrix_f (,) [1..3] == [[(1,1),(1,2),(1,3)]
+-- >                        ,[(2,1),(2,2),(2,3)]
+-- >                        ,[(3,1),(3,2),(3,3)]]
+matrix_f :: (a -> a -> b) -> [a] -> Matrix b
 matrix_f f =
     let g (x,xs) = map (\x' -> f x x') xs
         h xs = map (\x -> (x,xs)) xs
     in map g . h
 
--- p.263
-contour_matrix :: Ord a => [a] -> [[Ordering]]
+-- | Construct 'matrix_f' with 'compare' (p.263).
+--
+-- > contour_matrix [1..3] == [[EQ,LT,LT],[GT,EQ,LT],[GT,GT,EQ]]
+contour_matrix :: Ord a => [a] -> Matrix Ordering
 contour_matrix = matrix_f compare
 
-data Contour_Half_Matrix = Contour_Half_Matrix {
-      contour_half_matrix_n :: Int
-    , contour_half_matrix_m :: [[Ordering]] } deriving (Eq)
+-- | Half matrix notation for contour.
+data Contour_Half_Matrix =
+    Contour_Half_Matrix {contour_half_matrix_n :: Int
+                        ,contour_half_matrix_m :: Matrix Ordering}
+    deriving (Eq)
 
--- | Half matrix of contour given comparison function /f/.
+-- | Half 'Matrix' of contour given comparison function /f/.
 --
 -- > half_matrix_f (flip (-)) [2,10,6,7] == [[8,4,5],[-4,-3],[1]]
 -- > half_matrix_f (flip (-)) [5,0,3,2] == [[-5,-2,-3],[3,2],[-1]]
-half_matrix_f :: (a -> a -> b) -> [a] -> [[b]]
+-- > half_matrix_f compare [5,0,3,2] == [[GT,GT,GT],[LT,LT],[GT]]
+half_matrix_f :: (a -> a -> b) -> [a] -> Matrix b
 half_matrix_f f xs =
     let drop_last = reverse . drop 1 . reverse
         m = drop_last (matrix_f f  xs)
     in map (\(i,ns) -> drop i ns) (zip [1..] m)
 
--- p.264
+-- | Construct 'Contour_Half_Matrix' (p.264)
 contour_half_matrix :: Ord a => [a] -> Contour_Half_Matrix
 contour_half_matrix xs =
     let hm = half_matrix_f compare xs
     in Contour_Half_Matrix (length xs) hm
 
+-- | 'Show' function for 'Contour_Half_Matrix'.
 contour_half_matrix_str :: Contour_Half_Matrix -> String
 contour_half_matrix_str (Contour_Half_Matrix _ hm) =
     let hm' = map (concatMap (show . fromEnum)) hm
@@ -54,28 +70,37 @@ contour_half_matrix_str (Contour_Half_Matrix _ hm) =
 instance Show Contour_Half_Matrix where
     show = contour_half_matrix_str
 
--- p.263
+-- | Generic variant of 'fromEnum' (p.263).
 ord_to_int :: Integral a => Ordering -> a
 ord_to_int = fromIntegral . fromEnum
 
--- p.263
+-- | Generic variant of 'toEnum' (p.263).
 int_to_ord :: Integral a => a -> Ordering
 int_to_ord = toEnum . fromIntegral
 
-data Contour_Description = Contour_Description {
-      contour_description_n :: Int
-    , contour_description_m :: M.Map (Int,Int) Ordering } deriving (Eq)
+-- | /Description/ notation of contour.
+data Contour_Description =
+    Contour_Description {contour_description_n :: Int
+                        ,contour_description_m :: M.Map (Int,Int) Ordering}
+    deriving (Eq)
 
+-- | Construct set of /n/-1 adjacent indices.
+--
+-- > adjacent_indices 5 == [(0,1),(1,2),(2,3),(3,4)]
 adjacent_indices :: Integral i => i -> [(i,i)]
 adjacent_indices n = zip [0..n-2] [1..n-1]
 
--- in (i,j) indices in half matrix order
+-- | All /(i,j)/ indices in half matrix order.
+--
+-- > all_indices 4 == [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)]
 all_indices :: Integral i => i -> [(i,i)]
 all_indices n =
     let n' = n - 1
     in [(i,j) | i <- [0 .. n'], j <- [i + 1 .. n']]
 
--- p.264
+-- | Construct 'Contour_Description' of contour (p.264).
+--
+-- > map (show.contour_description) [[3,2,4,1],[3,2,1,4]] == ["202 02 2","220 20 0"]
 contour_description :: Ord a => [a] -> Contour_Description
 contour_description x =
     let n = length x
@@ -83,7 +108,7 @@ contour_description x =
         o = zip ix (map (\(i,j) -> compare (x !! i) (x !! j)) ix)
     in Contour_Description n (M.fromList o)
 
--- p.264
+-- | 'Show' function for 'Contour_Description' (p.264).
 contour_description_str :: Contour_Description -> String
 contour_description_str (Contour_Description n m) =
     let xs = concatMap (show . fromEnum . snd) (M.toList m)
@@ -92,28 +117,40 @@ contour_description_str (Contour_Description n m) =
 instance Show Contour_Description where
     show = contour_description_str
 
+-- | Convert from 'Contour_Half_Matrix' notation to 'Contour_Description'.
 half_matrix_to_description :: Contour_Half_Matrix -> Contour_Description
 half_matrix_to_description (Contour_Half_Matrix n hm) =
     let ix = all_indices n
         o = zip ix (concat hm)
     in Contour_Description n (M.fromList o)
 
--- ordering from i-th to j-th element of sequence described at d
+-- | Ordering from /i/th to /j/th element of sequence described at /d/.
+--
+-- > contour_description_ix (contour_description "abdc") (0,3) == LT
 contour_description_ix :: Contour_Description -> (Int,Int) -> Ordering
 contour_description_ix d i = contour_description_m d M.! i
 
+-- | Are all elements equal.
+--
+-- > all_equal "aaa" == True
 all_equal :: Eq a => [a] -> Bool
 all_equal xs = all id (zipWith (==) xs (tail xs))
 
--- | true if contour is all descending, equal or ascending
+-- | 'True' if contour is all descending, equal or ascending.
+--
+-- > map (uniform.contour_description) ["abc","bbb","cba"] == [True,True,True]
 uniform :: Contour_Description -> Bool
 uniform (Contour_Description _ m) = all_equal (M.elems m)
 
--- | true if contour does not containt any EQ elements
+-- | 'True' if contour does not containt any 'EQ' elements.
+--
+-- > map (no_equalities.contour_description) ["abc","bbb","cba"] == [True,False,True]
 no_equalities :: Contour_Description -> Bool
 no_equalities (Contour_Description _ m) = not (EQ `elem` M.elems m)
 
--- | all contour descriptions
+-- | Set of all contour descriptions.
+--
+-- > map (length.all_contours) [3,4,5] == [27,729,59049]
 all_contours :: Int -> [Contour_Description]
 all_contours n =
     let n' = contour_description_lm n
@@ -123,8 +160,8 @@ all_contours n =
         mk p = Contour_Description n (M.fromList (zip ix p))
     in map mk ps
 
--- p.266
-violations :: Contour_Description -> [(Int, Int, Int, Ordering)]
+-- | List of all violations at a 'Contour_Description' (p.266).
+violations :: Contour_Description -> [(Int,Int,Int,Ordering)]
 violations d =
     let n = contour_description_n d - 1
         ms = [(i,j,k) | i <- [0..n], j <- [i + 1 .. n], k <- [j + 1 .. n]]
@@ -140,22 +177,33 @@ violations d =
                            else Just (i,j,k,x)
     in mapMaybe complies ms
 
+-- | Is the number of 'violations' zero.
 is_possible :: Contour_Description -> Bool
 is_possible = (== 0) . length . violations
 
--- | all possible contour descriptions
+-- | All possible contour descriptions
+--
+-- > map (length.possible_contours) [3,4,5] == [13,75,541]
 possible_contours :: Int -> [Contour_Description]
 possible_contours = filter is_possible . all_contours
 
--- | all impossible contour descriptions
+-- | All impossible contour descriptions
+--
+-- > map (length.impossible_contours) [3,4,5] == [14,654,58508]
 impossible_contours :: Int -> [Contour_Description]
 impossible_contours = filter (not.is_possible) . all_contours
 
--- p.263
+-- | Calculate number of contours of indicated degree (p.263).
+--
+-- > map contour_description_lm [2..7] == [1,3,6,10,15,21]
+-- > map (\n -> 3 ^ n) (map contour_description_lm [2..6]) == [3,27,729,59049,14348907]
 contour_description_lm :: Integral a => a -> a
 contour_description_lm l = (l * l - l) `div` 2
 
--- a sequence of orderings (i,j) & (j,k) may imply ordering for (i,k)
+-- | A sequence of orderings /(i,j)/ and /(j,k)/ may imply ordering
+-- for /(i,k)/.
+--
+-- > map implication [(LT,EQ),(EQ,EQ),(EQ,GT)] == [Just LT,Just EQ,Just GT]
 implication :: (Ordering,Ordering) -> Maybe Ordering
 implication (i,j) =
     case (min i j,max i j) of
@@ -167,13 +215,18 @@ implication (i,j) =
       (GT,GT) -> Just GT
       _ -> error "implication"
 
--- replace the i-th value at ns with x
+-- | Replace the /i/th value at /ns/ with /x/.
+--
+-- > replace "test" 2 'n' == "tent"
 replace :: Integral i => [a] -> i -> a -> [a]
 replace ns i x =
     let fn (j,y) = if i == j then x else y
     in map fn (zip [0..] ns)
 
--- diverges for impossible contours
+-- | Derive an 'Integral' contour that would be described by
+-- 'Contour_Description'.  Diverges for impossible contours.
+--
+-- > draw_contour (contour_description "abdc") == [0,1,3,2]
 draw_contour :: Integral i => Contour_Description -> [i]
 draw_contour d =
     let n = contour_description_n d
@@ -200,6 +253,9 @@ draw_contour d =
                              Just ns' -> refine ix ns'
     in normalise (refine ix (replicate n 0))
 
+-- | Invert 'Ordering'.
+--
+-- > map ord_invert [LT,EQ,GT] == [GT,EQ,LT]
 ord_invert :: Ordering -> Ordering
 ord_invert x =
     case x of
@@ -207,23 +263,46 @@ ord_invert x =
       EQ -> EQ
       GT -> LT
 
+-- | Invert 'Contour_Description'.
+--
+-- > draw_contour (contour_description_invert (contour_description "abdc")) == [3,2,0,1]
 contour_description_invert :: Contour_Description -> Contour_Description
 contour_description_invert (Contour_Description n m) =
     Contour_Description n (M.map ord_invert m)
 
--- p.262 (quarter-note durations)
+-- | Example from p.262 (quarter-note durations)
+--
+-- > ex_1 == [2,3/2,1/2,1,2]
+-- > compare_adjacent ex_1 == [GT,GT,LT,LT]
+-- > show (contour_half_matrix ex_1) == "2221 220 00 0"
+-- > draw_contour (contour_description ex_1) == [3,2,0,1,3]
+--
+-- > let d = contour_description_invert (contour_description ex_1)
+-- > in (show d,is_possible d) == ("0001 002 22 2",True)
 ex_1 :: [Rational]
 ex_1 = [2,3%2,1%2,1,2]
 
--- p.265 (pitch)
+-- | Example on p.265 (pitch)
+--
+-- > ex_2 == [0,5,3]
+-- > show (contour_description ex_2) == "00 2"
 ex_2 :: [Integer]
 ex_2 = [0,5,3]
 
--- p.265 (pitch)
+-- | Example on p.265 (pitch)
+--
+-- > ex_3 == [12,7,6,7,8,7]
+-- > show (contour_description ex_3) == "22222 2101 000 01 2"
+-- > contour_description_ix (contour_description ex_3) (0,5) == GT
+-- > is_possible (contour_description ex_3) == True
 ex_3 :: [Integer]
 ex_3 = [12,7,6,7,8,7]
 
--- p.266 (impossible)
+-- | Example on p.266 (impossible)
+--
+-- > show ex_4 == "2221 220 00 1"
+-- > is_possible ex_4 == False
+-- > violations ex_4 == [(0,3,4,GT),(1,3,4,GT)]
 ex_4 :: Contour_Description
 ex_4 =
     let ns :: [[Int]]
