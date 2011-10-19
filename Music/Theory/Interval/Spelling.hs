@@ -6,6 +6,7 @@ import Music.Theory.Interval
 -- | Simplest spelling for semitone intervals.  This is ambiguous for
 -- @6@ which could be either /aug.4/ or /dim.5/.
 --
+-- > i_to_interval 6 == Interval Fourth Augmented LT 0
 -- > map i_to_interval [0..11]
 i_to_interval :: Int -> Interval
 i_to_interval x =
