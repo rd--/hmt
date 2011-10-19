@@ -117,8 +117,9 @@ pitch_to_fmidi (Pitch n a o) =
 -- | Extract 'PitchClass' of 'Pitch'
 --
 -- > pitch_to_pc (Pitch A Natural 4) == 9
+-- > pitch_to_pc (Pitch F Sharp 4) == 6
 pitch_to_pc :: Pitch -> PitchClass
-pitch_to_pc = note_to_pc . note
+pitch_to_pc (Pitch n a _) = note_to_pc n + alteration_to_diff a
 
 -- | 'Pitch' comparison, implemented via 'pitch_to_fmidi'.
 --
