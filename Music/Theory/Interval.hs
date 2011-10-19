@@ -186,7 +186,11 @@ transpose i ip =
         p_a' = toEnum (fromEnum p_a + (qd * 2))
     in ip' { alteration = p_a' }
 
--- > circle_of_fifths (Pitch F Sharp 4)
+-- | Make leftwards (perfect fourth) and and rightwards (perfect
+-- fifth) circles from 'Pitch'.
+--
+-- > let c = circle_of_fifths (Pitch F Sharp 4)
+-- > in map pitch_to_pc (snd c) == [6,1,8,3,10,5,12,7,2,9,4,11]
 circle_of_fifths :: Pitch -> ([Pitch], [Pitch])
 circle_of_fifths x =
     let p4 = Interval Fourth Perfect LT 0
