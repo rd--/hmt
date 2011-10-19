@@ -1,3 +1,6 @@
+-- | Functions for drawing grid and table structure common in music
+-- theory and in compositions such as Morton Feldman's durational
+-- /grid/ music of the 1950's.
 module Music.Theory.Diagram.Grid where
 
 import qualified Codec.Binary.UTF8.String as U {- utf8-string -}
@@ -85,7 +88,7 @@ txt_at c (x,y) sz txt = do
   C.restore
 
 -- | Render 'Grid' of /(rows,columns)/ with displacement /(dx,dy)/ in
--- inidcated font size.
+-- indicated font size.
 mk_grid :: (Int,Int) -> (R,R) -> R -> Grid -> C.Render ()
 mk_grid (r,c) (dx,dy) fs xs = do
   let g = grid (10,10) (10,10) (r,c)
