@@ -18,8 +18,8 @@ Data-files:        README
 
 Library
   Build-Depends:   base == 4.*,
-                   cairo,containers,
-                   html-minimalist,
+                   cairo,colour,containers,
+                   hcg-minus,html-minimalist,
                    multiset-comb,
                    parsec,
                    permutation,
@@ -30,6 +30,7 @@ Library
   Exposed-modules: Music.Theory.Bjorklund
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Diagram.Grid
+                   Music.Theory.Diagram.Path
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Sequence.Notate
@@ -48,6 +49,7 @@ Library
                    Music.Theory.Set
                    Music.Theory.Table
                    Music.Theory.Tuning
+                   Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
 
 Source-Repository  head

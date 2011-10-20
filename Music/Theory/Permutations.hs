@@ -5,7 +5,7 @@ module Music.Theory.Permutations (permutation
                                  ,two_line,one_line,one_line_compact
                                  ,multiplication_table
                                  ,compose
-                                 ,permutations_l
+                                 ,n_permutations,permutations_l
                                  ,multiset_permutations) where
 
 import Data.List
@@ -19,6 +19,14 @@ elem_index_unique e p =
     case elemIndices e p of
       [i] -> i
       _ -> error "elem_index_unique"
+
+-- | Number of permutations.
+--
+-- > map n_permutations [1..8] == [1,2,6,24,120,720,5040,40320]
+-- > n_permutations 16 `div` 1000000 == 20922789
+-- > length (permutations_l [1..5]) == n_permutations 5
+n_permutations :: (Integral a) => a -> a
+n_permutations n = if n == 1 then 1 else n * n_permutations (n - 1)
 
 -- | Generate the permutation from /p/ to /q/ that when applied to /p/
 -- will give /q/.
