@@ -1,4 +1,4 @@
-css=$(HOME)/sw/hsc3/Help/hsc3.css
+css=$(HOME)/ut/hsc3-texts/css/hsc3.css
 
 %.html : %.lhs
 	pandoc -f markdown+lhs -t html -c $(css) --smart < $< > $*.html
