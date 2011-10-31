@@ -28,7 +28,7 @@ type Matrix a = [[a]]
 -- >                        ,[(3,1),(3,2),(3,3)]]
 matrix_f :: (a -> a -> b) -> [a] -> Matrix b
 matrix_f f =
-    let g (x,xs) = map (\x' -> f x x') xs
+    let g (x,xs) = map (f x) xs
         h xs = map (\x -> (x,xs)) xs
     in map g . h
 
@@ -53,7 +53,7 @@ half_matrix_f :: (a -> a -> b) -> [a] -> Matrix b
 half_matrix_f f xs =
     let drop_last = reverse . drop 1 . reverse
         m = drop_last (matrix_f f  xs)
-    in map (\(i,ns) -> drop i ns) (zip [1..] m)
+    in zipWith drop [1..] m
 
 -- | Construct 'Contour_Half_Matrix' (p.264)
 contour_half_matrix :: Ord a => [a] -> Contour_Half_Matrix
@@ -65,7 +65,7 @@ contour_half_matrix xs =
 contour_half_matrix_str :: Contour_Half_Matrix -> String
 contour_half_matrix_str (Contour_Half_Matrix _ hm) =
     let hm' = map (concatMap (show . fromEnum)) hm
-    in intercalate " " hm'
+    in unwords hm'
 
 instance Show Contour_Half_Matrix where
     show = contour_half_matrix_str
@@ -112,7 +112,7 @@ contour_description x =
 contour_description_str :: Contour_Description -> String
 contour_description_str (Contour_Description n m) =
     let xs = concatMap (show . fromEnum . snd) (M.toList m)
-    in intercalate " " (splitPlaces [n-1,n-2 .. 0] xs)
+    in unwords (splitPlaces [n-1,n-2 .. 0] xs)
 
 instance Show Contour_Description where
     show = contour_description_str
@@ -146,7 +146,7 @@ uniform (Contour_Description _ m) = all_equal (M.elems m)
 --
 -- > map (no_equalities.contour_description) ["abc","bbb","cba"] == [True,False,True]
 no_equalities :: Contour_Description -> Bool
-no_equalities (Contour_Description _ m) = not (EQ `elem` M.elems m)
+no_equalities (Contour_Description _ m) = EQ `notElem` M.elems m
 
 -- | Set of all contour descriptions.
 --
@@ -220,8 +220,8 @@ implication (i,j) =
 -- > replace "test" 2 'n' == "tent"
 replace :: Integral i => [a] -> i -> a -> [a]
 replace ns i x =
-    let fn (j,y) = if i == j then x else y
-    in map fn (zip [0..] ns)
+    let f j y = if i == j then x else y
+    in zipWith f [0..] ns
 
 -- | Derive an 'Integral' contour that would be described by
 -- 'Contour_Description'.  Diverges for impossible contours.
@@ -243,9 +243,9 @@ draw_contour d =
                         in if c == c'
                            then Nothing
                            else let j'' = case c of
-                                            LT -> i' + (adjustment j')
+                                            LT -> i' + adjustment j'
                                             EQ -> i'
-                                            GT -> i' - (adjustment j')
+                                            GT -> i' - adjustment j'
                                 in Just (replace ns j j'')
         refine [] ns = ns
         refine (i:is) ns = case step i ns of

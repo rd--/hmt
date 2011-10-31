@@ -153,7 +153,7 @@ mk_isomorphic_layout n_row n_col top_left =
         mk_seq 0 _ _ = []
         mk_seq n i z = z : mk_seq (n-1) i (z `plus` i)
         left = mk_seq n_row (-1,1) top_left
-    in map (\i -> mk_seq n_col (-1,2) i) left
+    in map (mk_seq n_col (-1,2)) left
 
 rank_two_regular_temperament :: Integral a => a -> a -> [(a,a)] -> [a]
 rank_two_regular_temperament a b =

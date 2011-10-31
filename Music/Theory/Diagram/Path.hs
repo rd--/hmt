@@ -126,7 +126,7 @@ shift_tbl' = concat . mapMaybe shift_tbl
 
 trans :: [(Pt R,Pt R)] -> Ln R -> Ln R
 trans tbl =
-    let f i = maybe i id (lookup i tbl)
+    let f i = fromMaybe i (lookup i tbl)
     in ln_fn (\(p,q) -> ln (f p) (f q))
 
 replc :: [(Ln R,Bool)] -> [Ln R]
@@ -148,11 +148,11 @@ mk_path' p =
     in map (do_shift' (mk_shift_map p')) p'
 
 -- | Apply /f/ to /x/ and /y/ duple of 'Pt'.
-pt_fn :: ((a,a) -> b) -> (Pt a -> b)
+pt_fn :: ((a,a) -> b) -> Pt a -> b
 pt_fn f p = let (x,y) = pt_xy p in f (x,y)
 
 -- | Apply /f/ to /start/ and /end/ 'Pt' duple of 'Ln'.
-ln_fn :: Num a => ((Pt a,Pt a) -> b) -> (Ln a -> b)
+ln_fn :: Num a => ((Pt a,Pt a) -> b) -> Ln a -> b
 ln_fn f l = let (p,q) = ln_pt l in f (p,q)
 
 to_unit :: R -> [Ln R] -> [Ln R]
@@ -170,7 +170,7 @@ type Path = [(Ca,Ls R)]
 
 draw_path :: Path -> C.Render ()
 draw_path xs = do
-  mapM_ (\(c,l) -> arrows_mp 0.1 (pi/9) c l) xs
+  mapM_ (uncurry (arrows_mp 0.1 (pi/9))) xs
   C.showPage
 
 draw_paths :: [Path] -> C.Render ()

@@ -1,6 +1,7 @@
 -- | Common music notation intervals.
 module Music.Theory.Interval where
 
+import Data.Maybe
 import Music.Theory.Pitch
 
 -- | Interval type or degree.
@@ -180,8 +181,8 @@ transpose i ip =
         ty = if i_d == GT
              then interval_ty p_n' p_n
              else interval_ty p_n p_n'
-        qu = maybe (error ("qu: " ++ show (ty,st))) id
-             (interval_q ty (fromIntegral st))
+        qu = let err = error ("qu: " ++ show (ty,st))
+             in fromMaybe err (interval_q ty (fromIntegral st))
         qd = quality_difference qu i_q * i_d'
         p_a' = toEnum (fromEnum p_a + (qd * 2))
     in ip' { alteration = p_a' }

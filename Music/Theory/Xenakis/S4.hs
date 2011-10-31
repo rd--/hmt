@@ -4,6 +4,7 @@
 module Music.Theory.Xenakis.S4 where
 
 import Data.List
+import Data.Maybe
 import qualified Data.Permute as P
 import Music.Theory.Permutations
 
@@ -65,7 +66,7 @@ l_on p q =
 --
 -- > seq_of Q1 == [8,7,5,6,4,3,1,2]
 seq_of :: Label -> Seq
-seq_of i = maybe (error "seq_of") id (lookup i viii_6b)
+seq_of i = fromMaybe (error "seq_of") (lookup i viii_6b)
 
 -- | 'Half_Seq' of 'Label', ie. 'half_seq' '.' 'seq_of'.
 --
@@ -95,7 +96,7 @@ reverse_lookup i =
 label_of :: Seq -> Label
 label_of i =
     let err = error ("label_of: " ++ show i)
-    in maybe err id (reverse_lookup i (viii_6b))
+    in fromMaybe err (reverse_lookup i viii_6b)
 
 -- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
 --
@@ -117,9 +118,9 @@ type Rel = (Bool,P.Permute)
 -- > relate [1,4,2,3] [8,5,6,7] == (True,P.listPermute 4 [1,0,2,3])
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
-    case complementary p q of
-      True -> (True,permutation (complement p) q)
-      False -> (False,permutation p q)
+    if complementary p q
+    then (True,permutation (complement p) q)
+    else (False,permutation p q)
 
 -- | 'Rel' from 'Label' /p/ to /q/.
 --
@@ -209,7 +210,7 @@ viii_7 =
             ,Q1,Q2,Q3,Q4
             ,Q5,Q6,Q7,Q8
             ,Q9,Q10,Q11,Q12]
-    in map (\i -> map (\j -> l_on j i) o) o
+    in map (\i -> map (`l_on` i) o) o
 
 -- | Fig. VIII-6/b 'Labels' (p.221)
 --

@@ -44,7 +44,7 @@ rnrtnmi s =
 pco :: String -> [Int]
 pco s =
     let s' = dropWhile isSpace s
-        s'' = takeWhile (\c -> elem c "0123456789taAebB") s'
+        s'' = takeWhile (`elem` "0123456789taAebB") s'
         f c | c `elem` "taA" = 10
             | c `elem` "ebB" = 11
             | otherwise = read [c]

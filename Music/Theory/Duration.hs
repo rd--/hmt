@@ -2,6 +2,7 @@ module Music.Theory.Duration where
 
 import Data.Function
 import Data.List
+import Data.Maybe
 import Data.Ratio
 
 -- | Standard music notation durational model
@@ -87,7 +88,7 @@ sum_dur' :: Duration -> Duration -> Duration
 sum_dur' y0 y1 =
     let y2 = sum_dur y0 y1
         err = error ("sum_dur': " ++ show (y0,y1))
-    in maybe err id y2
+    in fromMaybe err y2
 
 -- * RQ (Rational Quarter-Note)
 
@@ -133,7 +134,7 @@ whole_note_division_to_rq x =
 -- > map (rq_apply_dots 1) [1,2] == [3/2,7/4]
 rq_apply_dots :: Rational -> Integer -> Rational
 rq_apply_dots n d =
-    let m = iterate (\x -> x / 2) n
+    let m = iterate (/ 2) n
     in sum (genericTake (d + 1) m)
 
 -- | Convert 'Duration' to /RQ/ value, see 'rq_to_duration' for

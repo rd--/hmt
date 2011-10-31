@@ -5,6 +5,7 @@ module Music.Theory.Duration.Sequence.Notate
     ,ascribe
     ,group_boundary_lenient,group_boundary_strict) where
 
+import Data.Maybe
 import Data.Ratio
 import Music.Theory.Duration
 
@@ -341,7 +342,7 @@ simplify a ns xs =
 to_duration :: Show a => a -> R -> Duration
 to_duration msg n =
     let err = error ("to_duration:" ++ show (msg,n))
-    in maybe err id (rq_to_duration n)
+    in fromMaybe err (rq_to_duration n)
 
 tuplet :: (Integer,Integer) -> [Duration] -> [Duration_A]
 tuplet (d,n) xs =
@@ -415,7 +416,7 @@ ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
 ascribe_fn fn =
     let go [] _ = []
         go _ [] = error "ascribe_fn"
-        go (x:xs) (i:is) = let is' = if fn x then (i:is) else is
+        go (x:xs) (i:is) = let is' = if fn x then i:is else is
                            in (x,i) : go xs is'
     in go
 

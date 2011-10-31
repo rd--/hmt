@@ -60,7 +60,7 @@ line l =
     case l of
       [] -> return ()
       (x0,y0):l' -> do C.moveTo x0 y0
-                       mapM_ (\(x,y) -> C.lineTo x y) l'
+                       mapM_ (uncurry C.lineTo) l'
 
 -- | Render rectangle given colour 'C', upper-left 'P' and
 -- /(width,height)/.
