@@ -33,6 +33,8 @@ Library
                    Music.Theory.Diagram.Path
                    Music.Theory.Duration
                    Music.Theory.Duration.Name
+                   Music.Theory.Duration.Name.Abbreviation
+                   Music.Theory.Duration.RQ
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Interval
                    Music.Theory.Interval.Name

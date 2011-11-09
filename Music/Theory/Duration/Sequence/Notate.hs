@@ -1,3 +1,4 @@
+-- | Notation of a sequence of 'RQ' values as annotated 'Duration' values.
 module Music.Theory.Duration.Sequence.Notate
     (Duration_A
     ,Simplify,simplify
@@ -8,6 +9,7 @@ module Music.Theory.Duration.Sequence.Notate
 import Data.Maybe
 import Data.Ratio
 import Music.Theory.Duration
+import Music.Theory.Duration.RQ
 
 {-
 import Debug.Trace
@@ -18,17 +20,14 @@ debug = traceShow
 debug :: (Show a) => a -> x -> x
 debug _ x = x
 
--- | Synonym for 'Rational'.
-type R = Rational
-
 -- | Tuple of /start-time/, /duration/, /tied-left/ and /tied-right/.
-type D = (R,R,Bool,Bool)
+type D = (RQ,RQ,Bool,Bool)
 
 -- | Annotated 'Duration'
 type Duration_A = (Duration,[D_Annotation])
 
 -- | Duration of 'D'.
-d_duration :: D -> R
+d_duration :: D -> RQ
 d_duration (_,x,_,_) = x
 
 -- | Is 'Duration_A' tied to the the right?
@@ -98,19 +97,20 @@ with_start_times' (boundaries (repeat (3%2)) xs)
 -- | Split /xs/ into first, possibly empty 'middle', and last parts.
 -- /xs/ must have at least two elements.
 --
--- > start_middle_end []
--- > start_middle_end [1..6] == (1,[2,3,4,5],6)
+-- > start_middle_end [] == undefined
+-- > start_middle_end [1,2] == (1,[],2)
+-- > start_middle_end [1..6] == (1,[2..5],6)
 start_middle_end :: [x] -> (x,[x],x)
 start_middle_end xs =
     case xs of
-      (_:_:_) -> let n = length xs
-                     x0 = xs !! 0
-                     xn = xs !! (n - 1)
-                 in (x0,take (n - 2) (drop 1 xs),xn)
+      _:_:_ -> let n = length xs
+                   x0 = xs !! 0
+                   xn = xs !! (n - 1)
+               in (x0,take (n - 2) (drop 1 xs),xn)
       _ -> error "start_middle_end: list must have at least two elements"
 
 -- xs = [(start-time,duration)]
-tied_r_to_d :: [(R,R)] -> [D]
+tied_r_to_d :: [(RQ,RQ)] -> [D]
 tied_r_to_d xs =
     case xs of
       [] -> []
@@ -119,7 +119,7 @@ tied_r_to_d xs =
                f (s,d) = (s,d,True,True)
             in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
 
-boundaries_d :: [R] -> [R] -> [D]
+boundaries_d :: [RQ] -> [RQ] -> [D]
 boundaries_d xs ds =
     let bs = boundaries xs ds
     in concatMap tied_r_to_d (with_start_times' bs)
@@ -131,7 +131,7 @@ boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
 -- | Rational modulo
 --
 -- > map (r_mod (5/2)) [3/2,3/4] == [1,1/4]
-r_mod :: R -> R -> R
+r_mod :: RQ -> RQ -> RQ
 r_mod i j
     | i == j = 0
     | i < 0 = r_mod (i + j) j
@@ -141,7 +141,7 @@ r_mod i j
 {-
 -- n = boundary
 -- i = phase
-sep_at :: R -> R -> R -> [D]
+sep_at :: RQ -> RQ -> R -> [D]
 sep_at =
     let go l n i x =
             let i' = n - (i `r_mod` n)
@@ -159,7 +159,7 @@ sep_at 1 (1%3) (6%3)
 -- single /CMN/ duration (ie. requires tie).
 --
 -- > sep_unrep 0 5 == Just (4,1)
-sep_unrep :: R -> R -> Maybe (R,R)
+sep_unrep :: RQ -> RQ -> Maybe (RQ,RQ)
 sep_unrep i x =
     let i' = denominator i == 1
         j = case numerator x of
@@ -184,7 +184,7 @@ zipWith sep_unrep [1,3%8,1] [5%4,5%8,4] == [Just (1%1,1%4),Just (1%8,1%2),Nothin
 zipWith (\i x -> sep_unrep_d (i,x,False,False)) [1,3%8,1] [5%4,5%8,4]
 -}
 
-separate :: [R] -> [R] -> [D]
+separate :: [RQ] -> [RQ] -> [D]
 separate ns = concatMap sep_unrep_d . boundaries_d ns
 
 {-
@@ -196,7 +196,7 @@ separate (repeat (1%2)) xs
 --
 -- > group_boundary_lenient id [1,1,1] [2,1%2,1%2] == [[2%1],[1%2,1%2]]
 -- > group_boundary_lenient id [3,3,3] (cycle [1,2,3]) == [[1,2],[3],[1,2]]
-group_boundary_lenient :: (a -> R) -> [R] -> [a] -> [[a]]
+group_boundary_lenient :: (a -> RQ) -> [RQ] -> [a] -> [[a]]
 group_boundary_lenient dur_f =
     let go _ [] [] _ = []
         go _ _ [] _ = error "group_boundary_lenient: no boundaries?"
@@ -213,7 +213,7 @@ group_boundary_lenient dur_f =
                           else go c'' (x:js) ns xs
     in go 0 []
 
-group_boundary_lenient_d :: [R] -> [D] -> [[D]]
+group_boundary_lenient_d :: [RQ] -> [D] -> [[D]]
 group_boundary_lenient_d = group_boundary_lenient d_duration
 
 {-
@@ -271,7 +271,7 @@ in map derive_tuplet (group_boundary_lenient_d 1 (separate 1 i))
 -- | Remove tuplet multiplier from value, ie. to give notated
 -- duration.  This seems odd but is neccessary to avoid ambiguity.
 -- Ie. is 1 a quarter note or a 3:2 tuplet dotted-quarter-note etc.
-un_tuplet :: (Integer,Integer) -> R -> R
+un_tuplet :: (Integer,Integer) -> RQ -> RQ
 un_tuplet (i,j) x = x * (i%j)
 
 d_join_aligned :: D -> D -> Maybe D
@@ -283,13 +283,13 @@ d_join_aligned (s1,x1,l1,r1) (_,x2,_,r2)
       (x1 == 2 && r1 && x2 `elem` [1,2]) = debug ("aligned-join",s1,x1,x2) (Just (s1,x1+x2,l1,r2))
     | otherwise = debug ("aligned-no-join",s1,x1,r1,x2) Nothing
 
-divisible_by :: R -> R -> Bool
+divisible_by :: RQ -> RQ -> Bool
 divisible_by i j = denominator (i / j) == 1
 
 -- | partial/incomplete/inaccurate
 --
 -- > d_join 1 (7%4,1%4,False,True) (2%1,1%4,True,False) == Nothing
-d_join :: R -> D -> D -> Maybe D
+d_join :: RQ -> D -> D -> Maybe D
 d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
     | s1 `divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
     | denominator (s1 `r_mod` 1) == 4 &&
@@ -307,7 +307,7 @@ d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
 
 {-
 -- error checking variant
-d_join' :: R -> D -> D -> Maybe D
+d_join' :: RQ -> D -> D -> Maybe D
 d_join' a d1 d2 =
     case d_join a d1 d2 of
       Nothing -> Nothing
@@ -327,7 +327,7 @@ coalesce f xs =
 
 -- | Type of function used by 'notate' to simplify duration sequence.
 --   Arguments specify /alignment/ and /boundaries/.
-type Simplify = (R -> [R] -> [D] -> [D])
+type Simplify = (RQ -> [RQ] -> [D] -> [D])
 
 -- | Simple minded two pass 'Simplify' function.  The two pass
 -- structure is so that @[2,1%2,1%2]@ becomes @[2,1]@ becomes @[3]@.
@@ -339,7 +339,7 @@ simplify a ns xs =
     in concat ((pass . pass) xs')
 
 -- | Variant of 'rq_to_duration' with error message.
-to_duration :: Show a => a -> R -> Duration
+to_duration :: Show a => a -> RQ -> Duration
 to_duration msg n =
     let err = error ("to_duration:" ++ show (msg,n))
     in fromMaybe err (rq_to_duration n)
@@ -381,7 +381,7 @@ notate_sec xs =
 --
 -- > let n = notate (Just simplify) (repeat 1) (repeat 4)
 -- > in n [3,3] == [(dotted_half_note,[]),(quarter_note,[Tie_Right]),(half_note,[Tie_Left])]
-notate :: Maybe Simplify -> [R] -> [R] -> [R] -> [Duration_A]
+notate :: Maybe Simplify -> [RQ] -> [RQ] -> [RQ] -> [Duration_A]
 notate smp is ns xs =
     let xs' = case smp of
                 Nothing -> separate is xs
@@ -392,7 +392,7 @@ notate smp is ns xs =
 -- division of @1@.
 --
 -- > map (duration_to_rq . fst) (notate' [4,4] [3,3,2]) == [3,1,2,2]
-notate' :: [R] -> [R] -> [Duration_A]
+notate' :: [RQ] -> [RQ] -> [Duration_A]
 notate' = notate (Just simplify) (repeat 1)
 
 {-

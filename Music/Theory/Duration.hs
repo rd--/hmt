@@ -1,32 +1,19 @@
+-- | Common music notation duration model.
 module Music.Theory.Duration where
 
-import Data.Function
-import Data.List
 import Data.Maybe
-import Data.Ratio
 
 -- | Standard music notation durational model
 data Duration = Duration {division :: Integer -- ^ division of whole note
                          ,dots :: Integer -- ^ number of dots
                          ,multiplier :: Rational -- ^ tuplet modifier
                          }
-                deriving (Eq, Show)
-
-instance Ord Duration where
-    compare = duration_compare
+                deriving (Eq,Show)
 
 -- | Standard music notation durational model annotations
 data D_Annotation = Tie_Right | Tie_Left
                   | Begin_Tuplet (Integer,Integer,Duration) | End_Tuplet
                     deriving (Eq,Show)
-
--- * Operations
-
--- | 'Ord' 'compare' function for 'Duration'.
---
--- > half_note `duration_compare` quarter_note == GT
-duration_compare :: Duration -> Duration -> Ordering
-duration_compare = compare `on` duration_to_rq
 
 -- | Compare durations with equal multipliers.
 duration_compare_meq :: Duration -> Duration -> Ordering
@@ -40,6 +27,10 @@ duration_compare_meq y0 y1 =
             else if x0 == x1
                  then compare n0 n1
                  else compare x1 x0
+
+-- | 'Ord' instance in terms of 'duration_compare_meq'.
+instance Ord Duration where
+    compare = duration_compare_meq
 
 -- | Sort a pair of equal type values using given comparison function.
 --
@@ -90,61 +81,6 @@ sum_dur' y0 y1 =
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2
 
--- * RQ (Rational Quarter-Note)
-
--- | Rational number of quarter notes to duration value.
---   It is a mistake to hope this could handle tuplets
---   directly, ie. a 3:2 dotted note will be of the same
---   duration as a plain undotted note.
---
--- > rq_to_duration (3/4) == Just dotted_eighth_note
-rq_to_duration :: Rational -> Maybe Duration
-rq_to_duration x =
-    case (numerator x,denominator x) of
-      (1,8) -> Just thirtysecond_note
-      (3,16) -> Just dotted_thirtysecond_note
-      (1,4) -> Just sixteenth_note
-      (3,8) -> Just dotted_sixteenth_note
-      (1,2) -> Just eighth_note
-      (3,4) -> Just dotted_eighth_note
-      (1,1) -> Just quarter_note
-      (3,2) -> Just dotted_quarter_note
-      (2,1) -> Just half_note
-      (3,1) -> Just dotted_half_note
-      (7,2) -> Just double_dotted_half_note
-      (4,1) -> Just whole_note
-      (6,1) -> Just dotted_whole_note
-      (8,1) -> Just breve
-      (12,1) -> Just dotted_breve
-      _ -> Nothing
-
--- | Convert a whole note division integer to a /RQ/ value.
---
--- > map whole_note_division_to_rq [1,2,4,8] == [4,2,1,1/2]
-whole_note_division_to_rq :: Integer -> Rational
-whole_note_division_to_rq x =
-    let f = (* 4) . recip . (%1)
-    in case x of
-         0 -> 8
-         -1 -> 16
-         _ -> f x
-
--- | Apply dots to an /RQ/ duration.
---
--- > map (rq_apply_dots 1) [1,2] == [3/2,7/4]
-rq_apply_dots :: Rational -> Integer -> Rational
-rq_apply_dots n d =
-    let m = iterate (/ 2) n
-    in sum (genericTake (d + 1) m)
-
--- | Convert 'Duration' to /RQ/ value, see 'rq_to_duration' for
--- partial inverse.
---
--- > map duration_to_rq [half_note,dotted_quarter_note] == [2,3/2]
-duration_to_rq :: Duration -> Rational
-duration_to_rq (Duration n d m) =
-    let x = whole_note_division_to_rq n
-    in rq_apply_dots x d * m
 
 -- | Give @MusicXML@ type for division.
 --
@@ -195,35 +131,6 @@ whole_note_division_to_beam_count x =
 -- > map duration_beam_count [half_note,sixteenth_note] == [0,2]
 duration_beam_count :: Duration -> Integer
 duration_beam_count (Duration x _ _) =
-    case whole_note_division_to_beam_count x of
-      Nothing -> error "duration_beam_count"
-      Just x' -> x'
-
--- * Constants
-
-breve,whole_note,half_note,quarter_note,eighth_note,sixteenth_note,thirtysecond_note :: Duration
-breve = Duration 0 0 1
-whole_note = Duration 1 0 1
-half_note = Duration 2 0 1
-quarter_note = Duration 4 0 1
-eighth_note = Duration 8 0 1
-sixteenth_note = Duration 16 0 1
-thirtysecond_note = Duration 32 0 1
-
-dotted_breve,dotted_whole_note,dotted_half_note,dotted_quarter_note,dotted_eighth_note,dotted_sixteenth_note,dotted_thirtysecond_note :: Duration
-dotted_breve = Duration 0 1 1
-dotted_whole_note = Duration 1 1 1
-dotted_half_note = Duration 2 1 1
-dotted_quarter_note = Duration 4 1 1
-dotted_eighth_note = Duration 8 1 1
-dotted_sixteenth_note = Duration 16 1 1
-dotted_thirtysecond_note = Duration 32 1 1
-
-double_dotted_breve,double_dotted_whole_note,double_dotted_half_note,double_dotted_quarter_note,double_dotted_eighth_note,double_dotted_sixteenth_note,double_dotted_thirtysecond_note :: Duration
-double_dotted_breve = Duration 0 2 1
-double_dotted_whole_note = Duration 2 2 1
-double_dotted_half_note = Duration 2 2 1
-double_dotted_quarter_note = Duration 4 2 1
-double_dotted_eighth_note = Duration 8 2 1
-double_dotted_sixteenth_note = Duration 16 2 1
-double_dotted_thirtysecond_note = Duration 32 2 1
+    let err = error "duration_beam_count"
+        bc = whole_note_division_to_beam_count x
+    in fromMaybe err bc

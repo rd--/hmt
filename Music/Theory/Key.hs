@@ -1,3 +1,4 @@
+-- | Common music keys.
 module Music.Theory.Key where
 
 import Data.List

@@ -63,11 +63,10 @@ interval_q_tbl =
 --
 -- > interval_q Unison 11 == Just Diminished
 -- > interval_q Third 5 == Just Augmented
+-- > interval_q Fourth 5 == Just Perfect
+-- > interval_q Unison 3 == Nothing
 interval_q :: Interval_T -> Int -> Maybe Interval_Q
-interval_q i n =
-    case lookup i interval_q_tbl of
-      Just t -> lookup n t
-      Nothing -> Nothing
+interval_q i n = lookup i interval_q_tbl >>= lookup n
 
 -- | Inclusive set of 'Note_T' within indicated interval.  This is not
 -- equal to 'enumFromTo' which is not circular.
@@ -153,9 +152,8 @@ quality_difference_m a b =
 -- | Erroring variant of 'quality_difference_m'.
 quality_difference :: Interval_Q -> Interval_Q -> Int
 quality_difference a b =
-    case quality_difference_m a b of
-      Just n -> n
-      Nothing -> error ("quality_difference: " ++ show (a,b))
+    let err = error ("quality_difference: " ++ show (a,b))
+    in fromMaybe err (quality_difference_m a b)
 
 -- | Transpose a 'Pitch' by an 'Interval'.
 --
