@@ -1,3 +1,4 @@
+-- | Set operations on lists.
 module Music.Theory.Set where
 
 import Control.Monad
@@ -24,7 +25,7 @@ dyads s =
       [] -> []
       x:xs -> [(x,y) | y <- xs] ++ dyads xs
 
--- | Set expansion
+-- | Set expansion.
 --
 -- > se 4 [1,2,3] == [[1,1,2,3],[1,2,2,3],[1,2,3,3]]
 se :: (Ord a) => Int -> [a] -> [[a]]

@@ -1,3 +1,4 @@
+-- | Set class tables and database.
 module Music.Theory.Table where
 
 import Data.List

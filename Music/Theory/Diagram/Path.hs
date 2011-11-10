@@ -1,14 +1,14 @@
--- | Functions to make /path/ diagrams such as those in Fig. VIII-11
+-- | Functions to make /path diagrams/ such as those in Fig. VIII-11
 -- on I.Xenakis /Formalized Music/.
 module Music.Theory.Diagram.Path where
 
-import Data.CG.Minus
+import Data.CG.Minus {- hcg-minus -}
 import Data.CG.Minus.Colour
-import Data.Colour
+import Data.Colour {- colour -}
 import Data.Function
 import Data.List
 import Data.Maybe
-import qualified Graphics.Rendering.Cairo as C
+import qualified Graphics.Rendering.Cairo as C {- cairo -}
 import Render.CG.Minus.Arrow
 
 -- * Genera
@@ -67,6 +67,28 @@ includes l0 l1 =
 is_included :: Ln R -> Ln R -> Bool
 is_included = flip includes
 
+-- | Apply /f/ to /x/ and /y/ duple of 'Pt'.
+pt_fn :: ((a,a) -> b) -> Pt a -> b
+pt_fn f p = let (x,y) = pt_xy p in f (x,y)
+
+-- | Apply /f/ to /start/ and /end/ 'Pt' duple of 'Ln'.
+ln_fn :: Num a => ((Pt a,Pt a) -> b) -> Ln a -> b
+ln_fn f l = let (p,q) = ln_pt l in f (p,q)
+
+-- | Apply /f/ to /start/ and /end/ 'Pt's of 'Ln' and construct 'Ln'.
+ln_pt_fn :: (Num a, Num b) => (Pt a -> Pt b) -> Ln a -> Ln b
+ln_pt_fn f = ln_fn (\(p,q) -> ln (f p) (f q))
+
+-- | Scale set of 'Ln' to lie in area given by /(0,n)/.
+to_unit :: R -> [Ln R] -> [Ln R]
+to_unit m p =
+    let p' = concatMap (ln_fn (\(i,j) -> [i,j])) p
+        x = maximum (map pt_x p')
+        y = maximum (map pt_y p')
+        f n = pt_fn (\(i,j) -> pt (i*m/n) (m - (j*m/n)))
+        g n = ln_pt_fn (f n)
+    in map (g (max x y)) p
+
 -- * Orientation
 
 -- | Enumeration of 'Vertical', 'Horizontal' and 'Diagonal'.
@@ -84,17 +106,22 @@ orientation l =
       Nothing -> Vertical
       Just m -> if m == 0 then Horizontal else Diagonal m
 
--- * Shifts
+-- * Shift Map
 
-mk_shift_map :: [Ln R] -> [(Pt R,[Orientation R])]
+-- | A table 'Pt' and 'Orientation' set pairs.
+type Shift_Map a = [(Pt a,[Orientation a])]
+
+-- | Construct a 'Shift_Map' from a set of 'Ln's.
+mk_shift_map :: [Ln R] -> Shift_Map R
 mk_shift_map =
     let f i l = if overlap i l then Just (i,orientation l) else Nothing
         g (x,i,_) = mapMaybe (f i) x
         h (l0,o) = let (p,q) = ln_pt l0 in [(p,o),(q,o)]
     in gather . concatMap h . concatMap g . parts
 
-do_shift :: [(Pt R,[Orientation R])] -> Pt R -> Pt R
-do_shift tbl i =
+-- | Apply 'Shift_Map' to a 'Pt'.
+shift_map_pt :: Shift_Map R -> Pt R -> Pt R
+shift_map_pt tbl i =
     let n = 0.1
         (x,y) = pt_xy i
         g o = let x' = if Vertical `elem` o then x+n else x
@@ -102,16 +129,18 @@ do_shift tbl i =
               in pt x' y'
     in maybe i g (lookup i tbl)
 
-do_shift' :: [(Pt R,[Orientation R])] -> Ln R -> Ln R
-do_shift' tbl = ln_fn (\(p,q) -> ln (do_shift tbl p) (do_shift tbl q))
+-- | Apply 'Shift_Map' to a 'Ln'.
+shift_map_ln :: Shift_Map R -> Ln R -> Ln R
+shift_map_ln tbl = ln_pt_fn (shift_map_pt tbl)
 
-note_coll :: [Ln R] -> [(Ln R,Bool)]
-note_coll =
-    let f (x,xs) = (x,any (is_included x) xs)
-    in map f . parts'
+-- * Shift table
 
-shift_tbl :: (Ln R,Bool) -> Maybe [(Pt R,Pt R)]
-shift_tbl (l,occ) =
+-- | A table of 'Pt' pairs.
+type Shift_Table a = [(Pt a,Pt a)]
+
+-- | Make element of 'Shift_Table'.
+mk_shift_tbl_m :: (Ln R,Bool) -> Maybe (Shift_Table R)
+mk_shift_tbl_m (l,occ) =
     if occ
     then let (p1,p2) = ln_pt l
              ((x1,y1),(x2,y2)) = ln_pt' l
@@ -121,61 +150,70 @@ shift_tbl (l,occ) =
             else let y = y1 + n in Just [(p1,pt x1 y),(p2,pt x2 y)]
     else Nothing
 
-shift_tbl' :: [(Ln R,Bool)] -> [(Pt R,Pt R)]
-shift_tbl' = concat . mapMaybe shift_tbl
+-- | Make complete 'Shift_Table'.
+mk_shift_tbl :: Collision_Table -> Shift_Table R
+mk_shift_tbl = concat . mapMaybe mk_shift_tbl_m
 
-trans :: [(Pt R,Pt R)] -> Ln R -> Ln R
-trans tbl =
+-- | Apply 'Shift_Table' to 'Ln'.
+shift_table_ln :: Shift_Table R -> Ln R -> Ln R
+shift_table_ln tbl =
     let f i = fromMaybe i (lookup i tbl)
     in ln_fn (\(p,q) -> ln (f p) (f q))
 
-replc :: [(Ln R,Bool)] -> [Ln R]
-replc xs =
-    let tbl = shift_tbl' xs
-    in map (trans tbl . fst) xs
+-- * Collision table
 
-to_pts :: [(Int,Int)] -> [Ln R]
-to_pts xs =
+-- | Table of 'Ln's indicating collisions.
+type Collision_Table = [(Ln R,Bool)]
+
+-- | Construct 'Collision_Table' for a set of 'Ln'.
+mk_collision_table :: [Ln R] -> Collision_Table
+mk_collision_table =
+    let f (x,xs) = (x,any (is_included x) xs)
+    in map f . parts'
+
+-- | Construct 'Shift_Table' from 'Collision_Table' and shift all 'Ln'.
+collision_table_rewrite :: Collision_Table -> [Ln R]
+collision_table_rewrite xs =
+    let tbl = mk_shift_tbl xs
+    in map (shift_table_ln tbl . fst) xs
+
+-- * Path diagram
+
+-- | A diagram given as a set of 'Int' pairs.
+type Path_Diagram = [(Int,Int)]
+
+-- | Construct set of 'Ln' from 'Path_Diagram'.
+path_diagram_ln :: Path_Diagram -> [Ln R]
+path_diagram_ln xs =
     let xs' = map (pt_from_i . pt') xs
     in zipWith ln xs' (tail xs')
 
-mk_path :: [(Int,Int)] -> [Ln R]
-mk_path = replc . note_coll . to_pts
+-- | 'Collision_Table' based resolution of 'Path_Diagram'.
+mk_path_ct :: Path_Diagram -> [Ln R]
+mk_path_ct = collision_table_rewrite . mk_collision_table . path_diagram_ln
 
-mk_path' :: [(Int,Int)] -> [Ln R]
-mk_path' p =
-    let p' = to_pts p
-    in map (do_shift' (mk_shift_map p')) p'
+-- | 'Shift_Map' variant of 'mk_path_ct'.
+mk_path_sm :: Path_Diagram -> [Ln R]
+mk_path_sm p =
+    let p' = path_diagram_ln p
+    in map (shift_map_ln (mk_shift_map p')) p'
 
--- | Apply /f/ to /x/ and /y/ duple of 'Pt'.
-pt_fn :: ((a,a) -> b) -> Pt a -> b
-pt_fn f p = let (x,y) = pt_xy p in f (x,y)
+-- * Drawing
 
--- | Apply /f/ to /start/ and /end/ 'Pt' duple of 'Ln'.
-ln_fn :: Num a => ((Pt a,Pt a) -> b) -> Ln a -> b
-ln_fn f l = let (p,q) = ln_pt l in f (p,q)
-
-to_unit :: R -> [Ln R] -> [Ln R]
-to_unit m p =
-    let p' = concatMap (ln_fn (\(i,j) -> [i,j])) p
-        x = maximum (map pt_x p')
-        y = maximum (map pt_y p')
-        f n = pt_fn (\(i,j) -> pt (i*m/n) (m - (j*m/n)))
-        g n = ln_fn (\(i,j) -> ln (f n i) (f n j))
-    in map (g (max x y)) p
-
--- * Path
-
+-- | A set of 'Ca' and 'Ls' pairs.
 type Path = [(Ca,Ls R)]
 
+-- | Draw 'Path' with mid-point arrows.
 draw_path :: Path -> C.Render ()
 draw_path xs = do
   mapM_ (uncurry (arrows_mp 0.1 (pi/9))) xs
   C.showPage
 
+-- | 'mapM_' 'draw_path'.
 draw_paths :: [Path] -> C.Render ()
 draw_paths = mapM_ draw_path
 
+-- | 'draw_paths' to named @PDF@ file.
 write_pdf :: FilePath -> [Path] -> IO ()
 write_pdf fn xs = do
   let f s = C.renderWith s (C.translate 10 100 >>
@@ -185,8 +223,8 @@ write_pdf fn xs = do
 
 -- * Path diagram
 
-path_diagram :: FilePath -> [[(Int,Int)]] -> IO ()
+-- | Write @PDF@ of a set of 'Path_Diagram's to named file.
+path_diagram :: FilePath -> [Path_Diagram] -> IO ()
 path_diagram fn =
     let f (i,j) = (opaque black,[i,j])
-    in write_pdf fn . map (map (ln_fn f) . to_unit 4 . mk_path')
-
+    in write_pdf fn . map (map (ln_fn f) . to_unit 4 . mk_path_sm)

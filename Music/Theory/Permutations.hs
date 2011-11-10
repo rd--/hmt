@@ -1,5 +1,6 @@
+-- | Permutation functions.
 module Music.Theory.Permutations (permutation
-                                 ,apply_permutation
+                                 ,apply_permutation,apply_permutation_c
                                  ,non_invertible
                                  ,from_cycles
                                  ,two_line,one_line,one_line_compact
@@ -14,6 +15,8 @@ import qualified Math.Combinatorics.Multiset as C
 import Numeric (showHex)
 
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
+--
+-- > elem_index_unique 'a' "abcda" == undefined
 elem_index_unique :: (Eq a) => a -> [a] -> Int
 elem_index_unique e p =
     case elemIndices e p of
@@ -28,8 +31,8 @@ elem_index_unique e p =
 n_permutations :: (Integral a) => a -> a
 n_permutations n = if n == 1 then 1 else n * n_permutations (n - 1)
 
--- | Generate the permutation from /p/ to /q/ that when applied to /p/
--- will give /q/.
+-- | Generate the permutation from /p/ to /q/, ie. the permutation
+-- that, when applied to /p/, gives /q/.
 --
 -- > apply_permutation (permutation [0,1,3] [1,0,3]) [0,1,3] == [1,0,3]
 permutation :: (Eq a) => [a] -> [a] -> P.Permute
@@ -42,6 +45,15 @@ permutation p q =
 apply_permutation :: (Eq a) => P.Permute -> [a] -> [a]
 apply_permutation f p = map (p !!) (P.elems f)
 
+-- | Composition of 'apply_permutation' and 'from_cycles'.
+--
+-- > apply_permutation_c [[0,3],[1,2]] [1..4] == [4,3,2,1]
+-- > apply_permutation_c [[0,2],[1],[3,4]] [1..5] == [3,2,1,5,4]
+-- > apply_permutation_c [[0,1,4],[2,3]] [1..5] == [2,5,4,3,1]
+-- > apply_permutation_c [[0,1,3],[2,4]] [1..5] == [2,4,5,1,3]
+apply_permutation_c :: (Eq a) => [[Int]] -> [a] -> [a]
+apply_permutation_c = apply_permutation . from_cycles
+
 -- | True if the inverse of /p/ is /p/.
 --
 -- > non_invertible (permutation [0,1,3] [1,0,3]) == True
@@ -50,17 +62,15 @@ non_invertible p = p == P.inverse p
 
 -- | Generate a permutation from the cycles /c/.
 --
--- > apply_permutation (from_cycles [[0,3],[1,2]]) [1..4] == [4,3,2,1]
 -- > apply_permutation (from_cycles [[0,1,2,3]]) [1..4] == [2,3,4,1]
--- > apply_permutation (from_cycles ([[0,2],[1],[3,4]])) [1..5] == [3,2,1,5,4]
--- > apply_permutation (from_cycles ([[0,1,4],[2,3]])) [1..5] == [2,5,4,3,1]
--- > apply_permutation (from_cycles ([[0,1,3],[2,4]])) [1..5] == [2,4,5,1,3]
 from_cycles :: [[Int]] -> P.Permute
 from_cycles c = P.cyclesPermute (sum (map length c)) c
 
 -- | Generate all permutations of size /n/.
 --
--- > map one_line (permutations_n 3) == [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+-- > map one_line (permutations_n 3) == [[1,2,3],[1,3,2]
+-- >                                    ,[2,1,3],[2,3,1]
+-- >                                    ,[3,1,2],[3,2,1]]
 permutations_n :: Int -> [P.Permute]
 permutations_n n =
     let f p = let r = P.next p
@@ -83,8 +93,10 @@ multiset_permutations = C.permutations . C.fromList
 
 -- | Composition of /q/ then /p/.
 --
--- > let i = from_cycles ([[0,2],[1],[3,4]]) `compose` from_cycles ([[0,1,4],[2,3]])
--- > in apply_permutation i [1,2,3,4,5] == [2,4,5,1,3]
+-- > let {p = from_cycles [[0,2],[1],[3,4]]
+-- >     ;q = from_cycles [[0,1,4],[2,3]]
+-- >     ;r = p `compose` q}
+-- > in apply_permutation r [1,2,3,4,5] == [2,4,5,1,3]
 compose :: P.Permute -> P.Permute -> P.Permute
 compose p q =
     let n = P.size q
@@ -105,17 +117,24 @@ two_line p =
 -- | One line notation of /p/.
 --
 -- > one_line (permutation [0,1,3] [1,0,3]) == [2,1,3]
--- > map one_line (permutations_n 3) == [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+--
+-- > map one_line (permutations_n 3) == [[1,2,3],[1,3,2]
+-- >                                    ,[2,1,3],[2,3,1]
+-- >                                    ,[3,1,2],[3,2,1]]
 one_line :: P.Permute -> [Int]
 one_line = snd . two_line
 
 -- | Variant of 'one_line' that produces a compact string.
 --
 -- > one_line_compact (permutation [0,1,3] [1,0,3]) == "213"
--- > unwords (map one_line_compact (permutations_n 3)) == "123 132 213 231 312 321"
+--
+-- > let p = permutations_n 3
+-- > in unwords (map one_line_compact p) == "123 132 213 231 312 321"
 one_line_compact :: P.Permute -> String
 one_line_compact =
-    let f n = if n >= 0 && n <= 15 then showHex n "" else error "one_line_compact:not(0-15)"
+    let f n = if n >= 0 && n <= 15
+              then showHex n ""
+              else error "one_line_compact:not(0-15)"
     in concatMap f . one_line
 
 -- | Multiplication table of symmetric group /n/.

@@ -1,8 +1,11 @@
+-- | Pitch class operations on integers.
 module Music.Theory.PitchClass where
 
 import Music.Theory.Set
 import Data.Maybe
 import Data.List
+
+-- * Pitch class operations
 
 -- | Modulo twelve.
 --
@@ -105,39 +108,59 @@ mn n = map (pc . (* n))
 m5 :: (Integral a) => [a] -> [a]
 m5 = mn 5
 
+-- | Set of all tranpositions.
+--
+-- > length (all_Tn [0,1,3]) == 12
 all_Tn :: (Integral a) => [a] -> [[a]]
 all_Tn p = map (`tn` p) [0..11]
 
+-- | Set of all tranpositions and inversions.
+--
+-- > length (all_TnI [0,1,3]) == 24
 all_TnI :: (Integral a) => [a] -> [[a]]
 all_TnI p =
     let ps = all_Tn p
     in ps ++ map (invert 0) ps
 
+-- | Set of all retrogrades, tranpositions and inversions.
+--
+-- > length (all_RTnI [0,1,3]) == 48
 all_RTnI :: (Integral a) => [a] -> [[a]]
 all_RTnI p =
     let ps = all_TnI p
     in ps ++ map reverse ps
 
+-- | Set of all rotations and retrogrades.
+--
+-- > map (length . all_rR) [[0,1,3],[0,1,3,6]] == [6,8]
 all_rR :: (Integral a) => [a] -> [[a]]
 all_rR p = rotations p ++ rotations (reverse p)
 
+-- | Set of all rotations, retrogrades, tranpositions and inversions.
+--
+-- > length (all_rRTnI [0,1,3]) == 192
 all_rRTnI :: (Integral a) => [a] -> [[a]]
 all_rRTnI p =
     let ps = all_RTnI p
     in ps ++ concatMap rotations ps
 
+-- | Set of all tranpositions, @M5@ and inversions.
 all_TnMI :: (Integral a) => [a] -> [[a]]
 all_TnMI p =
     let ps = all_TnI p
     in ps ++ map m5 ps
 
+-- | Set of all retrogrades, tranpositions, @M5@ and inversions.
 all_RTnMI :: (Integral a) => [a] -> [[a]]
 all_RTnMI p =
     let ps = all_TnMI p
     in ps ++ map reverse ps
 
+-- | Set of all rotations, retrogrades, tranpositions, @M5@ and inversions.
 all_rRTnMI :: (Integral a) => [a] -> [[a]]
 all_rRTnMI = map snd . sros
+
+-- * Serial operations
 
 -- | Serial Operator, of the form rRTMI.
 data SRO a = SRO a Bool a Bool Bool
@@ -208,12 +231,14 @@ sro_RTnI = [ SRO 0 r n False i |
              n <- [0..11],
              i <- [False, True] ]
 
+-- | The set of transposition, @M5@ and inversion 'SRO's.
 sro_TnMI :: (Integral a) => [SRO a]
 sro_TnMI = [ SRO 0 False n m i |
              n <- [0..11],
              m <- [True, False],
              i <- [True, False] ]
 
+-- | The set of retrograde, transposition, @M5@ and inversion 'SRO's.
 sro_RTnMI :: (Integral a) => [SRO a]
 sro_RTnMI = [ SRO 0 r n m i |
               r <- [True, False],
@@ -221,15 +246,22 @@ sro_RTnMI = [ SRO 0 r n m i |
               m <- [True, False],
               i <- [True, False] ]
 
--- | Intervals to values, zero is n.
+-- * Interval operations
+
+-- | Intervals to values, zero is /n/.
+--
+-- > dx_d 5 [1,2,3] == [5,6,8,11]
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d = scanl (+)
 
--- | Integrate.
+-- | Integrate, ie. pitch class segment to interval sequence.
+--
+-- > d_dx [5,6,8,11] == [1,2,3]
 d_dx :: (Num a) => [a] -> [a]
-d_dx [] = []
-d_dx (_:[]) = []
-d_dx (x:xs) = zipWith (-) xs (x:xs)
+d_dx l =
+    case l of
+      x:xs -> zipWith (-) xs (x:xs)
+      _ -> []
 
 -- | Morris @INT@ operator.
 --
@@ -245,32 +277,6 @@ ic i =
     let i' = mod12 i
     in if i' <= 6 then i' else 12 - i'
 
--- | Elements of /p/ not in /q/.
---
--- > [1,2,3] `difference` [1,2] == [3]
-difference :: (Eq a) => [a] -> [a] -> [a]
-difference p q =
-    let f e = e `notElem` q
-    in filter f p
-
--- | Pitch classes not in set.
---
--- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
-complement :: (Integral a) => [a] -> [a]
-complement = difference [0..11]
-
--- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
---
--- > subsequence [1,2] [1,2,3] == True
-subsequence :: (Eq a) => [a] -> [a] -> Bool
-subsequence = isInfixOf
-
--- | The standard t-matrix of /p/.
---
--- > tmatrix [0,1,3] == [[0,1,3],[11,0,2],[9,10,0]]
-tmatrix :: (Integral a) => [a] -> [[a]]
-tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))
-
 -- | Interval class vector.
 --
 -- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
@@ -282,14 +288,46 @@ icv s =
         f l = (head l, genericLength l)
     in map (fromMaybe 0) k
 
--- | Is /p/ a subset of /q/.
+-- * Set operations.
+
+-- | Elements of /p/ not in /q/.
+--
+-- > [1,2,3] `difference` [1,2] == [3]
+difference :: (Eq a) => [a] -> [a] -> [a]
+difference p q =
+    let f e = e `notElem` q
+    in filter f p
+
+-- | Pitch classes not in set, ie. 'difference' @[0..11]@.
+--
+-- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
+complement :: (Integral a) => [a] -> [a]
+complement = difference [0..11]
+
+-- | Is /p/ a subset of /q/, ie. is 'intersect' of /p/ and /q/ '==' /p/.
 --
 -- > is_subset [1,2] [1,2,3] == True
 is_subset :: Eq a => [a] -> [a] -> Bool
 is_subset p q = p `intersect` q == p
 
--- | Is /p/ a superset of /q/.
+-- | Is /p/ a superset of /q/, ie. 'flip' 'is_subset'.
 --
 -- > is_superset [1,2,3] [1,2] == True
 is_superset :: Eq a => [a] -> [a] -> Bool
 is_superset = flip is_subset
+
+-- * Sequence operations
+
+-- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
+--
+-- > subsequence [1,2] [1,2,3] == True
+subsequence :: (Eq a) => [a] -> [a] -> Bool
+subsequence = isInfixOf
+
+-- | The standard t-matrix of /p/.
+--
+-- > tmatrix [0,1,3] == [[ 0, 1, 3]
+-- >                    ,[11, 0, 2]
+-- >                    ,[ 9,10, 0]]
+tmatrix :: (Integral a) => [a] -> [[a]]
+tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))

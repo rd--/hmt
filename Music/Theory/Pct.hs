@@ -1,3 +1,5 @@
+-- | Haskell implementations of @pct@ operations.
+-- See <http://slavepianos.org/rd/?t=pct>.
 module Music.Theory.Pct where
 
 import Data.Function
@@ -20,14 +22,24 @@ bip :: (Integral a) => [a] -> [a]
 bip = sort . map ic . int
 
 -- | Cardinality filter
+--
+-- > cf [0,3] (powerset [1..4]) == [[1,2,3],[1,2,4],[1,3,4],[2,3,4],[]]
 cf :: (Integral n) => [n] -> [[a]] -> [[a]]
 cf ns = filter (\p -> genericLength p `elem` ns)
 
+-- | Combinatorial sets formed by considering each set as possible
+-- values for slot.
+--
+-- > cgg [[0,1],[5,7],[3]] == [[0,5,3],[0,7,3],[1,5,3],[1,7,3]]
 cgg :: [[a]] -> [[a]]
-cgg [] = [[]]
-cgg (x:xs) = [ y:z | y <- x, z <- cgg xs ]
+cgg l =
+    case l of
+      x:xs -> [ y:z | y <- x, z <- cgg xs ]
+      _ -> [[]]
 
--- | Combinations generator (cg == poweset)
+-- | Combinations generator, ie. synonym for 'powerset'.
+--
+-- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
 cg = powerset
 

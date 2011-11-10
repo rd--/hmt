@@ -1,3 +1,4 @@
+-- | Forte and Rahn prime form operations.
 module Music.Theory.Prime (cmp_prime
                           ,forte_cmp,forte_prime
                           ,rahn_cmp,rahn_prime
@@ -52,9 +53,11 @@ encode_prime s =
         c = t ++ map (invert 0) t
     in decode (minimum (map encode c))
 
+-- | Encoder for 'encode_prime'.
 encode :: (Integral a) => [a] -> a
 encode = sum . map (2 ^)
 
+-- | Decoder for 'encode_prime'.
 decode :: (Bits a, Integral a) => a -> [a]
 decode n =
     let f i = (i, testBit n i)

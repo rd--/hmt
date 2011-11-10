@@ -1,3 +1,4 @@
+-- | Parsers for pitch class sets and sequences, and for 'SRO's.
 module Music.Theory.Parse (rnrtnmi,pco) where
 
 import Control.Monad
@@ -5,14 +6,17 @@ import Data.Char
 import Music.Theory.PitchClass
 import Text.ParserCombinators.Parsec
 
+-- | A 'Char' parser.
 type P a = GenParser Char () a
 
+-- | Boolean 'P' for given 'Char'.
 is_char :: Char -> P Bool
 is_char c =
     let f '_' = False
         f _ = True
     in liftM f (option '_' (char c))
 
+-- | Parse 'Int'.
 get_int :: P Int
 get_int = liftM read (many1 digit)
 
