@@ -9,6 +9,9 @@ type PitchClass = Integer
 -- | Octaves are integers, the octave of middle C is @4@.
 type Octave = Integer
 
+-- | 'Octave' and 'PitchClass' duple.
+type OctPC = (Octave,PitchClass)
+
 -- | Enumeration of common music notation note names (@C@ to @B@).
 data Note_T = C | D | E | F | G | A | B
               deriving (Eq,Enum,Bounded,Ord,Show)
@@ -92,7 +95,7 @@ alteration_symbol a =
 -- | 'Pitch' to 'Octave' and 'PitchClass' notation.
 --
 -- > pitch_to_octpc (Pitch F Sharp 4) == (4,6)
-pitch_to_octpc :: Pitch -> (Octave,PitchClass)
+pitch_to_octpc :: Pitch -> OctPC
 pitch_to_octpc = midi_to_octpc . pitch_to_midi
 
 -- | 'Pitch' to midi note number notation.
@@ -130,17 +133,17 @@ pitch_compare = compare `on` pitch_to_fmidi
 -- | Function to spell a 'PitchClass'.
 type Spelling = PitchClass -> (Note_T, Alteration_T)
 
--- | Given 'Spelling' function translate from /octpc/ notation to
+-- | Given 'Spelling' function translate from 'OctPC' notation to
 -- 'Pitch'.
-octpc_to_pitch :: Spelling -> (Octave, PitchClass) -> Pitch
+octpc_to_pitch :: Spelling -> OctPC -> Pitch
 octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc
     in Pitch n a o
 
--- | Normalise /octpc/ value, ie. ensure 'PitchClass' is in (0,11).
+-- | Normalise 'OctPC' value, ie. ensure 'PitchClass' is in (0,11).
 --
 -- > octpc_nrm (4,16) == (5,4)
-octpc_nrm :: (Octave, PitchClass) -> (Octave, PitchClass)
+octpc_nrm :: OctPC -> OctPC
 octpc_nrm (o,pc) =
     if pc > 11
     then octpc_nrm (o+1,pc-12)
@@ -148,22 +151,22 @@ octpc_nrm (o,pc) =
          then octpc_nrm (o-1,pc+12)
          else (o,pc)
 
--- | Transpose /octpc/ value.
+-- | Transpose 'OctPC' value.
 --
 -- > octpc_trs 7 (4,9) == (5,4)
-octpc_trs :: Integer -> (Octave, PitchClass) -> (Octave, PitchClass)
+octpc_trs :: Integer -> OctPC -> OctPC
 octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
 
--- | /octpc/ value to /midi/ value.
+-- | 'OctPC' value to /midi/ value.
 --
 -- > octpc_to_midi (4,9) == 69
-octpc_to_midi :: (Octave, PitchClass) -> Integer
+octpc_to_midi :: OctPC -> Integer
 octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 -- | Inverse of 'octpc_to_midi'.
 --
 -- > midi_to_octpc 69 == (4,9)
-midi_to_octpc :: Integer -> (Octave, PitchClass)
+midi_to_octpc :: Integer -> OctPC
 midi_to_octpc n = (n - 12) `divMod` 12
 
 -- | Apply function to 'octave' of 'PitchClass'.
