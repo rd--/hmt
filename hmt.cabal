@@ -1,5 +1,5 @@
 Name:              hmt
-Version:           0.11
+Version:           0.12
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
@@ -19,7 +19,7 @@ Data-files:        README
 Library
   Build-Depends:   base==4.*,
                    cairo,colour,containers,
-                   hcg-minus==0.11.*,html-minimalist==0.11.*,
+                   hcg-minus==0.12.*,html-minimalist==0.12.*,
                    multiset-comb,
                    parsec,
                    permutation,
