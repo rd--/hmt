@@ -1,5 +1,5 @@
 Name:              hmt
-Version:           0.4
+Version:           0.11
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
@@ -9,7 +9,7 @@ Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
 Homepage:          http://slavepianos.org/rd/?t=hmt
-Tested-With:       GHC == 7.0.4
+Tested-With:       GHC == 7.2.2
 Build-Type:        Simple
 Cabal-Version:     >= 1.8
 
@@ -17,9 +17,9 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base == 4.*,
+  Build-Depends:   base==4.*,
                    cairo,colour,containers,
-                   hcg-minus,html-minimalist,
+                   hcg-minus==0.11.*,html-minimalist==0.11.*,
                    multiset-comb,
                    parsec,
                    permutation,
