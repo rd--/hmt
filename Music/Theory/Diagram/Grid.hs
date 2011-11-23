@@ -3,8 +3,6 @@
 -- /grid/ music of the 1950's.
 module Music.Theory.Diagram.Grid where
 
-import qualified Codec.Binary.UTF8.String as U {- utf8-string -}
-import qualified Graphics.Rendering.Cairo as C {- cairo -}
 import qualified Text.HTML.Light as H {- html-minimalist -}
 import qualified Text.XML.Light as X {- xml -}
 
@@ -54,60 +52,12 @@ grid_pt (x,y) (w,h) (r,c) =
 displace :: (R,R) -> P -> P
 displace (dx,dy) (x,y) = (x+dx,y+dy)
 
--- | Render line.
-line :: [P] -> C.Render ()
-line l =
-    case l of
-      [] -> return ()
-      (x0,y0):l' -> do C.moveTo x0 y0
-                       mapM_ (uncurry C.lineTo) l'
-
--- | Render rectangle given colour 'C', upper-left 'P' and
--- /(width,height)/.
-rect :: C -> P -> (R,R) -> C.Render ()
-rect c (x,y) (w,h) = do
-  let (r,g,b) = c
-  C.save
-  C.setSourceRGBA r g b 1
-  C.setLineWidth 0.05
-  C.translate x y
-  C.rectangle 0 0 w h
-  C.stroke
-  C.restore
-
--- | Render text 'String' in colour 'C' and point 'P' in font size 'R'.
-txt_at :: C -> P -> R -> String -> C.Render ()
-txt_at c (x,y) sz txt = do
-  let (r,g,b) = c
-  C.save
-  C.selectFontFace "Times" C.FontSlantNormal C.FontWeightNormal
-  C.setFontSize sz
-  C.setSourceRGBA r g b 1
-  C.moveTo x y
-  C.showText (U.utf8Encode txt)
-  C.restore
-
--- | Render 'Grid' of /(rows,columns)/ with displacement /(dx,dy)/ in
--- indicated font size.
-mk_grid :: (Int,Int) -> (R,R) -> R -> Grid -> C.Render ()
-mk_grid (r,c) (dx,dy) fs xs = do
-  let g = grid (10,10) (10,10) (r,c)
-      grid_pt' = displace (dx,dy) . grid_pt (10,10) (10,10)
-  mapM_ (\(x,y) -> rect (0,0,0) (x,y) (10,10)) g
-  mapM_ (\(l,clr,i) -> txt_at clr (grid_pt' l) (10/fs) i) xs
-  C.showPage
 
 -- | Make a bounding box from /row/ and /column/ dimensions.
 mk_bbox :: (Int,Int) -> (R,R)
 mk_bbox (r,c) =
     let f n = (fromIntegral n + 2) * 10
     in (f c,f r)
-
--- | Run render to @PDF@ file.
-to_pdf :: FilePath -> (R,R) -> C.Render () -> IO ()
-to_pdf nm (w,h) f = do
-  let g s = C.renderWith s f
-  C.withPDFSurface nm w h g
 
 -- * Table
 

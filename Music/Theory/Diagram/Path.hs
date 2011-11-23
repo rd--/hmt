@@ -3,13 +3,9 @@
 module Music.Theory.Diagram.Path where
 
 import Data.CG.Minus {- hcg-minus -}
-import Data.CG.Minus.Colour
-import Data.Colour {- colour -}
 import Data.Function
 import Data.List
 import Data.Maybe
-import qualified Graphics.Rendering.Cairo as C {- cairo -}
-import Render.CG.Minus.Arrow
 
 -- * Genera
 
@@ -198,33 +194,3 @@ mk_path_sm p =
     let p' = path_diagram_ln p
     in map (shift_map_ln (mk_shift_map p')) p'
 
--- * Drawing
-
--- | A set of 'Ca' and 'Ls' pairs.
-type Path = [(Ca,Ls R)]
-
--- | Draw 'Path' with mid-point arrows.
-draw_path :: Path -> C.Render ()
-draw_path xs = do
-  mapM_ (uncurry (arrows_mp 0.1 (pi/9))) xs
-  C.showPage
-
--- | 'mapM_' 'draw_path'.
-draw_paths :: [Path] -> C.Render ()
-draw_paths = mapM_ draw_path
-
--- | 'draw_paths' to named @PDF@ file.
-write_pdf :: FilePath -> [Path] -> IO ()
-write_pdf fn xs = do
-  let f s = C.renderWith s (C.translate 10 100 >>
-                            C.scale 100 100 >>
-                            draw_paths xs)
-  C.withPDFSurface fn 500 500 f
-
--- * Path diagram
-
--- | Write @PDF@ of a set of 'Path_Diagram's to named file.
-path_diagram :: FilePath -> [Path_Diagram] -> IO ()
-path_diagram fn =
-    let f (i,j) = (opaque black,[i,j])
-    in write_pdf fn . map (map (ln_fn f) . to_unit 4 . mk_path_sm)

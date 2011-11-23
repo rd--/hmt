@@ -18,7 +18,7 @@ Data-files:        README
 
 Library
   Build-Depends:   base==4.*,
-                   cairo,colour,containers,
+                   colour,containers,
                    hcg-minus==0.12.*,html-minimalist==0.12.*,
                    multiset-comb,
                    parsec,
