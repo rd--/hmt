@@ -40,7 +40,7 @@ with_start_times i xs =
     let is = map (+i) (0 : integrate xs)
     in zip is xs
 
--- | Variant processing sets of durations.
+-- | Variant of 'with_start_times' processing sets of durations.
 --
 -- > with_start_times_sets 0 [[4,3],[2,1]] == [[(0,4),(4,3)],[(7,2),(9,1)]]
 -- > last (with_start_times_sets 0 [[4,3,5],[2,1],[6,3]]) == [(15,6),(21,3)]
@@ -49,8 +49,8 @@ with_start_times_sets i xs =
     let is = i : integrate (map sum xs)
     in zipWith with_start_times is xs
 
--- | Split sequence such that the initial part sums to /n/.  The
--- 'Bool' flag indicates if it was required to divide an element.
+-- | Split sequence such that the initial part sums to precisely /n/.
+-- The 'Bool' flag indicates if it was required to divide an element.
 --
 -- > split_sum 5 [2,1,3] == ([2,1,2],[1],True)
 -- > split_sum 2 [3%2,3%2,3%2] == ([3%2,1%2],[1%1,3%2],True)
@@ -69,6 +69,26 @@ split_sum d l =
                           LT -> ([d],(x-d):xs,True)
                           GT -> jn x (split_sum (d - x) xs)
 
+-- | Given sequences of /boundaries/ and /durations/, sub-divide the
+-- durations as required to not cross the boundaries.  It is an error
+-- for the sum of the boundaries to be less than the sum of the
+-- durations.
+--
+-- > boundaries (repeat 3) [1..5] == [[1],[2],[3],[3,1],[2,3]]
+-- > boundaries (repeat 3) [4,3,2] == [[3,1],[2,1],[2]]
+-- > boundaries [3,2,3] [3,2,3] == [[3],[2],[3]]
+-- > boundaries (cycle [3,2]) [1..5] == [[1],[2],[2,1],[2,2],[3,2]]
+-- > boundaries [] [1] == undefined
+-- > boundaries (repeat (3%2)) [1%2,1..5]
+boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
+boundaries =
+    let go _ [] = []
+        go [] _ = error "boundaries: no boundaries"
+        go bs (d:ds) =
+            let (d',bs',_) = split_sum d bs
+            in d' : go bs' ds
+    in go
+
 -- | Split list into first, possibly empty 'middle', and last parts.
 -- The list must have at least two elements.
 --
@@ -86,7 +106,7 @@ start_middle_end xs =
                in (x0,take (n - 2) (drop 1 xs),xn)
       _ -> error "start_middle_end: list must have at least two elements"
 
--- | Given enumeration function pair values with running sum.
+-- | Given a psuedo-enumeration function pair values with running sum.
 --
 -- > with_sum id [1..5] == [(0,1),(1,2),(3,3),(6,4),(10,5)]
 -- > with_sum fromEnum "abc" == [(0,'a'),(97,'b'),(195,'c')]
@@ -97,32 +117,39 @@ with_sum f a = zip (0 : integrate (map f a)) a
 -- element with the given enumeration of the right element.  Intended
 -- for grouping /(start-time,duration)/ pairs.
 --
--- > to_boundary id 3 (with_start_times 0 [1,2,3]) == ([(0,1),(1,2)],[(3,3)])
+-- > let sd = with_start_times 0 [1,2,3]
+-- > in to_boundary id 3 sd == ([(0,1),(1,2)],[(3,3)])
 to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
 to_boundary f b = span (\(i,j) -> i + f j <= b)
 
--- > ascribe_fn even [1..5] "abc" == [(1,'a'),(2,'b'),(3,'b'),(4,'c'),(5,'c')]
--- > ascribe_fn odd [1..5] "abc" == [(1,'a'),(2,'a'),(3,'b'),(4,'b'),(5,'c')]
-ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
-ascribe_fn fn =
+-- | Applies a /join/ function to the first two elements of the list.
+-- If the /join/ function succeeds the joined elements is considered
+-- for further coalescing.
+--
+-- > coalesce (\p q -> Just (p + q)) [1..5] == [15]
+--
+-- > let jn p q = if even p then Just (p + q) else Nothing
+-- > in coalesce jn [1..5] == [1,5,9]
+coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
+coalesce f xs =
+    case xs of
+      (x1:x2:xs') ->
+          case f x1 x2 of
+            Nothing -> x1 : coalesce f (x2:xs')
+            Just x' -> coalesce f (x':xs')
+      _ -> xs
+
+-- | Variant of 'zip' that retains elements of the right hand list
+-- where elements of the left hand list meet the given predicate.
+--
+-- > zip_hold even [1..5] "abc" == [(1,'a'),(2,'b'),(3,'b'),(4,'c'),(5,'c')]
+-- > zip_hold odd [1..5] "abc" == [(1,'a'),(2,'a'),(3,'b'),(4,'b'),(5,'c')]
+zip_hold :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
+zip_hold fn =
     let go [] _ = []
-        go _ [] = error "ascribe_fn"
+        go _ [] = error "zip_hold"
         go (x:xs) (i:is) = let is' = if fn x then i:is else is
                            in (x,i) : go xs is'
-    in go
-
--- | Given /boundaries/ and /duration/ calculate step.
--- | xs = boundaries, d(s) = duration(s)
---
--- > boundaries (repeat 3) [1..5] == [[1],[2],[3],[3,1],[2,3]]
--- > boundaries (repeat (3%2)) [1%2,1..5]
-boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
-boundaries =
-    let go [] _ = []
-        go _ [] = []
-        go xs (d:ds) =
-            let (d',xs',_) = split_sum d xs
-            in d' : go xs' ds
     in go
 
 {-
@@ -144,7 +171,10 @@ type D = (RQ,RQ,Bool,Bool)
 d_duration :: D -> RQ
 d_duration (_,x,_,_) = x
 
--- xs = [(start-time,duration)]
+-- | Given a set of /(start-time,duration)/ make a set of tied 'D'.
+--
+-- > let d = [(0,1,False,True),(1,1,True,True),(2,1,True,False)]
+-- > in tied_r_to_d (with_start_times 0 [1,1,1]) == d
 tied_r_to_d :: [(RQ,RQ)] -> [D]
 tied_r_to_d xs =
     case xs of
@@ -154,7 +184,11 @@ tied_r_to_d xs =
                f (s,d) = (s,d,True,True)
             in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
 
--- > boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
+-- | Composition of 'boundaries', 'with_start_times_sets' and
+-- 'tied_r_to_d' such that the resulting 'D' ties each sub-divided
+-- duration.
+--
+-- > boundaries_d (repeat 3) [4,3,5,2,1,7,2]
 boundaries_d :: [RQ] -> [RQ] -> [D]
 boundaries_d xs ds =
     let bs = boundaries xs ds
@@ -178,9 +212,12 @@ sep_at 1 (1%3) (6%3)
 -}
 
 -- | Given /phase/ separate a /RQ/ duration if un-representable by a
--- single /CMN/ duration (ie. requires tie).
+-- single /cmn/ duration (ie. requires tie).
 --
--- > sep_unrep 0 5 == Just (4,1)
+-- > map (sep_unrep 0) [3,4,5] == [Nothing,Nothing,Just (4,1)]
+--
+-- > let {ph = [1,3%8,1]; d = [5%4,5%8,4]}
+-- > in zipWith sep_unrep ph d == [Just (1%1,1%4),Just (1%8,1%2),Nothing]
 sep_unrep :: RQ -> RQ -> Maybe (RQ,RQ)
 sep_unrep i x =
     let i' = denominator i == 1
@@ -194,6 +231,16 @@ sep_unrep i x =
          Nothing -> Nothing
          Just j' -> Just (f (if i' then swap j' else j'))
 
+-- | Variant of 'sep_unrep' processing 'D'.  If separated the elements
+-- are tied.  Instead of a 'Maybe' pair the result is a list of either
+-- one or two elements.
+--
+-- > let {ph = [1,3%8,1]
+-- >     ;d = [5%4,5%8,4]
+-- >     ;f i x = sep_unrep_d (i,x,False,False)}
+-- > in zipWith f ph d == [[(1,1,False,True),(2,1/4,True,False)]
+-- >                      ,[(3/8,1/8,False,True),(1/2,1/2,True,False)]
+-- >                      ,[(1,4,False,False)]]
 sep_unrep_d :: D -> [D]
 sep_unrep_d d =
     let (i,x,l,r) = d
@@ -201,18 +248,12 @@ sep_unrep_d d =
          Nothing -> [d]
          Just (x0,x1) -> [(i,x0,l,True),(i+x0,x1,True,r)]
 
-{-
-zipWith sep_unrep [1,3%8,1] [5%4,5%8,4] == [Just (1%1,1%4),Just (1%8,1%2),Nothing]
-zipWith (\i x -> sep_unrep_d (i,x,False,False)) [1,3%8,1] [5%4,5%8,4]
--}
-
+-- | Composition of 'boundaries_d' and 'sep_unrep_d'.
+--
+-- > let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
+-- > in separate (repeat (1%2)) xs
 separate :: [RQ] -> [RQ] -> [D]
 separate ns = concatMap sep_unrep_d . boundaries_d ns
-
-{-
-let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
-separate (repeat (1%2)) xs
--}
 
 -- | group to n, or to multiple of
 --
@@ -327,14 +368,6 @@ d_join' a d1 d2 =
                      Just _ -> Just x
 -}
 
-coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
-coalesce f xs =
-    case xs of
-      (x1:x2:xs') -> case f x1 x2 of
-                       Nothing -> x1 : coalesce f (x2:xs')
-                       Just x' -> coalesce f (x':xs')
-      _ -> xs
-
 -- | Type of function used by 'notate' to simplify duration sequence.
 --   Arguments specify /alignment/ and /boundaries/.
 type Simplify = (RQ -> [RQ] -> [D] -> [D])
@@ -427,4 +460,4 @@ notate (Just simplify) is [1,5] ns == notate Nothing is [1,5] ns
 --
 -- > map snd (ascribe (notate' [4,4] [3,3,2]) "xyz") == "xyyz"
 ascribe :: [Duration_A] -> [x] -> [(Duration_A,x)]
-ascribe = ascribe_fn da_tied_right
+ascribe = zip_hold da_tied_right
