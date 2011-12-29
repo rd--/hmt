@@ -10,11 +10,6 @@ data Duration = Duration {division :: Integer -- ^ division of whole note
                          }
                 deriving (Eq,Show)
 
--- | Standard music notation durational model annotations
-data D_Annotation = Tie_Right | Tie_Left
-                  | Begin_Tuplet (Integer,Integer,Duration) | End_Tuplet
-                    deriving (Eq,Show)
-
 -- | Compare durations with equal multipliers.
 duration_compare_meq :: Duration -> Duration -> Ordering
 duration_compare_meq y0 y1 =

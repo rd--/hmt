@@ -1,7 +1,6 @@
 -- | Notation of a sequence of 'RQ' values as annotated 'Duration' values.
 module Music.Theory.Duration.Sequence.Notate
-    (Duration_A
-    ,Simplify,simplify
+    (Simplify,simplify
     ,notate,notate'
     ,ascribe
     ,group_boundary_lenient,group_boundary_strict) where
@@ -9,7 +8,10 @@ module Music.Theory.Duration.Sequence.Notate
 import Data.Maybe
 import Data.Ratio
 import Music.Theory.Duration
+import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
+
+-- * Debug
 
 {-
 import Debug.Trace
@@ -17,45 +19,99 @@ debug :: (Show a) => a -> x -> x
 debug = traceShow
 -}
 
+-- | No-op debug placeholder.
 debug :: (Show a) => a -> x -> x
 debug _ x = x
 
--- | Tuple of /start-time/, /duration/, /tied-left/ and /tied-right/.
-type D = (RQ,RQ,Bool,Bool)
+-- * List processing
 
--- | Annotated 'Duration'
-type Duration_A = (Duration,[D_Annotation])
-
--- | Duration of 'D'.
-d_duration :: D -> RQ
-d_duration (_,x,_,_) = x
-
--- | Is 'Duration_A' tied to the the right?
-da_tied_right :: Duration_A -> Bool
-da_tied_right = elem Tie_Right . snd
-
--- | dx -> d
+-- | /dx/ to /d/, ie. @scanl1 (+)@.
 --
 -- > integrate [1,2,3,4] == [1,3,6,10]
 integrate :: (Num a) => [a] -> [a]
 integrate = scanl1 (+)
 
--- | Given /boundaries/ and /duration/ calculate step.
+-- | Given an initial start time and a list of durations make set of
+-- /start-time/ and /duration/ pairs.
 --
--- > step_dur [2,1,3] 5 == ([2,1,2],[1])
--- > step_dur [3%2,3%2,3%2] 2 == ([3%2,1%2],[1%1,3%2])
-step_dur :: (Ord a, Num a) => [a] -> a -> ([a], [a])
-step_dur l d =
-    case d of
-      0 -> error "step_dur: zero duration"
-      _ -> case l of
-             [] -> error "step_dur: no boundaries"
-             x:xs -> let jn a (a',b) = (a:a',b)
-                     in case compare d x of
-                          EQ -> ([d],xs)
-                          LT -> ([d],(x-d):xs)
-                          GT -> jn x (step_dur xs (d - x))
+-- > with_start_times 0 [4,3,5,2,1] == [(0,4),(4,3),(7,5),(12,2),(14,1)]
+with_start_times :: (Num a) => a -> [a] -> [(a,a)]
+with_start_times i xs =
+    let is = map (+i) (0 : integrate xs)
+    in zip is xs
 
+-- | Variant processing sets of durations.
+--
+-- > with_start_times_sets 0 [[4,3],[2,1]] == [[(0,4),(4,3)],[(7,2),(9,1)]]
+-- > last (with_start_times_sets 0 [[4,3,5],[2,1],[6,3]]) == [(15,6),(21,3)]
+with_start_times_sets :: (Num a) => a -> [[a]] -> [[(a, a)]]
+with_start_times_sets i xs =
+    let is = i : integrate (map sum xs)
+    in zipWith with_start_times is xs
+
+-- | Split sequence such that the initial part sums to /n/.  The
+-- 'Bool' flag indicates if it was required to divide an element.
+--
+-- > split_sum 5 [2,1,3] == ([2,1,2],[1],True)
+-- > split_sum 2 [3%2,3%2,3%2] == ([3%2,1%2],[1%1,3%2],True)
+-- > split_sum 6 [1..10] == ([1..3],[4..10],False)
+-- > (\(a,_,c)->(a,c)) (split_sum 5 [1..]) == ([1,2,2],True)
+-- > split_sum 0 [1..] == undefined
+split_sum :: (Ord a, Num a) => a -> [a] -> ([a],[a],Bool)
+split_sum d l =
+    let jn a (a',b,c) = (a:a',b,c)
+    in case d of
+         0 -> error "split_sum: zero sum"
+         _ -> case l of
+                [] -> error "split_sum: no boundaries"
+                x:xs -> case compare d x of
+                          EQ -> ([d],xs,False)
+                          LT -> ([d],(x-d):xs,True)
+                          GT -> jn x (split_sum (d - x) xs)
+
+-- | Split list into first, possibly empty 'middle', and last parts.
+-- The list must have at least two elements.
+--
+-- > start_middle_end [1,2] == (1,[],2)
+-- > start_middle_end "abc" == ('a',"b",'c')
+-- > start_middle_end [1..6] == (1,[2..5],6)
+-- > start_middle_end [] == undefined
+-- > start_middle_end [1] == undefined
+start_middle_end :: [x] -> (x,[x],x)
+start_middle_end xs =
+    case xs of
+      _:_:_ -> let n = length xs
+                   x0 = xs !! 0
+                   xn = xs !! (n - 1)
+               in (x0,take (n - 2) (drop 1 xs),xn)
+      _ -> error "start_middle_end: list must have at least two elements"
+
+-- | Given enumeration function pair values with running sum.
+--
+-- > with_sum id [1..5] == [(0,1),(1,2),(3,3),(6,4),(10,5)]
+-- > with_sum fromEnum "abc" == [(0,'a'),(97,'b'),(195,'c')]
+with_sum :: (Num i) => (a -> i) -> [a] -> [(i,a)]
+with_sum f a = zip (0 : integrate (map f a)) a
+
+-- | Variant of 'span' where the boundary function sums the left
+-- element with the given enumeration of the right element.  Intended
+-- for grouping /(start-time,duration)/ pairs.
+--
+-- > to_boundary id 3 (with_start_times 0 [1,2,3]) == ([(0,1),(1,2)],[(3,3)])
+to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
+to_boundary f b = span (\(i,j) -> i + f j <= b)
+
+-- > ascribe_fn even [1..5] "abc" == [(1,'a'),(2,'b'),(3,'b'),(4,'c'),(5,'c')]
+-- > ascribe_fn odd [1..5] "abc" == [(1,'a'),(2,'a'),(3,'b'),(4,'b'),(5,'c')]
+ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
+ascribe_fn fn =
+    let go [] _ = []
+        go _ [] = error "ascribe_fn"
+        go (x:xs) (i:is) = let is' = if fn x then i:is else is
+                           in (x,i) : go xs is'
+    in go
+
+-- | Given /boundaries/ and /duration/ calculate step.
 -- | xs = boundaries, d(s) = duration(s)
 --
 -- > boundaries (repeat 3) [1..5] == [[1],[2],[3],[3,1],[2,3]]
@@ -65,49 +121,28 @@ boundaries =
     let go [] _ = []
         go _ [] = []
         go xs (d:ds) =
-            let (d',xs') = step_dur xs d
+            let (d',xs',_) = split_sum d xs
             in d' : go xs' ds
     in go
 
--- | Given an initial start time and a list of durations make
--- /start-time/ and /duration/ pairs.
---
--- > with_start_times 0 [4,3,5,2,1] == [(0,4),(4,3),(7,5),(12,2),(14,1)]
-with_start_times :: (Num a) => a -> [a] -> [(a,a)]
-with_start_times i xs =
-    let is = map (+i) (0 : integrate xs)
-    in zip is xs
-
--- | Variant starting at zero and processing sets of durations.
---
--- > with_start_times' [[4,3],[2,1]] == [[(0,4),(4,3)],[(7,2),(9,1)]]
--- > last (with_start_times' [[4,3,5],[2,1],[6,3]]) == [(15,6),(21,3)]
-with_start_times' :: (Num a) => [[a]] -> [[(a, a)]]
-with_start_times' xs =
-    let is = 0 : integrate (map sum xs)
-    in zipWith with_start_times is xs
-
 {-
-with_start_times' (boundaries [3,3,3,3,3] [4,3,5,2,1])
+let d = boundaries [3,3,3,3,3] [4,3,5,2,1]
+in with_start_times_sets 0 d == [[(0,3),(3,1)],[(4,2),(6,1)],[(7,2),(9,3)],[(12,2)],[(14,1)]]
+
 let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
-with_start_times 0 xs
-with_start_times' (boundaries (repeat (3%2)) xs)
+in with_start_times 0 xs == [(0,3/4),(3/4,2),(11/4,5/4),(4,9/4),(25/4,1/4),(13/2,3/2),(8,1/2),(17/2,7/4),(41/4,1),(45/4,5/2),(55/4,11/4),(33/2,3/2)]
+
+with_start_times_sets 0 (boundaries (repeat (3%2)) xs) == [[(0,3/4)],[(3/4,3/4),(3/2,5/4)],[(11/4,1/4),(3,1)],[(4,1/2),(9/2,3/2),(6,1/4)],[(25/4,1/4)],[(13/2,1),(15/2,1/2)],[(8,1/2)],[(17/2,1/2),(9,5/4)],[(41/4,1/4),(21/2,3/4)],[(45/4,3/4),(12,3/2),(27/2,1/4)],[(55/4,5/4),(15,3/2)],[(33/2,3/2)]]
 -}
 
--- | Split /xs/ into first, possibly empty 'middle', and last parts.
--- /xs/ must have at least two elements.
---
--- > start_middle_end [] == undefined
--- > start_middle_end [1,2] == (1,[],2)
--- > start_middle_end [1..6] == (1,[2..5],6)
-start_middle_end :: [x] -> (x,[x],x)
-start_middle_end xs =
-    case xs of
-      _:_:_ -> let n = length xs
-                   x0 = xs !! 0
-                   xn = xs !! (n - 1)
-               in (x0,take (n - 2) (drop 1 xs),xn)
-      _ -> error "start_middle_end: list must have at least two elements"
+-- * D
+
+-- | Tuple of /start-time/, /duration/, /tied-left/ and /tied-right/.
+type D = (RQ,RQ,Bool,Bool)
+
+-- | Duration of 'D'.
+d_duration :: D -> RQ
+d_duration (_,x,_,_) = x
 
 -- xs = [(start-time,duration)]
 tied_r_to_d :: [(RQ,RQ)] -> [D]
@@ -119,24 +154,11 @@ tied_r_to_d xs =
                f (s,d) = (s,d,True,True)
             in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
 
+-- > boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
 boundaries_d :: [RQ] -> [RQ] -> [D]
 boundaries_d xs ds =
     let bs = boundaries xs ds
-    in concatMap tied_r_to_d (with_start_times' bs)
-
-{-
-boundaries_d [3,3,3,3,3,3,3,3] [4,3,5,2,1,7,2]
--}
-
--- | Rational modulo
---
--- > map (r_mod (5/2)) [3/2,3/4] == [1,1/4]
-r_mod :: RQ -> RQ -> RQ
-r_mod i j
-    | i == j = 0
-    | i < 0 = r_mod (i + j) j
-    | i > j = r_mod (i - j) j
-    | otherwise = i
+    in concatMap tied_r_to_d (with_start_times_sets 0 bs)
 
 {-
 -- n = boundary
@@ -144,7 +166,7 @@ r_mod i j
 sep_at :: RQ -> RQ -> R -> [D]
 sep_at =
     let go l n i x =
-            let i' = n - (i `r_mod` n)
+            let i' = n - (i `rq_mod` n)
             in if x > i'
                then let d = (i,i',l,True)
                     in d : go True n (i + i') (x - i')
@@ -208,7 +230,7 @@ group_boundary_lenient dur_f =
                  EQ -> reverse (x:js) : go 0 [] ns xs
                  LT -> go c' (x:js) (n:ns) xs
                  GT -> let c'' = c' - n
-                       in if c'' `divisible_by` n
+                       in if c'' `rq_divisible_by` n
                           then reverse (x:js) : go 0 [] ns xs
                           else go c'' (x:js) ns xs
     in go 0 []
@@ -220,15 +242,6 @@ group_boundary_lenient_d = group_boundary_lenient d_duration
 let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
 in group_boundary_lenient_d (repeat 1) (separate (repeat 1) i)
 -}
-
-with_sum :: (Num i) => (a -> i) -> [a] -> [(i,a)]
-with_sum f =
-    let go _ [] = []
-        go i (x:xs) = (i,x) : go (i + f x) xs
-    in go 0
-
-to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
-to_boundary f b = span (\(i,j) -> i + f j <= b)
 
 -- | Keeps the /zero/ duration chord element in the same measure.
 group_boundary_strict' :: (Ord i,Num i) => (a->i) -> [i] -> [a] -> [[(i,a)]]
@@ -283,22 +296,19 @@ d_join_aligned (s1,x1,l1,r1) (_,x2,_,r2)
       (x1 == 2 && r1 && x2 `elem` [1,2]) = debug ("aligned-join",s1,x1,x2) (Just (s1,x1+x2,l1,r2))
     | otherwise = debug ("aligned-no-join",s1,x1,r1,x2) Nothing
 
-divisible_by :: RQ -> RQ -> Bool
-divisible_by i j = denominator (i / j) == 1
-
 -- | partial/incomplete/inaccurate
 --
 -- > d_join 1 (7%4,1%4,False,True) (2%1,1%4,True,False) == Nothing
 d_join :: RQ -> D -> D -> Maybe D
 d_join a (s1,x1,l1,r1) (s2,x2,l2,r2)
-    | s1 `divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
-    | denominator (s1 `r_mod` 1) == 4 &&
+    | s1 `rq_divisible_by` a = d_join_aligned (s1,x1,l1,r1) (s2,x2,l2,r2)
+    | denominator (s1 `rq_mod` 1) == 4 &&
       x1 == 1%4 &&
       r1 &&
       x2 == 1%4 &&
-      not (s2 `divisible_by` a) =
+      not (s2 `rq_divisible_by` a) =
       debug ("non-aligned-join",a,s1,x1) (Just (s1,x1+x2,l1,r2))
-    | s1 `r_mod` 1 == 2%3 &&
+    | s1 `rq_mod` 1 == 2%3 &&
       x1 == 1%3 &&
       r1 &&
       x2 == 1%3 =
@@ -411,14 +421,6 @@ let is = [1,1,1,1%2,1%2,1,1]
 let ns = [2%5,1%5,1%5,1%5+1%2,1%2,1,1%10,1%10,1%10,1%10,1%10,1%6,1%6,1%6+1%7,2%7,4%7,1]
 notate (Just simplify) is [1,5] ns == notate Nothing is [1,5] ns
 -}
-
-ascribe_fn :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
-ascribe_fn fn =
-    let go [] _ = []
-        go _ [] = error "ascribe_fn"
-        go (x:xs) (i:is) = let is' = if fn x then i:is else is
-                           in (x,i) : go xs is'
-    in go
 
 -- | Zip a list of 'Duration_A' elements duplicating elements of the
 -- right hand sequence for tied durations.

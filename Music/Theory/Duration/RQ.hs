@@ -10,10 +10,9 @@ import Music.Theory.Duration.Name
 -- | Rational Quarter-Note
 type RQ = Rational
 
--- | Rational number of quarter notes to duration value.
---   It is a mistake to hope this could handle tuplets
---   directly, ie. a 3:2 dotted note will be of the same
---   duration as a plain undotted note.
+-- | Rational quarter note to duration value.  It is a mistake to hope
+-- this could handle tuplets directly since, for instance, a @3:2@
+-- dotted note will be of the same duration as a plain undotted note.
 --
 -- > rq_to_duration (3/4) == Just dotted_eighth_note
 rq_to_duration :: RQ -> Maybe Duration
@@ -69,3 +68,19 @@ duration_to_rq (Duration n d m) =
 -- > half_note `duration_compare_rq` quarter_note == GT
 duration_compare_rq :: Duration -> Duration -> Ordering
 duration_compare_rq = compare `on` duration_to_rq
+
+-- | 'RQ' modulo.
+--
+-- > map (rq_mod (5/2)) [3/2,3/4,5/2] == [1,1/4,0]
+rq_mod :: RQ -> RQ -> RQ
+rq_mod i j
+    | i == j = 0
+    | i < 0 = rq_mod (i + j) j
+    | i > j = rq_mod (i - j) j
+    | otherwise = i
+
+-- | Is /p/ divisisble by /q/, ie. is the 'denominator' of @p/q@ '==' @1@.
+--
+-- > map (rq_divisible_by (3%2)) [1%2,1%3] == [True,False]
+rq_divisible_by :: RQ -> RQ -> Bool
+rq_divisible_by i j = denominator (i / j) == 1

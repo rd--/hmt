@@ -32,6 +32,7 @@ Library
                    Music.Theory.Diagram.Grid
                    Music.Theory.Diagram.Path
                    Music.Theory.Duration
+                   Music.Theory.Duration.Annotation
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Name.Abbreviation
                    Music.Theory.Duration.RQ
