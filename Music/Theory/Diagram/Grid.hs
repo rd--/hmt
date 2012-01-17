@@ -85,9 +85,9 @@ build_table (m,n) f =
 
 -- | Render 'Table' as @HTML@ table.
 table :: Table -> X.Content
-table t =
+table =
     let mk_r = H.tr [] . map (uncurry H.td)
-    in H.div [] [H.table [] (map mk_r t)]
+    in H.table [] . map mk_r
 
 -- | A set of related tables.
 type Table_Set = [Table]
