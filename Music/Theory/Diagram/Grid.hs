@@ -4,6 +4,7 @@
 module Music.Theory.Diagram.Grid where
 
 import qualified Text.HTML.Light as H {- html-minimalist -}
+import qualified Text.HTML.Light.Common as H
 import qualified Text.XML.Light as X {- xml -}
 
 -- * Grid
@@ -52,7 +53,6 @@ grid_pt (x,y) (w,h) (r,c) =
 displace :: (R,R) -> P -> P
 displace (dx,dy) (x,y) = (x+dx,y+dy)
 
-
 -- | Make a bounding box from /row/ and /column/ dimensions.
 mk_bbox :: (Int,Int) -> (R,R)
 mk_bbox (r,c) =
@@ -61,28 +61,44 @@ mk_bbox (r,c) =
 
 -- * Table
 
--- | Table of row order 'X.Content'.
-type Table = [[X.Content]]
+-- | A table cell is an 'X.Attr' and 'X.Content' duple.
+type Table_Cell = ([X.Attr],[X.Content])
 
--- | Render 'Table' as @XHTML@ table.
+-- | Table of row order 'Table_Cell's.
+type Table = [[Table_Cell]]
+
+-- | Construct a 'Table' with one 'X.Content' per cell.
+simple_table :: [[X.Content]] -> Table
+simple_table = map (map (\x -> ([],[x])))
+
+-- | Construct a 'Table' with one 'X.Content' per cell, and an
+-- associated class.
+simple_table_class :: [[(String,X.Content)]] -> Table
+simple_table_class = map (map (\(c,x) -> ([H.class' c],[x])))
+
+-- | Build a table of @(rows,columns)@ dimensions given a function
+-- from @(row,column)@ to 'Table_Cell'.
+build_table :: (Int,Int) -> ((Int,Int) -> Table_Cell) -> Table
+build_table (m,n) f =
+    let mk_row i = map (\j -> f (i,j)) [0 .. n - 1]
+    in map mk_row [0 .. m - 1]
+
+-- | Render 'Table' as @HTML@ table.
 table :: Table -> X.Content
 table t =
-    let mk_c x = H.td [] [x]
-        mk_r = H.tr [] . map mk_c
+    let mk_r = H.tr [] . map (uncurry H.td)
     in H.div [] [H.table [] (map mk_r t)]
 
--- | Render set of 'Table's as @XHTML@.
+-- | Render set of 'Table's as @HTML@.
 page :: [Table] -> String
 page xs = do
     let tb = map table xs
         bd = H.body [] tb
-        css = H.link [H.rel "stylesheet"
-                     ,H.type' "text/css"
-                     ,H.href "css/grid.css"]
+        css = H.link_css "all" "css/grid.css"
         hd = H.head [] [css]
-        e = H.html [H.xmlns "http://www.w3.org/1999/xhtml"] [hd, bd]
-    H.renderXHTML H.xhtml_1_0_strict e
+        e = H.html [H.lang "en"] [hd, bd]
+    H.renderHTML5 e
 
--- | Write set of 'Table's to @XHTML@ file.
-to_xhtml :: FilePath -> [Table] -> IO ()
-to_xhtml o_fn = writeFile o_fn . page
+-- | Write set of 'Table's to @HTML@ file.
+to_html :: FilePath -> [Table] -> IO ()
+to_html o_fn = writeFile o_fn . page
