@@ -89,16 +89,23 @@ table t =
     let mk_r = H.tr [] . map (uncurry H.td)
     in H.div [] [H.table [] (map mk_r t)]
 
--- | Render set of 'Table's as @HTML@.
-page :: [Table] -> String
+-- | A set of related tables.
+type Table_Set = [Table]
+
+-- | Render a 'Table_Set's in a @div@ with class @table-set@.
+table_set :: Table_Set -> X.Content
+table_set = H.div [H.class' "table-set"] . map table
+
+-- | Render set of 'Table_Set's as @HTML@.
+page :: [Table_Set] -> String
 page xs = do
-    let tb = map table xs
-        bd = H.body [] tb
+    let tb = map table_set xs
+        bd = H.body [H.class' "table-page"] tb
         css = H.link_css "all" "css/grid.css"
         hd = H.head [] [css]
         e = H.html [H.lang "en"] [hd, bd]
     H.renderHTML5 e
 
--- | Write set of 'Table's to @HTML@ file.
-to_html :: FilePath -> [Table] -> IO ()
+-- | Write set of 'Table_Set's to @HTML@ file.
+to_html :: FilePath -> [Table_Set] -> IO ()
 to_html o_fn = writeFile o_fn . page
