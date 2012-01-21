@@ -4,7 +4,7 @@
 module Music.Theory.Diagram.Grid where
 
 import qualified Text.HTML.Light as H {- html-minimalist -}
-import qualified Text.HTML.Light.Common as H
+import qualified Text.HTML.Light.Composite as H
 import qualified Text.XML.Light as X {- xml -}
 
 -- * Grid

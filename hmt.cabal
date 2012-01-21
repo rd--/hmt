@@ -4,7 +4,7 @@ Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
 Category:          Music
-Copyright:         Rohan Drape, 2006-2011
+Copyright:         Rohan Drape, 2006-2012
 Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
@@ -18,8 +18,10 @@ Data-files:        README
 
 Library
   Build-Depends:   base==4.*,
-                   colour,containers,
-                   hcg-minus==0.12.*,html-minimalist==0.12.*,
+                   colour,
+                   containers,
+                   hcg-minus==0.12.*,
+                   html-minimalist==0.12.*,
                    multiset-comb,
                    parsec,
                    permutation,
