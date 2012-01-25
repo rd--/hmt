@@ -1,9 +1,6 @@
 -- | Notation of a sequence of 'RQ' values as annotated 'Duration' values.
-module Music.Theory.Duration.Sequence.Notate
-    (Simplify,simplify
-    ,notate,notate'
-    ,ascribe
-    ,group_boundary_lenient,group_boundary_strict) where
+module Music.Theory.Duration.Sequence.Notate (notate,simplify,ascribe
+                                             ,to_measures) where
 
 import Data.Maybe
 import Data.Ratio
@@ -18,6 +15,88 @@ import Debug.Trace
 debug :: (Show a) => a -> x -> x
 debug = traceShow
 -}
+
+-- 1. annotate all RQ as untied
+-- 2. separate into measures, adding tie annotations as required.
+-- 3. separate each measure
+-- 4. simplify each measure
+
+data Tied = T | F deriving (Eq,Show)
+type RQ_T = (RQ,Tied)
+type RQ_S = [RQ_T]
+
+-- > untied 3 == (3,False)
+untied :: RQ -> RQ_T
+untied n = (n,F)
+
+tie_last :: [RQ] -> [RQ_T]
+tie_last x =
+    case x of
+      [] -> []
+      [i] -> [(i,T)]
+      i:x' -> (i,F) : tie_last x'
+
+-- > take_rq_set 3 [2,2,2] == Just ([(2,F),(1,T)],[1,2])
+take_rq_set :: RQ -> [RQ] -> Maybe (RQ_S, [RQ])
+take_rq_set i x =
+    let f (m,x',t) = let m' = if isJust t then tie_last m else map untied m
+                     in (m',x')
+    in fmap f (split_sum i x)
+
+-- > to_rq_sets [3,3] [2,2,2] == Just [[(2,F),(1,T)],[(1,F),(2,F)]]
+-- > to_rq_sets [3,3] [6] == Just [[(3,T)],[(3,F)]]
+-- > to_rq_sets [1,1,1] [3] == Just [[(1,T)],[(1,T)],[(1,F)]]
+-- > to_rq_sets [3,3] [2,2,1] == Nothing
+-- > to_rq_sets [3,2] [2,2,2] == Nothing
+to_rq_sets :: [RQ] -> [RQ] -> Maybe [RQ_S]
+to_rq_sets m x =
+    case (m,x) of
+      ([],[]) -> Just []
+      ([],_) -> Nothing
+      (i:m',_) -> case take_rq_set i x of
+                    Just (r,x') -> fmap ((:) r) (to_rq_sets m' x')
+                    Nothing -> Nothing
+
+-- > split_sum_t 5 [(3,F),(2,T),(1,F)] == Just ([(3,F),(2,T)],[(1,F)])
+-- > split_sum_t 4 [(3,F),(2,T),(1,F)] == Just ([(3,F),(1,T)],[(1,T),(1,F)])
+split_sum_t :: RQ -> RQ_S -> Maybe (RQ_S,RQ_S)
+split_sum_t d x =
+    case split_sum d (map fst x) of
+      Just (i,_,k) ->
+          case k of
+            Nothing -> Just (splitAt (length i) x)
+            Just (p,q) -> let (s,(_,z):t) = splitAt (length i - 1) x
+                          in Just (s ++ [(p,T)]
+                                  ,((q,z) : t))
+      Nothing -> Nothing
+
+-- > to_rqt_sets [3,3] [(2,F),(2,F),(2,F)]
+to_rqt_sets :: [RQ] -> [RQ_T] -> Maybe [RQ_T]
+to_rqt_sets m x =
+    case (m,x) of
+      ([],[]) -> Just []
+      ([],_) -> Nothing
+      (i:m',_) -> case split_sum_t i x of
+                    Just (r,x') -> fmap (r ++) (to_rqt_sets m' x')
+                    Nothing -> Nothing
+
+-- > all_just (map Just [1..3]) == Just [1..3]
+-- > all_just [Just 1,Nothing] == Nothing
+all_just :: [Maybe a] -> Maybe [a]
+all_just x =
+    case x of
+      [] -> Just []
+      Just i:x' -> fmap (i :) (all_just x')
+      Nothing:_ -> Nothing
+
+-- > to_measures [[1,1,1],[1,1,1]] [2,2,2] == Just [[(1,T),(1,F),(1,T)]
+-- >                                               ,[(1,F),(1,T),(1,F)]]
+to_measures :: [[RQ]] -> [RQ] -> Maybe [[RQ_T]]
+to_measures m x =
+    let m' = map sum m
+    in case to_rq_sets m' x of
+         Just y -> all_just (zipWith to_rqt_sets m y)
+         Nothing -> Nothing
 
 -- | No-op debug placeholder.
 debug :: (Show a) => a -> x -> x
@@ -50,62 +129,105 @@ with_start_times_sets i xs =
     in zipWith with_start_times is xs
 
 -- | Split sequence such that the initial part sums to precisely /n/.
--- The 'Bool' flag indicates if it was required to divide an element.
+-- The third element of the result indicates if it was required to
+-- divide an element.  If the required sum is non positive, or the
+-- input list does not sum to at least the required sum, gives
+-- nothing.
 --
--- > split_sum 5 [2,1,3] == ([2,1,2],[1],True)
--- > split_sum 2 [3%2,3%2,3%2] == ([3%2,1%2],[1%1,3%2],True)
--- > split_sum 6 [1..10] == ([1..3],[4..10],False)
--- > (\(a,_,c)->(a,c)) (split_sum 5 [1..]) == ([1,2,2],True)
--- > split_sum 0 [1..] == undefined
-split_sum :: (Ord a, Num a) => a -> [a] -> ([a],[a],Bool)
+-- > split_sum 5 [2,3,1] == Just ([2,3],[1],Nothing)
+-- > split_sum 5 [2,1,3] == Just ([2,1,2],[1],Just (2,1))
+-- > split_sum 2 [3%2,3%2,3%2] == Just ([3%2,1%2],[1%1,3%2],Just (1%2,1))
+-- > split_sum 6 [1..10] == Just ([1..3],[4..10],Nothing)
+-- > fmap (\(a,_,c)->(a,c)) (split_sum 5 [1..]) == Just ([1,2,2],Just (2,1))
+-- > split_sum 0 [1..] == Nothing
+-- > split_sum 3 [1,1] == Nothing
+split_sum :: (Ord a, Num a) => a -> [a] -> Maybe ([a],[a],Maybe (a,a))
 split_sum d l =
     let jn a (a',b,c) = (a:a',b,c)
-    in case d of
-         0 -> error "split_sum: zero sum"
-         _ -> case l of
-                [] -> error "split_sum: no boundaries"
-                x:xs -> case compare d x of
-                          EQ -> ([d],xs,False)
-                          LT -> ([d],(x-d):xs,True)
-                          GT -> jn x (split_sum (d - x) xs)
+    in if d <= 0
+       then Nothing
+       else case l of
+              [] -> Nothing
+              x:xs -> case compare d x of
+                        EQ -> Just ([d],xs,Nothing)
+                        LT -> Just ([d],(x-d):xs,Just (d,x-d))
+                        GT -> fmap (jn x) (split_sum (d - x) xs)
+
+-- | Error variant of 'split_sum'.
+split_sum_err :: (Ord a, Num a) => a -> [a] -> ([a],[a],Maybe (a,a))
+split_sum_err n = fromMaybe (error "split_sum") . split_sum n
+
+{-
+-- | Variant of 'cycle' with counter, or 'concat' '.' 'replicate'.
+--
+-- > cycle_n 3 [1,5] == [1,5,1,5,1,5]
+-- > concat (replicate 3 [1,5]) == cycle_n 3 [1,5]
+cycle_n :: Int -> [a] -> [a]
+cycle_n n = concat . replicate n
 
 -- | Given sequences of /boundaries/ and /durations/, sub-divide the
 -- durations as required to not cross the boundaries.  It is an error
 -- for the sum of the boundaries to be less than the sum of the
 -- durations.
 --
--- > boundaries (repeat 3) [1..5] == [[1],[2],[3],[3,1],[2,3]]
--- > boundaries (repeat 3) [4,3,2] == [[3,1],[2,1],[2]]
--- > boundaries [3,2,3] [3,2,3] == [[3],[2],[3]]
--- > boundaries (cycle [3,2]) [1..5] == [[1],[2],[2,1],[2,2],[3,2]]
--- > boundaries [] [1] == undefined
--- > boundaries (repeat (3%2)) [1%2,1..5]
-boundaries :: (Num a, Ord a) => [a] -> [a] -> [[a]]
+-- > boundaries (replicate 5 3) [1..5] == Just [[1],[2],[3],[3,1],[2,3]]
+-- > boundaries (replicate 3 3) [4,3,2] == Just [[3,1],[2,1],[2]]
+-- > boundaries [3,2,3] [3,2,3] == Just [[3],[2],[3]]
+-- > boundaries (cycle_n 3 [3,2]) [1..5] == Just [[1],[2],[2,1],[2,2],[3,2]]
+--
+-- > let b = replicate 5 (3%2)
+-- > in boundaries b [1%2,1..5%2] == Just [[1%2],[1%1],[3%2],[3%2,1%2],[1%1,3%2]]
+--
+-- > boundaries [] [1] == Nothing
+-- > boundaries [1] [] == Nothing
+boundaries :: (Num a, Ord a) => [a] -> [a] -> Maybe [[a]]
 boundaries =
-    let go _ [] = []
+    let go [] [] = Just []
+        go _ [] = Nothing
+        go [] _ = Nothing
+        go bs (d:ds) =
+            case split_sum d bs of
+              Just (d',bs',_) -> fmap (d' :) (go bs' ds)
+              _ -> Nothing
+    in go
+
+boundaries_check :: Num a => [a] -> [a] -> Bool
+boundaries_check bs ds = sum bs == sum ds
+-}
+
+boundaries_err :: (Num a, Ord a) => [a] -> [a] -> [[a]]
+boundaries_err =
+    let go [] [] = []
+        go _ [] = error "boundaries: no durations"
         go [] _ = error "boundaries: no boundaries"
         go bs (d:ds) =
-            let (d',bs',_) = split_sum d bs
+            let (d',bs',_) = split_sum_err d bs
             in d' : go bs' ds
     in go
 
 -- | Split list into first, possibly empty 'middle', and last parts.
 -- The list must have at least two elements.
 --
--- > start_middle_end [1,2] == (1,[],2)
--- > start_middle_end "abc" == ('a',"b",'c')
--- > start_middle_end [1..6] == (1,[2..5],6)
--- > start_middle_end [] == undefined
--- > start_middle_end [1] == undefined
-start_middle_end :: [x] -> (x,[x],x)
+-- > start_middle_end [1,2] == Just (1,[],2)
+-- > start_middle_end "abc" == Just ('a',"b",'c')
+-- > start_middle_end [1..6] == Just (1,[2..5],6)
+-- > map start_middle_end [[],[1]] == [Nothing,Nothing]
+start_middle_end :: [x] -> Maybe (x,[x],x)
 start_middle_end xs =
     case xs of
       _:_:_ -> let n = length xs
                    x0 = xs !! 0
                    xn = xs !! (n - 1)
-               in (x0,take (n - 2) (drop 1 xs),xn)
-      _ -> error "start_middle_end: list must have at least two elements"
+               in Just (x0,take (n - 2) (drop 1 xs),xn)
+      _ -> Nothing
 
+-- > start_middle_end_err [1] == undefined
+start_middle_end_err :: [x] -> (x,[x],x)
+start_middle_end_err =
+    let m = "start_middle_end: list must have at least two elements"
+    in fromMaybe (error m) . start_middle_end
+
+{-
 -- | Given a psuedo-enumeration function pair values with running sum.
 --
 -- > with_sum id [1..5] == [(0,1),(1,2),(3,3),(6,4),(10,5)]
@@ -118,12 +240,20 @@ with_sum f a = zip (0 : integrate (map f a)) a
 -- for grouping /(start-time,duration)/ pairs.
 --
 -- > let sd = with_start_times 0 [1,2,3]
--- > in to_boundary id 3 sd == ([(0,1),(1,2)],[(3,3)])
-to_boundary :: (Num i,Ord i) => (a->i) -> i -> [(i,a)] -> ([(i,a)],[(i,a)])
-to_boundary f b = span (\(i,j) -> i + f j <= b)
+-- > in to_boundary id 3 sd == Just ([(0,1),(1,2)],[(3,3)])
+--
+-- > to_boundary id 3 [(0,4)] == Nothing
+to_boundary :: (Num i,Ord i) => (a->i)->i->[(i,a)]->Maybe ([(i,a)],[(i,a)])
+to_boundary f b =
+    let g (i,j) = if null i then Nothing else Just (i,j)
+    in g . span (\(i,j) -> i + f j <= b)
+
+to_boundary_err :: (Num i,Ord i) => (a->i)->i->[(i,a)]->([(i,a)],[(i,a)])
+to_boundary_err f b = fromMaybe (error "to_boundary") . to_boundary f b
+-}
 
 -- | Applies a /join/ function to the first two elements of the list.
--- If the /join/ function succeeds the joined elements is considered
+-- If the /join/ function succeeds the joined element is considered
 -- for further coalescing.
 --
 -- > coalesce (\p q -> Just (p + q)) [1..5] == [15]
@@ -153,13 +283,31 @@ zip_hold fn =
     in go
 
 {-
-let d = boundaries [3,3,3,3,3] [4,3,5,2,1]
-in with_start_times_sets 0 d == [[(0,3),(3,1)],[(4,2),(6,1)],[(7,2),(9,3)],[(12,2)],[(14,1)]]
+let d = boundaries_err [3,3,3,3,3] [4,3,5,2,1]
+in with_start_times_sets 0 d == [[(0,3),(3,1)],[(4,2),(6,1)]
+                                ,[(7,2),(9,3)],[(12,2)],[(14,1)]]
 
 let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
-in with_start_times 0 xs == [(0,3/4),(3/4,2),(11/4,5/4),(4,9/4),(25/4,1/4),(13/2,3/2),(8,1/2),(17/2,7/4),(41/4,1),(45/4,5/2),(55/4,11/4),(33/2,3/2)]
+in with_start_times 0 xs == [(0,3/4),(3/4,2),(11/4,5/4)
+                            ,(4,9/4),(25/4,1/4),(13/2,3/2)
+                            ,(8,1/2),(17/2,7/4),(41/4,1)
+                            ,(45/4,5/2),(55/4,11/4),(33/2,3/2)]
 
-with_start_times_sets 0 (boundaries (repeat (3%2)) xs) == [[(0,3/4)],[(3/4,3/4),(3/2,5/4)],[(11/4,1/4),(3,1)],[(4,1/2),(9/2,3/2),(6,1/4)],[(25/4,1/4)],[(13/2,1),(15/2,1/2)],[(8,1/2)],[(17/2,1/2),(9,5/4)],[(41/4,1/4),(21/2,3/4)],[(45/4,3/4),(12,3/2),(27/2,1/4)],[(55/4,5/4),(15,3/2)],[(33/2,3/2)]]
+let {xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
+    ;d = boundaries_err (replicate 12 (3%2)) xs}
+in with_start_times_sets 0 d == [[(0,3/4)]
+                                ,[(3/4,3/4),(3/2,5/4)]
+                                ,[(11/4,1/4),(3,1)]
+                                ,[(4,1/2),(9/2,3/2),(6,1/4)]
+                                ,[(25/4,1/4)]
+                                ,[(13/2,1),(15/2,1/2)]
+                                ,[(8,1/2)]
+                                ,[(17/2,1/2),(9,5/4)]
+                                ,[(41/4,1/4),(21/2,3/4)]
+                                ,[(45/4,3/4),(12,3/2),(27/2,1/4)]
+                                ,[(55/4,5/4),(15,3/2)]
+                                ,[(33/2,3/2)]]
+
 -}
 
 -- * D
@@ -180,7 +328,7 @@ tied_r_to_d xs =
     case xs of
       [] -> []
       [(s,d)] -> [(s,d,False,False)]
-      _ -> let ((s0,d0),xs',(sn,dn)) = start_middle_end xs
+      _ -> let ((s0,d0),xs',(sn,dn)) = start_middle_end_err xs
                f (s,d) = (s,d,True,True)
             in (s0,d0,False,True) : map f xs' ++ [(sn,dn,True,False)]
 
@@ -188,10 +336,10 @@ tied_r_to_d xs =
 -- 'tied_r_to_d' such that the resulting 'D' ties each sub-divided
 -- duration.
 --
--- > boundaries_d (repeat 3) [4,3,5,2,1,7,2]
+-- > boundaries_d (replicate 8 3) [4,3,5,2,1,7,2]
 boundaries_d :: [RQ] -> [RQ] -> [D]
 boundaries_d xs ds =
-    let bs = boundaries xs ds
+    let bs = boundaries_err xs ds
     in concatMap tied_r_to_d (with_start_times_sets 0 bs)
 
 {-
@@ -211,7 +359,7 @@ sep_at 1 (1%2) 1
 sep_at 1 (1%3) (6%3)
 -}
 
--- | Given /phase/ separate a /RQ/ duration if un-representable by a
+-- | Given /phase/ separate an /RQ/ duration if un-representable by a
 -- single /cmn/ duration (ie. requires tie).
 --
 -- > map (sep_unrep 0) [3,4,5] == [Nothing,Nothing,Just (4,1)]
@@ -250,20 +398,24 @@ sep_unrep_d d =
 
 -- | Composition of 'boundaries_d' and 'sep_unrep_d'.
 --
+-- > separate [3,3] [2,2,2]
+--
 -- > let xs = [3%4,2%1,5%4,9%4,1%4,3%2,1%2,7%4,1%1,5%2,11%4,3%2]
--- > in separate (repeat (1%2)) xs
+-- > in separate (replicate 36 (1%2)) xs
 separate :: [RQ] -> [RQ] -> [D]
 separate ns = concatMap sep_unrep_d . boundaries_d ns
 
 -- | group to n, or to multiple of
 --
 -- > group_boundary_lenient id [1,1,1] [2,1%2,1%2] == [[2%1],[1%2,1%2]]
+-- > group_boundary_lenient id [1,1,1] [3/2,1,1]
 -- > group_boundary_lenient id [3,3,3] (cycle [1,2,3]) == [[1,2],[3],[1,2]]
 group_boundary_lenient :: (a -> RQ) -> [RQ] -> [a] -> [[a]]
 group_boundary_lenient dur_f =
     let go _ [] [] _ = []
         go _ _ [] _ = error "group_boundary_lenient: no boundaries?"
-        go _ js _ [] = [reverse js]
+        go _ _ _ [] = error "group_boundary_lenient: no durations?"
+        --go _ js _ [] = [reverse js]
         go _ js _ [x] = [reverse (x:js)]
         go c js (n:ns) (x:xs) =
             let c' = c + dur_f x
@@ -280,26 +432,49 @@ group_boundary_lenient_d :: [RQ] -> [D] -> [[D]]
 group_boundary_lenient_d = group_boundary_lenient d_duration
 
 {-
-let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
-in group_boundary_lenient_d (repeat 1) (separate (repeat 1) i)
+let {i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
+    ;b = replicate 7 1
+    ;j = separate b i
+    ;k = group_boundary_lenient_d b j}
+in (map (map d_duration) k)
 -}
 
+{-
 -- | Keeps the /zero/ duration chord element in the same measure.
+--
+-- > group_boundary_strict' id [2,1] [2,0,1] == [[(0,2),(2,0)],[(2,1)]]
 group_boundary_strict' :: (Ord i,Num i) => (a->i) -> [i] -> [a] -> [[(i,a)]]
 group_boundary_strict' f bs is =
     let is' = with_sum f is
         bs' = integrate bs
         go [] _ = []
-        go (j:js) zs = let (x,y) = to_boundary f j zs
+        go (j:js) zs = let (x,y) = to_boundary_err f j zs
                        in x : go js y
     in go bs' is'
 
 -- | Variant on 'group_boundary_lenient'.
 --
+-- > group_boundary_strict id [3,3,3] (cycle [1,2,3]) == [[1,2],[3],[1,2]]
+--
 -- > let g = group_boundary_strict id
 -- > in g [3,2,3] [1,0,1,1,0,2,0,1,1,1] == [[1,0,1,1,0],[2,0],[1,1,1]]
+--
+-- > let g = group_boundary_strict id (replicate 3 3)
+-- > in g (cycle [1,2,3]) == [[1,2],[3],[1,2]]
+--
+-- > let g = group_boundary_strict id (replicate 3 3)
+-- > in g [1,0,1,1,0,2,0,1,1,1,1] == [[1,0,1,1,0],[2,0,1],[1,1,1]]
 group_boundary_strict :: (Ord a, Num a) => (b -> a) -> [a] -> [b] -> [[b]]
 group_boundary_strict f bs = map (map snd) . group_boundary_strict' f bs
+
+
+-- > group_measures id [3,3] [2,2,2] == undefined
+group_measures :: (Ord a, Num a) => (b -> a) -> [a] -> [b] -> [[b]]
+group_measures = group_boundary_strict
+
+group_boundary_strict_d :: [RQ] -> [D] -> [[D]]
+group_boundary_strict_d = group_boundary_strict d_duration
+-}
 
 derive_tuplet :: [D] -> Maybe (Integer,Integer)
 derive_tuplet xs =
@@ -318,13 +493,18 @@ derive_tuplet xs =
        else Just j
 
 {-
-let i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
-in map derive_tuplet (group_boundary_lenient_d 1 (separate 1 i))
+let {i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
+    ;b = replicate 7 1
+    ;j = separate b i
+    ;k = group_boundary_strict_d b j}
+in (map (map d_duration) k,map derive_tuplet k)
 -}
 
 -- | Remove tuplet multiplier from value, ie. to give notated
 -- duration.  This seems odd but is neccessary to avoid ambiguity.
 -- Ie. is 1 a quarter note or a 3:2 tuplet dotted-quarter-note etc.
+--
+-- > map (un_tuplet (1,3)) [1,1%2,1%3] == [1 % 3,1 % 6,1 % 9]
 un_tuplet :: (Integer,Integer) -> RQ -> RQ
 un_tuplet (i,j) x = x * (i%j)
 
@@ -399,6 +579,9 @@ tuplet (d,n) xs =
 -- | The @d0:dN@ distinction is to catch, for instance, dotted @1\/4@
 -- and tuplet @1\/16@.  It'd be better to not simplify to that,
 -- however the simplifier does not look ahead.
+--
+-- > notate_sec (separate [3,3] [2,2,2])
+-- > notate_sec (separate [1,1,1] [4%3,1,2%3])
 notate_sec :: [D] -> [Duration_A]
 notate_sec xs =
     let ds = map d_duration xs
@@ -422,8 +605,11 @@ notate_sec xs =
 --
 -- IMPORTANT NOTE: alignments are not handled correctly
 --
--- > let n = notate (Just simplify) (repeat 1) (repeat 4)
--- > in n [3,3] == [(dotted_half_note,[]),(quarter_note,[Tie_Right]),(half_note,[Tie_Left])]
+-- > let n = notate (Just simplify) (replicate 6 1) [4,2] [3,3]
+--
+-- > import Music.Theory.Duration.Name
+-- > n == [(dotted_half_note,[]),(quarter_note,[Tie_Right])
+-- >      ,(half_note,[Tie_Left])]
 notate :: Maybe Simplify -> [RQ] -> [RQ] -> [RQ] -> [Duration_A]
 notate smp is ns xs =
     let xs' = case smp of
@@ -431,12 +617,14 @@ notate smp is ns xs =
                 Just f -> f (head is) ns (separate is xs)
     in concatMap notate_sec (group_boundary_lenient_d is xs')
 
+{-
 -- | Variant with default 'simplify' function and constant unit
 -- division of @1@.
 --
 -- > map (duration_to_rq . fst) (notate' [4,4] [3,3,2]) == [3,1,2,2]
 notate' :: [RQ] -> [RQ] -> [Duration_A]
-notate' = notate (Just simplify) (repeat 1)
+notate' x = notate (Just simplify) (replicate (floor (sum x)) 1) x
+-}
 
 {-
 let xs = [2%3,2%3,2%3,3%2,3%2,2%3,2%3,2%3,1%2,1%2,5%2,3%2]
