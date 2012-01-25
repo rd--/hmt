@@ -1,7 +1,9 @@
 -- | Common music notation duration model.
 module Music.Theory.Duration where
 
+import Data.List
 import Data.Maybe
+import Data.Ratio
 
 -- | Standard music notation durational model
 data Duration = Duration {division :: Integer -- ^ division of whole note
@@ -106,6 +108,7 @@ duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
 -- | Give /Lilypond/ notation for 'Duration'.  Note that the duration
 -- multiplier is /not/ written.
 --
+-- > import Music.Theory.Duration.Name
 -- > map duration_to_lilypond_type [half_note,dotted_quarter_note] == ["2","4."]
 duration_to_lilypond_type :: Duration -> String
 duration_to_lilypond_type (Duration dv d _) =
@@ -129,3 +132,21 @@ duration_beam_count (Duration x _ _) =
     let err = error "duration_beam_count"
         bc = whole_note_division_to_beam_count x
     in fromMaybe err bc
+
+whole_note_division_pp :: Integer -> Maybe Char
+whole_note_division_pp x =
+    let t = [(16,'s'),(8,'e'),(4,'q'),(2,'h'),(1,'w')]
+    in lookup x t
+
+-- > import Music.Theory.Duration.Name.Abbreviation
+-- > map duration_pp [q,h',e''] == [Just "q",Just "h'",Just "e''"]
+duration_pp :: Duration -> Maybe String
+duration_pp (Duration x d m) =
+    let d' = genericReplicate d '\''
+        m' = case (numerator m,denominator m) of
+               (1,1) -> ""
+               (1,i) -> '/' : show i
+               (i,j) -> '*' : show i ++ "/" ++ show j
+    in case whole_note_division_pp x of
+         Just x' -> Just (x' : d' ++ m')
+         _ -> Nothing
