@@ -7,6 +7,7 @@ import Data.Ratio
 import Music.Theory.Duration
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
+--import Music.Theory.Time_Signature
 
 -- * Debug
 
@@ -43,18 +44,49 @@ take_rq_set i x =
                      in (m',x')
     in fmap f (split_sum i x)
 
+-- | Separate an /RQ/ duration if un-representable by a single /cmn/
+-- duration (ie. requires tie).
+--
+-- > catMaybes (map to_cmn [1..9]) == [(4,1),(4,3),(8,1)]
+--
+-- > map to_cmn [5/4,5/8] == [Just (1,1/4),Just (1/2,1/8)]
+to_cmn :: RQ -> Maybe (RQ,RQ)
+to_cmn x =
+    let (i,j) = (numerator x,denominator x)
+        k = case i of
+              5 -> Just (4,1)
+              7 -> Just (4,3)
+              9 -> Just (8,1)
+              _ -> Nothing
+        f (n,m) = (n%j,m%j)
+    in fmap f k
+
+-- > to_cmn_t (5,T) == Just ((4,T),(1,T))
+to_cmn_t :: RQ_T -> Maybe (RQ_T,RQ_T)
+to_cmn_t (k,t) =
+    let f (i,j) = ((i,T),(j,t))
+    in fmap f (to_cmn k)
+
+to_cmn_t_l :: RQ_T -> RQ_S
+to_cmn_t_l x = maybe [x] (\(i,j) -> [i,j]) (to_cmn_t x)
+
+rqs_to_cmn :: RQ_S -> RQ_S
+rqs_to_cmn = concatMap to_cmn_t_l
+
 -- > to_rq_sets [3,3] [2,2,2] == Just [[(2,F),(1,T)],[(1,F),(2,F)]]
 -- > to_rq_sets [3,3] [6] == Just [[(3,T)],[(3,F)]]
 -- > to_rq_sets [1,1,1] [3] == Just [[(1,T)],[(1,T)],[(1,F)]]
 -- > to_rq_sets [3,3] [2,2,1] == Nothing
 -- > to_rq_sets [3,2] [2,2,2] == Nothing
+-- > to_rq_sets [1] [5/8,3/8] == Just [[(1/2,T),(1/8,F),(3/8,F)]]
+-- > to_rq_sets [6,6] [5,5,2] == Just [[(4,T),(1,F),(1,T)],[(4,F),(2,F)]]
 to_rq_sets :: [RQ] -> [RQ] -> Maybe [RQ_S]
 to_rq_sets m x =
     case (m,x) of
       ([],[]) -> Just []
       ([],_) -> Nothing
       (i:m',_) -> case take_rq_set i x of
-                    Just (r,x') -> fmap ((:) r) (to_rq_sets m' x')
+                    Just (r,x') -> fmap (rqs_to_cmn r :) (to_rq_sets m' x')
                     Nothing -> Nothing
 
 -- > split_sum_t 5 [(3,F),(2,T),(1,F)] == Just ([(3,F),(2,T)],[(1,F)])
@@ -70,7 +102,7 @@ split_sum_t d x =
                                   ,((q,z) : t))
       Nothing -> Nothing
 
--- > to_rqt_sets [3,3] [(2,F),(2,F),(2,F)]
+-- > to_rqt_sets [3,3] [(2,F),(2,F),(2,F)] == Just [(2,F),(1,T),(1,F),(2,F)]
 to_rqt_sets :: [RQ] -> [RQ_T] -> Maybe [RQ_T]
 to_rqt_sets m x =
     case (m,x) of
@@ -476,10 +508,12 @@ group_boundary_strict_d :: [RQ] -> [D] -> [[D]]
 group_boundary_strict_d = group_boundary_strict d_duration
 -}
 
-derive_tuplet :: [D] -> Maybe (Integer,Integer)
+-- > derive_tuplet [1/3,2/3] == Just (3,2)
+-- > derive_tuplet [1/2,1/3,1/6] == Just (3,2)
+-- > derive_tuplet [2/5,3/5] = Just (5,4)
+derive_tuplet :: [RQ] -> Maybe (Integer,Integer)
 derive_tuplet xs =
-    let xs' = map d_duration xs
-        i = maximum (map denominator xs')
+    let i = maximum (map denominator xs)
         smpl n = if even n then smpl (n `div` 2) else n
         i' = smpl i
         j = case i' of
@@ -491,6 +525,9 @@ derive_tuplet xs =
     in if i' == 1
        then Nothing
        else Just j
+
+derive_tuplet_d :: [D] -> Maybe (Integer,Integer)
+derive_tuplet_d = derive_tuplet . map d_duration
 
 {-
 let {i = [1,1%2,2,1%3,5%3,1%8,1%2,7%8]
@@ -589,7 +626,7 @@ notate_sec xs =
             let l' = if l then [Tie_Left] else []
                 r' = if r then [Tie_Right] else []
             in (d,l' ++ r' ++ fs)
-        xs' = case derive_tuplet xs of
+        xs' = case derive_tuplet_d xs of
                 Nothing -> let f = to_duration ("notate-sec:no-tuplet",ds)
                            in map (\d -> (f d,[])) ds
                 Just t -> let f = to_duration ("notate-sec:tuplet",t,ds)

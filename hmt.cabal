@@ -53,6 +53,8 @@ Library
                    Music.Theory.Prime
                    Music.Theory.Set
                    Music.Theory.Table
+                   Music.Theory.Tempo_Marking
+                   Music.Theory.Time_Signature
                    Music.Theory.Tuning
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
