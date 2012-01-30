@@ -3,6 +3,7 @@ module Music.Theory.Duration.RQ where
 
 import Data.Function
 import Data.List
+import Data.Maybe
 import Data.Ratio
 import Music.Theory.Duration
 import Music.Theory.Duration.Name
@@ -34,6 +35,12 @@ rq_to_duration x =
       (8,1) -> Just breve
       (12,1) -> Just dotted_breve
       _ -> Nothing
+
+-- | Variant of 'rq_to_duration' with error message.
+rq_to_duration_err :: Show a => a -> RQ -> Duration
+rq_to_duration_err msg n =
+    let err = error ("rq_to_duration:" ++ show (msg,n))
+    in fromMaybe err (rq_to_duration n)
 
 -- | Convert a whole note division integer to an 'RQ' value.
 --
@@ -84,3 +91,71 @@ rq_mod i j
 -- > map (rq_divisible_by (3%2)) [1%2,1%3] == [True,False]
 rq_divisible_by :: RQ -> RQ -> Bool
 rq_divisible_by i j = denominator (i / j) == 1
+
+-- | Derive the tuplet structure of a set of 'RQ' values.
+--
+-- > rq_derive_tuplet_plain [1/2] == Nothing
+-- > rq_derive_tuplet_plain [1/2,1/2] == Nothing
+-- > rq_derive_tuplet_plain [1/3,2/3] == Just (3,2)
+-- > rq_derive_tuplet_plain [1/2,1/3,1/6] == Just (6,4)
+-- > rq_derive_tuplet_plain [1/3,1/6] == Just (6,4)
+-- > rq_derive_tuplet_plain [2/5,3/5] == Just (5,4)
+-- > rq_derive_tuplet_plain [1/3,1/6,2/5,1/10] == Just (30,16)
+-- > map rq_derive_tuplet_plain [[1/3,1/6],[2/5,1/10]] == [Just (6,4)
+--                                                        ,Just (10,8)]
+rq_derive_tuplet_plain :: [RQ] -> Maybe (Integer,Integer)
+rq_derive_tuplet_plain x =
+    let i = foldl lcm 1 (map denominator x)
+        j = let z = iterate (* 2) 2
+            in fromJust (find (>= i) z) `div` 2
+    in if j == 1 then Nothing else Just (i,j)
+
+-- | Derive the tuplet structure of a set of 'RQ' values.
+--
+-- > rq_derive_tuplet [1/3,2/3] == Just (3,2)
+-- > rq_derive_tuplet [1/2,1/3,1/6] == Just (3,2)
+-- > rq_derive_tuplet [2/5,3/5] == Just (5,4)
+-- > rq_derive_tuplet [1/3,1/6,2/5,1/10] == Just (15,8)
+rq_derive_tuplet :: [RQ] -> Maybe (Integer,Integer)
+rq_derive_tuplet =
+    let f (i,j) = let k = i % j in (numerator k,denominator k)
+    in fmap f . rq_derive_tuplet_plain
+
+-- | Remove tuplet multiplier from value, ie. to give notated
+-- duration.  This seems odd but is neccessary to avoid ambiguity.
+-- Ie. is 1 a quarter note or a 3:2 tuplet dotted-quarter-note etc.
+--
+-- > map (rq_un_tuplet (3,2)) [1,2/3,1/2,1/3] == [3/2,1,3/4,1/2]
+rq_un_tuplet :: (Integer,Integer) -> RQ -> RQ
+rq_un_tuplet (i,j) x = x * (i%j)
+
+-- | If an 'RQ' duration is un-representable by a single /cmn/
+-- duration, give tied notation.
+--
+-- > catMaybes (map rq_to_cmn [1..9]) == [(4,1),(4,3),(8,1)]
+--
+-- > map rq_to_cmn [5/4,5/8] == [Just (1,1/4),Just (1/2,1/8)]
+rq_to_cmn :: RQ -> Maybe (RQ,RQ)
+rq_to_cmn x =
+    let (i,j) = (numerator x,denominator x)
+        k = case i of
+              5 -> Just (4,1)
+              7 -> Just (4,3)
+              9 -> Just (8,1)
+              _ -> Nothing
+        f (n,m) = (n%j,m%j)
+    in fmap f k
+
+-- | Predicate to determine if a segment can be notated either without
+-- a tuplet or with a single tuplet.
+--
+-- > rq_can_notate [1/2,1/4,1/4] == True
+-- > rq_can_notate [1/3,1/6] == True
+-- > rq_can_notate [2/5,1/10] == True
+-- > rq_can_notate [1/3,1/6,2/5,1/10] == False
+rq_can_notate :: [RQ] -> Bool
+rq_can_notate x =
+    let x' = case rq_derive_tuplet x of
+               Nothing -> x
+               Just t -> map (rq_un_tuplet t) x
+    in all isJust (map rq_to_duration x')
