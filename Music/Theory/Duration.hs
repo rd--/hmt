@@ -1,6 +1,7 @@
 -- | Common music notation duration model.
 module Music.Theory.Duration where
 
+import Control.Monad
 import Data.List
 import Data.Maybe
 import Data.Ratio
@@ -12,32 +13,48 @@ data Duration = Duration {division :: Integer -- ^ division of whole note
                          }
                 deriving (Eq,Show)
 
--- | Compare durations with equal multipliers.
-duration_compare_meq :: Duration -> Duration -> Ordering
-duration_compare_meq y0 y1 =
-    if y0 == y1
-    then EQ
-    else let (Duration x0 n0 m0) = y0
-             (Duration x1 n1 m1) = y1
-         in if m0 /= m1
-            then error "duration_compare_meq: non-equal multipliers"
-            else if x0 == x1
-                 then compare n0 n1
-                 else compare x1 x0
+-- | Are multipliers equal?
+duration_meq :: Duration -> Duration -> Bool
+duration_meq p q = multiplier p == multiplier q
 
--- | 'Ord' instance in terms of 'duration_compare_meq'.
+-- | Compare durations with equal multipliers.
+duration_compare_meq :: Duration -> Duration -> Maybe Ordering
+duration_compare_meq y0 y1 =
+    let (Duration x0 n0 m0) = y0
+        (Duration x1 n1 m1) = y1
+    in if y0 == y1
+       then Just EQ
+       else if m0 /= m1
+            then Nothing
+            else Just (if x0 == x1
+                       then compare n0 n1
+                       else compare x1 x0)
+
+-- | Erroring variant of 'duration_compare_meq'.
+duration_compare_meq_err :: Duration -> Duration -> Ordering
+duration_compare_meq_err p =
+    let err = error "duration_compare_meq_err: non-equal multipliers"
+    in fromMaybe err . duration_compare_meq p
+
+-- | 'Ord' instance in terms of 'duration_compare_meq_err'.
 instance Ord Duration where
-    compare = duration_compare_meq
+    compare = duration_compare_meq_err
+
+order_pair :: Ordering -> (t,t) -> (t,t)
+order_pair o (x,y) =
+    case o of
+      LT -> (x,y)
+      EQ -> (x,y)
+      GT -> (y,x)
 
 -- | Sort a pair of equal type values using given comparison function.
 --
 -- > sort_pair compare ('b','a') == ('a','b')
 sort_pair :: (t -> t -> Ordering) -> (t,t) -> (t,t)
-sort_pair fn (x,y) =
-    case fn x y of
-      LT -> (x,y)
-      EQ -> (x,y)
-      GT -> (y,x)
+sort_pair fn (x,y) = order_pair (fn x y) (x,y)
+
+sort_pair_m :: (t -> t -> Maybe Ordering) -> (t,t) -> Maybe (t,t)
+sort_pair_m fn (x,y) = fmap (flip order_pair (x,y)) (fn x y)
 
 -- | True if neither duration is dotted.
 no_dots :: (Duration, Duration) -> Bool
@@ -51,6 +68,11 @@ sum_dur_undotted (x0, x1)
     | otherwise = Nothing
 
 -- | Sum dotted divisions, input is required to be sorted.
+--
+-- > sum_dur_dotted (4,1,4,1) == Just (Duration 2 1 1)
+-- > sum_dur_dotted (4,0,2,1) == Just (Duration 1 0 1)
+-- > sum_dur_dotted (8,1,4,0) == Just (Duration 4 2 1)
+-- > sum_dur_dotted (16,0,4,2) == Just (Duration 2 0 1)
 sum_dur_dotted :: (Integer,Integer,Integer,Integer) -> Maybe Duration
 sum_dur_dotted (x0, n0, x1, n1)
     | x0 == x1 &&
@@ -59,17 +81,28 @@ sum_dur_dotted (x0, n0, x1, n1)
     | x0 == x1 * 2 &&
       n0 == 0 &&
       n1 == 1 = Just (Duration (x1 `div` 2) 0 1)
+    | x0 == x1 * 4 &&
+      n0 == 0 &&
+      n1 == 2 = Just (Duration (x1 `div` 2) 0 1)
+    | x0 == x1 * 2 &&
+      n0 == 1 &&
+      n1 == 0 = Just (Duration x1 2 1)
     | otherwise = Nothing
 
 -- | Sum durations.  Not all durations can be summed, and the present
 --   algorithm is not exhaustive.
+--
+-- > import Music.Theory.Duration.Name
+-- > sum_dur quarter_note eighth_note == Just dotted_quarter_note
+-- > sum_dur dotted_quarter_note eighth_note == Just half_note
+-- > sum_dur quarter_note dotted_eighth_note == Just double_dotted_quarter_note
 sum_dur :: Duration -> Duration -> Maybe Duration
 sum_dur y0 y1 =
-    let (x0,x1) = sort_pair duration_compare_meq (y0,y1)
-    in if no_dots (x0,x1)
-       then sum_dur_undotted (division x0, division x1)
-       else sum_dur_dotted (division x0, dots x0
-                           ,division x1, dots x1)
+    let f (x0,x1) = if no_dots (x0,x1)
+                    then sum_dur_undotted (division x0, division x1)
+                    else sum_dur_dotted (division x0, dots x0
+                                        ,division x1, dots x1)
+    in join (fmap f (sort_pair_m duration_compare_meq (y0,y1)))
 
 -- | Erroring variant of 'sum_dur'.
 sum_dur' :: Duration -> Duration -> Duration
@@ -77,7 +110,6 @@ sum_dur' y0 y1 =
     let y2 = sum_dur y0 y1
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2
-
 
 -- | Give @MusicXML@ type for division.
 --

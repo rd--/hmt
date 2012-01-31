@@ -5,10 +5,11 @@
 -- 3. simplify each measure
 module Music.Theory.Duration.Sequence.Notate where
 
---import Data.Function
+import Control.Monad
+import Data.List
 import Data.Maybe
 --import Data.Ratio
---import Music.Theory.Duration
+import Music.Theory.Duration
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
 import Music.Theory.Time_Signature
@@ -36,6 +37,23 @@ at_last f g x =
       [] -> []
       [i] -> [g i]
       i:x' -> f i : at_last f g x'
+
+-- | Applies a /join/ function to the first two elements of the list.
+-- If the /join/ function succeeds the joined element is considered
+-- for further coalescing.
+--
+-- > coalesce (\p q -> Just (p + q)) [1..5] == [15]
+--
+-- > let jn p q = if even p then Just (p + q) else Nothing
+-- > in coalesce jn [1..5] == map sum [[1],[2,3],[4,5]]
+coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
+coalesce f x =
+    case x of
+      (p:q:x') ->
+          case f p q of
+            Nothing -> p : coalesce f (q : x')
+            Just r -> coalesce f (r : x')
+      _ -> x
 
 -- * Tied RQ ('RQ_T')
 
@@ -336,7 +354,21 @@ to_divisions ts x = to_divisions_rq (map ts_divisions ts) x
 
 -- * Simplifications
 
---simplify = undefined
+-- > import Music.Theory.Duration.Name.Abbreviation
+-- > m_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
+-- > m_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
+-- > m_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
+m_simplify :: [Duration_A] -> [Duration_A]
+m_simplify =
+    let f (d0,a0) (d1,a1) =
+            let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
+                e = End_Tuplet `notElem` a0
+                m = duration_meq d0 d1
+                d = sum_dur d0 d1
+                a = delete Tie_Right a0 ++ delete Tie_Left a1
+                g i = if t && e && m then Just (i,a) else Nothing
+            in join (fmap g d)
+    in coalesce f
 
 -- * Durations
 
@@ -349,18 +381,33 @@ p_tuplet_prep x =
     let f t = (t,map (rqt_un_tuplet t) x)
     in fmap f (rq_derive_tuplet (map rqt_rq x))
 
+-- | Within a /pulse/ tied notes that sum to a /cmn/ duration can be
+-- coalesced.
+--
+-- > p_coalesce [(3/4,T),(1/4,F)] == [(1,F)]
+-- > p_coalesce [(1/4,T),(1/8,F),(3/8,T)] == [(3/8,F),(3/8,T)]
+-- > p_coalesce [(1/8,T),(1/4,T),(1/8,F)] == [(1/2,F)]
+p_coalesce :: [RQ_T] -> [RQ_T]
+p_coalesce =
+    let f (i,p) (j,q) = if p == T && rq_is_cmn (i + j)
+                        then Just (i+j,q)
+                        else Nothing
+    in coalesce f
+
 -- | Notate pulse, ie. derive tuplet if neccesary.
 --
 -- > p_notate False [(2/3,F),(1/3,T)]
 -- > p_notate False [(2/5,F),(1/10,T)]
+-- > p_notate False [(1/4,T),(1/8,F),(1/8,F)]
 -- > p_notate False (map rq_rqt [1/3,1/6])
 -- > p_notate False (map rq_rqt [2/5,1/10])
 -- > p_notate False (map rq_rqt [1/3,1/6,2/5,1/10]) == Nothing
 p_notate :: Bool -> [RQ_T] -> Maybe [Duration_A]
 p_notate z x =
-    let d = case p_tuplet_prep x of
-              Just (t,x') -> da_tuplet t (rqt_to_duration_a z x')
-              Nothing -> rqt_to_duration_a z x
+    let f = rqt_to_duration_a z {- . p_coalesce -}
+        d = case p_tuplet_prep x of
+              Just (t,x') -> da_tuplet t (f x')
+              Nothing -> f x
     in if rq_can_notate (map rqt_rq x) then Just d else Nothing
 
 -- | Notate measure.

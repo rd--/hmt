@@ -15,6 +15,16 @@ data D_Annotation = Tie_Right
 -- | Annotated 'Duration'.
 type Duration_A = (Duration,[D_Annotation])
 
+begins_tuplet :: D_Annotation -> Bool
+begins_tuplet a =
+    case a of
+      Begin_Tuplet _ -> True
+      _ -> False
+
+-- | Does 'Duration_A' being a tuplet?
+da_begins_tuplet :: Duration_A -> Bool
+da_begins_tuplet (_,a) = any begins_tuplet a
+
 -- | Is 'Duration_A' tied to the the right?
 da_tied_right :: Duration_A -> Bool
 da_tied_right = elem Tie_Right . snd

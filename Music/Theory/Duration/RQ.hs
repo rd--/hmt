@@ -36,6 +36,12 @@ rq_to_duration x =
       (12,1) -> Just dotted_breve
       _ -> Nothing
 
+-- | Is 'RQ' a /cmn/ duration.
+--
+-- > map rq_is_cmn [1/4,1/5,1/8] == [True,False,True]
+rq_is_cmn :: RQ -> Bool
+rq_is_cmn = isJust . rq_to_duration
+
 -- | Variant of 'rq_to_duration' with error message.
 rq_to_duration_err :: Show a => a -> RQ -> Duration
 rq_to_duration_err msg n =
@@ -161,4 +167,4 @@ rq_can_notate x =
     let x' = case rq_derive_tuplet x of
                Nothing -> x
                Just t -> map (rq_un_tuplet t) x
-    in all isJust (map rq_to_duration x')
+    in and (map rq_is_cmn x')
