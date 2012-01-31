@@ -86,7 +86,7 @@ rq_mod i j
     | i > j = rq_mod (i - j) j
     | otherwise = i
 
--- | Is /p/ divisisble by /q/, ie. is the 'denominator' of @p/q@ '==' @1@.
+-- | Is /p/ divisible by /q/, ie. is the 'denominator' of @p/q@ '==' @1@.
 --
 -- > map (rq_divisible_by (3%2)) [1%2,1%3] == [True,False]
 rq_divisible_by :: RQ -> RQ -> Bool
@@ -96,6 +96,7 @@ rq_divisible_by i j = denominator (i / j) == 1
 --
 -- > rq_derive_tuplet_plain [1/2] == Nothing
 -- > rq_derive_tuplet_plain [1/2,1/2] == Nothing
+-- > rq_derive_tuplet_plain [1/4,1/4] == Nothing
 -- > rq_derive_tuplet_plain [1/3,2/3] == Just (3,2)
 -- > rq_derive_tuplet_plain [1/2,1/3,1/6] == Just (6,4)
 -- > rq_derive_tuplet_plain [1/3,1/6] == Just (6,4)
@@ -108,17 +109,19 @@ rq_derive_tuplet_plain x =
     let i = foldl lcm 1 (map denominator x)
         j = let z = iterate (* 2) 2
             in fromJust (find (>= i) z) `div` 2
-    in if j == 1 then Nothing else Just (i,j)
+    in if i `rem` j == 0 then Nothing else Just (i,j)
 
 -- | Derive the tuplet structure of a set of 'RQ' values.
 --
+-- > rq_derive_tuplet [1/4,1/8,1/8] == Nothing
 -- > rq_derive_tuplet [1/3,2/3] == Just (3,2)
 -- > rq_derive_tuplet [1/2,1/3,1/6] == Just (3,2)
 -- > rq_derive_tuplet [2/5,3/5] == Just (5,4)
 -- > rq_derive_tuplet [1/3,1/6,2/5,1/10] == Just (15,8)
 rq_derive_tuplet :: [RQ] -> Maybe (Integer,Integer)
 rq_derive_tuplet =
-    let f (i,j) = let k = i % j in (numerator k,denominator k)
+    let f (i,j) = let k = i % j
+                  in (numerator k,denominator k)
     in fmap f . rq_derive_tuplet_plain
 
 -- | Remove tuplet multiplier from value, ie. to give notated
