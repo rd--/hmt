@@ -8,7 +8,7 @@ module Music.Theory.Duration.Sequence.Notate where
 import Control.Monad
 import Data.List
 import Data.Maybe
---import Data.Ratio
+import Data.Ratio
 import Music.Theory.Duration
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
@@ -16,8 +16,8 @@ import Music.Theory.Time_Signature
 
 -- * Lists
 
--- | If all elements of the list are @Just a@, then gives @Just [a]@
--- else gives 'Nothing'.
+-- | Variant of 'catMaybes'.  If all elements of the list are @Just
+-- a@, then gives @Just [a]@ else gives 'Nothing'.
 --
 -- > all_just (map Just [1..3]) == Just [1..3]
 -- > all_just [Just 1,Nothing,Just 3] == Nothing
@@ -54,6 +54,32 @@ coalesce f x =
             Nothing -> p : coalesce f (q : x')
             Just r -> coalesce f (r : x')
       _ -> x
+
+-- > coalesce_accum (\i p q -> Left (p + q)) 0 [1..5] == [(0,15)]
+--
+-- > let jn i p q = if even p then Left (p + q) else Right (p + i)
+-- > in coalesce_accum jn 0 [1..7] == [(0,1),(1,5),(6,9),(15,13)]
+--
+-- > let jn i p q = if even p then Left (p + q) else Right [p,q]
+-- > in coalesce_accum jn [] [1..5] == [([],1),([1,2],5),([5,4],9)]
+coalesce_accum :: (b -> a -> a -> Either a b) -> b -> [a] -> [(b,a)]
+coalesce_accum f i x =
+    case x of
+      [] -> []
+      [p] -> [(i,p)]
+      (p:q:x') ->
+          case f i p q of
+            Right j -> (i,p) : coalesce_accum f j (q : x')
+            Left r -> coalesce_accum f i (r : x')
+
+-- > let f i p q = if i == 1 then Just (p + q) else Nothing
+-- > in coalesce_sum (+) 0 f [1,1/2,1/4,1/4] == [1,1]
+coalesce_sum :: (b -> a -> b) -> b -> (b -> a -> a -> Maybe a) -> [a] -> [a]
+coalesce_sum add zero f =
+    let g i p q = case f i p q of
+                    Just r -> Left r
+                    Nothing -> Right (i `add` p)
+    in map snd . coalesce_accum g zero
 
 -- * Tied RQ ('RQ_T')
 
@@ -354,21 +380,41 @@ to_divisions ts x = to_divisions_rq (map ts_divisions ts) x
 
 -- * Simplifications
 
--- > import Music.Theory.Duration.Name.Abbreviation
--- > m_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
--- > m_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
--- > m_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
-m_simplify :: [Duration_A] -> [Duration_A]
-m_simplify =
-    let f (d0,a0) (d1,a1) =
+type Simplify_T = (Time_Signature,RQ,(RQ,RQ))
+type Simplify_P = Simplify_T -> Bool
+
+default_rule :: [Simplify_T] -> Simplify_P
+default_rule x r =
+    let ((_,j),t,(p,q)) = r
+    in r `elem` x ||
+       (j == 4 &&
+        denominator t == 1 &&
+        even (numerator t) &&
+        (p + q) <= 2)
+
+m_simplify :: Time_Signature -> Simplify_P -> [Duration_A] -> [Duration_A]
+m_simplify ts p =
+    let f st (d0,a0) (d1,a1) =
             let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
-                e = End_Tuplet `notElem` a0
+                e = End_Tuplet `notElem` a0 || any begins_tuplet a1
                 m = duration_meq d0 d1
                 d = sum_dur d0 d1
                 a = delete Tie_Right a0 ++ delete Tie_Left a1
-                g i = if t && e && m then Just (i,a) else Nothing
+                r = p (ts,st,(duration_to_rq d0,duration_to_rq d1))
+                g i = if t && e && m && r then Just (i,a) else Nothing
             in join (fmap g d)
-    in coalesce f
+        z i (j,_) = i + duration_to_rq j
+    in coalesce_sum z 0 f
+
+p_simplify_rule :: Simplify_P
+p_simplify_rule = const True
+
+-- > import Music.Theory.Duration.Name.Abbreviation
+-- > p_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
+-- > p_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
+-- > p_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
+p_simplify :: [Duration_A] -> [Duration_A]
+p_simplify = m_simplify undefined p_simplify_rule
 
 -- * Durations
 
@@ -404,7 +450,7 @@ p_coalesce =
 -- > p_notate False (map rq_rqt [1/3,1/6,2/5,1/10]) == Nothing
 p_notate :: Bool -> [RQ_T] -> Maybe [Duration_A]
 p_notate z x =
-    let f = rqt_to_duration_a z {- . p_coalesce -}
+    let f = p_simplify . rqt_to_duration_a z {- . p_coalesce -}
         d = case p_tuplet_prep x of
               Just (t,x') -> da_tuplet t (f x')
               Nothing -> f x
@@ -413,26 +459,26 @@ p_notate z x =
 -- | Notate measure.
 --
 -- > m_notate True [[(2/3,F),(1/3,T)],[(1,T)],[(1,F)]]
-m_notate :: Bool -> [[RQ_T]] -> [Duration_A]
-m_notate z m =
-    let z' = z : map (is_tied_right . last) m
-    in concat (catMaybes (zipWith p_notate z' m))
-
--- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
--- > in fmap notate (to_divisions [[1,1,1,1]] d)
---
--- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
--- > in fmap notate (to_divisions [[1,1,1,1]] d)
---
--- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in fmap notate (to_divisions [[1,1/2,1/2,1,1]] d)
 --
 -- > m_notate False [map rq_rqt [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]]
 -- > m_notate False [map rq_rqt [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]]
-notate :: [[[RQ_T]]] -> [Duration_A]
+m_notate :: Bool -> [[RQ_T]] -> Maybe [Duration_A]
+m_notate z m =
+    let z' = z : map (is_tied_right . last) m
+    in fmap concat (all_just (zipWith p_notate z' m))
+
+-- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
+-- > in fmap notate (to_divisions [(4,4)] d)
+--
+-- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
+-- > in fmap notate (to_divisions [(4,4)] d)
+--
+-- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
+-- > in fmap notate (to_divisions [(4,4)] d)
+notate :: [[[RQ_T]]] -> Maybe [Duration_A]
 notate d =
     let z = False : map (is_tied_right . last . last) d
-    in concat (zipWith m_notate z d)
+    in fmap concat (all_just (zipWith m_notate z d))
 
 -- * Ascribe
 
