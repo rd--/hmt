@@ -46,6 +46,8 @@ coalesce f x =
             Just r -> coalesce f (r : x')
       _ -> x
 
+-- | Variant of 'coalesce' with accumulation parameter.
+--
 -- > coalesce_accum (\i p q -> Left (p + q)) 0 [1..5] == [(0,15)]
 --
 -- > let jn i p q = if even p then Left (p + q) else Right (p + i)
@@ -63,6 +65,8 @@ coalesce_accum f i x =
             Right j -> (i,p) : coalesce_accum f j (q : x')
             Left r -> coalesce_accum f i (r : x')
 
+-- | Variant of 'coalesce_accum' that accumulates running sum.
+--
 -- > let f i p q = if i == 1 then Just (p + q) else Nothing
 -- > in coalesce_sum (+) 0 f [1,1/2,1/4,1/4] == [1,1]
 coalesce_sum :: (b -> a -> b) -> b -> (b -> a -> a -> Maybe a) -> [a] -> [a]
@@ -294,14 +298,28 @@ to_divisions ts x = to_divisions_rq (map ts_divisions ts) x
 
 -- * Simplifications
 
+-- | Structure given to 'Simplify_P' to decide simplification.  The
+-- structure is /(ts,start-rq,(left-rq,right-rq))/.
 type Simplify_T = (Time_Signature,RQ,(RQ,RQ))
-type Simplify_M = ([Time_Signature],[RQ],[(RQ,RQ)])
+
+-- | Predicate function at 'Simplify_T'.
 type Simplify_P = Simplify_T -> Bool
 
+-- | Variant of 'Simplify_T' allowing multiple rules.
+type Simplify_M = ([Time_Signature],[RQ],[(RQ,RQ)])
 
+-- | Transform 'Simplify_M' to 'Simplify_P'.
 meta_table_p :: Simplify_M -> Simplify_P
 meta_table_p (tt,ss,pp) (t,s,p) = t `elem` tt && s `elem` ss && p `elem` pp
 
+-- | Transform 'Simplify_M' to set of 'Simplify_T'.
+meta_table_t :: Simplify_M -> [Simplify_T]
+meta_table_t (tt,ss,pp) = [(t,s,p) | t <- tt, s <- ss,p <- pp]
+
+-- | The default table of simplifiers.
+--
+-- > default_table ((4,4),0,(2,1)) == True
+-- > default_table ((4,4),1,(1,1)) == False
 default_table :: Simplify_P
 default_table x =
     let t :: [Simplify_M]
@@ -312,6 +330,11 @@ default_table x =
         p = map meta_table_p t
     in or (p <*> pure x)
 
+-- | The default quarter note pulse simplifier rule.
+--
+-- > default_q_rule ((3,4),0,(1,1/2)) == True
+-- > default_q_rule ((3,4),0,(1,3/4)) == True
+-- > default_q_rule ((4,4),1,(1,1)) == False
 default_q_rule :: Simplify_P
 default_q_rule ((_,j),t,(p,q)) =
     j == 4 &&
@@ -319,11 +342,14 @@ default_q_rule ((_,j),t,(p,q)) =
     even (numerator t) &&
     (p + q) <= 2
 
+-- | The default simplifier rule.  To extend provide a list of
+-- 'Simplify_T'.
 default_rule :: [Simplify_T] -> Simplify_P
 default_rule x r = r `elem` x || default_q_rule r || default_table r
 
-m_simplify :: Time_Signature -> Simplify_P -> [Duration_A] -> [Duration_A]
-m_simplify ts p =
+-- | Measure simplifier.  Apply given 'Simplify_P'.
+m_simplify :: Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
+m_simplify p ts =
     let f st (d0,a0) (d1,a1) =
             let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
                 e = End_Tuplet `notElem` a0 || any begins_tuplet a1
@@ -331,47 +357,44 @@ m_simplify ts p =
                 d = sum_dur d0 d1
                 a = delete Tie_Right a0 ++ delete Tie_Left a1
                 r = p (ts,st,(duration_to_rq d0,duration_to_rq d1))
-                n_dots = 2
-                g i = if dots i < n_dots && t && e && m && r
+                n_dots = 1
+                g i = if dots i <= n_dots && t && e && m && r
                       then Just (i,a)
                       else Nothing
             in join (fmap g d)
         z i (j,_) = i + duration_to_rq j
     in coalesce_sum z 0 f
 
+-- | Pulse simplifier predicate, which is 'const' 'True'.
 p_simplify_rule :: Simplify_P
 p_simplify_rule = const True
 
+-- | Pulse simplifier.
+--
 -- > import Music.Theory.Duration.Name.Abbreviation
 -- > p_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
 -- > p_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
 -- > p_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
+-- > p_simplify [(q'',[Tie_Right]),(s,[Tie_Left])] == [(h,[])]
+-- > p_simplify [(e,[Tie_Right]),(s,[Tie_Left]),(e',[])] == [(e',[]),(e',[])]
+--
+-- > let f = rqt_to_duration_a False
+-- > in p_simplify (f [(1/8,T),(1/4,T),(1/8,F)]) == f [(1/2,F)]
 p_simplify :: [Duration_A] -> [Duration_A]
-p_simplify = m_simplify undefined p_simplify_rule
+p_simplify = m_simplify p_simplify_rule undefined
 
 -- * Durations
 
--- > p_tuplet_prep [(2/3,F),(1/3,T)] == Just ((3,2),[(1,F),(1/2,T)])
--- > p_tuplet_prep (map rq_rqt [1/3,1/6]) == Just ((3,2),[(1/2,F),(1/4,F)])
--- > p_tuplet_prep (map rq_rqt [2/5,1/10]) == Just ((5,4),[(1/2,F),(1/8,F)])
--- > p_tuplet_prep (map rq_rqt [1/3,1/6,2/5,1/10])
-p_tuplet_prep :: [RQ_T] -> Maybe ((Integer,Integer),[RQ_T])
-p_tuplet_prep x =
+-- | Pulse tuplet derivation.
+--
+-- > p_tuplet_rqt [(2/3,F),(1/3,T)] == Just ((3,2),[(1,F),(1/2,T)])
+-- > p_tuplet_rqt (map rq_rqt [1/3,1/6]) == Just ((3,2),[(1/2,F),(1/4,F)])
+-- > p_tuplet_rqt (map rq_rqt [2/5,1/10]) == Just ((5,4),[(1/2,F),(1/8,F)])
+-- > p_tuplet_rqt (map rq_rqt [1/3,1/6,2/5,1/10])
+p_tuplet_rqt :: [RQ_T] -> Maybe ((Integer,Integer),[RQ_T])
+p_tuplet_rqt x =
     let f t = (t,map (rqt_un_tuplet t) x)
     in fmap f (rq_derive_tuplet (map rqt_rq x))
-
--- | Within a /pulse/ tied notes that sum to a /cmn/ duration can be
--- coalesced.
---
--- > p_coalesce [(3/4,T),(1/4,F)] == [(1,F)]
--- > p_coalesce [(1/4,T),(1/8,F),(3/8,T)] == [(3/8,F),(3/8,T)]
--- > p_coalesce [(1/8,T),(1/4,T),(1/8,F)] == [(1/2,F)]
-p_coalesce :: [RQ_T] -> [RQ_T]
-p_coalesce =
-    let f (i,p) (j,q) = if p == T && rq_is_cmn (i + j)
-                        then Just (i+j,q)
-                        else Nothing
-    in coalesce f
 
 -- | Notate pulse, ie. derive tuplet if neccesary.
 --
@@ -383,8 +406,8 @@ p_coalesce =
 -- > p_notate False (map rq_rqt [1/3,1/6,2/5,1/10]) == Nothing
 p_notate :: Bool -> [RQ_T] -> Maybe [Duration_A]
 p_notate z x =
-    let f = p_simplify . rqt_to_duration_a z {- . p_coalesce -}
-        d = case p_tuplet_prep x of
+    let f = p_simplify . rqt_to_duration_a z
+        d = case p_tuplet_rqt x of
               Just (t,x') -> da_tuplet t (f x')
               Nothing -> f x
     in if rq_can_notate (map rqt_rq x) then Just d else Nothing
@@ -400,6 +423,8 @@ m_notate z m =
     let z' = z : map (is_tied_right . last) m
     in fmap concat (all_just (zipWith p_notate z' m))
 
+-- | Multiple measure notation.
+--
 -- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
 -- > in fmap notate (to_divisions [(4,4)] d)
 --
@@ -431,6 +456,7 @@ zip_hold fn =
 -- | Zip a list of 'Duration_A' elements duplicating elements of the
 -- right hand sequence for tied durations.
 --
--- > map snd (ascribe (notate' [4,4] [3,3,2]) "xyz") == "xyyz"
+-- > let Just d = to_divisions [(4,4),(4,4)] [3,3,2]
+-- > in fmap (map snd . flip ascribe "xyz") (notate d) == Just "xxxyyyzz"
 ascribe :: [Duration_A] -> [x] -> [(Duration_A,x)]
 ascribe = zip_hold da_tied_right

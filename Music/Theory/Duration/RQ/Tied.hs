@@ -1,12 +1,14 @@
+-- | 'RQ' values with /tie right/ qualifier.
 module Music.Theory.Duration.RQ.Tied where
 
 import Data.Maybe
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
 
--- * Tied RQ ('RQ_T')
-
+-- | Boolean.
 data Tied = T | F deriving (Eq,Show)
+
+-- | 'RQ' with /tie right/.
 type RQ_T = (RQ,Tied)
 
 -- | 'RQ' field of 'RQ_T'.
