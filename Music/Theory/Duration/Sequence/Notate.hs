@@ -5,6 +5,7 @@
 -- 3. simplify each measure
 module Music.Theory.Duration.Sequence.Notate where
 
+import Control.Applicative
 import Control.Monad
 import Data.List
 import Data.Maybe
@@ -381,16 +382,32 @@ to_divisions ts x = to_divisions_rq (map ts_divisions ts) x
 -- * Simplifications
 
 type Simplify_T = (Time_Signature,RQ,(RQ,RQ))
+type Simplify_M = ([Time_Signature],[RQ],[(RQ,RQ)])
 type Simplify_P = Simplify_T -> Bool
 
+
+meta_table_p :: Simplify_M -> Simplify_P
+meta_table_p (tt,ss,pp) (t,s,p) = t `elem` tt && s `elem` ss && p `elem` pp
+
+default_table :: Simplify_P
+default_table x =
+    let t :: [Simplify_M]
+        t = [([(2,4),(3,4),(4,4)]
+             ,[0,1,2]
+             ,[(1,1/2),(1,3/4),(1,1),(2,1)])]
+        p :: [Simplify_P]
+        p = map meta_table_p t
+    in or (p <*> pure x)
+
+default_q_rule :: Simplify_P
+default_q_rule ((_,j),t,(p,q)) =
+    j == 4 &&
+    denominator t == 1 &&
+    even (numerator t) &&
+    (p + q) <= 2
+
 default_rule :: [Simplify_T] -> Simplify_P
-default_rule x r =
-    let ((_,j),t,(p,q)) = r
-    in r `elem` x ||
-       (j == 4 &&
-        denominator t == 1 &&
-        even (numerator t) &&
-        (p + q) <= 2)
+default_rule x r = r `elem` x || default_q_rule r || default_table r
 
 m_simplify :: Time_Signature -> Simplify_P -> [Duration_A] -> [Duration_A]
 m_simplify ts p =
@@ -401,7 +418,10 @@ m_simplify ts p =
                 d = sum_dur d0 d1
                 a = delete Tie_Right a0 ++ delete Tie_Left a1
                 r = p (ts,st,(duration_to_rq d0,duration_to_rq d1))
-                g i = if t && e && m && r then Just (i,a) else Nothing
+                n_dots = 2
+                g i = if dots i < n_dots && t && e && m && r
+                      then Just (i,a)
+                      else Nothing
             in join (fmap g d)
         z i (j,_) = i + duration_to_rq j
     in coalesce_sum z 0 f
