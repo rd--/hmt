@@ -98,6 +98,12 @@ rq_mod i j
 rq_divisible_by :: RQ -> RQ -> Bool
 rq_divisible_by i j = denominator (i / j) == 1
 
+-- | Is 'RQ' a whole number (ie. is 'denominator' '==' @1@.
+--
+-- map rq_is_integral [1,3/2,2] == [True,False,True]
+rq_is_integral :: RQ -> Bool
+rq_is_integral = (== 1) . denominator
+
 -- | Derive the tuplet structure of a set of 'RQ' values.
 --
 -- > rq_derive_tuplet_plain [1/2] == Nothing

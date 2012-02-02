@@ -1,8 +1,18 @@
 -- | Notation of a sequence of 'RQ' values as annotated 'Duration' values.
 --
--- 1. separate into measures, adding tie annotations as required.
--- 2. separate each measure into pulses
--- 3. simplify each measure
+-- 1. Separate input sequence into measures, adding tie annotations as
+-- required (see 'to_measures_ts').  Ensure all 'RQ_T' values can be
+-- notated as /common music notation/ durations.
+--
+-- 2. Separate each measure into pulses (see 'm_divisions_ts').
+-- Further subdivides pulses to ensure /cmn/ tuplet notation.
+--
+-- 3. Simplify each measure (see 'm_simplify' and 'default_rule').
+-- Coalesces tied durations where appropriate.
+--
+-- 4. Notate measures (see 'notate' or 'm_notate').
+--
+-- 5. Ascribe values to notated durations, see 'ascribe'.
 module Music.Theory.Duration.Sequence.Notate where
 
 import Control.Applicative
@@ -209,27 +219,30 @@ rqt_tuplet_subdivide_seq i = concatMap (rqt_tuplet_subdivide i)
 to_measures_rq :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
 to_measures_rq m = fmap (map rqt_set_to_cmn) . rqt_separate m . map rq_rqt
 
--- | Separate 'RQ' sequence into measures.
+-- | Variant of 'to_measures_rq' with measures given by
+-- 'Time_Signature' values.  Ensures 'RQ_T' are /cmn/ durations.
 --
--- > to_measures [(1,4)] [5/8,3/8] == Just [[(1/2,T),(1/8,F),(3/8,F)]]
--- > to_measures [(1,4)] [5/7,2/7] == Just [[(4/7,T),(1/7,F),(2/7,F)]]
+-- > to_measures_ts [(1,4)] [5/8,3/8] == Just [[(1/2,T),(1/8,F),(3/8,F)]]
+-- > to_measures_ts [(1,4)] [5/7,2/7] == Just [[(4/7,T),(1/7,F),(2/7,F)]]
 --
 -- > let {m = replicate 18 (1,4)
 -- >     ;x = [3/4,2,5/4,9/4,1/4,3/2,1/2,7/4,1,5/2,11/4,3/2]}
--- > in to_measures m x == Just [[(3/4,F),(1/4,T)],[(1/1,T)]
--- >                            ,[(3/4,F),(1/4,T)],[(1/1,F)]
--- >                            ,[(1/1,T)],[(1/1,T)]
--- >                            ,[(1/4,F),(1/4,F),(1/2,T)],[(1/1,F)]
--- >                            ,[(1/2,F),(1/2,T)],[(1/1,T)]
--- >                            ,[(1/4,F),(3/4,T)],[(1/4,F),(3/4,T)]
--- >                            ,[(1/1,T)],[(3/4,F),(1/4,T)]
--- >                            ,[(1/1,T)],[(1/1,T)]
--- >                            ,[(1/2,F),(1/2,T)],[(1/1,F)]]
-to_measures :: [Time_Signature] -> [RQ] -> Maybe [[RQ_T]]
-to_measures m = to_measures_rq (map ts_rq m)
+-- > in to_measures_ts m x == Just [[(3/4,F),(1/4,T)],[(1/1,T)]
+-- >                              ,[(3/4,F),(1/4,T)],[(1/1,F)]
+-- >                              ,[(1/1,T)],[(1/1,T)]
+-- >                              ,[(1/4,F),(1/4,F),(1/2,T)],[(1/1,F)]
+-- >                              ,[(1/2,F),(1/2,T)],[(1/1,T)]
+-- >                              ,[(1/4,F),(3/4,T)],[(1/4,F),(3/4,T)]
+-- >                              ,[(1/1,T)],[(3/4,F),(1/4,T)]
+-- >                              ,[(1/1,T)],[(1/1,T)]
+-- >                              ,[(1/2,F),(1/2,T)],[(1/1,F)]]
+to_measures_ts :: [Time_Signature] -> [RQ] -> Maybe [[RQ_T]]
+to_measures_ts m = to_measures_rq (map ts_rq m)
 
--- | Divide measure inot pulses of indicated 'RQ' durations.  Measure
--- must be of correct length and contain only /cmn/ durations.
+-- | Divide measure into pulses of indicated 'RQ' durations.  Measure
+-- must be of correct length and contain only /cmn/ durations.  Pulses
+-- are further subdivided if required to notate tuplets correctly, see
+-- 'rqt_tuplet_subdivide_seq'.
 m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
 m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq (1/16)) . rqt_separate z
 
@@ -237,12 +250,13 @@ m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq (1/16)) . rqt_separate z
 -- 'Time_Signature'.
 --
 -- > let d = [(4/7,T),(1/7,F),(2/7,F)]
--- > in m_divisions (1,4) d == Just [d]
+-- > in m_divisions_ts (1,4) d == Just [d]
 --
 -- > let d = map rq_rqt [1/3,1/6,2/5,1/10]
--- > in m_divisions (1,4) d == Just [[(1/3,F),(1/6,F)],[(2/5,F),(1/10,F)]]
-m_divisions :: Time_Signature -> [RQ_T] -> Maybe [[RQ_T]]
-m_divisions ts = m_divisions_rq (ts_divisions ts)
+-- > in m_divisions_ts (1,4) d == Just [[(1/3,F),(1/6,F)]
+-- >                                   ,[(2/5,F),(1/10,F)]]
+m_divisions_ts :: Time_Signature -> [RQ_T] -> Maybe [[RQ_T]]
+m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 
 -- | Composition of 'to_measures_rq' and 'm_divisions_rq', where
 -- measures are initially given as sets of divisions.
@@ -317,15 +331,10 @@ meta_table_t :: Simplify_M -> [Simplify_T]
 meta_table_t (tt,ss,pp) = [(t,s,p) | t <- tt, s <- ss,p <- pp]
 
 -- | The default table of simplifiers.
---
--- > default_table ((4,4),0,(2,1)) == True
--- > default_table ((4,4),1,(1,1)) == False
 default_table :: Simplify_P
 default_table x =
     let t :: [Simplify_M]
-        t = [([(2,4),(3,4),(4,4)]
-             ,[0,1,2]
-             ,[(1,1/2),(1,3/4),(1,1),(2,1),(2,2),(3,1)])]
+        t = []
         p :: [Simplify_P]
         p = map meta_table_p t
     in or (p <*> pure x)
@@ -335,12 +344,16 @@ default_table x =
 -- > default_q_rule ((3,4),0,(1,1/2)) == True
 -- > default_q_rule ((3,4),0,(1,3/4)) == True
 -- > default_q_rule ((4,4),1,(1,1)) == False
+-- > default_q_rule ((4,4),2,(1,1)) == True
+-- > default_q_rule ((4,4),2,(1,2)) == True
+-- > default_q_rule ((4,4),0,(2,1)) == True
 default_q_rule :: Simplify_P
 default_q_rule ((_,j),t,(p,q)) =
-    j == 4 &&
-    denominator t == 1 &&
-    even (numerator t) &&
-    (p + q) <= 2
+    let r = p + q
+    in j == 4 &&
+       denominator t == 1 &&
+       even (numerator t) &&
+       (r <= 2 || rq_is_integral r)
 
 -- | The default simplifier rule.  To extend provide a list of
 -- 'Simplify_T'.
