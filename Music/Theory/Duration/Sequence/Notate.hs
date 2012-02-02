@@ -12,7 +12,7 @@
 -- 3. Simplify each measure (see 'm_simplify' and 'default_rule').
 -- Coalesces tied durations where appropriate.
 --
--- 4. Notate measures (see 'notate' or 'm_notate').
+-- 4. Notate measures (see 'm_notate' or 'mm_notate').
 --
 -- 5. Ascribe values to notated durations, see 'ascribe'.
 module Music.Theory.Duration.Sequence.Notate where
@@ -95,21 +95,49 @@ coalesce_sum add zero f =
 -- prefix sum and the requested sum.  Note that zero elements are kept
 -- left.
 --
--- > take_sum 3 [2,1] == ([2,1],0,[])
--- > take_sum 3 [2,2] == ([2],1,[2])
--- > take_sum 3 [2,1,0,1] == ([2,1,0],0,[1])
--- > take_sum 3 [4] == ([],3,[4])
--- > take_sum 0 [1..5] == ([],0,[1..5])
-take_sum :: (Ord a, Num a) => a -> [a] -> ([a],a,[a])
-take_sum m =
+-- > take_sum_by id 3 [2,1] == ([2,1],0,[])
+-- > take_sum_by id 3 [2,2] == ([2],1,[2])
+-- > take_sum_by id 3 [2,1,0,1] == ([2,1,0],0,[1])
+-- > take_sum_by id 3 [4] == ([],3,[4])
+-- > take_sum_by id 0 [1..5] == ([],0,[1..5])
+take_sum_by :: (Ord n, Num n) => (a -> n) -> n -> [a] -> ([a], n, [a])
+take_sum_by f m =
     let go r n l =
             let z = (reverse r,m-n,l)
             in case l of
                  [] -> z
-                 i:l' -> if i + n > m
-                         then z
-                         else go (i:r) (i+n) l'
+                 i:l' -> let n' = f i + n
+                         in if n' > m
+                            then z
+                            else go (i:r) n' l'
     in go [] 0
+
+-- | Variant of 'take_sum_by' with 'id' function.
+take_sum :: (Ord a, Num a) => a -> [a] -> ([a],a,[a])
+take_sum = take_sum_by id
+
+-- | Variant of 'take_sum' that requires the prefix to sum to value.
+--
+-- > take_sum_by_eq id 3 [2,1,0,1] == Just ([2,1,0],[1])
+-- > take_sum_by_eq id 3 [2,2] == Nothing
+take_sum_by_eq :: (Ord n, Num n) => (a -> n) -> n -> [a] -> Maybe ([a], [a])
+take_sum_by_eq f m l =
+    case take_sum_by f m l of
+      (p,0,q) -> Just (p,q)
+      _ -> Nothing
+
+-- | Recursive variant of 'take_sum_by_eq'.
+--
+-- > split_sum_by_eq id [3,3] [2,1,0,3] == Just [[2,1,0],[3]]
+-- > split_sum_by_eq id [3,3] [2,2,2] == Nothing
+split_sum_by_eq :: (Ord n, Num n) => (a -> n) -> [n] -> [a] -> Maybe [[a]]
+split_sum_by_eq f mm l =
+    case (mm,l) of
+      ([],[]) -> Just []
+      (m:mm',_) -> case take_sum_by_eq f m l of
+                     Just (p,l') -> fmap (p :) (split_sum_by_eq f mm' l')
+                     Nothing -> Nothing
+      _ -> Nothing
 
 -- | Split sequence such that the prefix sums to precisely /m/.  The
 -- third element of the result indicates if it was required to divide
@@ -240,6 +268,12 @@ to_measures_rq m = fmap (map rqt_set_to_cmn) . rqt_separate m . map rq_rqt
 -- >                              ,[(1/2,F),(1/2,T)],[(1/1,F)]]
 to_measures_ts :: [Time_Signature] -> [RQ] -> Maybe [[RQ_T]]
 to_measures_ts m = to_measures_rq (map ts_rq m)
+
+-- | Variant of 'to_measures_ts' that allows for duration field
+-- operation but requires that measures be well formed.  This is
+-- useful for re-grouping measures after notation and ascription.
+to_measures_ts_by_eq :: (a -> RQ) -> [Time_Signature] -> [a] -> Maybe [[a]]
+to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 
 -- | Divide measure into pulses of indicated 'RQ' durations.  Measure
 -- must be of correct length and contain only /cmn/ durations.  Pulses
@@ -441,17 +475,21 @@ m_notate z m =
 -- | Multiple measure notation.
 --
 -- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
--- > in fmap notate (to_divisions_ts [(4,4)] d)
+-- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
 --
 -- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
--- > in fmap notate (to_divisions_ts [(4,4)] d)
+-- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in fmap notate (to_divisions_ts [(4,4)] d)
-notate :: [[[RQ_T]]] -> Maybe [Duration_A]
-notate d =
+-- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
+mm_notate :: [[[RQ_T]]] -> Maybe [[Duration_A]]
+mm_notate d =
     let z = False : map (is_tied_right . last . last) d
-    in fmap concat (all_just (zipWith m_notate z d))
+    in all_just (zipWith m_notate z d)
+
+-- | 'fmap' 'concat' '.' 'mm_notate'.
+notate :: [[[RQ_T]]] -> Maybe [Duration_A]
+notate = fmap concat . mm_notate
 
 -- * Ascribe
 
