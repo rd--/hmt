@@ -1,0 +1,34 @@
+-- | Common music notation clefs.
+module Music.Theory.Clef where
+
+import Music.Theory.Pitch
+import Music.Theory.Pitch.Name
+
+-- | Clef enumeration type.
+data Clef_T = Bass | Tenor | Alto | Treble | Percussion
+              deriving (Eq,Ord,Show)
+
+-- | Give clef range as a 'Pitch' pair indicating the notes below and
+-- above the staff.
+--
+-- > map clef_range [Treble,Bass] == [Just (d4,g5),Just (f2,b3)]
+-- > clef_range Percussion == Nothing
+clef_range :: Clef_T -> Maybe (Pitch,Pitch)
+clef_range c =
+    case c of
+      Bass -> Just (f2,b3)
+      Tenor -> Just (c3,f4)
+      Alto -> Just (e3,a4)
+      Treble -> Just (d4,g5)
+      Percussion -> Nothing
+
+-- | Suggest a 'Clef_T' and octave offset given a 'Pitch'.
+--
+-- > map clef_suggest [c3,c4] == [(Bass,0),(Treble,0)]
+clef_suggest :: Pitch -> (Clef_T,Integer)
+clef_suggest p | p < f1 = (Bass,-2)
+               | p < f2 = (Bass,-1)
+               | p < b3 = (Bass,0)
+               | p < g5 = (Treble,0)
+               | p < g6 = (Treble,1)
+               | otherwise = (Treble,2)

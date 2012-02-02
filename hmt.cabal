@@ -30,6 +30,7 @@ Library
                    xml
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Bjorklund
+                   Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Diagram.Grid
                    Music.Theory.Diagram.Path
