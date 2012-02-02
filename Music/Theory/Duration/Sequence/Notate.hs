@@ -5,7 +5,9 @@
 -- notated as /common music notation/ durations.
 --
 -- 2. Separate each measure into pulses (see 'm_divisions_ts').
--- Further subdivides pulses to ensure /cmn/ tuplet notation.
+-- Further subdivides pulses to ensure /cmn/ tuplet notation.  See
+-- 'to_divisions_ts' for a composition of 'to_measures_ts' and
+-- 'm_divisions_ts'.
 --
 -- 3. Simplify each measure (see 'm_simplify' and 'default_rule').
 -- Coalesces tied durations where appropriate.
@@ -288,27 +290,27 @@ to_divisions_rq m x =
 -- 'Time_Signature'.
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]
--- > in to_divisions [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
--- >                                    ,[(1/3,F),(1/6,F)]
--- >                                    ,[(2/5,T),(1/10,T)]
--- >                                    ,[(1/5,F),(4/5,T)]
--- >                                    ,[(1/3,F),(1/2,F),(1/6,F)]]]
+-- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
+-- >                                      ,[(1/3,F),(1/6,F)]
+-- >                                      ,[(2/5,T),(1/10,T)]
+-- >                                      ,[(1/5,F),(4/5,T)]
+-- >                                      ,[(1/3,F),(1/2,F),(1/6,F)]]]
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]
--- > in to_divisions [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
--- >                                    ,[(1/3,F),(1/6,F)]
--- >                                    ,[(2/5,T),(1/10,T)]
--- >                                    ,[(1/5,F),(4/5,T)]
--- >                                    ,[(1/6,F),(1/2,F),(1/3,F)]]]
+-- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
+-- >                                      ,[(1/3,F),(1/6,F)]
+-- >                                      ,[(2/5,T),(1/10,T)]
+-- >                                      ,[(1/5,F),(4/5,T)]
+-- >                                      ,[(1/6,F),(1/2,F),(1/3,F)]]]
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in to_divisions [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
--- >                                    ,[(1/3,F),(1/6,F)]
--- >                                    ,[(2/5,T),(1/10,T)]
--- >                                    ,[(1/5,F),(4/5,F)]
--- >                                    ,[(1/2,F),(1/2,F)]]]
-to_divisions :: [Time_Signature] -> [RQ] -> Maybe [[[RQ_T]]]
-to_divisions ts x = to_divisions_rq (map ts_divisions ts) x
+-- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,F),(2/5,F)]
+-- >                                      ,[(1/3,F),(1/6,F)]
+-- >                                      ,[(2/5,T),(1/10,T)]
+-- >                                      ,[(1/5,F),(4/5,F)]
+-- >                                      ,[(1/2,F),(1/2,F)]]]
+to_divisions_ts :: [Time_Signature] -> [RQ] -> Maybe [[[RQ_T]]]
+to_divisions_ts ts x = to_divisions_rq (map ts_divisions ts) x
 
 -- * Simplifications
 
@@ -439,13 +441,13 @@ m_notate z m =
 -- | Multiple measure notation.
 --
 -- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
--- > in fmap notate (to_divisions [(4,4)] d)
+-- > in fmap notate (to_divisions_ts [(4,4)] d)
 --
 -- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
--- > in fmap notate (to_divisions [(4,4)] d)
+-- > in fmap notate (to_divisions_ts [(4,4)] d)
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in fmap notate (to_divisions [(4,4)] d)
+-- > in fmap notate (to_divisions_ts [(4,4)] d)
 notate :: [[[RQ_T]]] -> Maybe [Duration_A]
 notate d =
     let z = False : map (is_tied_right . last . last) d
@@ -469,7 +471,7 @@ zip_hold fn =
 -- | Zip a list of 'Duration_A' elements duplicating elements of the
 -- right hand sequence for tied durations.
 --
--- > let Just d = to_divisions [(4,4),(4,4)] [3,3,2]
+-- > let Just d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
 -- > in fmap (map snd . flip ascribe "xyz") (notate d) == Just "xxxyyyzz"
 ascribe :: [Duration_A] -> [x] -> [(Duration_A,x)]
 ascribe = zip_hold da_tied_right

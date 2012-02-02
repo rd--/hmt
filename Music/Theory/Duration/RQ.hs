@@ -104,6 +104,12 @@ rq_divisible_by i j = denominator (i / j) == 1
 rq_is_integral :: RQ -> Bool
 rq_is_integral = (== 1) . denominator
 
+-- | Return 'numerator' of 'RQ' if 'denominator' '==' @1@.
+--
+-- map rq_integral [1,3/2,2] == [Just 1,Nothing,Just 2]
+rq_integral :: RQ -> Maybe Integer
+rq_integral n = if rq_is_integral n then Just (numerator n) else Nothing
+
 -- | Derive the tuplet structure of a set of 'RQ' values.
 --
 -- > rq_derive_tuplet_plain [1/2] == Nothing
