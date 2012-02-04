@@ -1,9 +1,11 @@
+-- | Common music notation tempo indications.
 module Music.Theory.Tempo_Marking where
 
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
 import Music.Theory.Time_Signature
 
+-- | A tempo marking is in terms of a common music notation 'Duration'.
 type Tempo_Marking = (Duration,Rational)
 
 -- | Duration of a RQ value, in seconds, given indicated tempo.
@@ -34,3 +36,6 @@ pulse_duration t (x,i) =
 measure_duration :: Time_Signature -> Tempo_Marking -> Rational
 measure_duration (n,d) t = pulse_duration (n,d) t * fromIntegral n
 
+-- | 'Fractional' variant of 'measure_duration'.
+measure_duration_f :: Fractional c => Time_Signature -> Tempo_Marking -> c
+measure_duration_f ts = fromRational . measure_duration ts
