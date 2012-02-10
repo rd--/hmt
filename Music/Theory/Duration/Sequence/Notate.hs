@@ -494,22 +494,54 @@ notate = fmap concat . mm_notate
 -- * Ascribe
 
 -- | Variant of 'zip' that retains elements of the right hand list
--- where elements of the left hand list meet the given predicate.
+-- where elements of the left hand list meet the given predicate.  If
+-- the right hand side is longer the remaining elements to be
+-- processed are given.  It is an error for the right hand side to be
+-- short.
 --
--- > zip_hold even [1..5] "abc" == [(1,'a'),(2,'b'),(3,'b'),(4,'c'),(5,'c')]
--- > zip_hold odd [1..5] "abc" == [(1,'a'),(2,'a'),(3,'b'),(4,'b'),(5,'c')]
-zip_hold :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
+-- > zip_hold even [1..5] "abc" == ([],zip [1..6] "abbcc")
+-- > zip_hold odd [1..6] "abc" == ([],zip [1..6] "aabbcc")
+-- > zip_hold even [1] "ab" == ("b",[(1,'a')])
+-- > zip_hold even [1,2] "a" == undefined
+zip_hold :: (x -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
 zip_hold fn =
-    let go [] _ = []
-        go _ [] = error "zip_hold"
-        go (x:xs) (i:is) = let is' = if fn x then i:is else is
-                           in (x,i) : go xs is'
-    in go
+    let f st e =
+            case st of
+              r:s -> let st' = if fn e then st else s
+                     in (st',(e,r))
+              _ -> error "zip_hold: rhs ends"
+    in flip (mapAccumL f)
+
+-- | Variant of 'zip_hold' that requires the right hand side to be
+-- precisely the required length.
+--
+-- > zip_hold_err even [1..5] "abc" == zip [1..6] "abbcc"
+-- > zip_hold_err odd [1..6] "abc" == zip [1..6] "aabbcc"
+-- > zip_hold_err id [False,False] "a" == undefined
+-- > zip_hold_err id [False] "ab" == undefined
+zip_hold_err :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
+zip_hold_err fn p q =
+    case zip_hold fn p q of
+      ([],r) -> r
+      _ -> error "zip_hold_err: lhs ends"
 
 -- | Zip a list of 'Duration_A' elements duplicating elements of the
 -- right hand sequence for tied durations.
 --
--- > let Just d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
--- > in fmap (map snd . flip ascribe "xyz") (notate d) == Just "xxxyyyzz"
-ascribe :: [Duration_A] -> [x] -> [(Duration_A,x)]
-ascribe = zip_hold da_tied_right
+-- > let {Just d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
+-- >     ;f = map snd . snd . flip m_ascribe "xyz"}
+-- > in fmap f (notate d) == Just "xxxyyyzz"
+m_ascribe :: [Duration_A] -> [x] -> ([x],[(Duration_A,x)])
+m_ascribe = zip_hold da_tied_right
+
+-- | Variant of 'm_ascribe' for a set of measures.
+mm_ascribe :: [[Duration_A]] -> [x] -> [[(Duration_A,x)]]
+mm_ascribe mm x =
+    case mm of
+      [] -> []
+      m:mm' -> let (x',r) = m_ascribe m x
+               in r : mm_ascribe mm' x'
+
+-- | 'snd' '.' 'm_ascribe'.
+ascribe :: [Duration_A] -> [x] -> [(Duration_A, x)]
+ascribe d = snd . m_ascribe d
