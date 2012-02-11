@@ -25,6 +25,10 @@ begins_tuplet a =
 da_begins_tuplet :: Duration_A -> Bool
 da_begins_tuplet (_,a) = any begins_tuplet a
 
+-- | Does 'Duration_A' end a tuplet?
+da_ends_tuplet :: Duration_A -> Bool
+da_ends_tuplet (_,a) = any (== End_Tuplet) a
+
 -- | Is 'Duration_A' tied to the the right?
 da_tied_right :: Duration_A -> Bool
 da_tied_right = elem Tie_Right . snd
@@ -42,3 +46,17 @@ da_tuplet (d,n) x =
         ts = [t0] ++ replicate (length x - 2) [] ++ [[End_Tuplet]]
         jn (p,q) z = (p,q++z)
     in zipWith jn (map fn x) ts
+
+-- | Group tuplets.  Note that this does /not/ handle nested tuplets.
+--
+-- > import Music.Theory.Duration.Name.Abbreviation
+-- > let d = [(q,[]),(e,[Begin_Tuplet (3,2,q)]),(q,[End_Tuplet]),(q,[])]
+-- > in da_group_tuplets d
+da_group_tuplets :: [Duration_A] -> [Either Duration_A [Duration_A]]
+da_group_tuplets x =
+    case x of
+      [] -> []
+      d:x' -> if da_begins_tuplet d
+              then let (t,x'') = span da_ends_tuplet x'
+                   in Right (d : t) : da_group_tuplets x''
+              else Left d : da_group_tuplets x'
