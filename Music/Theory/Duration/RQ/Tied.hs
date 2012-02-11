@@ -6,22 +6,22 @@ import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
 
 -- | Boolean.
-data Tied = T | F deriving (Eq,Show)
+type Tied_Right = Bool
 
 -- | 'RQ' with /tie right/.
-type RQ_T = (RQ,Tied)
+type RQ_T = (RQ,Tied_Right)
 
 -- | 'RQ' field of 'RQ_T'.
 rqt_rq :: RQ_T -> RQ
 rqt_rq = fst
 
 -- | 'Tied' field of 'RQ_T'.
-rqt_tied :: RQ_T -> Tied
+rqt_tied :: RQ_T -> Tied_Right
 rqt_tied = snd
 
 -- | Is 'RQ_T' tied right.
 is_tied_right :: RQ_T -> Bool
-is_tied_right (_,x) = x == T
+is_tied_right = snd
 
 -- | 'RQ_T' variant of 'rq_un_tuplet'.
 --
@@ -36,7 +36,7 @@ rqt_un_tuplet i (d,t) = (rq_un_tuplet i d,t)
 --
 -- > rq_rqt 3 == (3,F)
 rq_rqt :: RQ -> RQ_T
-rq_rqt n = (n,F)
+rq_rqt n = (n,False)
 
 -- | Apply /f/ at all but last element, and /g/ at last element.
 --
@@ -52,7 +52,7 @@ at_last f g x =
 --
 -- > rq_tie_last [1,2,3] == [(1,F),(2,F),(3,T)]
 rq_tie_last :: [RQ] -> [RQ_T]
-rq_tie_last = at_last rq_rqt (\d -> (d,T))
+rq_tie_last = at_last rq_rqt (\d -> (d,True))
 
 -- | Transform a list of 'RQ_T' to a list of 'Duration_A'.  The flag
 -- indicates if the initial value is tied left.
@@ -78,7 +78,7 @@ rqt_can_notate = rq_can_notate . map rqt_rq
 -- > rqt_to_cmn (5/7,F) == Just ((4/7,T),(1/7,F))
 rqt_to_cmn :: RQ_T -> Maybe (RQ_T,RQ_T)
 rqt_to_cmn (k,t) =
-    let f (i,j) = ((i,T),(j,t))
+    let f (i,j) = ((i,True),(j,t))
     in fmap f (rq_to_cmn k)
 
 -- | List variant of 'rqt_to_cmn'.

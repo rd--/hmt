@@ -1,6 +1,7 @@
 -- | Duration annotations.
 module Music.Theory.Duration.Annotation where
 
+import Data.Maybe
 import Data.Ratio
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
@@ -14,6 +15,18 @@ data D_Annotation = Tie_Right
 
 -- | Annotated 'Duration'.
 type Duration_A = (Duration,[D_Annotation])
+
+begin_tuplet :: D_Annotation -> Maybe (Integer,Integer,Duration)
+begin_tuplet a =
+    case a of
+      Begin_Tuplet t -> Just t
+      _ -> Nothing
+
+da_begin_tuplet :: Duration_A -> Maybe (Integer,Integer,Duration)
+da_begin_tuplet (_,a) =
+    case catMaybes (map begin_tuplet a) of
+      [t] -> Just t
+      _ -> Nothing
 
 begins_tuplet :: D_Annotation -> Bool
 begins_tuplet a =
