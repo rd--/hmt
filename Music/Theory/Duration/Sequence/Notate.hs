@@ -354,92 +354,6 @@ to_divisions_rq m x =
 to_divisions_ts :: [Time_Signature] -> [RQ] -> Maybe [[[RQ_T]]]
 to_divisions_ts ts x = to_divisions_rq (map ts_divisions ts) x
 
--- * Simplifications
-
--- | Structure given to 'Simplify_P' to decide simplification.  The
--- structure is /(ts,start-rq,(left-rq,right-rq))/.
-type Simplify_T = (Time_Signature,RQ,(RQ,RQ))
-
--- | Predicate function at 'Simplify_T'.
-type Simplify_P = Simplify_T -> Bool
-
--- | Variant of 'Simplify_T' allowing multiple rules.
-type Simplify_M = ([Time_Signature],[RQ],[(RQ,RQ)])
-
--- | Transform 'Simplify_M' to 'Simplify_P'.
-meta_table_p :: Simplify_M -> Simplify_P
-meta_table_p (tt,ss,pp) (t,s,p) = t `elem` tt && s `elem` ss && p `elem` pp
-
--- | Transform 'Simplify_M' to set of 'Simplify_T'.
-meta_table_t :: Simplify_M -> [Simplify_T]
-meta_table_t (tt,ss,pp) = [(t,s,p) | t <- tt, s <- ss,p <- pp]
-
--- | The default table of simplifiers.
-default_table :: Simplify_P
-default_table x =
-    let t :: [Simplify_M]
-        t = []
-        p :: [Simplify_P]
-        p = map meta_table_p t
-    in or (p <*> pure x)
-
--- | The default quarter note pulse simplifier rule.
---
--- > default_q_rule ((3,4),0,(1,1/2)) == True
--- > default_q_rule ((3,4),0,(1,3/4)) == True
--- > default_q_rule ((4,4),1,(1,1)) == False
--- > default_q_rule ((4,4),2,(1,1)) == True
--- > default_q_rule ((4,4),2,(1,2)) == True
--- > default_q_rule ((4,4),0,(2,1)) == True
-default_q_rule :: Simplify_P
-default_q_rule ((_,j),t,(p,q)) =
-    let r = p + q
-    in j == 4 &&
-       denominator t == 1 &&
-       even (numerator t) &&
-       (r <= 2 || rq_is_integral r)
-
--- | The default simplifier rule.  To extend provide a list of
--- 'Simplify_T'.
-default_rule :: [Simplify_T] -> Simplify_P
-default_rule x r = r `elem` x || default_q_rule r || default_table r
-
--- | Measure simplifier.  Apply given 'Simplify_P'.
-m_simplify :: Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
-m_simplify p ts =
-    let f st (d0,a0) (d1,a1) =
-            let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
-                e = End_Tuplet `notElem` a0 || any begins_tuplet a1
-                m = duration_meq d0 d1
-                d = sum_dur d0 d1
-                a = delete Tie_Right a0 ++ delete Tie_Left a1
-                r = p (ts,st,(duration_to_rq d0,duration_to_rq d1))
-                n_dots = 1
-                g i = if dots i <= n_dots && t && e && m && r
-                      then Just (i,a)
-                      else Nothing
-            in join (fmap g d)
-        z i (j,_) = i + duration_to_rq j
-    in coalesce_sum z 0 f
-
--- | Pulse simplifier predicate, which is 'const' 'True'.
-p_simplify_rule :: Simplify_P
-p_simplify_rule = const True
-
--- | Pulse simplifier.
---
--- > import Music.Theory.Duration.Name.Abbreviation
--- > p_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
--- > p_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
--- > p_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
--- > p_simplify [(q'',[Tie_Right]),(s,[Tie_Left])] == [(h,[])]
--- > p_simplify [(e,[Tie_Right]),(s,[Tie_Left]),(e',[])] == [(e',[]),(e',[])]
---
--- > let f = rqt_to_duration_a False
--- > in p_simplify (f [(1/8,_t),(1/4,_t),(1/8,_f)]) == f [(1/2,_f)]
-p_simplify :: [Duration_A] -> [Duration_A]
-p_simplify = m_simplify p_simplify_rule undefined
-
 -- * Durations
 
 -- | Pulse tuplet derivation.
@@ -495,9 +409,103 @@ mm_notate d =
     let z = False : map (is_tied_right . last . last) d
     in all_just (zipWith m_notate z d)
 
--- | 'fmap' 'concat' '.' 'mm_notate'.
-notate :: [[[RQ_T]]] -> Maybe [Duration_A]
-notate = fmap concat . mm_notate
+-- * Simplifications
+
+-- | Structure given to 'Simplify_P' to decide simplification.  The
+-- structure is /(ts,start-rq,(left-rq,right-rq))/.
+type Simplify_T = (Time_Signature,RQ,(RQ,RQ))
+
+-- | Predicate function at 'Simplify_T'.
+type Simplify_P = Simplify_T -> Bool
+
+-- | Variant of 'Simplify_T' allowing multiple rules.
+type Simplify_M = ([Time_Signature],[RQ],[(RQ,RQ)])
+
+-- | Transform 'Simplify_M' to 'Simplify_P'.
+meta_table_p :: Simplify_M -> Simplify_P
+meta_table_p (tt,ss,pp) (t,s,p) = t `elem` tt && s `elem` ss && p `elem` pp
+
+-- | Transform 'Simplify_M' to set of 'Simplify_T'.
+meta_table_t :: Simplify_M -> [Simplify_T]
+meta_table_t (tt,ss,pp) = [(t,s,p) | t <- tt, s <- ss,p <- pp]
+
+-- | The default table of simplifiers.
+--
+-- > default_table ((3,4),1,(1,1)) == True
+default_table :: Simplify_P
+default_table x =
+    let t :: [Simplify_M]
+        t = [([(3,4)],[1],[(1,1)])]
+        p :: [Simplify_P]
+        p = map meta_table_p t
+    in or (p <*> pure x)
+
+-- | The default quarter note pulse simplifier rule.
+--
+-- > default_q_rule ((3,4),0,(1,1/2)) == True
+-- > default_q_rule ((3,4),0,(1,3/4)) == True
+-- > default_q_rule ((4,4),1,(1,1)) == False
+-- > default_q_rule ((4,4),2,(1,1)) == True
+-- > default_q_rule ((4,4),2,(1,2)) == True
+-- > default_q_rule ((4,4),0,(2,1)) == True
+-- > default_q_rule ((3,4),1,(1,1)) == False
+default_q_rule :: Simplify_P
+default_q_rule ((_,j),t,(p,q)) =
+    let r = p + q
+    in j == 4 &&
+       denominator t == 1 &&
+       even (numerator t) &&
+       (r <= 2 || rq_is_integral r)
+
+-- | The default simplifier rule.  To extend provide a list of
+-- 'Simplify_T'.
+default_rule :: [Simplify_T] -> Simplify_P
+default_rule x r = r `elem` x || default_q_rule r || default_table r
+
+-- | Measure simplifier.  Apply given 'Simplify_P'.
+m_simplify :: Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
+m_simplify p ts =
+    let f st (d0,a0) (d1,a1) =
+            let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
+                e = End_Tuplet `notElem` a0 || any begins_tuplet a1
+                m = duration_meq d0 d1
+                d = sum_dur d0 d1
+                a = delete Tie_Right a0 ++ delete Tie_Left a1
+                r = p (ts,st,(duration_to_rq d0,duration_to_rq d1))
+                n_dots = 1
+                g i = if dots i <= n_dots && t && e && m && r
+                      then Just (i,a)
+                      else Nothing
+            in join (fmap g d)
+        z i (j,_) = i + duration_to_rq j
+    in coalesce_sum z 0 f
+
+-- | Pulse simplifier predicate, which is 'const' 'True'.
+p_simplify_rule :: Simplify_P
+p_simplify_rule = const True
+
+-- | Pulse simplifier.
+--
+-- > import Music.Theory.Duration.Name.Abbreviation
+-- > p_simplify [(q,[Tie_Right]),(e,[Tie_Left])] == [(q',[])]
+-- > p_simplify [(e,[Tie_Right]),(q,[Tie_Left])] == [(q',[])]
+-- > p_simplify [(q,[Tie_Right]),(e',[Tie_Left])] == [(q'',[])]
+-- > p_simplify [(q'',[Tie_Right]),(s,[Tie_Left])] == [(h,[])]
+-- > p_simplify [(e,[Tie_Right]),(s,[Tie_Left]),(e',[])] == [(e',[]),(e',[])]
+--
+-- > let f = rqt_to_duration_a False
+-- > in p_simplify (f [(1/8,_t),(1/4,_t),(1/8,_f)]) == f [(1/2,_f)]
+p_simplify :: [Duration_A] -> [Duration_A]
+p_simplify = m_simplify p_simplify_rule undefined
+
+-- * Notate
+
+-- | Composition of 'to_divisions_ts', 'mm_notate' 'm_simplify'.
+notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Maybe [[Duration_A]]
+notate r ts x = do
+    mm <- to_divisions_ts ts x
+    dd <- mm_notate mm
+    return (zipWith (m_simplify r) ts dd)
 
 -- * Ascribe
 
