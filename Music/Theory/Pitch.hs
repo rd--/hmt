@@ -88,7 +88,7 @@ alteration_to_fdiff a =
 -- correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP
 -- UP@.
 --
--- > map alteration_symbol [minBound .. maxBound]
+-- > map alteration_symbol [minBound .. maxBound] == "𝄫𝄭♭𝄳♮𝄲♯𝄰𝄪"
 alteration_symbol :: Alteration_T -> Char
 alteration_symbol a =
     case a of
