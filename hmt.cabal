@@ -41,6 +41,7 @@ Library
                    Music.Theory.Duration.RQ
                    Music.Theory.Duration.RQ.Tied
                    Music.Theory.Duration.Sequence.Notate
+                   Music.Theory.Dynamic_Mark
                    Music.Theory.Interval
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
