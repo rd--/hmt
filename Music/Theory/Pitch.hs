@@ -2,6 +2,7 @@
 module Music.Theory.Pitch where
 
 import Data.Function
+import Data.Maybe
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
@@ -47,18 +48,27 @@ note_to_pc n =
       A -> 9
       B -> 11
 
--- | Transform 'Alteration_T' to semitone alteration.
+-- | Transform 'Alteration_T' to semitone alteration.  Returns
+-- 'Nothing' for non-semitone alterations.
 --
--- > map alteration_to_diff [Flat,Sharp] == [-1,1]
-alteration_to_diff :: Alteration_T -> Integer
+-- > map alteration_to_diff [Flat,QuarterToneSharp] == [Just (-1),Nothing]
+alteration_to_diff :: Alteration_T -> Maybe Integer
 alteration_to_diff a =
     case a of
-      DoubleFlat -> -2
-      Flat -> -1
-      Natural -> 0
-      Sharp -> 1
-      DoubleSharp -> 2
-      _ -> error "alteration_to_diff: quarter tone"
+      DoubleFlat -> Just (-2)
+      Flat -> Just (-1)
+      Natural -> Just 0
+      Sharp -> Just 1
+      DoubleSharp -> Just 2
+      _ -> Nothing
+
+-- | Transform 'Alteration_T' to semitone alteration.
+--
+-- > map alteration_to_diff_err [Flat,Sharp] == [-1,1]
+alteration_to_diff_err :: Alteration_T -> Integer
+alteration_to_diff_err =
+    let err = error "alteration_to_diff: quarter tone"
+    in fromMaybe err . alteration_to_diff
 
 -- | Transform 'Alteration_T' to fractional semitone alteration,
 -- ie. allow quarter tones.
@@ -71,7 +81,7 @@ alteration_to_fdiff a =
       QuarterToneFlat -> -0.5
       QuarterToneSharp -> 0.5
       ThreeQuarterToneSharp -> 1.5
-      _ -> fromIntegral (alteration_to_diff a)
+      _ -> fromIntegral (alteration_to_diff_err a)
 
 -- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@
 -- through @U+1D1FF@.  The @3/4@ symbols are non-standard, here they
@@ -103,7 +113,7 @@ pitch_to_octpc = midi_to_octpc . pitch_to_midi
 -- > pitch_to_midi (Pitch A Natural 4) == 69
 pitch_to_midi :: Pitch -> Integer
 pitch_to_midi (Pitch n a o) =
-    let a' = alteration_to_diff a
+    let a' = alteration_to_diff_err a
         n' = note_to_pc n
     in 12 + o * 12 + n' + a'
 
@@ -122,7 +132,7 @@ pitch_to_fmidi (Pitch n a o) =
 -- > pitch_to_pc (Pitch A Natural 4) == 9
 -- > pitch_to_pc (Pitch F Sharp 4) == 6
 pitch_to_pc :: Pitch -> PitchClass
-pitch_to_pc (Pitch n a _) = note_to_pc n + alteration_to_diff a
+pitch_to_pc (Pitch n a _) = note_to_pc n + alteration_to_diff_err a
 
 -- | 'Pitch' comparison, implemented via 'pitch_to_fmidi'.
 --

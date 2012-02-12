@@ -100,13 +100,13 @@ rq_divisible_by i j = denominator (i / j) == 1
 
 -- | Is 'RQ' a whole number (ie. is 'denominator' '==' @1@.
 --
--- map rq_is_integral [1,3/2,2] == [True,False,True]
+-- > map rq_is_integral [1,3/2,2] == [True,False,True]
 rq_is_integral :: RQ -> Bool
 rq_is_integral = (== 1) . denominator
 
 -- | Return 'numerator' of 'RQ' if 'denominator' '==' @1@.
 --
--- map rq_integral [1,3/2,2] == [Just 1,Nothing,Just 2]
+-- > map rq_integral [1,3/2,2] == [Just 1,Nothing,Just 2]
 rq_integral :: RQ -> Maybe Integer
 rq_integral n = if rq_is_integral n then Just (numerator n) else Nothing
 
@@ -120,8 +120,9 @@ rq_integral n = if rq_is_integral n then Just (numerator n) else Nothing
 -- > rq_derive_tuplet_plain [1/3,1/6] == Just (6,4)
 -- > rq_derive_tuplet_plain [2/5,3/5] == Just (5,4)
 -- > rq_derive_tuplet_plain [1/3,1/6,2/5,1/10] == Just (30,16)
+--
 -- > map rq_derive_tuplet_plain [[1/3,1/6],[2/5,1/10]] == [Just (6,4)
---                                                        ,Just (10,8)]
+-- >                                                      ,Just (10,8)]
 rq_derive_tuplet_plain :: [RQ] -> Maybe (Integer,Integer)
 rq_derive_tuplet_plain x =
     let i = foldl lcm 1 (map denominator x)
