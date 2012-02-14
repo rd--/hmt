@@ -3,6 +3,7 @@ module Music.Theory.Duration.Annotation where
 
 import Data.Maybe
 import Data.Ratio
+import Data.Tree
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
 
@@ -60,6 +61,67 @@ da_tuplet (d,n) x =
         jn (p,q) z = (p,q++z)
     in zipWith jn (map fn x) ts
 
+-- | Transform predicates into 'Ordering' predicate such that if /f/
+-- holds then 'LT', if /g/ holds then 'GT' else 'EQ'.
+--
+-- > map (begin_end_cmp (== '{') (== '}')) "{a}" == [LT,EQ,GT]
+begin_end_cmp :: (t -> Bool) -> (t -> Bool) -> t -> Ordering
+begin_end_cmp f g x = if f x then LT else if g x then GT else EQ
+
+-- | Variant of 'begin_end_cmp', predicates are constructed by '=='.
+--
+-- > map (begin_end_cmp_eq '{' '}') "{a}" == [LT,EQ,GT]
+begin_end_cmp_eq :: Eq t => t -> t -> t -> Ordering
+begin_end_cmp_eq p q = begin_end_cmp (== p) (== q)
+
+-- | Given an 'Ordering' predicate where 'LT' opens a group, 'GT'
+-- closes a group, and 'EQ' continues current group, construct tree
+-- from list.
+--
+-- > let {l = "a {b {c d} e f} g h i"
+-- >     ;t = group_tree (begin_end_cmp_eq '{' '}') l}
+-- > in catMaybes (concatMap flatten t) == l
+--
+-- > let d = putStrLn . drawForest . map (fmap show)
+-- > in d (group_tree (begin_end_cmp_eq '(' ')') "a(b(cd)ef)ghi")
+group_tree :: (a -> Ordering) -> [a] -> Forest (Maybe a)
+group_tree f =
+    let unit e = Node (Just e) []
+        nil = Node Nothing []
+        insert_e (Node t l) e = Node t (e:l)
+        reverse_n (Node t l) = Node t (reverse l)
+        push (r,z) e = case z of
+                         h:z' -> (r,insert_e h (unit e) : z')
+                         [] -> (unit e : r,[])
+        open (r,z) = (r,nil:z)
+        close (r,z) = case z of
+                        h0:h1:z' -> (r,insert_e h1 (reverse_n h0) : z')
+                        h:z' -> (reverse_n h : r,z')
+                        [] -> (r,z)
+        go st x =
+            case x of
+              [] -> reverse (fst st)
+              e:x' -> case f e of
+                        LT -> go (push (open st) e) x'
+                        EQ -> go (push st e) x'
+                        GT -> go (close (push st e)) x'
+    in go ([],[])
+
+-- | Group tuplets into 'Tree'.
+--
+-- > import Music.Theory.Duration.Name.Abbreviation
+--
+-- > let d = [(q,[])
+-- >         ,(e,[Begin_Tuplet (3,2,e)])
+-- >         ,(s,[Begin_Tuplet (3,2,s)]),(s,[]),(s,[End_Tuplet])
+-- >         ,(e,[End_Tuplet])
+-- >         ,(q,[])]
+-- > in catMaybes (concatMap flatten (da_group_tuplets d)) == d
+da_group_tuplets :: [Duration_A] -> Forest (Maybe Duration_A)
+da_group_tuplets =
+    let f = begin_end_cmp da_begins_tuplet da_ends_tuplet
+    in group_tree f
+
 -- | Variant of 'break' that places separator at left.
 --
 -- > break_left (== 3) [1..6] == ([1..3],[4..6])
@@ -89,22 +151,13 @@ sep_balanced u f g =
                         else let (i,j) = go n'' q in (p:i,j)
     in go (fromEnum u)
 
--- | Group tuplets.  Note that this groups nested tuplets at one
--- level.
---
--- > import Music.Theory.Duration.Name.Abbreviation
--- > let d = [(q,[])
--- >         ,(e,[Begin_Tuplet (3,2,e)])
--- >         ,(s,[Begin_Tuplet (3,2,s)]),(s,[]),(s,[End_Tuplet])
--- >         ,(e,[End_Tuplet])
--- >         ,(q,[])]
--- > in da_group_tuplets d
-da_group_tuplets :: [Duration_A] -> [Either Duration_A [Duration_A]]
-da_group_tuplets x =
+-- | Group non-nested tuplets, ie. groups nested tuplets at one level.
+da_group_tuplets_nn :: [Duration_A] -> [Either Duration_A [Duration_A]]
+da_group_tuplets_nn x =
     case x of
       [] -> []
       d:x' -> if da_begins_tuplet d
               then let f = sep_balanced True da_begins_tuplet da_ends_tuplet
                        (t,x'') = f x'
-                   in Right (d : t) : da_group_tuplets x''
-              else Left d : da_group_tuplets x'
+                   in Right (d : t) : da_group_tuplets_nn x''
+              else Left d : da_group_tuplets_nn x'
