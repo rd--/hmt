@@ -60,16 +60,51 @@ da_tuplet (d,n) x =
         jn (p,q) z = (p,q++z)
     in zipWith jn (map fn x) ts
 
--- | Group tuplets.  Note that this does /not/ handle nested tuplets.
+-- | Variant of 'break' that places separator at left.
+--
+-- > break_left (== 3) [1..6] == ([1..3],[4..6])
+-- > break_left (== 3) [1..3] == ([1..3],[])
+break_left :: (a -> Bool) -> [a] -> ([a], [a])
+break_left f x =
+    let (p,q) = break f x
+    in case q of
+         [] -> (p,q)
+         i:j -> (p++[i],j)
+
+-- | Variant of 'break_left' that balances begin & end predicates.
+--
+-- > break_left (== ')') "test (sep) _) balanced"
+-- > sep_balanced True (== '(') (== ')') "test (sep) _) balanced"
+-- > sep_balanced False (== '(') (== ')') "(test (sep) _) balanced"
+sep_balanced :: Bool -> (a -> Bool) -> (a -> Bool) -> [a] -> ([a], [a])
+sep_balanced u f g =
+    let go n x =
+            case x of
+              [] -> ([],[])
+              p:q -> let n' = if f p then n + 1 else n
+                         r = g p
+                         n'' = if r then n' - 1 else n'
+                     in if r && n'' == 0
+                        then ([p],q)
+                        else let (i,j) = go n'' q in (p:i,j)
+    in go (fromEnum u)
+
+-- | Group tuplets.  Note that this groups nested tuplets at one
+-- level.
 --
 -- > import Music.Theory.Duration.Name.Abbreviation
--- > let d = [(q,[]),(e,[Begin_Tuplet (3,2,q)]),(q,[End_Tuplet]),(q,[])]
+-- > let d = [(q,[])
+-- >         ,(e,[Begin_Tuplet (3,2,e)])
+-- >         ,(s,[Begin_Tuplet (3,2,s)]),(s,[]),(s,[End_Tuplet])
+-- >         ,(e,[End_Tuplet])
+-- >         ,(q,[])]
 -- > in da_group_tuplets d
 da_group_tuplets :: [Duration_A] -> [Either Duration_A [Duration_A]]
 da_group_tuplets x =
     case x of
       [] -> []
       d:x' -> if da_begins_tuplet d
-              then let (t,x'') = span da_ends_tuplet x'
+              then let f = sep_balanced True da_begins_tuplet da_ends_tuplet
+                       (t,x'') = f x'
                    in Right (d : t) : da_group_tuplets x''
               else Left d : da_group_tuplets x'
