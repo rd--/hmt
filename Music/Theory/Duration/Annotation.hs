@@ -161,3 +161,34 @@ da_group_tuplets_nn x =
                        (t,x'') = f x'
                    in Right (d : t) : da_group_tuplets_nn x''
               else Left d : da_group_tuplets_nn x'
+
+-- | Keep right variant of 'zipWith', unused rhs values are returned.
+--
+-- > zip_with_kr (,) [1..3] ['a'..'e'] == ([(1,'a'),(2,'b'),(3,'c')],"de")
+zip_with_kr :: (a -> b -> c) -> [a] -> [b] -> ([c],[b])
+zip_with_kr f =
+    let go r p q =
+            case (p,q) of
+              (i:p',j:q') -> go (f i j : r) p' q'
+              _ -> (reverse r,q)
+    in go []
+
+-- | Keep right variant of 'zip', unused rhs values are returned.
+--
+-- > zip_kr [1..4] ['a'..'f'] == ([(1,'a'),(2,'b'),(3,'c'),(4,'d')],"ef")
+zip_kr :: [a] -> [b] -> ([(a,b)],[b])
+zip_kr p = zip_with_kr (,) p
+
+-- | 'zipWith' variant that adopts the shape of the lhs.
+--
+-- > let {p = [Left 1,Right [2,3],Left 4]
+-- >     ;q = "abcd"}
+-- > in nn_reshape (,) p q == [Left (1,'a'),Right [(2,'b'),(3,'c')],Left (4,'d')]
+nn_reshape :: (a -> b -> c) -> [Either a [a]] -> [b] -> [Either c [c]]
+nn_reshape f p q =
+    case (p,q) of
+      (e:p',i:q') -> case e of
+                       Left j -> Left (f j i) : nn_reshape f p' q'
+                       Right j -> let (j',q'') = zip_with_kr f j q
+                                  in Right j' : nn_reshape f p' q''
+      _ -> []
