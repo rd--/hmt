@@ -1,8 +1,10 @@
 -- | Duration annotations.
 module Music.Theory.Duration.Annotation where
 
+--import Control.Applicative
 import Data.Maybe
 import Data.Ratio
+import qualified Data.Traversable as T
 import Data.Tree
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
@@ -80,11 +82,11 @@ begin_end_cmp_eq p q = begin_end_cmp (== p) (== q)
 --
 -- > let {l = "a {b {c d} e f} g h i"
 -- >     ;t = group_tree (begin_end_cmp_eq '{' '}') l}
--- > in catMaybes (concatMap flatten t) == l
+-- > in catMaybes (flatten t) == l
 --
--- > let d = putStrLn . drawForest . map (fmap show)
+-- > let d = putStrLn . drawTree . fmap show
 -- > in d (group_tree (begin_end_cmp_eq '(' ')') "a(b(cd)ef)ghi")
-group_tree :: (a -> Ordering) -> [a] -> Forest (Maybe a)
+group_tree :: (a -> Ordering) -> [a] -> Tree (Maybe a)
 group_tree f =
     let unit e = Node (Just e) []
         nil = Node Nothing []
@@ -100,14 +102,15 @@ group_tree f =
                         [] -> (r,z)
         go st x =
             case x of
-              [] -> reverse (fst st)
+              [] -> Node Nothing (reverse (fst st))
               e:x' -> case f e of
                         LT -> go (push (open st) e) x'
                         EQ -> go (push st e) x'
                         GT -> go (close (push st e)) x'
     in go ([],[])
 
--- | Group tuplets into 'Tree'.
+-- | Group tuplets into a 'Tree'.  Branch nodes have label 'Nothing',
+-- leaf nodes label 'Just' 'Duration_A'.
 --
 -- > import Music.Theory.Duration.Name.Abbreviation
 --
@@ -116,8 +119,8 @@ group_tree f =
 -- >         ,(s,[Begin_Tuplet (3,2,s)]),(s,[]),(s,[End_Tuplet])
 -- >         ,(e,[End_Tuplet])
 -- >         ,(q,[])]
--- > in catMaybes (concatMap flatten (da_group_tuplets d)) == d
-da_group_tuplets :: [Duration_A] -> Forest (Maybe Duration_A)
+-- > in catMaybes (flatten (da_group_tuplets d)) == d
+da_group_tuplets :: [Duration_A] -> Tree (Maybe Duration_A)
 da_group_tuplets =
     let f = begin_end_cmp da_begins_tuplet da_ends_tuplet
     in group_tree f
@@ -192,3 +195,25 @@ nn_reshape f p q =
                        Right j -> let (j',q'') = zip_with_kr f j q
                                   in Right j' : nn_reshape f p' q''
       _ -> []
+
+-- | Replace elements at 'Traversable' with result of joining with
+-- elements from list.
+adopt_shape :: T.Traversable t => (a -> b -> c) -> [b] -> t a -> t c
+adopt_shape jn l =
+    let f (i:j) k = (j,jn k i)
+        f [] _ = error "adopt_shape: rhs ends"
+    in snd . T.mapAccumL f l
+
+-- | Variant of 'adopt_shape' that considers only 'Just' elements at
+-- 'Traversable'.
+--
+-- > let {s = "a(b(cd)ef)ghi"
+-- >     ;t = group_tree (begin_end_cmp_eq '(' ')') s}
+-- > in adopt_shape_m (,) [1..13] t
+adopt_shape_m :: T.Traversable t => (a -> b-> c) -> [b] -> t (Maybe a) -> t (Maybe c)
+adopt_shape_m jn l =
+    let f (i:j) k = case k of
+                      Nothing -> (i:j,Nothing)
+                      Just k' -> (j,Just (jn k' i))
+        f [] _ = error "adopt_shape_m: rhs ends"
+    in snd . T.mapAccumL f l
