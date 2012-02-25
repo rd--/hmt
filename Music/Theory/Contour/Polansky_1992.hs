@@ -12,11 +12,75 @@ import Data.Ratio
 import qualified Music.Theory.Set as T
 import qualified Music.Theory.Permutations as T
 
--- | Compare adjacent elements (p.262).
+-- * List functions
+
+-- | Replace the /i/th value at /ns/ with /x/.
+--
+-- > replace "test" 2 'n' == "tent"
+replace :: Integral i => [a] -> i -> a -> [a]
+replace ns i x =
+    let f j y = if i == j then x else y
+    in zipWith f [0..] ns
+
+-- | Are all elements equal.
+--
+-- > all_equal "aaa" == True
+all_equal :: Eq a => [a] -> Bool
+all_equal xs = all id (zipWith (==) xs (tail xs))
+
+-- * Indices
+
+-- | Compare adjacent elements (p.262) left to right.
 --
 -- > compare_adjacent [0,1,3,2] == [LT,LT,GT]
 compare_adjacent :: Ord a => [a] -> [Ordering]
 compare_adjacent xs = zipWith compare xs (tail xs)
+
+-- | Construct set of /n/ '-' @1@ adjacent indices, left right order.
+--
+-- > adjacent_indices 5 == [(0,1),(1,2),(2,3),(3,4)]
+adjacent_indices :: Integral i => i -> [(i,i)]
+adjacent_indices n = zip [0..n-2] [1..n-1]
+
+-- | All /(i,j)/ indices, in half matrix order.
+--
+-- > all_indices 4 == [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)]
+all_indices :: Integral i => i -> [(i,i)]
+all_indices n =
+    let n' = n - 1
+    in [(i,j) | i <- [0 .. n'], j <- [i + 1 .. n']]
+
+-- * 'Enum' functions
+
+-- | Generic variant of 'fromEnum' (p.263).
+genericFromEnum :: (Integral i,Enum e) => e -> i
+genericFromEnum = fromIntegral . fromEnum
+
+-- | Generic variant of 'toEnum' (p.263).
+genericToEnum :: (Integral i,Enum e) => i -> e
+genericToEnum = toEnum . fromIntegral
+
+-- * 'Ordering' functions
+
+-- | Specialised 'genericFromEnum'.
+ord_to_int :: Integral a => Ordering -> a
+ord_to_int = genericFromEnum
+
+-- | Specialised 'genericToEnum'.
+int_to_ord :: Integral a => a -> Ordering
+int_to_ord = genericToEnum
+
+-- | Invert 'Ordering'.
+--
+-- > map ord_invert [LT,EQ,GT] == [GT,EQ,LT]
+ord_invert :: Ordering -> Ordering
+ord_invert x =
+    case x of
+      LT -> GT
+      EQ -> EQ
+      GT -> LT
+
+-- * Matrix
 
 -- | A list notation for matrices.
 type Matrix a = [[a]]
@@ -37,6 +101,8 @@ matrix_f f =
 -- > contour_matrix [1..3] == [[EQ,LT,LT],[GT,EQ,LT],[GT,GT,EQ]]
 contour_matrix :: Ord a => [a] -> Matrix Ordering
 contour_matrix = matrix_f compare
+
+-- * Half matrix
 
 -- | Half matrix notation for contour.
 data Contour_Half_Matrix =
@@ -70,13 +136,7 @@ contour_half_matrix_str (Contour_Half_Matrix _ hm) =
 instance Show Contour_Half_Matrix where
     show = contour_half_matrix_str
 
--- | Generic variant of 'fromEnum' (p.263).
-ord_to_int :: Integral a => Ordering -> a
-ord_to_int = fromIntegral . fromEnum
-
--- | Generic variant of 'toEnum' (p.263).
-int_to_ord :: Integral a => a -> Ordering
-int_to_ord = toEnum . fromIntegral
+-- * Contour description
 
 -- | /Description/ notation of contour.
 data Contour_Description =
@@ -84,23 +144,10 @@ data Contour_Description =
                         ,contour_description_m :: M.Map (Int,Int) Ordering}
     deriving (Eq)
 
--- | Construct set of /n/-1 adjacent indices.
---
--- > adjacent_indices 5 == [(0,1),(1,2),(2,3),(3,4)]
-adjacent_indices :: Integral i => i -> [(i,i)]
-adjacent_indices n = zip [0..n-2] [1..n-1]
-
--- | All /(i,j)/ indices in half matrix order.
---
--- > all_indices 4 == [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)]
-all_indices :: Integral i => i -> [(i,i)]
-all_indices n =
-    let n' = n - 1
-    in [(i,j) | i <- [0 .. n'], j <- [i + 1 .. n']]
-
 -- | Construct 'Contour_Description' of contour (p.264).
 --
--- > map (show.contour_description) [[3,2,4,1],[3,2,1,4]] == ["202 02 2","220 20 0"]
+-- > let c = [[3,2,4,1],[3,2,1,4]]
+-- > in map (show.contour_description) c == ["202 02 2","220 20 0"]
 contour_description :: Ord a => [a] -> Contour_Description
 contour_description x =
     let n = length x
@@ -130,21 +177,17 @@ half_matrix_to_description (Contour_Half_Matrix n hm) =
 contour_description_ix :: Contour_Description -> (Int,Int) -> Ordering
 contour_description_ix d i = contour_description_m d M.! i
 
--- | Are all elements equal.
---
--- > all_equal "aaa" == True
-all_equal :: Eq a => [a] -> Bool
-all_equal xs = all id (zipWith (==) xs (tail xs))
-
 -- | 'True' if contour is all descending, equal or ascending.
 --
--- > map (uniform.contour_description) ["abc","bbb","cba"] == [True,True,True]
+-- > let c = ["abc","bbb","cba"]
+-- > in map (uniform.contour_description) c == [True,True,True]
 uniform :: Contour_Description -> Bool
 uniform (Contour_Description _ m) = all_equal (M.elems m)
 
 -- | 'True' if contour does not containt any 'EQ' elements.
 --
--- > map (no_equalities.contour_description) ["abc","bbb","cba"] == [True,False,True]
+-- > let c = ["abc","bbb","cba"]
+-- > map (no_equalities.contour_description) c == [True,False,True]
 no_equalities :: Contour_Description -> Bool
 no_equalities (Contour_Description _ m) = EQ `notElem` M.elems m
 
@@ -159,6 +202,21 @@ all_contours n =
         ps = concatMap (concatMap T.multiset_permutations . T.se n') cs
         mk p = Contour_Description n (M.fromList (zip ix p))
     in map mk ps
+
+-- | A sequence of orderings /(i,j)/ and /(j,k)/ may imply ordering
+-- for /(i,k)/.
+--
+-- > map implication [(LT,EQ),(EQ,EQ),(EQ,GT)] == [Just LT,Just EQ,Just GT]
+implication :: (Ordering,Ordering) -> Maybe Ordering
+implication (i,j) =
+    case (min i j,max i j) of
+      (LT,LT) -> Just LT
+      (LT,EQ) -> Just LT
+      (LT,GT) -> Nothing
+      (EQ,EQ) -> Just EQ
+      (EQ,GT) -> Just GT
+      (GT,GT) -> Just GT
+      _ -> error "implication"
 
 -- | List of all violations at a 'Contour_Description' (p.266).
 violations :: Contour_Description -> [(Int,Int,Int,Ordering)]
@@ -179,7 +237,7 @@ violations d =
 
 -- | Is the number of 'violations' zero.
 is_possible :: Contour_Description -> Bool
-is_possible = (== 0) . length . violations
+is_possible = null . violations
 
 -- | All possible contour descriptions
 --
@@ -196,32 +254,44 @@ impossible_contours = filter (not.is_possible) . all_contours
 -- | Calculate number of contours of indicated degree (p.263).
 --
 -- > map contour_description_lm [2..7] == [1,3,6,10,15,21]
--- > map (\n -> 3 ^ n) (map contour_description_lm [2..6]) == [3,27,729,59049,14348907]
+--
+-- > let r = [3,27,729,59049,14348907]
+-- > in map (\n -> 3 ^ n) (map contour_description_lm [2..6]) == r
 contour_description_lm :: Integral a => a -> a
 contour_description_lm l = (l * l - l) `div` 2
 
--- | A sequence of orderings /(i,j)/ and /(j,k)/ may imply ordering
--- for /(i,k)/.
+-- | Truncate a 'Contour_Description' to have at most /n/ elements.
 --
--- > map implication [(LT,EQ),(EQ,EQ),(EQ,GT)] == [Just LT,Just EQ,Just GT]
-implication :: (Ordering,Ordering) -> Maybe Ordering
-implication (i,j) =
-    case (min i j,max i j) of
-      (LT,LT) -> Just LT
-      (LT,EQ) -> Just LT
-      (LT,GT) -> Nothing
-      (EQ,EQ) -> Just EQ
-      (EQ,GT) -> Just GT
-      (GT,GT) -> Just GT
-      _ -> error "implication"
+-- > let c = contour_description [3,2,4,1]
+-- > in contour_truncate c 3 == contour_description [3,2,4]
+contour_truncate :: Contour_Description -> Int -> Contour_Description
+contour_truncate (Contour_Description n m) z =
+    let n' = min n z
+        f (i,j) _ = i < n' && j < n'
+    in Contour_Description n' (M.filterWithKey f m)
 
--- | Replace the /i/th value at /ns/ with /x/.
+-- | Is 'Contour_Description' /p/ a prefix of /q/.
 --
--- > replace "test" 2 'n' == "tent"
-replace :: Integral i => [a] -> i -> a -> [a]
-replace ns i x =
-    let f j y = if i == j then x else y
-    in zipWith f [0..] ns
+-- > let {c = contour_description [3,2,4,1]
+-- >     ;d = contour_description [3,2,4]}
+-- > in d `contour_is_prefix_of` c == True
+contour_is_prefix_of :: Contour_Description -> Contour_Description -> Bool
+contour_is_prefix_of p q = p == contour_truncate q (contour_description_n p)
+
+-- | Are 'Contour_Description's /p/ and /q/ equal at column /n/.
+--
+-- > let {c = contour_description [3,2,4,1,5]
+-- >     ;d = contour_description [3,2,4,1]}
+-- > in map (contour_eq_at c d) [0..4] == [True,True,True,True,False]
+contour_eq_at :: Contour_Description -> Contour_Description -> Int -> Bool
+contour_eq_at p q n =
+    let a = contour_description_m p
+        b = contour_description_m q
+        f (_,j) _ = j == n
+        g = M.toAscList . M.filterWithKey f
+    in g a == g b
+
+-- * Contour drawing
 
 -- | Derive an 'Integral' contour that would be described by
 -- 'Contour_Description'.  Diverges for impossible contours.
@@ -253,22 +323,87 @@ draw_contour d =
                              Just ns' -> refine ix ns'
     in normalise (refine ix (replicate n 0))
 
--- | Invert 'Ordering'.
---
--- > map ord_invert [LT,EQ,GT] == [GT,EQ,LT]
-ord_invert :: Ordering -> Ordering
-ord_invert x =
-    case x of
-      LT -> GT
-      EQ -> EQ
-      GT -> LT
-
 -- | Invert 'Contour_Description'.
 --
--- > draw_contour (contour_description_invert (contour_description "abdc")) == [3,2,0,1]
+-- > let c = contour_description "abdc"
+-- > in draw_contour (contour_description_invert c) == [3,2,0,1]
 contour_description_invert :: Contour_Description -> Contour_Description
 contour_description_invert (Contour_Description n m) =
     Contour_Description n (M.map ord_invert m)
+
+-- * Construction
+
+-- | Function to generate an element and a new state from an initial
+-- state.
+type Build_f st e = st -> (e,st)
+
+type Conforms_f e = (Int,[e]) -> Bool
+
+-- | Attempt to construct a sequence that has a specified contour.
+-- The arguments are a 'Build_f' to generate possible elements, a
+-- 'Contour_Description' that the result sequence must conform to, an
+-- 'Int' to specify the maximum number of elements to generate when
+-- searching for a solution, and an initial state.
+--
+-- > import System.Random
+--
+-- > let {f = randomR ('a','z')
+-- >     ;c = contour_description "atdez"
+-- >     ;st = mkStdGen 2347}
+-- > in fst (build_contour f c 1024 st) == Just "nvruy"
+build_contour :: (Ord e) =>
+                 Build_f st e -> Contour_Description -> Int -> st ->
+                 (Maybe [e],st)
+build_contour f c z =
+    let n = contour_description_n c
+        go i j r st =
+            if i == n
+            then (Just r,st)
+            else if j == z
+                 then (Nothing,st)
+                 else let (e,st') = f st
+                          r' = r ++ [e]
+                          d = contour_description r' -- traceShow r'
+                      in if contour_eq_at c d i
+                         then go (i + 1) (j + 1) r' st'
+                         else go i (j + 1) r st'
+    in go 0 0 []
+
+-- | A variant on 'build_contour' that retries a specified number of
+-- times using the final state of the failed attempt as the state for
+-- the next try.
+--
+-- > let {f = randomR ('a','z')
+-- >     ;c = contour_description "atdezjh"
+-- >     ;st = mkStdGen 2347}
+-- > in fst (build_contour_retry f c 64 8 st) == Just "nystzvu"
+build_contour_retry ::
+    (Ord e) =>
+    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st ->
+    (Maybe [e], st)
+build_contour_retry f c z n st =
+   if n == 0
+   then (Nothing,st)
+   else case build_contour f c z st of
+          (Nothing,st') -> build_contour_retry f c z (n - 1) st'
+          r -> r
+
+-- | A variant on 'build_contour_retry' that returns the set of all
+-- sequences constructed.
+--
+-- > let {f = randomR ('a','z')
+-- >     ;c = contour_description "atdezjh"
+-- >     ;st = mkStdGen 2347}
+-- > in length (build_contour_set f c 64 64 st) == 60
+build_contour_set ::
+    (Ord e) =>
+    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st -> [[e]]
+build_contour_set f c z n st =
+    case build_contour_retry f c z n st of
+      (Nothing,_) -> []
+      (Just r,st') -> r : build_contour_set f c z n st'
+
+-- * Examples
 
 -- | Example from p.262 (quarter-note durations)
 --
