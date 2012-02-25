@@ -422,6 +422,26 @@ build_contour_set f c z n st =
       (Nothing,_) -> []
       (Just r,st') -> r : build_contour_set f c z n st'
 
+-- | Variant of 'build_contour_set' that halts when an generated
+-- sequence is a duplicate of an already generated sequence.
+--
+-- > let {f = randomR ('a','f')
+-- >     ;c = contour_description "cafe"
+-- >     ;st = mkStdGen 2346836
+-- >     ;r = build_contour_set_nodup f c 64 64 st}
+-- > in filter ("c" `isPrefixOf`) r == ["cafe","cbed","caed"]
+build_contour_set_nodup ::
+    Ord e =>
+    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st -> [[e]]
+build_contour_set_nodup f c z n =
+    let go r st =
+            case build_contour_retry f c z n st of
+              (Nothing,_) -> []
+              (Just r',st') -> if r' `elem` r
+                               then r
+                               else go (r' : r) st'
+    in go []
+
 -- * Examples
 
 -- | Example from p.262 (quarter-note durations)
