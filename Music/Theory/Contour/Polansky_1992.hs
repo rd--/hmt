@@ -333,13 +333,28 @@ contour_description_invert (Contour_Description n m) =
 
 -- * Construction
 
--- | Function to generate an element and a new state from an initial
--- state.
-type Build_f st e = st -> (e,st)
+-- | Function to perhaps generate an element and a new state from an
+-- initial state.  This is the function provided to 'unfoldr'.
+type Build_f st e = st -> Maybe (e,st)
 
 -- | Function to test is a partial sequence conforms to the target
 -- sequence.
 type Conforms_f e = Int -> [e] -> Bool
+
+-- | Transform a 'Build_f' to produce at most /n/ elements.
+--
+-- > let f i = Just (i,succ i)
+-- > in unfoldr (build_f_n f) (5,'a') == "abcde"
+build_f_n :: Build_f st e -> Build_f (Int,st) e
+build_f_n f =
+    let g g_st =
+            let (i,f_st) = g_st
+            in if i == 0
+               then Nothing
+               else case f f_st of
+                      Nothing -> Nothing
+                      Just (e,f_st') -> Just (e,(i - 1,f_st'))
+    in g
 
 -- | Attempt to construct a sequence of /n/ elements given a 'Build_f'
 -- to generate possible elements, a 'Conforms_f' that the result
@@ -347,7 +362,7 @@ type Conforms_f e = Int -> [e] -> Bool
 -- maximum number of elements to generate when searching for a
 -- solution, and an initial state.
 --
--- > let {b_f i = (i,i+1)
+-- > let {b_f i = Just (i,i+1)
 -- >     ;c_f i x = odd (sum x `div` i)}
 -- > in build_sequence 6 b_f c_f 20 0 == (Just [1,2,6,11,15,19],20)
 build_sequence :: Int -> Build_f st e -> Conforms_f e -> Int -> st ->
@@ -358,13 +373,15 @@ build_sequence n f g z =
             then (Just r,st)
             else if j == z
                  then (Nothing,st)
-                 else let (e,st') = f st
-                          i' = i + 1
-                          j' = j + 1
-                          r' = r ++ [e]
-                      in if g i' r'
-                         then go i' j' r' st'
-                         else go i j' r st'
+                 else case f st of
+                        Nothing -> (Nothing,st)
+                        Just (e,st') ->
+                            let i' = i + 1
+                                j' = j + 1
+                                r' = r ++ [e]
+                            in if g i' r'
+                               then go i' j' r' st'
+                               else go i j' r st'
     in go 0 0 []
 
 -- | Attempt to construct a sequence that has a specified contour.
@@ -375,7 +392,7 @@ build_sequence n f g z =
 --
 -- > import System.Random
 --
--- > let {f = randomR ('a','z')
+-- > let {f = Just . randomR ('a','z')
 -- >     ;c = contour_description "atdez"
 -- >     ;st = mkStdGen 2347}
 -- > in fst (build_contour f c 1024 st) == Just "nvruy"
@@ -392,13 +409,13 @@ build_contour f c z =
 -- times using the final state of the failed attempt as the state for
 -- the next try.
 --
--- > let {f = randomR ('a','z')
+-- > let {f = Just . randomR ('a','z')
 -- >     ;c = contour_description "atdezjh"
 -- >     ;st = mkStdGen 2347}
 -- > in fst (build_contour_retry f c 64 8 st) == Just "nystzvu"
 build_contour_retry ::
     (Ord e) =>
-    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st ->
+    Build_f st e -> Contour_Description -> Int -> Int -> st ->
     (Maybe [e], st)
 build_contour_retry f c z n st =
    if n == 0
@@ -410,13 +427,13 @@ build_contour_retry f c z n st =
 -- | A variant on 'build_contour_retry' that returns the set of all
 -- sequences constructed.
 --
--- > let {f = randomR ('a','z')
+-- > let {f = Just . randomR ('a','z')
 -- >     ;c = contour_description "atdezjh"
 -- >     ;st = mkStdGen 2347}
 -- > in length (build_contour_set f c 64 64 st) == 60
 build_contour_set ::
     (Ord e) =>
-    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st -> [[e]]
+    Build_f st e -> Contour_Description -> Int -> Int -> st -> [[e]]
 build_contour_set f c z n st =
     case build_contour_retry f c z n st of
       (Nothing,_) -> []
@@ -432,7 +449,7 @@ build_contour_set f c z n st =
 -- > in filter ("c" `isPrefixOf`) r == ["cafe","cbed","caed"]
 build_contour_set_nodup ::
     Ord e =>
-    (st -> (e, st)) -> Contour_Description -> Int -> Int -> st -> [[e]]
+    Build_f st e -> Contour_Description -> Int -> Int -> st -> [[e]]
 build_contour_set_nodup f c z n =
     let go r st =
             case build_contour_retry f c z n st of
