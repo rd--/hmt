@@ -5,8 +5,8 @@
 module Music.Theory.Contour.Polansky_1992 where
 
 import Data.List
-import Data.List.Split
-import qualified Data.Map as M
+import Data.List.Split {- split -}
+import qualified Data.Map as M {- containers -}
 import Data.Maybe
 import Data.Ratio
 import qualified Music.Theory.Set as T
@@ -337,7 +337,35 @@ contour_description_invert (Contour_Description n m) =
 -- state.
 type Build_f st e = st -> (e,st)
 
-type Conforms_f e = (Int,[e]) -> Bool
+-- | Function to test is a partial sequence conforms to the target
+-- sequence.
+type Conforms_f e = Int -> [e] -> Bool
+
+-- | Attempt to construct a sequence of /n/ elements given a 'Build_f'
+-- to generate possible elements, a 'Conforms_f' that the result
+-- sequence must conform to at each step, an 'Int' to specify the
+-- maximum number of elements to generate when searching for a
+-- solution, and an initial state.
+--
+-- > let {b_f i = (i,i+1)
+-- >     ;c_f i x = odd (sum x `div` i)}
+-- > in build_sequence 6 b_f c_f 20 0 == (Just [1,2,6,11,15,19],20)
+build_sequence :: Int -> Build_f st e -> Conforms_f e -> Int -> st ->
+                  (Maybe [e],st)
+build_sequence n f g z =
+    let go i j r st =
+            if i == n
+            then (Just r,st)
+            else if j == z
+                 then (Nothing,st)
+                 else let (e,st') = f st
+                          i' = i + 1
+                          j' = j + 1
+                          r' = r ++ [e]
+                      in if g i' r'
+                         then go i' j' r' st'
+                         else go i j' r st'
+    in go 0 0 []
 
 -- | Attempt to construct a sequence that has a specified contour.
 -- The arguments are a 'Build_f' to generate possible elements, a
@@ -356,18 +384,9 @@ build_contour :: (Ord e) =>
                  (Maybe [e],st)
 build_contour f c z =
     let n = contour_description_n c
-        go i j r st =
-            if i == n
-            then (Just r,st)
-            else if j == z
-                 then (Nothing,st)
-                 else let (e,st') = f st
-                          r' = r ++ [e]
-                          d = contour_description r' -- traceShow r'
-                      in if contour_eq_at c d i
-                         then go (i + 1) (j + 1) r' st'
-                         else go i (j + 1) r st'
-    in go 0 0 []
+        g i r = let d = contour_description r -- traceShow r
+                in contour_eq_at c d (i - 1)
+    in build_sequence n f g z
 
 -- | A variant on 'build_contour' that retries a specified number of
 -- times using the final state of the failed attempt as the state for
