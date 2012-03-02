@@ -48,6 +48,7 @@ Library
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
+                   Music.Theory.Meter.Barlow_1987
                    Music.Theory.Parse
                    Music.Theory.Pct
                    Music.Theory.Permutations
