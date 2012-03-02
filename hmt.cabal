@@ -25,6 +25,7 @@ Library
                    multiset-comb,
                    parsec,
                    permutation,
+                   primes,
                    split,
                    utf8-string,
                    xml
@@ -43,6 +44,7 @@ Library
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Interval
+                   Music.Theory.Interval.Barlow_1987
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
