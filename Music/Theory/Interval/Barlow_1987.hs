@@ -101,8 +101,7 @@ rational_prime_factors_t n x =
 disharmonicity :: (Integral a,Num b) => (a -> b) -> (a,a) -> b
 disharmonicity pv (p,q) =
     let n = rational_prime_factors_m (p,q)
-        x = [abs (fromIntegral j) * pv i | (i,j) <- n]
-    in foldl (+) 0 x
+    in sum [abs (fromIntegral j) * pv i | (i,j) <- n]
 
 -- | The reciprocal of 'disharmonicity'.
 --
