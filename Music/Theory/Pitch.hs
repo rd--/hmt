@@ -185,6 +185,13 @@ midi_to_octpc n = (n - 12) `divMod` 12
 midi_to_cps :: Floating a => a -> a
 midi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
 
+-- | Frequency (cycles per second) to fractional /midi/ note number.
+--
+-- > cps_to_midi 440 == 69
+-- > cps_to_midi (midi_to_cps 60.25) == 60.25
+cps_to_midi :: Floating a => a -> a
+cps_to_midi a = (logBase 2 (a * (1 / 440)) * 12) + 69
+
 -- | 'midi_to_cps' of 'octpc_to_midi'.
 --
 -- > octpc_to_cps (4,9) == 440
