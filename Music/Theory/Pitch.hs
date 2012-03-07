@@ -179,6 +179,23 @@ octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 midi_to_octpc :: Integer -> OctPC
 midi_to_octpc n = (n - 12) `divMod` 12
 
+-- | Apply function to 'octave' of 'PitchClass'.
+--
+-- > pitch_edit_octave (+ 1) (Pitch A Natural 4) == Pitch A Natural 5
+pitch_edit_octave :: (Integer -> Integer) -> Pitch -> Pitch
+pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
+
+-- | Modal transposition of 'Note_T' value.
+--
+-- > note_t_transpose C 2 == E
+note_t_transpose :: Note_T -> Int -> Note_T
+note_t_transpose x n =
+    let x' = fromEnum x
+        n' = fromEnum (maxBound::Note_T) + 1
+    in toEnum ((x' + n) `mod` n')
+
+-- * Frequency
+
 -- | Fractional /midi/ note number to cycles per second.
 --
 -- > map midi_to_cps [69,69.1] == [440.0,442.5488940698553]
@@ -198,17 +215,30 @@ cps_to_midi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 octpc_to_cps :: Floating n => OctPC -> n
 octpc_to_cps = midi_to_cps . fromIntegral . octpc_to_midi
 
--- | Apply function to 'octave' of 'PitchClass'.
+-- | Convert from cents invterval to frequency ratio.
 --
--- > pitch_edit_octave (+ 1) (Pitch A Natural 4) == Pitch A Natural 5
-pitch_edit_octave :: (Integer -> Integer) -> Pitch -> Pitch
-pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
+-- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
+cents_to_ratio :: Floating a => a -> a
+cents_to_ratio n = 2 ** (n / 1200)
 
--- | Modal transposition of 'Note_T' value.
+-- | Convert from frequency ratio to cents interval.
 --
--- > note_t_transpose C 2 == E
-note_t_transpose :: Note_T -> Int -> Note_T
-note_t_transpose x n =
-    let x' = fromEnum x
-        n' = fromEnum (maxBound::Note_T) + 1
-    in toEnum ((x' + n) `mod` n')
+-- > map ratio_to_cents [1,4/3,2] == [0.0,498.04499913461245,1200.0]
+ratio_to_cents :: Floating a => a -> a
+ratio_to_cents n = logBase 2 n * 1200
+
+-- | Frequency /n/ cents from /f/.
+--
+-- > map (cps_shift_cents 440) [-100,100] == map octpc_to_cps [(4,8),(4,10)]
+cps_shift_cents :: Floating a => a -> a -> a
+cps_shift_cents f = (* f) . cents_to_ratio
+
+-- | Interval in /cents/ from /p/ to /q/, ie. 'ratio_to_cents' of /p/
+-- '/' /q/.
+--
+-- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
+--
+-- > let abs_dif i j = abs (i - j)
+-- > in cps_difference_cents 440 (midi_to_cps 69.1) `abs_dif` 10 < 1e9
+cps_difference_cents :: Floating a => a -> a -> a
+cps_difference_cents p q = ratio_to_cents (q / p)
