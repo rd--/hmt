@@ -440,6 +440,21 @@ default_table x =
         p = map meta_table_p t
     in or (p <*> pure x)
 
+-- | The default eighth-note pulse simplifier rule.
+--
+-- > default_e_rule ((3,8),0,(1/2,1/2)) == True
+-- > default_e_rule ((3,8),1/2,(1/2,1/2)) == True
+-- > default_e_rule ((3,8),1,(1/2,1/2)) == True
+-- > default_e_rule ((2,8),0,(1/2,1/2)) == True
+-- > default_e_rule ((5,8),0,(1,1/2)) == True
+-- > default_e_rule ((5,8),0,(2,1/2)) == True
+default_e_rule :: Simplify_P
+default_e_rule ((i,j),t,(p,q)) =
+    let r = p + q
+    in j == 8 &&
+       denominator t `elem` [1,2] &&
+       (r <= 2 || r == ts_rq (i,j) || rq_is_integral r)
+
 -- | The default quarter note pulse simplifier rule.
 --
 -- > default_q_rule ((3,4),0,(1,1/2)) == True
@@ -460,7 +475,10 @@ default_q_rule ((_,j),t,(p,q)) =
 -- | The default simplifier rule.  To extend provide a list of
 -- 'Simplify_T'.
 default_rule :: [Simplify_T] -> Simplify_P
-default_rule x r = r `elem` x || default_q_rule r || default_table r
+default_rule x r = r `elem` x ||
+                   default_q_rule r ||
+                   default_e_rule r ||
+                   default_table r
 
 -- | Measure simplifier.  Apply given 'Simplify_P'.
 m_simplify :: Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
