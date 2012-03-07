@@ -167,7 +167,7 @@ octpc_nrm (o,pc) =
 octpc_trs :: Integer -> OctPC -> OctPC
 octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
 
--- | 'OctPC' value to /midi/ value.
+-- | 'OctPC' value to integral /midi/ note number.
 --
 -- > octpc_to_midi (4,9) == 69
 octpc_to_midi :: OctPC -> Integer
@@ -178,6 +178,18 @@ octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 -- > midi_to_octpc 69 == (4,9)
 midi_to_octpc :: Integer -> OctPC
 midi_to_octpc n = (n - 12) `divMod` 12
+
+-- | Fractional /midi/ note number to cycles per second.
+--
+-- > map midi_to_cps [69,69.1] == [440.0,442.5488940698553]
+midi_to_cps :: Floating a => a -> a
+midi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
+
+-- | 'midi_to_cps' of 'octpc_to_midi'.
+--
+-- > octpc_to_cps (4,9) == 440
+octpc_to_cps :: Floating n => OctPC -> n
+octpc_to_cps = midi_to_cps . fromIntegral . octpc_to_midi
 
 -- | Apply function to 'octave' of 'PitchClass'.
 --
