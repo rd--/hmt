@@ -336,17 +336,21 @@ ben_johnston_r =
     ,27/16,7/4
     ,15/8]
 
+-- | Lou Harrison 16 tone Just Intonation scale, see
+-- <http://www.microtonal-synthesis.com/scale_harrison_16.html>
+--
 -- > let c = [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
--- > in map (round.to_cents_r) lou_harrison_17_r == c
-lou_harrison_17_r :: [Rational]
-lou_harrison_17_r =
+-- > in map (round.to_cents_r) lou_harrison_16_r == c
+lou_harrison_16_r :: [Rational]
+lou_harrison_16_r =
     [1,16/15
-    ,10/9,8/7,7/6,6/5
-    ,5/4
-    ,4/3,17/12
-    ,3/2,8/5
-    ,5/3,12/7,7/4,9/5
-    ,15/8]
+    ,10/9,8/7
+    ,7/6,6/5,5/4
+    ,4/3
+    ,17/12
+    ,3/2
+    ,8/5,5/3,12/7
+    ,7/4,9/5,15/8]
 
 -- | Harry Partch 43 tone scale, see
 -- <http://www.microtonal-synthesis.com/scale_partch.html>
