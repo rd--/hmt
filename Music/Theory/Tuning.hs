@@ -3,6 +3,23 @@ module Music.Theory.Tuning where
 
 import Data.List
 import Data.Ratio
+import Music.Theory.Pitch
+
+-- * Either/Maybe
+
+-- | Maybe 'Left' of 'Either'.
+fromLeft :: Either a b -> Maybe a
+fromLeft e =
+    case e of
+      Left x -> Just x
+      _ -> Nothing
+
+-- | Maybe 'Right' of 'Either'.
+fromRight :: Either a b -> Maybe b
+fromRight e =
+    case e of
+      Right x -> Just x
+      _ -> Nothing
 
 -- * Types
 
@@ -11,6 +28,47 @@ type Approximate_Ratio = Double
 
 -- | A real valued division of a tone into one hundred parts.
 type Cents = Double
+
+-- | A tuning specified 'Either' as a sequence of exact ratios, or as
+-- a sequence of possibly inexact 'Cents'.
+data Tuning = Tuning {ratios_or_cents :: Either [Rational] [Cents]
+                     ,octave_ratio :: Rational}
+              deriving (Eq,Show)
+
+-- | Divisions of octave.
+--
+-- > divisions ditone == 12
+divisions :: Tuning -> Int
+divisions = either length length . ratios_or_cents
+
+-- | 'Maybe' exact ratios of 'Tuning'.
+ratios :: Tuning -> Maybe [Rational]
+ratios = fromLeft . ratios_or_cents
+
+-- | Possibly inexact 'Cents' of tuning.
+cents :: Tuning -> [Cents]
+cents = either (map to_cents_r) id . ratios_or_cents
+
+-- | 'map' 'round' '.' 'cents'.
+cents_i :: Integral i => Tuning -> [i]
+cents_i = map round . cents
+
+-- | Possibly inexact 'Approximate_Ratio's of tuning.
+approximate_ratios :: Tuning -> [Approximate_Ratio]
+approximate_ratios =
+    either (map approximate_ratio) (map cents_to_ratio) .
+    ratios_or_cents
+
+-- | 'Maybe' exact ratios reconstructued from possibly inexact 'Cents'
+-- of 'Tuning'.
+--
+-- > let r = [1,17/16,9/8,13/11,5/4,4/3,7/5,3/2,11/7,5/3,16/9,15/8]
+-- > in reconstructed_ratios 1e-2 werckmeister_iii == Just r
+reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
+reconstructed_ratios epsilon =
+    fmap (map (reconstructed_ratio epsilon)) .
+    fromRight .
+    ratios_or_cents
 
 -- | Convert from an 'Approximate_Ratio' to 'Cents'.
 --
@@ -25,6 +83,15 @@ approximate_ratio = fromRational
 -- | 'to_cents' '.' 'approximate_ratio'.
 to_cents_r :: Rational -> Cents
 to_cents_r = to_cents . approximate_ratio
+
+-- | Construct an exact 'Rational' that approximates 'Cents' to within
+-- /epsilon/.
+--
+-- > map (reconstructed_ratio 1e-5) [0,700,1200] == [1,442/295,2]
+--
+-- > to_cents_r (442/295) == 699.9976981706735
+reconstructed_ratio :: Double -> Cents -> Rational
+reconstructed_ratio epsilon c = approxRational (cents_to_ratio c) epsilon
 
 -- * Commas
 
@@ -61,28 +128,8 @@ nth_root n x =
 twelve_tone_equal_temperament_comma :: (Floating a) => a
 twelve_tone_equal_temperament_comma = 12 `nth_root` 2
 
--- * Tunings
+-- * 12-tone tunings
 
--- | Harmonic series to /n/th harmonic (folded).
---
--- > harmonic_series_folded 3 == [1/2,2/3,1]
-harmonic_series_folded :: Integer -> [Rational]
-harmonic_series_folded n =
-    let hs = (zipWith (%) (repeat 1) [1..n])
-        fold x = if x >= 0.5
-                 then x
-                 else fold (x * 2)
-    in nub (sort (map fold hs))
-
--- | Harmonic series to /n/th harmonic (folded, cents).
---
--- > map round (harmonic_series_folded_c 3) == [-1200,-702,0]
-harmonic_series_folded_c :: Integer -> [Cents]
-harmonic_series_folded_c = map to_cents_r . harmonic_series_folded
-
--- | Ditone/pythagorean tuning,
--- see <http://www.billalves.com/porgitaro/ditonesettuning.html>
---
 -- > let c = [0,114,204,294,408,498,612,702,816,906,996,1110]
 -- > in map (round.to_cents_r) ditone_r == c
 ditone_r :: [Rational]
@@ -95,26 +142,31 @@ ditone_r =
     ,27/16,16/9
     ,243/128]
 
--- | Pythagorean tuning
+-- | Ditone/pythagorean tuning,
+-- see <http://www.billalves.com/porgitaro/ditonesettuning.html>
 --
+-- > cents_i ditone == [0,114,204,294,408,498,612,702,816,906,996,1110]
+ditone :: Tuning
+ditone = Tuning (Left ditone_r) 2
+
 -- > let c = [0,90,204,294,408,498,612,702,792,906,996,1110]
 -- > in map (round.to_cents_r) pythagorean_r == c
 pythagorean_r :: [Rational]
 pythagorean_r =
-    [1,256%243 {- 2187%2048 -}
-    ,9%8,32%27
-    ,81%64
-    ,4%3,729%512
-    ,3%2,128%81 {- 6561%4096 -}
-    ,27%16,16%9
-    ,243%128]
+    [1,256/243 {- 2187/2048 -}
+    ,9/8,32/27
+    ,81/64
+    ,4/3,729/512
+    ,3/2,128/81 {- 6561/4096 -}
+    ,27/16,16/9
+    ,243/128]
 
--- | Pythagorean tuning (cents)
-pythagorean_c :: [Cents]
-pythagorean_c = map to_cents_r pythagorean_r
-
--- | Werckmeister III, Andreas Werckmeister (1645-1706)
+-- | Pythagorean tuning.
 --
+-- > cents_i pythagorean == [0,90,204,294,408,498,612,702,792,906,996,1110]
+pythagorean :: Tuning
+pythagorean = Tuning (Left pythagorean_r) 2
+
 -- > let c = [0,90,192,294,390,498,588,696,792,888,996,1092]
 -- > in map (round.to_cents) werckmeister_iii_ar == c
 werckmeister_iii_ar :: [Approximate_Ratio]
@@ -130,12 +182,15 @@ werckmeister_iii_ar =
        ,1024/729 * c1,16/9
        ,128/81 * c1]
 
--- | Werckmeister III, Andreas Werckmeister (1645-1706)
 werckmeister_iii_c :: [Cents]
 werckmeister_iii_c = map to_cents werckmeister_iii_ar
 
--- | Werckmeister IV, Andreas Werckmeister (1645-1706)
+-- | Werckmeister III, Andreas Werckmeister (1645-1706)
 --
+-- > cents_i werckmeister_iii == [0,90,192,294,390,498,588,696,792,888,996,1092]
+werckmeister_iii :: Tuning
+werckmeister_iii = Tuning (Right werckmeister_iii_c) 2
+
 -- > let c = [0,82,196,294,392,498,588,694,784,890,1004,1086]
 -- > in map (round.to_cents) werckmeister_iv_ar == c
 werckmeister_iv_ar :: [Approximate_Ratio]
@@ -150,12 +205,15 @@ werckmeister_iv_ar =
        ,256/243 * c1,9/(4*c0)
        ,4096/2187]
 
--- | Werckmeister IV, Andreas Werckmeister (1645-1706)
 werckmeister_iv_c :: [Cents]
 werckmeister_iv_c = map to_cents werckmeister_iv_ar
 
--- | Werckmeister V, Andreas Werckmeister (1645-1706)
+-- | Werckmeister IV, Andreas Werckmeister (1645-1706)
 --
+-- > cents_i werckmeister_iv == [0,82,196,294,392,498,588,694,784,890,1004,1086]
+werckmeister_iv :: Tuning
+werckmeister_iv = Tuning (Right werckmeister_iv_c) 2
+
 -- > let c = [0,96,204,300,396,504,600,702,792,900,1002,1098]
 -- > in map (round.to_cents) werckmeister_v_ar == c
 werckmeister_v_ar :: [Approximate_Ratio]
@@ -171,32 +229,34 @@ werckmeister_v_ar =
        ,c2,3/c2
        ,4/3 * c1]
 
--- | Werckmeister V, Andreas Werckmeister (1645-1706)
 werckmeister_v_c :: [Cents]
 werckmeister_v_c = map to_cents werckmeister_v_ar
 
--- | Werckmeister VI, Andreas Werckmeister (1645-1706)
+-- | Werckmeister V, Andreas Werckmeister (1645-1706)
 --
+-- > cents_i werckmeister_v == [0,96,204,300,396,504,600,702,792,900,1002,1098]
+werckmeister_v :: Tuning
+werckmeister_v = Tuning (Right werckmeister_v_c) 2
+
 -- > let c = [0,91,196,298,395,498,595,698,793,893,1000,1097]
 -- > in map (round.to_cents_r) werckmeister_vi_r == c
 werckmeister_vi_r :: [Rational]
 werckmeister_vi_r =
-    [1,98%93
-    ,28%25,196%165
-    ,49%39
-    ,4%3,196%139
-    ,196%131,49%31
-    ,196%117,98%55
-    ,49%26]
+    [1,98/93
+    ,28/25,196/165
+    ,49/39
+    ,4/3,196/139
+    ,196/131,49/31
+    ,196/117,98/55
+    ,49/26]
 
 -- | Werckmeister VI, Andreas Werckmeister (1645-1706)
-werckmeister_vi_c :: [Cents]
-werckmeister_vi_c = map to_cents_r werckmeister_vi_r
-
--- | Pietro Aaron (1523) meantone temperament, see
--- <http://www.kylegann.com/histune.html>
 --
--- > let c = [0,76,193,310,386,503,580,697,773,890,1007,1083,1200]
+-- > cents_i werckmeister_vi == [0,91,196,298,395,498,595,698,793,893,1000,1097]
+werckmeister_vi :: Tuning
+werckmeister_vi = Tuning (Left werckmeister_vi_r) 2
+
+-- > let c = [0,76,193,310,386,503,580,697,773,890,1007,1083]
 -- > in map round pietro_aaron_1523_c == c
 pietro_aaron_1523_c :: [Cents]
 pietro_aaron_1523_c =
@@ -208,9 +268,14 @@ pietro_aaron_1523_c =
     ,889.7,1006.8
     ,1082.9]
 
--- | Thomas Young (1799) - Well Temperament
+-- | Pietro Aaron (1523) meantone temperament, see
+-- <http://www.kylegann.com/histune.html>
 --
--- > let c = [0,94,196,298,392,500,592,698,796,894,1000,1092,1200]
+-- > cents_i pietro_aaron_1523 == [0,76,193,310,386,503,580,697,773,890,1007,1083]
+pietro_aaron_1523 :: Tuning
+pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
+
+-- > let c = [0,94,196,298,392,500,592,698,796,894,1000,1092]
 -- > in map round thomas_young_1799_c == c
 thomas_young_1799_c :: [Cents]
 thomas_young_1799_c =
@@ -220,37 +285,46 @@ thomas_young_1799_c =
     ,499.9,591.9
     ,697.9,795.8
     ,893.8,999.8
-    ,1091.8
-    ,1200]
+    ,1091.8]
 
--- | Five-limit tuning (five limit just intonation).
+-- | Thomas Young (1799) - Well Temperament
 --
+-- > cents_i thomas_young_1799 == [0,94,196,298,392,500,592,698,796,894,1000,1092]
+thomas_young_1799 :: Tuning
+thomas_young_1799 = Tuning (Right thomas_young_1799_c) 2
+
 -- > let c = [0,112,204,316,386,498,590,702,814,884,996,1088]
 -- > in map (round.to_cents_r) five_limit_tuning_r == c
 five_limit_tuning_r :: [Rational]
 five_limit_tuning_r =
-    [1,16%15
-    ,9%8,6%5
-    ,5%4
-    ,4%3,45%32
-    ,3%2,8%5
-    ,5%3,16%9 {- 9%5 -}
-    ,15%8]
+    [1,16/15
+    ,9/8,6/5
+    ,5/4
+    ,4/3,45/32
+    ,3/2,8/5
+    ,5/3,16/9 {- 9/5 -}
+    ,15/8]
 
--- | 'Cents' variant of 'five_limit_tuning_r'.
-five_limit_tuning_c :: [Cents]
-five_limit_tuning_c = map to_cents_r five_limit_tuning_r
+-- | Five-limit tuning (five limit just intonation).
+--
+-- > cents_i five_limit_tuning == [0,112,204,316,386,498,590,702,814,884,996,1088]
+five_limit_tuning :: Tuning
+five_limit_tuning = Tuning (Left five_limit_tuning_r) 2
+
+-- > equal_temperament_c == [0,100..1100]
+equal_temperament_c :: [Cents]
+equal_temperament_c = [0, 100 .. 1100]
 
 -- | Equal temperament.
 --
--- > equal_temperament_c == [0,100..1200]
-equal_temperament_c :: [Cents]
-equal_temperament_c = [0, 100 .. 1200]
+-- > cents equal_temperament == [0,100..1100]
+equal_temperament :: Tuning
+equal_temperament = Tuning (Right equal_temperament_c) 2
 
 -- > let c = [0,112,204,316,386,498,583,702,814,884,1018,1088]
 -- > in map (round.to_cents_r) septimal_tritone_just_intonation == c
-septimal_tritone_just_intonation :: [Rational]
-septimal_tritone_just_intonation =
+septimal_tritone_just_intonation_r :: [Rational]
+septimal_tritone_just_intonation_r =
     [1,16/15
     ,9/8,6/5
     ,5/4
@@ -258,6 +332,10 @@ septimal_tritone_just_intonation =
     ,3/2,8/5
     ,5/3,9/5
     ,15/8]
+
+-- > cents_i septimal_tritone_just_intonation == [0,112,204,316,386,498,583,702,814,884,1018,1088]
+septimal_tritone_just_intonation :: Tuning
+septimal_tritone_just_intonation = Tuning (Left septimal_tritone_just_intonation_r) 2
 
 -- > let c = [0,112,204,316,386,498,583,702,814,884,969,1088]
 -- > in map (round.to_cents_r) seven_limit_just_intonation == c
@@ -271,6 +349,10 @@ seven_limit_just_intonation_r =
     ,5/3,7/4
     ,15/8]
 
+-- > cents_i seven_limit_just_intonation == [0,112,204,316,386,498,583,702,814,884,969,1088]
+seven_limit_just_intonation :: Tuning
+seven_limit_just_intonation = Tuning (Left seven_limit_just_intonation_r) 2
+
 -- > let c = [0,90,193,294,386,498,590,697,792,890,996,1088]
 -- > in map (round.to_cents) kirnberger_iii_ar == c
 kirnberger_iii_ar :: [Approximate_Ratio]
@@ -282,6 +364,10 @@ kirnberger_iii_ar =
     ,5 ** 0.25,128/81
     ,(5 ** 0.75)/2,16/9
     ,15/8]
+
+-- > cents_i kirnberger_iii == [0,90,193,294,386,498,590,697,792,890,996,1088]
+kirnberger_iii :: Tuning
+kirnberger_iii = Tuning (Right (map to_cents kirnberger_iii_ar)) 2
 
 -- > let c = [0,94,196,298,392,502,592,698,796,894,1000,1090]
 -- > in map round vallotti_c == c
@@ -295,20 +381,26 @@ vallotti_c =
     ,894.135,1000.0
     ,1090.225]
 
+-- > cents_i vallotti == [0,94,196,298,392,502,592,698,796,894,1000,1090]
+vallotti :: Tuning
+vallotti = Tuning (Right vallotti_c) 2
+
 -- > let c = [0,128,139,359,454,563,637,746,841,911,1072,1183]
 -- > in map (round.to_cents_r) mayumi_reinhard == c
-mayumi_reinhard :: [Rational]
-mayumi_reinhard = [1,14/13
-                  ,13/12,16/13
-                  ,13/10
-                  ,18/13,13/9
-		  ,20/13,13/8
-                  ,22/13,13/7
-                  ,208/105]
+mayumi_reinhard_r :: [Rational]
+mayumi_reinhard_r =
+    [1,14/13
+    ,13/12,16/13
+    ,13/10
+    ,18/13,13/9
+    ,20/13,13/8
+    ,22/13,13/7
+    ,208/105]
 
--- | La Monte Young's \"The Well-Tuned Piano\", see
--- <http://www.kylegann.com/tuning.html>.
---
+-- > cents_i mayumi_reinhard == [0,128,139,359,454,563,637,746,841,911,1072,1183]
+mayumi_reinhard :: Tuning
+mayumi_reinhard = Tuning (Left mayumi_reinhard_r) 2
+
 -- > let c = [0,177,204,240,471,444,675,702,738,969,942,1173]
 -- > in map (round.to_cents_r) la_monte_young_r == c
 la_monte_young_r :: [Rational]
@@ -321,9 +413,13 @@ la_monte_young_r =
     ,7/4,441/256
     ,63/32]
 
--- | Ben Johnston's \"Suite for Microtonal Piano\" (1977), see
--- <http://www.kylegann.com/tuning.html>
+-- | La Monte Young's \"The Well-Tuned Piano\", see
+-- <http://www.kylegann.com/tuning.html>.
 --
+-- > cents_i la_monte_young == [0,177,204,240,471,444,675,702,738,969,942,1173]
+la_monte_young :: Tuning
+la_monte_young = Tuning (Left la_monte_young_r) 2
+
 -- > let c = [0,105,204,298,386,471,551,702,841,906,969,1088]
 -- > in map (round.to_cents_r) ben_johnston_r == c
 ben_johnston_r :: [Rational]
@@ -336,9 +432,13 @@ ben_johnston_r =
     ,27/16,7/4
     ,15/8]
 
--- | Lou Harrison 16 tone Just Intonation scale, see
--- <http://www.microtonal-synthesis.com/scale_harrison_16.html>
+-- | Ben Johnston's \"Suite for Microtonal Piano\" (1977), see
+-- <http://www.kylegann.com/tuning.html>
 --
+-- > cents_i ben_johnston == [0,105,204,298,386,471,551,702,841,906,969,1088]
+ben_johnston :: Tuning
+ben_johnston = Tuning (Left ben_johnston_r) 2
+
 -- > let c = [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
 -- > in map (round.to_cents_r) lou_harrison_16_r == c
 lou_harrison_16_r :: [Rational]
@@ -352,16 +452,13 @@ lou_harrison_16_r =
     ,8/5,5/3,12/7
     ,7/4,9/5,15/8]
 
--- | Harry Partch 43 tone scale, see
--- <http://www.microtonal-synthesis.com/scale_partch.html>
+-- | Lou Harrison 16 tone Just Intonation scale, see
+-- <http://www.microtonal-synthesis.com/scale_harrison_16.html>
 --
--- > let c = [0,22,53,84,112,151,165
--- >         ,182,204,231,267,294,316
--- >         ,347,386,418,435
--- >         ,471,498,520,551,583,617,649
--- >         ,680,702,729,765,782,814,853,884,906,933
--- >         ,969,996,1018,1035,1049,1088,1116,1147,1178]
--- > in map (round.to_cents_r) partch_43_r == c
+-- > cents_i lou_harrison_16 == [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
+lou_harrison_16 :: Tuning
+lou_harrison_16 = Tuning (Left lou_harrison_16_r) 2
+
 partch_43_r :: [Rational]
 partch_43_r =
     [1,81/80,33/32,21/20,16/15,12/11,11/10,10/9,9/8,8/7
@@ -371,36 +468,64 @@ partch_43_r =
     ,40/27,3/2,32/21,14/9,11/7,8/5,18/11,5/3,27/16,12/7
     ,7/4,16/9,9/5,20/11,11/6,15/8,40/21,64/33,160/81]
 
+-- | Harry Partch 43 tone scale, see
+-- <http://www.microtonal-synthesis.com/scale_partch.html>
+--
+-- > cents_i partch_43 == [0,22,53,84,112,151,165
+-- >                      ,182,204,231,267,294,316
+-- >                      ,347,386,418,435
+-- >                      ,471,498,520,551,583,617,649
+-- >                      ,680,702,729,765,782,814,853,884,906,933
+-- >                      ,969,996,1018,1035,1049,1088,1116,1147,1178]
+partch_43 :: Tuning
+partch_43 = Tuning (Left partch_43_r) 2
+
 -- * Alves
 
--- | Bill Alves' HMC /slendro/ tuning, see
--- <http://www2.hmc.edu/~alves/pleng.html>
---
 -- > let c = [0,231,498,765,996]
 -- > in map (round.to_cents_r) alves_slendro_r == c
 alves_slendro_r :: [Rational]
 alves_slendro_r = [1/1,8/7,4/3,14/9,16/9]
 
--- | Bill Alves' HMC /pelog bem/ tuning.
+-- | Bill Alves' HMC /slendro/ tuning, see
+-- <http://www2.hmc.edu/~alves/pleng.html>
 --
+-- > cents_i alves_slendro == [0,231,498,765,996]
+alves_slendro :: Tuning
+alves_slendro = Tuning (Left alves_slendro_r) 2
+
 -- > let c = [0,231,316,702,814]
 -- > in map (round.to_cents_r) alves_pelog_bem_r == c
 alves_pelog_bem_r :: [Rational]
 alves_pelog_bem_r = [1,8/7,6/5,3/2,8/5]
 
--- | Bill Alves' HMC /pelog 2,3,4,6,7/ tuning.
+-- | Bill Alves' HMC /pelog bem/ tuning.
 --
+-- > cents_i alves_pelog_bem == [0,231,316,702,814]
+alves_pelog_bem :: Tuning
+alves_pelog_bem = Tuning (Left alves_pelog_bem_r) 2
+
 -- > let c = [0,386,471,857,969]
 -- > in map (round.to_cents_r) alves_pelog_barang_r == c
 alves_pelog_barang_r :: [Rational]
 alves_pelog_barang_r = [1,5/4,21/16,105/64,7/4]
 
--- | Bill Alves' HMC /pelog barang/ tuning.
+-- | Bill Alves' HMC /pelog 2,3,4,6,7/ tuning.
 --
+-- > cents_i alves_pelog_barang == [0,386,471,857,969]
+alves_pelog_barang :: Tuning
+alves_pelog_barang = Tuning (Left alves_pelog_barang_r) 2
+
 -- > let c = [0,386,471,702,969]
 -- > in map (round.to_cents_r) alves_pelog_23467 == c
-alves_pelog_23467 :: [Rational]
-alves_pelog_23467 = [1,5/4,21/16,3/2,7/4]
+alves_pelog_23467_r :: [Rational]
+alves_pelog_23467_r = [1,5/4,21/16,3/2,7/4]
+
+-- | Bill Alves' HMC /pelog barang/ tuning.
+--
+-- > cents_i alves_pelog_23467 == [0,386,471,702,969]
+alves_pelog_23467 :: Tuning
+alves_pelog_23467 = Tuning (Left alves_pelog_23467_r) 2
 
 -- * Syntonic tuning
 
@@ -441,14 +566,41 @@ mk_syntonic_tuning b =
 
 -- | 'mk_syntonic_tuning' of @697@.
 --
--- > let c = [0,79,194,273,309,388,467,503,582,697,776,812,891,970,1006,1085,1164]
--- > in map round syntonic_697_c == c
-syntonic_697_c :: [Cents]
-syntonic_697_c = mk_syntonic_tuning 697
+-- > divisions syntonic_697 == 17
+-- > cents_i syntonic_697 == [0,79,194,273,309,388,467,503,582,697,776,812,891,970,1006,1085,1164]
+syntonic_697 :: Tuning
+syntonic_697 = Tuning (Right (mk_syntonic_tuning 697)) 2
 
 -- | 'mk_syntonic_tuning' of @702@.
 --
--- > let c = [0,24,114,204,294,318,408,498,522,612,702,792,816,906,996,1020,1110]
--- > in map round syntonic_702_c == c
-syntonic_702_c :: [Cents]
-syntonic_702_c = mk_syntonic_tuning 702
+-- > divisions syntonic_702 == 17
+-- > cents_i syntonic_702 == [0,24,114,204,294,318,408,498,522,612,702,792,816,906,996,1020,1110]
+syntonic_702 :: Tuning
+syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) 2
+
+-- * Harmonic series
+
+-- | Harmonic series to /n/th harmonic (folded).
+--
+-- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
+harmonic_series_folded :: Integer -> [Rational]
+harmonic_series_folded n =
+    let f :: Rational -> Rational
+        f x = if x < 2 then x else f (x / 2)
+    in nub (sort (map f [1 .. n%1]))
+
+-- | 'to_cents_r' variant of 'harmonic_series_folded'.
+--
+-- > map round (harmonic_series_folded_c 21) == [0,105,204,298,386,471,551,702,841,969,1088]
+harmonic_series_folded_c :: Integer -> [Cents]
+harmonic_series_folded_c = map to_cents_r . harmonic_series_folded
+
+-- | @12@-tone tuning of first @21@ elements of the harmonic series.
+--
+-- > cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
+harmonic_series_folded_21 :: Tuning
+harmonic_series_folded_21 = Tuning (Left (harmonic_series_folded 21)) 2
+
+-- Local Variables:
+-- truncate-lines:t
+-- End:
