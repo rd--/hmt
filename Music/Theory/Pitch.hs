@@ -34,6 +34,14 @@ data Pitch = Pitch {note :: Note_T
 instance Ord Pitch where
     compare = pitch_compare
 
+-- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
+--
+-- > pitch_pp (Pitch E Flat 4) == "E♭4"
+pitch_pp :: Pitch -> String
+pitch_pp (Pitch n a o) =
+    let a' = if a == Natural then "" else [alteration_symbol a]
+    in show n ++ a' ++ show o
+
 -- | Transform 'Note_T' to 'PitchClass'.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
@@ -83,6 +91,25 @@ alteration_to_fdiff a =
       ThreeQuarterToneSharp -> 1.5
       _ -> fromIntegral (alteration_to_diff_err a)
 
+-- | Transform fractional semitone alteration to 'Alteration_T',
+-- ie. allow quarter tones.
+--
+-- > map fdiff_to_alteration [-0.5,0.5] == [Just QuarterToneFlat
+-- >                                       ,Just QuarterToneSharp]
+fdiff_to_alteration :: Double -> Maybe Alteration_T
+fdiff_to_alteration d =
+    case d of
+      -2 -> Just DoubleFlat
+      -1.5 -> Just ThreeQuarterToneFlat
+      -1 -> Just Flat
+      -0.5 -> Just QuarterToneFlat
+      0 -> Just Natural
+      0.5 -> Just QuarterToneSharp
+      1 -> Just Sharp
+      1.5 -> Just ThreeQuarterToneSharp
+      2 -> Just DoubleSharp
+      _ -> undefined
+
 -- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@
 -- through @U+1D1FF@.  The @3/4@ symbols are non-standard, here they
 -- correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP
@@ -101,6 +128,33 @@ alteration_symbol a =
       Sharp -> '♯'
       ThreeQuarterToneSharp -> '𝄰'
       DoubleSharp -> '𝄪'
+
+-- | Raise 'Alteration_T' by a quarter tone where possible.
+--
+-- > alteration_raise_quarter_tone Flat == Just QuarterToneFlat
+-- > alteration_raise_quarter_tone DoubleSharp == Nothing
+alteration_raise_quarter_tone :: Alteration_T -> Maybe Alteration_T
+alteration_raise_quarter_tone a =
+    if a == maxBound then Nothing else Just (toEnum (fromEnum a + 1))
+
+-- | Lower 'Alteration_T' by a quarter tone where possible.
+--
+-- > alteration_lower_quarter_tone Sharp == Just QuarterToneSharp
+-- > alteration_lower_quarter_tone DoubleFlat == Nothing
+alteration_lower_quarter_tone :: Alteration_T -> Maybe Alteration_T
+alteration_lower_quarter_tone a =
+    if a == minBound then Nothing else Just (toEnum (fromEnum a - 1))
+
+-- | Edit 'Alteration_T' by a quarter tone where possible, @-0.5@
+-- lowers, @0@ retains, @0.5@ raises.
+alteration_edit_quarter_tone :: Fractional a =>
+                                a -> Alteration_T -> Maybe Alteration_T
+alteration_edit_quarter_tone n a =
+    case n of
+      -0.5 -> alteration_lower_quarter_tone a
+      0 -> Just a
+      0.5 -> alteration_raise_quarter_tone a
+      _ -> Nothing
 
 -- | 'Pitch' to 'Octave' and 'PitchClass' notation.
 --
@@ -179,6 +233,25 @@ octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 midi_to_octpc :: Integer -> OctPC
 midi_to_octpc n = (n - 12) `divMod` 12
 
+-- | Midi note number to 'Pitch'.
+--
+-- > let r = ["C4","E♭4","F♯4"]
+-- > in map (pitch_pp . midi_to_pitch pc_spell_ks) [60,63,66] == r
+midi_to_pitch :: Spelling -> Integer -> Pitch
+midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
+
+-- | Fractional midi note number to 'Pitch'.
+--
+-- > pitch_pp (fmidi_to_pitch pc_spell_ks 65.5) == "F𝄲4"
+-- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
+-- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
+fmidi_to_pitch :: Spelling -> Double -> Pitch
+fmidi_to_pitch sp m =
+    let m' = round m
+        (Pitch n a o) = midi_to_pitch sp m'
+        Just a' = alteration_edit_quarter_tone (m - fromIntegral m') a
+    in Pitch n a' o
+
 -- | Apply function to 'octave' of 'PitchClass'.
 --
 -- > pitch_edit_octave (+ 1) (Pitch A Natural 4) == Pitch A Natural 5
@@ -196,24 +269,36 @@ note_t_transpose x n =
 
 -- * Frequency
 
+-- | /Midi/ note number to cycles per second.
+--
+-- > map midi_to_cps [60,69] == [261.6255653005986,440.0]
+midi_to_cps :: (Integral i,Floating f) => i -> f
+midi_to_cps = fmidi_to_cps . fromIntegral
+
 -- | Fractional /midi/ note number to cycles per second.
 --
--- > map midi_to_cps [69,69.1] == [440.0,442.5488940698553]
-midi_to_cps :: Floating a => a -> a
-midi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
+-- > map fmidi_to_cps [69,69.1] == [440.0,442.5488940698553]
+fmidi_to_cps :: Floating a => a -> a
+fmidi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
+
+-- | Frequency (cycles per second) to /midi/ note number.
+--
+-- > map cps_to_midi [261.6,440] == [60,69]
+cps_to_midi :: (Integral i,Floating f,RealFrac f) => f -> i
+cps_to_midi = round . cps_to_fmidi
 
 -- | Frequency (cycles per second) to fractional /midi/ note number.
 --
--- > cps_to_midi 440 == 69
--- > cps_to_midi (midi_to_cps 60.25) == 60.25
-cps_to_midi :: Floating a => a -> a
-cps_to_midi a = (logBase 2 (a * (1 / 440)) * 12) + 69
+-- > cps_to_fmidi 440 == 69
+-- > cps_to_fmidi (fmidi_to_cps 60.25) == 60.25
+cps_to_fmidi :: Floating a => a -> a
+cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 
 -- | 'midi_to_cps' of 'octpc_to_midi'.
 --
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: Floating n => OctPC -> n
-octpc_to_cps = midi_to_cps . fromIntegral . octpc_to_midi
+octpc_to_cps = midi_to_cps . octpc_to_midi
 
 -- | Convert from cents invterval to frequency ratio.
 --
@@ -239,6 +324,6 @@ cps_shift_cents f = (* f) . cents_to_ratio
 -- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
 --
 -- > let abs_dif i j = abs (i - j)
--- > in cps_difference_cents 440 (midi_to_cps 69.1) `abs_dif` 10 < 1e9
+-- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
 cps_difference_cents :: Floating a => a -> a -> a
 cps_difference_cents p q = ratio_to_cents (q / p)
