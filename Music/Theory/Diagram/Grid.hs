@@ -3,6 +3,7 @@
 -- /grid/ music of the 1950's.
 module Music.Theory.Diagram.Grid where
 
+import Data.Maybe
 import qualified Text.HTML.Light as H {- html-minimalist -}
 import qualified Text.HTML.Light.Composite as H
 import qualified Text.XML.Light as X {- xml -}
@@ -97,15 +98,15 @@ table_set :: Table_Set -> X.Content
 table_set = H.div [H.class' "table-set"] . map table
 
 -- | Render set of 'Table_Set's as @HTML@.
-page :: [Table_Set] -> String
-page xs = do
+page :: Maybe FilePath -> [Table_Set] -> String
+page css xs = do
     let tb = map table_set xs
         bd = H.body [H.class' "table-page"] tb
-        css = H.link_css "all" "css/grid.css"
-        hd = H.head [] [css]
+        css' = H.link_css "all" (fromMaybe "css/grid.css" css)
+        hd = H.head [] [css']
         e = H.html [H.lang "en"] [hd, bd]
     H.renderHTML5 e
 
 -- | Write set of 'Table_Set's to @HTML@ file.
-to_html :: FilePath -> [Table_Set] -> IO ()
-to_html o_fn = writeFile o_fn . page
+to_html :: FilePath -> Maybe FilePath -> [Table_Set] -> IO ()
+to_html o_fn css = writeFile o_fn . page css
