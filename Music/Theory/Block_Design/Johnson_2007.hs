@@ -7,33 +7,42 @@ import Data.List
 
 -- * List
 
+genericRotate :: Integral i => i -> [a] -> [a]
+genericRotate n =
+    let f (p,q) = q ++ p
+    in f . genericSplitAt n
+
 -- | Left rotation.
 --
 -- > rotate 1 [1..3] == [2,3,1]
-rotate :: Integral i => i -> [a] -> [a]
-rotate n =
-    let f (p,q) = q ++ p
-    in f . genericSplitAt n
+rotate :: Int -> [a] -> [a]
+rotate = genericRotate
+
+genericRotate_right :: Integral n => n -> [a] -> [a]
+genericRotate_right n = reverse . genericRotate n . reverse
 
 -- | Right rotation.
 --
 -- > rotate_right 1 [1..3] == [3,1,2]
-rotate_right :: Integral n => n -> [a] -> [a]
-rotate_right n = reverse . rotate n . reverse
+rotate_right :: Int -> [a] -> [a]
+rotate_right = genericRotate_right
 
 -- | Make /assoc/ list with given /key/.
 with_key :: k -> [v] -> [(k,v)]
 with_key h = zip (repeat h)
 
+genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
+genericAdj2 n l =
+    case l of
+      p:q:_ -> (p,q) : genericAdj2 n (genericDrop n l)
+      _ -> []
+
 -- | Adjacent elements of list at indicated distance as pairs.
 --
 -- > adj2 1 [1..5] == [(1,2),(2,3),(3,4),(4,5)]
 -- > adj2 2 [1..4] == [(1,2),(3,4)]
-adj2 :: (Integral n) => n -> [t] -> [(t,t)]
-adj2 n l =
-    case l of
-      p:q:_ -> (p,q) : adj2 n (genericDrop n l)
-      _ -> []
+adj2 :: Int -> [t] -> [(t,t)]
+adj2 = genericAdj2
 
 -- | Append first element to end of list.
 --
@@ -42,12 +51,12 @@ close :: [a] -> [a]
 close x =
     case x of
       [] -> []
-      e:x' -> x ++ [e]
+      e:_ -> x ++ [e]
 
 -- | 'adj2' '.' 'close'.
 --
 -- > adj2_cyclic 1 [1..3] == [(1,2),(2,3),(3,1)]
-adj2_cyclic :: (Integral n) => n -> [t] -> [(t,t)]
+adj2_cyclic :: Int -> [t] -> [(t,t)]
 adj2_cyclic n = adj2 n . close
 
 -- | 'adj2' @2@.
@@ -67,7 +76,7 @@ interleave p q =
 -- | 'interleave' of 'rotate' by /i/ and /j/.
 --
 -- > interleave_rotations 9 3 [1..13] == [10,4,11,5,12,6,13,7,1,8,2,9,3,10,4,11,5,12,6,13,7,1,8,2,9,3]
-interleave_rotations :: (Integral i) => i -> i -> [b] -> [b]
+interleave_rotations :: Int -> Int -> [b] -> [b]
 interleave_rotations i j s = interleave (rotate i s) (rotate j s)
 
 -- | Collate values of equal keys at /assoc/ list.
