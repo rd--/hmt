@@ -4,6 +4,7 @@ module Music.Theory.Block_Design.Johnson_2007 where
 
 import Data.Function
 import Data.List
+import Data.List.Split {- split -}
 
 -- * List
 
@@ -91,7 +92,7 @@ coll =
 
 data Design i = Design [i] [[i]]
 
--- * Johnson (7,3,1)
+-- * Johnson (7,3,1), (13,4,1) and (12,4,3)
 
 -- > c_7_3_1 == [1,3,4,2,7,6,5]
 c_7_3_1 :: (Num i) => [i]
@@ -127,6 +128,80 @@ d_13_4_1 :: (Enum n,Ord n,Num n) => (Design n,Design n)
 d_13_4_1 =
     (Design [1..13] (fst b_13_4_1)
     ,Design [1..13] (snd b_13_4_1))
+
+-- > histogram "histogram" == [('a',1),('g',1),('h',1),('i',1),('m',1),('o',1),('r',1),('s',1),('t',1)]
+histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
+histogram x =
+    let g = group (sort x)
+        n = map genericLength g
+    in zip (map head g) n
+
+-- > window 2 1 [1..5] == [[1,2],[2,3],[3,4],[4,5]]
+-- > window 2 2 [1..5] == [[1,2],[3,4]]
+window :: Int -> Int -> [a] -> [[a]]
+window i j p =
+    let q = take i p
+        p' = drop j p
+    in if length q /= i then [] else q : window i j p'
+
+-- > intersect_l [[1,2],[1,2,3],[1,2,3,4]] == [1,2]
+intersect_l :: Eq a => [[a]] -> [a]
+intersect_l = foldl1 intersect
+
+-- > sort (union_l [[1,3],[2,3],[3]]) == [1,2,3]
+union_l :: Eq a => [[a]] -> [a]
+union_l = foldl1 union
+
+-- > adj_intersect [[1,2],[1,2,3],[1,2,3,4]] == [[1,2],[1,2,3]]
+adj_intersect :: Eq a => [[a]] -> [[a]]
+adj_intersect = map intersect_l . window 2 1
+
+-- > cycles 3 [1..9] == [[1,4,7],[2,5,8],[3,6,9]]
+cycles :: Int -> [a] -> [[a]]
+cycles n = transpose . splitEvery n
+
+-- > histogram (concat b_12_4_3) == [(1,11),(2,11),(3,11),(4,11),(5,11),(6,11),(7,11),(8,11),(9,11),(10,11),(11,11),(12,11)]
+-- > histogram (map (sort.concat) (splitEvery 3 b_12_4_3)) == [([1,2,3,4,5,6,7,8,9,10,11,12],11)]
+-- > map length (adj_intersect b_12_4_3) == [0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0,3,0,0]
+-- > map (map length . adj_intersect) (cycles 3 b_12_4_3) == [[1,1,1,1,1,1,1,1,1,1],[2,2,2,2,2,2,2,2,2,2],[1,1,1,1,1,1,1,1,1,1]]
+-- > map adj_intersect (cycles 3 b_12_4_3) == [[[12],[12],[12],[12],[12],[12],[12],[12],[12],[12]]
+-- >                                          ,[[8,9],[7,8],[6,7],[5,6],[4,5],[3,4],[2,3],[1,2],[1,11],[10,11]]
+-- >                                          ,[[3],[2],[1],[11],[10],[9],[8],[7],[6],[5]]]
+b_12_4_3 :: Integral i => [[i]]
+b_12_4_3 =
+    [[1,5,7,12]
+    ,[2,8,9,10]
+    ,[3,4,6,11]
+    ,[4,6,11,12]
+    ,[1,7,8,9]
+    ,[2,3,5,10]
+    ,[3,5,10,12]
+    ,[6,7,8,11]
+    ,[1,2,4,9]
+    ,[2,4,9,12]
+    ,[5,6,7,10]
+    ,[1,3,8,11]
+    ,[1,3,8,12]
+    ,[4,5,6,9]
+    ,[2,7,10,11]
+    ,[2,7,11,12]
+    ,[3,4,5,8]
+    ,[1,6,9,10]
+    ,[1,6,10,12]
+    ,[2,3,4,7]
+    ,[5,8,9,11]
+    ,[5,9,11,12]
+    ,[1,2,3,6]
+    ,[4,7,8,10]
+    ,[4,8,10,12]
+    ,[1,2,5,11]
+    ,[3,6,7,9]
+    ,[3,7,9,12]
+    ,[1,4,10,11]
+    ,[2,5,6,8]
+    ,[2,6,8,12]
+    ,[3,9,10,11]
+    ,[1,4,5,7]]
 
 -- Local Variables:
 -- truncate-lines:t
