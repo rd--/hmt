@@ -50,6 +50,8 @@ Library
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
                    Music.Theory.Meter.Barlow_1987
+                   Music.Theory.Metric.Castren_1994
+                   Music.Theory.Metric.Morris_1980
                    Music.Theory.Parse
                    Music.Theory.Pct
                    Music.Theory.Permutations
