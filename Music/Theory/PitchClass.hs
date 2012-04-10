@@ -1,9 +1,10 @@
 -- | Pitch class operations on integers.
 module Music.Theory.PitchClass where
 
-import Music.Theory.Set
 import Data.Maybe
 import Data.List
+import Music.Theory.List
+import Music.Theory.Set
 
 -- * Pitch class operations
 
@@ -75,26 +76,25 @@ invertSelf p =
 tni :: (Integral a) => a -> [a] -> [a]
 tni n = tn n . invert 0
 
--- | Rotate left by /n/ places.
+-- | Rotate left by /n/ 'mod' /#p/ places.
 --
--- > rotate 3 [1..5] == [4,5,1,2,3]
+-- > rotate 8 [1..5] == [4,5,1,2,3]
 rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p =
     let m = n `mod` genericLength p
-        (b, a) = genericSplitAt m p
-    in a ++ b
+    in genericRotate_left m p
 
 -- | Rotate right by /n/ places.
 --
--- > rotate_right 3 [1..5] == [3,4,5,1,2]
-rotate_right :: (Integral n) => n -> [a] -> [a]
-rotate_right = rotate . negate
+-- > rotate_r 8 [1..5] == [3,4,5,1,2]
+rotate_r :: (Integral n) => n -> [a] -> [a]
+rotate_r = rotate . negate
 
 -- | All rotations.
 --
 -- > rotations [0,1,3] == [[0,1,3],[1,3,0],[3,0,1]]
 rotations :: [a] -> [[a]]
-rotations p = map (`rotate` p) [0 .. length p - 1]
+rotations p = map (`rotate_left` p) [0 .. length p - 1]
 
 -- | Modulo 12 multiplication
 --

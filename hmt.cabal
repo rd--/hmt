@@ -49,6 +49,7 @@ Library
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
+                   Music.Theory.List
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Castren_1994
