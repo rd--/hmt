@@ -69,6 +69,7 @@ Library
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
+                   Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1990
                    Music.Theory.Xenakis.S4

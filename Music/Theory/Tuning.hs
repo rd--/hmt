@@ -533,14 +533,20 @@ syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) 2
 
 -- * Harmonic series
 
+fold_to_octave :: Integral i => Ratio i -> Ratio i
+fold_to_octave n =
+    if n >= 2
+    then fold_to_octave (n / 2)
+    else if n < 1
+         then fold_to_octave (n * 2)
+         else n
+
 -- | Harmonic series to /n/th harmonic (folded).
 --
 -- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
 harmonic_series_folded :: Integer -> [Rational]
 harmonic_series_folded n =
-    let f :: Rational -> Rational
-        f x = if x < 2 then x else f (x / 2)
-    in nub (sort (map f [1 .. n%1]))
+    nub (sort (map fold_to_octave [1 .. n%1]))
 
 -- | 'to_cents_r' variant of 'harmonic_series_folded'.
 --
