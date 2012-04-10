@@ -54,6 +54,7 @@ Library
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Castren_1994
                    Music.Theory.Metric.Morris_1980
+                   Music.Theory.Metric.Polansky_1996
                    Music.Theory.Parse
                    Music.Theory.Pct
                    Music.Theory.Permutations
