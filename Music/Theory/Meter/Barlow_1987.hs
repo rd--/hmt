@@ -308,9 +308,9 @@ mean_square_product x =
 -- | An incorrect attempt at the description in paragraph two of p.58
 -- of the /CMJ/ paper.
 --
--- let p ~= q = abs (p - q) < 1e-4
--- metrical_affinity [2,3] 1 [3,2] 1 ~= 0.0324
--- metrical_affinity [2,2,3] 20 [3,5] 16 ~= 0.0028
+-- > let p ~= q = abs (p - q) < 1e-4
+-- > metrical_affinity [2,3] 1 [3,2] 1 ~= 0.0324
+-- > metrical_affinity [2,2,3] 20 [3,5] 16 ~= 0.0028
 metrical_affinity :: Integral i => [i] -> i -> [i] -> i -> R
 metrical_affinity s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
@@ -323,13 +323,13 @@ metrical_affinity s1 v1 s2 v2 =
 
 -- | An incorrect attempt at Equation 6 of the /CMJ/ paper.
 --
--- let p ~= q = abs (p - q) < 1e-4
--- metrical_affinity' [2,2,2] 1 [2,2,2] 1 ~= 1.06735
--- metrical_affinity' [2,2,2] 1 [2,2,3] 1 ~= 0.57185
--- metrical_affinity' [2,2,2] 1 [2,3,2] 1 ~= 0.48575
--- metrical_affinity' [2,2,2] 1 [3,2,2] 1 ~= 0.45872
+-- > let p ~= q = abs (p - q) < 1e-4
+-- > metrical_affinity' [2,2,2] 1 [2,2,2] 1 ~= 1.06735
+-- > metrical_affinity' [2,2,2] 1 [2,2,3] 1 ~= 0.57185
+-- > metrical_affinity' [2,2,2] 1 [2,3,2] 1 ~= 0.48575
+-- > metrical_affinity' [2,2,2] 1 [3,2,2] 1 ~= 0.45872
 --
--- metrical_affinity' [3,2,2] 3 [2,2,3] 2 ~= 0.10282
+-- > metrical_affinity' [3,2,2] 3 [2,2,3] 2 ~= 0.10282
 metrical_affinity' :: Integral t => [t] -> t -> [t] -> t -> R
 metrical_affinity' s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)

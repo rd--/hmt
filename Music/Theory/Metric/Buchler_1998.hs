@@ -104,7 +104,7 @@ satv_b =
 satv :: Integral i => [i] -> SATV i
 satv p = (satv_a p,satv_b p)
 
--- | 'SATV' reorgaminsed by 'R'.
+-- | 'SATV' reorganised by 'R'.
 --
 -- > satv_minmax (satv [0,1,2,6,7,8]) == ([4,2,0,0,4,3],[1,4,5,4,1,0])
 satv_minmax :: SATV i -> ([i],[i])
