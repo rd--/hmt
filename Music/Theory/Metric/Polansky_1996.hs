@@ -8,60 +8,101 @@ import Data.Ratio
 import qualified Music.Theory.Contour.Polansky_1992 as T
 import qualified Music.Theory.List as T
 
-city_block_metric :: Num a => (a, a) -> (a, a) -> a
-city_block_metric (x1,x2) (y1,y2) = abs (x1 - y1) + abs (x2 - y2)
+class Interval a where interval :: Fractional n => a -> a -> n
+instance Interval Int where interval i j = fromIntegral (i - j)
+instance Interval Integer where interval i j = fromIntegral (i - j)
+instance Interval Float where interval i j = realToFrac (i - j)
+instance Interval Double where interval i j = realToFrac (i - j)
 
-euclidean_metric :: Floating a => (a, a) -> (a, a) -> a
-euclidean_metric (x1,x2) (y1,y2) =
-    let square n = n * n
-    in sqrt (square (x1 - y1) + square (x2 - y2))
-
--- > dx_d [3,4,1,1] == [3,7,8,9]
-dx_d :: (Num a) => [a] -> [a]
-dx_d = scanl1 (+)
-
--- > d_dx (-) [0,2,4,1,0] == [2,2,-3,-1]
--- > d_dx (-) [2,3,0,4,1] == [1,-3,4,-3]
-d_dx :: (a -> a -> b) -> [a] -> [b]
-d_dx f l = zipWith f (tail l) l
-
--- > d_dx_abs (-) [0,2,4,1,0] == [2,2,3,1]
--- > d_dx_abs (-) [2,3,0,4,1] == [1,3,4,3]
-d_dx_abs :: Num n => (a -> a -> n) -> [a] -> [n]
-d_dx_abs f = map abs . d_dx f
+abs_dif :: (Interval a,Fractional n) => a -> a -> n
+abs_dif i j = abs (i `interval` j)
 
 sqr :: Num a => a -> a
 sqr n = n * n
 
-ix_dif :: Num a => [a] -> Int -> a
-ix_dif x i = x!!i - x!!(i + 1)
+sqr_dif :: (Interval a,Fractional n) => a -> a -> n
+sqr_dif i j = sqr (i `interval` j)
+
+sqr_abs_dif :: (Interval a,Fractional n) => a -> a -> n
+sqr_abs_dif i = sqr . abs_dif i
+
+sqrt_abs_dif :: (Interval a,Floating n) => a -> a -> n
+sqrt_abs_dif i = sqrt . abs_dif i
+
+-- > city_block_metric (1,2) (3,5) == 2+3
+city_block_metric :: (Interval a,Fractional n) => (a,a) -> (a,a) -> n
+city_block_metric (x1,x2) (y1,y2) = abs_dif x1 y1 + abs_dif x2 y2
+
+-- > euclidean_metric_2 (1,2) (3,5) == sqrt (4+9)
+euclidean_metric_2 :: (Interval a,Floating n) => (a,a) -> (a,a) -> n
+euclidean_metric_2 (x1,x2) (y1,y2) = sqrt (sqr_dif x1 y1 + sqr_dif x2 y2)
+
+-- > euclidean_metric_l [1,2] [3,5] == sqrt (4+9)
+-- > euclidean_metric_l [1,2,3] [2,4,6] == sqrt (1+4+9)
+euclidean_metric_l :: (Interval a,Floating n) => [a] -> [a] -> n
+euclidean_metric_l p = sqrt . sum . zipWith sqr_dif p
+
+-- > cbrt 27 == 3
+cbrt :: Floating a => a -> a
+cbrt n = n ** (1/3)
+
+nthrt :: Floating a => a -> a -> a
+nthrt r n = n ** recip r
+
+-- > minkowski_metric_2 1 (1,2) (3,5) == 5
+-- > minkowski_metric_2 2 (1,2) (3,5) == sqrt (4+9)
+-- > minkowski_metric_2 3 (1,2) (3,5) == cbrt (8+27)
+minkowski_metric_2 :: Floating a => a -> (a,a) -> (a,a) -> a
+minkowski_metric_2 n (x1,x2) (y1,y2) =
+    ((abs (x1 - y1) ** n) + (abs (x2 - y2) ** n)) ** (1/n)
+
+-- > minkowski_metric_l 2 [1,2,3] [2,4,6] == sqrt (1+4+9)
+-- > minkowski_metric_l 3 [1,2,3] [2,4,6] == cbrt (1+8+27)
+minkowski_metric_l :: Floating a => a -> [a] -> [a] -> a
+minkowski_metric_l n p q =
+    let f i j = abs (i - j) ** n
+    in nthrt n (sum (zipWith f p q))
+
+-- > d_dx [0,2,4,1,0] == [2,2,-3,-1]
+-- > d_dx [2,3,0,4,1] == [1,-3,4,-3]
+d_dx :: (Interval a,Fractional n) => [a] -> [n]
+d_dx l = zipWith interval (tail l) l
+
+-- > d_dx_abs [0,2,4,1,0] == [2,2,3,1]
+-- > d_dx_abs [2,3,0,4,1] == [1,3,4,3]
+d_dx_abs :: (Interval a,Fractional n) => [a] -> [n]
+d_dx_abs = map abs . d_dx
+
+ix_dif :: (Interval a,Fractional n) => [a] -> Int -> n
+ix_dif x i = (x!!i) `interval` (x!!(i + 1))
 
 -- > map (abs_ix_dif [0,2,4,1,0]) [0..3] == [2,2,3,1]
-abs_ix_dif :: Num a => [a] -> Int -> a
+abs_ix_dif :: (Interval a,Fractional n) => [a] -> Int -> n
 abs_ix_dif x i = abs (ix_dif x i)
-
-abs_dif :: Num a => a -> a -> a
-abs_dif i j = abs (i - j)
 
 -- > map (sqr_abs_ix_dif [0,2,4,1,0]) [0..3] == [4,4,9,1]
 -- > map (sqr_abs_ix_dif [2,3,0,4,1]) [0..3] == [1,9,16,9]
-sqr_abs_ix_dif :: Num a => [a] -> Int -> a
+sqr_abs_ix_dif :: (Interval a,Fractional n) => [a] -> Int -> n
 sqr_abs_ix_dif x i = sqr (abs_ix_dif x i)
 
-sqr_abs_dif :: Num a => a -> a -> a
-sqr_abs_dif i = sqr . abs_dif i
+-- | Ordered linear magintude (no delta), p.300
+--
+-- > olm_no_delta' [0,2,4,1,0] [2,3,0,4,1] == 1.25
+olm_no_delta' :: (Interval a,Fractional n) => [a] -> [a] -> n
+olm_no_delta' p q =
+    let r = zipWith (-) (d_dx_abs p) (d_dx_abs q)
+        z = sum (map abs r)
+    in z / (fromIntegral (length p) - 1)
 
-sqrt_abs_dif :: Floating a => a -> a -> a
-sqrt_abs_dif i = sqrt . abs_dif i
-
+{-
 -- psi = Ψ
 type PSI a = (a -> a -> a)
 
 -- delta = Δ
 type DELTA n a = ([n] -> Int -> a)
 
--- | Oredered linear magintude (generalised)
-olm :: (Num n,Fractional a,Enum a) => PSI a -> DELTA n a  -> [n] -> [n] -> a
+-- | Ordered linear magintude (generalised)
+olm :: (Interval n,Fractional a,Enum a) => PSI a -> DELTA n a  -> [n] -> [n] -> a
 olm psi delta m n =
     let l = length m
         l' = fromIntegral l - 1
@@ -69,15 +110,8 @@ olm psi delta m n =
         maxint = 1
     in sum (map f [0..l-2]) / (l' * maxint)
 
--- > olm_no_delta' [0,2,4,1,0] [2,3,0,4,1] == 1.25
-olm_no_delta' :: (Fractional a) => [a] -> [a] -> a
-olm_no_delta' p q =
-    let r = zipWith (-) (d_dx_abs (-) p) (d_dx_abs (-) q)
-        z = sum (map abs r)
-    in z / (fromIntegral (length p) - 1)
-
 -- > olm_no_delta [0,2,4,1,0] [2,3,0,4,1] == 1.25
-olm_no_delta :: (Enum a,Fractional a) => [a] -> [a] -> a
+olm_no_delta :: (Interval a,Fractional n) => [a] -> [a] -> n
 olm_no_delta = olm abs_dif abs_ix_dif
 
 second_order :: (Num n) => ([n] -> [n] -> t) -> [n] -> [n] -> t
@@ -160,3 +194,4 @@ ucd m n =
         (p,q,r) = ord_hist (concat (T.half_matrix_f compare n))
         z = (i + j + k) * 2
     in (abs_dif i p + abs_dif j q + abs_dif k r) % z
+-}
