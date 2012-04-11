@@ -18,8 +18,11 @@ Data-files:        README
 
 Library
   Build-Depends:   base==4.*,
+                   bytestring,
                    colour,
                    containers,
+                   directory,
+                   filepath,
                    hcg-minus==0.12.*,
                    html-minimalist==0.12.*,
                    multiset-comb,
@@ -70,8 +73,10 @@ Library
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
                    Music.Theory.Tuning.Meyer_1929
+                   Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1990
+                   Music.Theory.Tuning.Scala
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
 
