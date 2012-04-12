@@ -114,6 +114,7 @@ olm_no_delta' p q =
 -- | Ordered linear magintude (general form) p.302
 --
 -- > olm_general (abs_dif (-)) [0,2,4,1,0] [2,3,0,4,1] == 1.25
+-- > olm_general (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 4.6
 olm_general :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
 olm_general f p q =
     let r = zipWith (-) (d_dx f p) (d_dx f q)
@@ -146,21 +147,26 @@ sqr_abs_ix_dif f x i = sqr (abs_ix_dif f x i)
 type Psi a = (a -> a -> a)
 
 -- | Ordered linear magintude (generalised-interval form) p.305
-olm :: (Fractional a,Enum a) => Psi a -> Delta n a  -> a -> [n] -> [n] -> a
+--
+-- > olm (abs_dif dif_r) (abs_ix_dif dif_r) (const 1) [1,5,12,2,9,6] [7,6,4,9,8,1] == 4.6
+-- > olm (abs_dif dif_r) (abs_ix_dif dif_r) maximum [1,5,12,2,9,6] [7,6,4,9,8,1] == 0.46
+olm :: (Fractional a,Enum a) => Psi a -> Delta n a  -> ([a] -> a) -> [n] -> [n] -> a
 olm psi delta maxint m n =
     let l = length m
         l' = fromIntegral l - 1
-        f i = psi (delta m i) (delta n i)
-    in sum (map f [0..l-2]) / (l' * maxint)
+        k = [0..l-2]
+        m' = map (delta m) k
+        n' = map (delta n) k
+    in sum (zipWith psi m' n') / (l' * maxint (m' ++ n'))
 
 -- > olm_no_delta [0,2,4,1,0] [2,3,0,4,1] == 1.25
 -- > olm_no_delta [1,6,2,5,11] [3,15,13,2,9] == 4.5
 olm_no_delta :: (Real a,Real n,Enum n,Fractional n) => [a] -> [a] -> n
-olm_no_delta = olm (abs_dif dif_r) (abs_ix_dif dif_r) 1
+olm_no_delta = olm (abs_dif dif_r) (abs_ix_dif dif_r) (const 1)
 
 -- > olm_no_delta_squared [0,2,4,1,0] [2,3,0,4,1] == sum (map sqrt [3,5,7,8]) / 4
 olm_no_delta_squared :: (Enum a,Floating a) => [a] -> [a] -> a
-olm_no_delta_squared = olm (sqrt_abs_dif (-)) (sqr_abs_ix_dif (-)) 1
+olm_no_delta_squared = olm (sqrt_abs_dif (-)) (sqr_abs_ix_dif (-)) (const 1)
 
 second_order :: (Num n) => ([n] -> [n] -> t) -> [n] -> [n] -> t
 second_order f p q = f (d_dx_abs (-) p) (d_dx_abs (-) q)
@@ -265,6 +271,8 @@ combinatorial_magnitude_matrix f = T.half_matrix_f f
 --
 -- > let r = abs (sum [5,4,3,6] - sum [12,2,11,7]) / 4
 -- > in ulm_simplified (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == r
+--
+-- > ulm_simplified (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 3
 ulm_simplified :: Fractional n => Interval a n -> [a] -> [a] -> n
 ulm_simplified f p q =
     let g = abs . sum . d_dx f
@@ -273,6 +281,7 @@ ulm_simplified f p q =
 -- | Ordered combinatorial magnitude (OCM), p.323
 --
 -- > ocm (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == 5.2
+-- > ocm (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 3.6
 ocm :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm f p q =
     let p' = concat (T.half_matrix_f f p)
@@ -281,3 +290,16 @@ ocm f p q =
         z = sum (map abs r)
         c = second_order_binonial_coefficient (fromIntegral (length p))
     in z / c
+
+-- | Ordered combinatorial magnitude (OCM), p.323
+--
+-- > ocm_absolute_scaled (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == 0.4
+-- > ocm_absolute_scaled (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 54/(15*11)
+ocm_absolute_scaled :: (Ord a,Fractional a,Enum a,Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
+ocm_absolute_scaled f p q =
+    let p' = concat (T.half_matrix_f f p)
+        q' = concat (T.half_matrix_f f q)
+        r = zipWith (-) p' q'
+        z = sum (map abs r)
+        c = second_order_binonial_coefficient (fromIntegral (length p))
+    in z / (c * maximum (p' ++ q'))
