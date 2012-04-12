@@ -147,3 +147,29 @@ dx_d = scanl (+)
 -- > d_dx [5,6,8,11] == [1,2,3]
 d_dx :: (Num a) => [a] -> [a]
 d_dx l = zipWith (-) (tail l) l
+
+-- | Elements of /p/ not in /q/.
+--
+-- > [1,2,3] `difference` [1,2] == [3]
+difference :: (Eq a) => [a] -> [a] -> [a]
+difference p q =
+    let f e = e `notElem` q
+    in filter f p
+
+-- | Is /p/ a subset of /q/, ie. is 'intersect' of /p/ and /q/ '==' /p/.
+--
+-- > is_subset [1,2] [1,2,3] == True
+is_subset :: Eq a => [a] -> [a] -> Bool
+is_subset p q = p `intersect` q == p
+
+-- | Is /p/ a superset of /q/, ie. 'flip' 'is_subset'.
+--
+-- > is_superset [1,2,3] [1,2] == True
+is_superset :: Eq a => [a] -> [a] -> Bool
+is_superset = flip is_subset
+
+-- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
+--
+-- > subsequence [1,2] [1,2,3] == True
+subsequence :: (Eq a) => [a] -> [a] -> Bool
+subsequence = isInfixOf

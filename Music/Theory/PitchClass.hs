@@ -3,7 +3,7 @@ module Music.Theory.PitchClass where
 
 import Data.Maybe
 import Data.List
-import qualified Music.Theory.List as T
+import qualified Music.Theory.List as L
 import Music.Theory.Set
 
 -- * Pitch class operations
@@ -82,7 +82,7 @@ tni n = tn n . invert 0
 rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p =
     let m = n `mod` genericLength p
-    in T.genericRotate_left m p
+    in L.genericRotate_left m p
 
 -- | Rotate right by /n/ places.
 --
@@ -94,7 +94,7 @@ rotate_r = rotate . negate
 --
 -- > rotations [0,1,3] == [[0,1,3],[1,3,0],[3,0,1]]
 rotations :: [a] -> [[a]]
-rotations p = map (`T.rotate_left` p) [0 .. length p - 1]
+rotations p = map (`L.rotate_left` p) [0 .. length p - 1]
 
 -- | Modulo 12 multiplication
 --
@@ -252,7 +252,7 @@ sro_RTnMI = [ SRO 0 r n m i |
 --
 -- > int [0,1,3,6,10] == [1,2,3,4]
 int :: (Integral a) => [a] -> [a]
-int = map mod12 . T.d_dx
+int = map mod12 . L.d_dx
 
 -- | Interval class.
 --
@@ -275,39 +275,13 @@ icv s =
 
 -- * Set operations.
 
--- | Elements of /p/ not in /q/.
---
--- > [1,2,3] `difference` [1,2] == [3]
-difference :: (Eq a) => [a] -> [a] -> [a]
-difference p q =
-    let f e = e `notElem` q
-    in filter f p
-
--- | Pitch classes not in set, ie. 'difference' @[0..11]@.
+-- | Pitch classes not in set, ie. 'L.difference' @[0..11]@.
 --
 -- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
 complement :: (Integral a) => [a] -> [a]
-complement = difference [0..11]
-
--- | Is /p/ a subset of /q/, ie. is 'intersect' of /p/ and /q/ '==' /p/.
---
--- > is_subset [1,2] [1,2,3] == True
-is_subset :: Eq a => [a] -> [a] -> Bool
-is_subset p q = p `intersect` q == p
-
--- | Is /p/ a superset of /q/, ie. 'flip' 'is_subset'.
---
--- > is_superset [1,2,3] [1,2] == True
-is_superset :: Eq a => [a] -> [a] -> Bool
-is_superset = flip is_subset
+complement = L.difference [0..11]
 
 -- * Sequence operations
-
--- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
---
--- > subsequence [1,2] [1,2,3] == True
-subsequence :: (Eq a) => [a] -> [a] -> Bool
-subsequence = isInfixOf
 
 -- | The standard t-matrix of /p/.
 --

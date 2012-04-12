@@ -5,6 +5,7 @@ module Music.Theory.Pct where
 import Data.Function
 import Data.List
 import Data.Maybe
+import Music.Theory.List
 import Music.Theory.Prime
 import Music.Theory.PitchClass
 import Music.Theory.Set

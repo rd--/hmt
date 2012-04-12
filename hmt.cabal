@@ -79,6 +79,8 @@ Library
                    Music.Theory.Tuning.Scala
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
+                   Music.Theory.Z12
+                   Music.Theory.Z12.Operations
 
 Source-Repository  head
   Type:            darcs
