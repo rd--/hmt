@@ -3,7 +3,7 @@ module Music.Theory.PitchClass where
 
 import Data.Maybe
 import Data.List
-import Music.Theory.List
+import qualified Music.Theory.List as T
 import Music.Theory.Set
 
 -- * Pitch class operations
@@ -82,7 +82,7 @@ tni n = tn n . invert 0
 rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p =
     let m = n `mod` genericLength p
-    in genericRotate_left m p
+    in T.genericRotate_left m p
 
 -- | Rotate right by /n/ places.
 --
@@ -94,7 +94,7 @@ rotate_r = rotate . negate
 --
 -- > rotations [0,1,3] == [[0,1,3],[1,3,0],[3,0,1]]
 rotations :: [a] -> [[a]]
-rotations p = map (`rotate_left` p) [0 .. length p - 1]
+rotations p = map (`T.rotate_left` p) [0 .. length p - 1]
 
 -- | Modulo 12 multiplication
 --
@@ -248,26 +248,11 @@ sro_RTnMI = [ SRO 0 r n m i |
 
 -- * Interval operations
 
--- | Intervals to values, zero is /n/.
---
--- > dx_d 5 [1,2,3] == [5,6,8,11]
-dx_d :: (Num a) => a -> [a] -> [a]
-dx_d = scanl (+)
-
--- | Integrate, ie. pitch class segment to interval sequence.
---
--- > d_dx [5,6,8,11] == [1,2,3]
-d_dx :: (Num a) => [a] -> [a]
-d_dx l =
-    case l of
-      x:xs -> zipWith (-) xs (x:xs)
-      _ -> []
-
 -- | Morris @INT@ operator.
 --
 -- > int [0,1,3,6,10] == [1,2,3,4]
 int :: (Integral a) => [a] -> [a]
-int = map mod12 . d_dx
+int = map mod12 . T.d_dx
 
 -- | Interval class.
 --

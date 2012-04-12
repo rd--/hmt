@@ -135,3 +135,15 @@ collate =
 -- > with_key 'a' [1..3] == [('a',1),('a',2),('a',3)]
 with_key :: k -> [v] -> [(k,v)]
 with_key h = zip (repeat h)
+
+-- | Intervals to values, zero is /n/.
+--
+-- > dx_d 5 [1,2,3] == [5,6,8,11]
+dx_d :: (Num a) => a -> [a] -> [a]
+dx_d = scanl (+)
+
+-- | Integrate, ie. pitch class segment to interval sequence.
+--
+-- > d_dx [5,6,8,11] == [1,2,3]
+d_dx :: (Num a) => [a] -> [a]
+d_dx l = zipWith (-) (tail l) l
