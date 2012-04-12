@@ -321,7 +321,8 @@ metrical_affinity s1 v1 s2 v2 =
         i2' = concat (genericReplicate (v `div` v2) i2)
     in mean_square_product (zip i1' i2')
 
--- | An incorrect attempt at Equation 6 of the /CMJ/ paper.
+-- | An incorrect attempt at Equation 6 of the /CMJ/ paper, see
+-- omega_z.
 --
 -- > let p ~= q = abs (p - q) < 1e-4
 -- > metrical_affinity' [2,2,2] 1 [2,2,2] 1 ~= 1.06735
@@ -341,15 +342,15 @@ metrical_affinity' s1 v1 s2 v2 =
         s' = ix (at [s1',s2'])
         z = ix (genericLength . s')
         q i j = s i `at` j
-        omega_u i = product (map (q i) [1 .. u i])
-        omega_z = lcm (v 1 * omega_u 1) (v 2 * omega_u 2)
+        omega_u i = product (map (q i) [1::Int .. u i])
+        omega_z _ = lcm (v 1 * omega_u 1) (v 2 * omega_u 2)
         omega_0 = lcm (product (s' 1)) (product (s' 2))
-        x0 n i = lower_psi (s' i) (z i) (1 + ((n - 1) `mod'` omega_z))
+        x0 n i = lower_psi (s' i) (z i) (1 + ((n - 1) `mod'` omega_z i))
         x1 n = square (product (map (x0 n) [1,2]))
         x2 = sum (map x1 [1 .. omega_0])
         x3 = 18 * x2 - 2
-        x4 i = square (omega_z - 1)
-        x5 = product (map x4 [1,2])
+        x4 i = square (omega_z i - 1)
+        x5 = product (map x4 [1::Int,2])
         x6 = 7 * omega_0 * x5
         x7 = to_r x3 / to_r x6
         x8 = 2 * log x7
