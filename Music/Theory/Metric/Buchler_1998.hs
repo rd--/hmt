@@ -165,7 +165,7 @@ satsim_table :: Integral i => [(([Z12],[Z12]),Ratio i)]
 satsim_table =
     let f (i,j) = ((i,j),satsim i j)
         t = filter ((`notElem` [0,1,12]) . length) (map snd T.sc_table)
-    in map f (S.dyads t)
+    in map f (S.dyads_l t)
 
 -- | Histogram of values at 'satsim_table'.
 --

@@ -13,8 +13,8 @@ import Music.Theory.Z12
 -- 59A
 --
 -- > tn 4 [1,5,6] == [5,9,10]
-tn :: Z12 -> [Z12] -> [Z12]
-tn n = map (+ n)
+tn :: Functor f => Z12 -> f Z12 -> f Z12
+tn n = fmap (+ n)
 
 -- | Transpose so first element is n.
 --
@@ -26,15 +26,15 @@ transposeTo n p =
       x:xs -> n : tn (n - x) xs
 
 -- | All transpositions.
-transpositions :: [Z12] -> [[Z12]]
-transpositions p = map (`tn` p) [0..11]
+transpositions :: Functor f => f Z12 -> [f Z12]
+transpositions p = fmap (`tn` p) [0..11]
 
 -- | Invert about n.
 --
 -- > invert 6 [4,5,6] == [8,7,6]
 -- > invert 0 [0,1,3] == [0,11,9]
-invert :: Z12 -> [Z12] -> [Z12]
-invert n = map (\p -> n - (p - n))
+invert :: Functor f => Z12 -> f Z12 -> f Z12
+invert n = fmap (\p -> n - (p - n))
 
 -- | Invert about first element.
 --
@@ -56,34 +56,37 @@ invertSelf p =
 -- 732
 --
 -- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
-tni :: Z12 -> [Z12] -> [Z12]
+tni :: Functor f => Z12 -> f Z12 -> f Z12
 tni n = tn n . invert 0
 
 -- | Modulo 12 multiplication
 --
 -- > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
-mn :: Z12 -> [Z12] -> [Z12]
-mn n = map (* n)
+mn :: Functor f => Z12 -> f Z12 -> f Z12
+mn n = fmap (* n)
 
 -- | M5, ie. 'mn' @5@.
 --
 -- > m5 [0,1,3] == [0,5,3]
-m5 :: [Z12] -> [Z12]
+m5 :: Functor f => f Z12 -> f Z12
 m5 = mn 5
 
--- | Set of all tranpositions.
+-- | Set of all tranpositions.  May contain duplicate elements.
 --
 -- > length (all_Tn [0,1,3]) == 12
-all_Tn :: [Z12] -> [[Z12]]
-all_Tn p = map (`tn` p) [0..11]
+--
+-- > import qualified Data.Set as S
+-- > length (nub (all_Tn (S.fromList [0,3,6,9])))
+all_Tn :: Functor f => f Z12 -> [f Z12]
+all_Tn p = fmap (`tn` p) [0..11]
 
 -- | Set of all tranpositions and inversions.
 --
 -- > length (all_TnI [0,1,3]) == 24
-all_TnI :: [Z12] -> [[Z12]]
+all_TnI :: Functor f => f Z12 -> [f Z12]
 all_TnI p =
     let ps = all_Tn p
-    in ps ++ map (invert 0) ps
+    in ps ++ fmap (invert 0) ps
 
 -- | Set of all retrogrades,tranpositions and inversions.
 --

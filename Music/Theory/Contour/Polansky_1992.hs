@@ -198,7 +198,7 @@ all_contours :: Int -> [Contour_Description]
 all_contours n =
     let n' = contour_description_lm n
         ix = all_indices n
-        cs = filter (not.null) (S.powerset [LT,EQ,GT])
+        cs = filter (not.null) (S.powerset_l [LT,EQ,GT])
         ps = concatMap (concatMap P.multiset_permutations . S.se n') cs
         mk p = Contour_Description n (M.fromList (zip ix p))
     in map mk ps

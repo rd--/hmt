@@ -11,12 +11,12 @@ import Music.Theory.PCT.Forte_1973
 import Music.Theory.PCT.Morris_1987
 import Music.Theory.PCT.SRO
 import Music.Theory.PCT.Table
-import Music.Theory.Set
+import qualified Music.Theory.Set as S
 import Music.Theory.Z12
 
 -- | Cardinality filter
 --
--- > cf [0,3] (powerset [1..4]) == [[1,2,3],[1,2,4],[1,3,4],[2,3,4],[]]
+-- > cf [0,3] (cg [1..4]) == [[1,2,3],[1,2,4],[1,3,4],[2,3,4],[]]
 cf :: (Integral n) => [n] -> [[a]] -> [[a]]
 cf ns = filter (\p -> genericLength p `elem` ns)
 
@@ -30,11 +30,11 @@ cgg l =
       x:xs -> [ y:z | y <- x, z <- cgg xs ]
       _ -> [[]]
 
--- | Combinations generator, ie. synonym for 'powerset'.
+-- | Combinations generator, ie. synonym for 'S.powerset_l'.
 --
 -- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
-cg = powerset
+cg = S.powerset_l
 
 -- | Powerset filtered by cardinality.
 --
@@ -52,14 +52,14 @@ cg_r n = cf [n] . cg
 ciseg :: [Z12] -> [Z12]
 ciseg = int . cyc
 
--- | pcset complement.
+-- | Synonynm for 'complement'.
 --
 -- >>> cmpl 02468t
 -- 13579B
 --
 -- > cmpl [0,2,4,6,8,10] == [1,3,5,7,9,11]
 cmpl :: [Z12] -> [Z12]
-cmpl = ([0..11] \\) . pcset
+cmpl = complement
 
 -- | Form cycle.
 --
@@ -130,9 +130,9 @@ dis =
 -- > doi 2 (sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
 doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
-    let f j = [pcset (tn j p), pcset (tni j p)]
+    let f j = [pcset (tn j p),pcset (tni j p)]
         xs = concatMap f [0..11]
-    in set (filter (\x -> length (x `intersect` q) == n) xs)
+    in S.set_l (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
 fn :: [Z12] -> String
@@ -161,7 +161,7 @@ ess p = filter (`has_ess` p) . all_RTnMI
 has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc_pf pf p q =
     let n = length q
-    in q `elem` map pf (cf [n] (powerset p))
+    in q `elem` map pf (cf [n] (cg p))
 
 -- | Can the set-class q be drawn from the pcset p.
 has_sc :: [Z12] -> [Z12] -> Bool
@@ -249,7 +249,7 @@ mxs p q = filter (q `isInfixOf`) (all_RTnI p)
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
 nrm :: (Ord a) => [a] -> [a]
-nrm = set
+nrm = S.set_l
 
 -- | Normalize, retain duplicate elements.
 nrm_r :: (Ord a) => [a] -> [a]
@@ -266,7 +266,7 @@ nrm_r = sort
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
-    let f q = set (map (q `genericIndex`) i)
+    let f q = S.set_l (map (q `genericIndex`) i)
     in filter (\q -> f q == f p) (all_RTnI p)
 
 -- | Relate sets.
@@ -279,8 +279,8 @@ pci p i =
 rs :: [Z12] -> [Z12] -> [(SRO, [Z12])]
 rs x y =
     let xs = map (\o -> (o, o `sro` x)) sro_TnMI
-        q = set y
-    in filter (\(_,p) -> set p == q) xs
+        q = S.set_l y
+    in filter (\(_,p) -> S.set_l p == q) xs
 
 -- | Relate segments.
 --

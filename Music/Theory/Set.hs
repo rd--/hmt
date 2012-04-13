@@ -3,30 +3,44 @@ module Music.Theory.Set where
 
 import Control.Monad
 import Data.List
+import qualified Data.Set as S {- containers -}
 import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
+
+-- | Synonym for 'S.Set'.
+type Set = S.Set
 
 -- | Remove duplicate elements with 'nub' and then 'sort'.
 --
--- > set [3,3,3,2,2,1] == [1,2,3]
-set :: (Ord a) => [a] -> [a]
-set = sort . nub
+-- > set_l [3,3,3,2,2,1] == [1,2,3]
+set_l :: (Ord a) => [a] -> [a]
+set_l = sort . nub
+
+set :: (Ord a) => [a] -> Set a
+set = S.fromList
 
 -- | Powerset, ie. set of all subsets.
 --
--- > sort (powerset [1,2]) == [[],[1],[1,2],[2]]
-powerset :: [a] -> [[a]]
-powerset = filterM (const [True,False])
+-- > sort (powerset_l [1,2]) == [[],[1],[1,2],[2]]
+powerset_l :: [a] -> [[a]]
+powerset_l = filterM (const [True,False])
+
+-- > powerset (set [1,2])
+powerset :: Ord a => Set a -> Set (Set a)
+powerset = S.fromList . map S.fromList . powerset_l . S.elems
 
 -- | Two element subsets (cf [2] . powerset).
 --
--- > dyads [1,2,3] == [(1,2),(1,3),(2,3)]
-dyads :: [a] -> [(a,a)]
-dyads s =
+-- > dyads_l [1,2,3] == [(1,2),(1,3),(2,3)]
+dyads_l :: [a] -> [(a,a)]
+dyads_l s =
     case s of
       [] -> []
-      x:xs -> [(x,y) | y <- xs] ++ dyads xs
+      x:xs -> [(x,y) | y <- xs] ++ dyads_l xs
 
--- | Set expansion.
+dyads :: Ord a => Set a -> Set (a,a)
+dyads = set . dyads_l . S.elems
+
+-- | Set expansion (ie. to multiset of degree /n/).
 --
 -- > se 4 [1,2,3] == [[1,1,2,3],[1,2,2,3],[1,2,3,3]]
 se :: (Ord a) => Int -> [a] -> [[a]]
@@ -37,10 +51,10 @@ se n xs =
 
 -- | All distinct multiset partitions, see 'M.partitions'.
 --
--- > partitions "aab" == [["aab"],["a","ab"],["b","aa"],["b","a","a"]]
+-- > partitions_l "aab" == [["aab"],["a","ab"],["b","aa"],["b","a","a"]]
 --
--- > partitions "abc" == [["abc"]
--- >                     ,["bc","a"],["b","ac"]
--- >                     ,["c","ab"],["c","b","a"]]
-partitions :: Eq a => [a] -> [[[a]]]
-partitions = map (map M.toList . M.toList) . M.partitions . M.fromListEq
+-- > partitions_l "abc" == [["abc"]
+-- >                       ,["bc","a"],["b","ac"]
+-- >                       ,["c","ab"],["c","b","a"]]
+partitions_l :: Eq a => [a] -> [[[a]]]
+partitions_l = map (map M.toList . M.toList) . M.partitions . M.fromListEq

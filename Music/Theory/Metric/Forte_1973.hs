@@ -30,7 +30,7 @@ ic i = if i <= 6 then i else 12 - i
 -- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
 icv :: Integral i => [Z12] -> [i]
 icv s =
-    let i = map (ic . uncurry (-)) (S.dyads s)
+    let i = map (ic . uncurry (-)) (S.dyads_l s)
         j = map f (group (sort i))
         k = map (`lookup` j) [1..6]
         f l = (head l,genericLength l)
