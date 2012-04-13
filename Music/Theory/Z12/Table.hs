@@ -1,10 +1,10 @@
 -- | Set class tables and database.
-module Music.Theory.PCT.Table where
+module Music.Theory.Z12.Table where
 
 import Data.List
 import Data.Maybe
-import Music.Theory.PCT.Forte_1973
 import Music.Theory.Z12
+import Music.Theory.Z12.Forte_1973
 
 -- | Synonym for 'String'.
 type SC_Name = String

@@ -59,14 +59,6 @@ Library
                    Music.Theory.Metric.Forte_1973
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
-                   Music.Theory.PCT.Drape_1999
-                   Music.Theory.PCT.Forte_1973
-                   Music.Theory.PCT.Morris_1987
-                   Music.Theory.PCT.Parse
-                   Music.Theory.PCT.Rahn_1980
-                   Music.Theory.PCT.Read_1978
-                   Music.Theory.PCT.SRO
-                   Music.Theory.PCT.Table
                    Music.Theory.Permutations
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
@@ -84,6 +76,14 @@ Library
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z12
+                   Music.Theory.Z12.Drape_1999
+                   Music.Theory.Z12.Forte_1973
+                   Music.Theory.Z12.Morris_1987
+                   Music.Theory.Z12.Parse
+                   Music.Theory.Z12.Rahn_1980
+                   Music.Theory.Z12.Read_1978
+                   Music.Theory.Z12.SRO
+                   Music.Theory.Z12.Table
 
 Source-Repository  head
   Type:            darcs

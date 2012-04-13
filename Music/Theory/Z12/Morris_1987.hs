@@ -1,4 +1,4 @@
-module Music.Theory.PCT.Morris_1987 where
+module Music.Theory.Z12.Morris_1987 where
 
 import qualified Music.Theory.List as L
 import Music.Theory.Z12

@@ -1,11 +1,11 @@
 -- | Ronald C. Read. \"Every one a winner or how to avoid isomorphism
 -- search when cataloguing combinatorial configurations.\" /Annals of
 -- Discrete Mathematics/ 2:107–20, 1978.
-module Music.Theory.PCT.Read_1978 where
+module Music.Theory.Z12.Read_1978 where
 
 import Data.Bits
-import Music.Theory.PCT.SRO
 import Music.Theory.Z12
+import Music.Theory.Z12.SRO
 
 -- | Encoder for 'encode_prime'.
 --

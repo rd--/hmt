@@ -1,5 +1,5 @@
 -- | Serial pitch-class operations on 'Z12'.
-module Music.Theory.PCT.SRO where
+module Music.Theory.Z12.SRO where
 
 import Data.List
 import qualified Music.Theory.List as L

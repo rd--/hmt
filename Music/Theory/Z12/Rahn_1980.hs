@@ -1,8 +1,8 @@
 -- | Rahn, 1980
-module Music.Theory.PCT.Rahn_1980 where
+module Music.Theory.Z12.Rahn_1980 where
 
-import Music.Theory.PCT.Forte_1973
 import Music.Theory.Z12
+import Music.Theory.Z12.Forte_1973
 
 -- | Rahn prime form (comparison is rightmost inwards).
 --

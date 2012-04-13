@@ -1,18 +1,18 @@
 -- | Haskell implementations of @pct@ operations.
 -- See <http://slavepianos.org/rd/?t=pct>.
-module Music.Theory.PCT.Drape_1999 where
+module Music.Theory.Z12.Drape_1999 where
 
 import Data.Function
 import Data.List
 import Data.Maybe
 import Music.Theory.List
 import Music.Theory.Metric.Forte_1973
-import Music.Theory.PCT.Forte_1973
-import Music.Theory.PCT.Morris_1987
-import Music.Theory.PCT.SRO
-import Music.Theory.PCT.Table
 import qualified Music.Theory.Set as S
 import Music.Theory.Z12
+import Music.Theory.Z12.Forte_1973
+import Music.Theory.Z12.Morris_1987
+import Music.Theory.Z12.SRO
+import Music.Theory.Z12.Table
 
 -- | Cardinality filter
 --

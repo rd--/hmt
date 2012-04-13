@@ -7,9 +7,9 @@ import Data.List
 import Data.Ratio
 import qualified Music.Theory.List as L
 import qualified Music.Theory.Metric.Forte_1973 as F
-import qualified Music.Theory.PCT.Table as T
 import qualified Music.Theory.Set as S
 import Music.Theory.Z12
+import qualified Music.Theory.Z12.Table as T
 
 -- | Predicate for list with cardinality /n/.
 of_c :: Integral n => n -> [a] -> Bool

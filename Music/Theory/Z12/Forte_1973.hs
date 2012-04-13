@@ -1,10 +1,10 @@
 -- | Forte, 1973
-module Music.Theory.PCT.Forte_1973 where
+module Music.Theory.Z12.Forte_1973 where
 
 import Data.List
 import Music.Theory.List
-import Music.Theory.PCT.SRO
 import Music.Theory.Z12
+import Music.Theory.Z12.SRO
 
 -- | Prime form rule requiring comparator.
 cmp_prime :: ([Z12] -> [Z12] -> Ordering) -> [Z12] -> [Z12]
