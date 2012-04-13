@@ -1,27 +1,10 @@
 -- | Permutation functions.
-module Music.Theory.Permutations (permutation
-                                 ,apply_permutation,apply_permutation_c
-                                 ,non_invertible
-                                 ,from_cycles
-                                 ,two_line,one_line,one_line_compact
-                                 ,multiplication_table
-                                 ,compose
-                                 ,n_permutations,permutations_l
-                                 ,multiset_permutations) where
+module Music.Theory.Permutations where
 
-import Data.List
 import qualified Data.Permute as P
 import qualified Math.Combinatorics.Multiset as C
+import qualified Music.Theory.List as L
 import Numeric (showHex)
-
--- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
---
--- > elem_index_unique 'a' "abcda" == undefined
-elem_index_unique :: (Eq a) => a -> [a] -> Int
-elem_index_unique e p =
-    case elemIndices e p of
-      [i] -> i
-      _ -> error "elem_index_unique"
 
 -- | Number of permutations.
 --
@@ -38,10 +21,13 @@ n_permutations n = if n == 1 then 1 else n * n_permutations (n - 1)
 permutation :: (Eq a) => [a] -> [a] -> P.Permute
 permutation p q =
     let n = length p
-        f x = elem_index_unique x p
+        f x = L.elem_index_unique x p
     in P.listPermute n (map f q)
 
 -- | Apply permutation /f/ to /p/.
+--
+-- > let p = permutation [1..4] [4,3,2,1]
+-- > in apply_permutation p [1..4] == [4,3,2,1]
 apply_permutation :: (Eq a) => P.Permute -> [a] -> [a]
 apply_permutation f p = map (p !!) (P.elems f)
 
@@ -57,6 +43,9 @@ apply_permutation_c = apply_permutation . from_cycles
 -- | True if the inverse of /p/ is /p/.
 --
 -- > non_invertible (permutation [0,1,3] [1,0,3]) == True
+--
+-- > let p = permutation [1..4] [4,3,2,1]
+-- > in non_invertible p == True && P.cycles p == [[0,3],[1,2]]
 non_invertible :: P.Permute -> Bool
 non_invertible p = p == P.inverse p
 
@@ -156,9 +145,7 @@ multiplication_table n =
     in map f ps
 
 {-
-let p = permutation [1..4] [4,3,2,1] -- [[0,3],[1,2]]
 let q = permutation [1..4] [2,3,4,1] -- [[0,1,2,3]]
-(p,non_invertible p,P.cycles p,apply_permutation p [1..4])
 (q,non_invertible q,P.cycles q,apply_permutation q [1..4])
 
 let p = permutation [1..5] [3,2,1,5,4] -- [[0,2],[1],[3,4]]

@@ -6,21 +6,12 @@ import Data.Function
 import Data.List
 import Data.Maybe
 import Music.Theory.List
+import Music.Theory.Metric.Forte_1973
 import Music.Theory.Prime
-import Music.Theory.PitchClass
 import Music.Theory.Set
+import Music.Theory.SRO
 import Music.Theory.Table
-
--- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\"
--- /JMT/ 17/2 (1973):234-272
---
--- >>> bip 0t95728e3416
--- 11223344556
---
--- > bip [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]
--- > bip (pco "0t95728e3416") == [1,1,2,2,3,3,4,4,5,5,6]
-bip :: (Integral a) => [a] -> [a]
-bip = sort . map ic . int
+import Music.Theory.Z12
 
 -- | Cardinality filter
 --
@@ -57,7 +48,7 @@ cg_r :: (Integral n) => n -> [a] -> [[a]]
 cg_r n = cf [n] . cg
 
 -- | Cyclic interval segment.
-ciseg :: (Integral a) => [a] -> [a]
+ciseg :: [Z12] -> [Z12]
 ciseg = int . cyc
 
 -- | pcset complement.
@@ -66,7 +57,7 @@ ciseg = int . cyc
 -- 13579B
 --
 -- > cmpl [0,2,4,6,8,10] == [1,3,5,7,9,11]
-cmpl :: (Integral a) => [a] -> [a]
+cmpl :: [Z12] -> [Z12]
 cmpl = ([0..11] \\) . pcset
 
 -- | Form cycle.
@@ -90,7 +81,7 @@ d_nm x =
       _ -> Nothing
 
 -- | Diatonic implications.
-dim :: (Integral a) => [a] -> [(a, [a])]
+dim :: [Z12] -> [(Z12,[Z12])]
 dim p =
     let g (i,q) = is_subset p (tn i q)
         f = filter g . zip [0..11] . repeat
@@ -107,7 +98,7 @@ dim p =
 -- T0o
 --
 -- > dim_nm [0,1,6] == [(1,'d'),(1,'m'),(0,'o')]
-dim_nm :: (Integral a) => [a] -> [(a,Char)]
+dim_nm :: [Z12] -> [(Z12,Char)]
 dim_nm =
     let pk f (i,j) = (i,f j)
     in nubBy ((==) `on` snd) . map (pk (fromJust.d_nm)) . dim
@@ -136,18 +127,18 @@ dis =
 -- 13568AB
 --
 -- > doi 2 (sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
-doi :: (Integral a) => Int -> [a] -> [a] -> [[a]]
+doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
     let f j = [pcset (tn j p), pcset (tni j p)]
         xs = concatMap f [0..11]
     in set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
-fn :: (Integral a) => [a] -> String
+fn :: [Z12] -> String
 fn = sc_name
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
-has_ess :: (Integral a) => [a] -> [a] -> Bool
+has_ess :: [Z12] -> [Z12] -> Bool
 has_ess _ [] = True
 has_ess [] _ = False
 has_ess (p:ps) (q:qs) = if p == q
@@ -161,7 +152,7 @@ has_ess (p:ps) (q:qs) = if p == q
 -- 923507A
 --
 -- > ess [2,3,10] [0,1,6,4,3,2,5] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
-ess :: (Integral a) => [a] -> [a] -> [[a]]
+ess :: [Z12] -> [Z12] -> [[Z12]]
 ess p = filter (`has_ess` p) . all_RTnMI
 
 -- | Can the set-class q (under prime form algorithm pf) be
@@ -172,7 +163,7 @@ has_sc_pf pf p q =
     in q `elem` map pf (cf [n] (powerset p))
 
 -- | Can the set-class q be drawn from the pcset p.
-has_sc :: (Integral a) => [a] -> [a] -> Bool
+has_sc :: [Z12] -> [Z12] -> Bool
 has_sc = has_sc_pf forte_prime
 
 -- | Interval cycle filter.
@@ -212,11 +203,11 @@ ici_c (x:xs) = map (x:) (ici xs)
 -- 12141655232
 --
 -- > icseg [0,1,3,2,6,5,11,4,9,7,10,8] == [1,2,1,4,1,6,5,5,2,3,2]
-icseg :: (Integral a) => [a] -> [a]
+icseg :: [Z12] -> [Z12]
 icseg = map ic . iseg
 
 -- | Interval segment (INT).
-iseg :: (Integral a) => [a] -> [a]
+iseg :: [Z12] -> [Z12]
 iseg = int
 
 -- | Imbrications.
@@ -234,7 +225,7 @@ imb cs p =
 -- 3-11
 --
 -- > issb (sc "3-7") (sc "6-32") == ["3-2","3-7","3-11"]
-issb :: (Integral a) => [a] -> [a] -> [String]
+issb :: [Z12] -> [Z12] -> [String]
 issb p q =
     let k = length q - length p
         f = any id . map (\x -> forte_prime (p ++ x) == q) . all_TnI
@@ -247,7 +238,7 @@ issb p q =
 -- B97642
 --
 -- > set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
-mxs :: (Integral a) => [a] -> [a] -> [[a]]
+mxs :: [Z12] -> [Z12] -> [[Z12]]
 mxs p q = filter (q `isInfixOf`) (all_RTnI p)
 
 -- | Normalize.
@@ -272,7 +263,7 @@ nrm_r = sort
 -- B235
 --
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
-pci :: (Integral a) => [a] -> [a] -> [[a]]
+pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
     let f q = set (map (q `genericIndex`) i)
     in filter (\q -> f q == f p) (all_RTnI p)
@@ -284,7 +275,7 @@ pci p i =
 --
 -- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
 -- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
-rs :: (Integral a) => [a] -> [a] -> [(SRO a, [a])]
+rs :: [Z12] -> [Z12] -> [(SRO, [Z12])]
 rs x y =
     let xs = map (\o -> (o, o `sro` x)) sro_TnMI
         q = set y
@@ -312,11 +303,11 @@ rs x y =
 --
 -- > rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
 --
-rsg :: (Integral a) => [a] -> [a] -> [SRO a]
+rsg :: [Z12] -> [Z12] -> [SRO]
 rsg x y = map fst (filter (\(_,x') -> x' == y) (sros x))
 
 -- | Subsets.
-sb :: (Integral a) => [[a]] -> [[a]]
+sb :: [[Z12]] -> [[Z12]]
 sb xs =
     let f p = all id (map (`has_sc` p) xs)
     in filter f scs
@@ -338,7 +329,7 @@ sb xs =
 -- 6-Z17[012478]
 --
 -- > spsc (cf [3] scs) == ["6-Z17"]
-spsc :: (Integral a) => [[a]] -> [String]
+spsc :: [[Z12]] -> [String]
 spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length

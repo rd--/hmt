@@ -4,12 +4,13 @@ module Music.Theory.Table where
 import Data.List
 import Data.Maybe
 import Music.Theory.Prime
+import Music.Theory.Z12
 
 -- | Synonym for 'String'.
 type SC_Name = String
 
 -- | The set-class table (Forte prime forms).
-sc_table :: (Integral a) => [(SC_Name,[a])]
+sc_table :: [(SC_Name,[Z12])]
 sc_table =
     [("0-1",[])
     ,("1-1",[0])
@@ -240,7 +241,7 @@ sc_table =
 -- 'forte_prime' before lookup.
 --
 -- > sc_name [0,1,4,6,7,8] == "6-Z17"
-sc_name :: (Integral a) => [a] -> SC_Name
+sc_name :: [Z12] -> SC_Name
 sc_name p =
     let n = find (\(_,q) -> forte_prime p == q) sc_table
     in fst (fromJust n)
@@ -248,11 +249,11 @@ sc_name p =
 -- | Lookup a set-class given a set-class name.
 --
 -- > sc "6-Z17" == [0,1,2,4,7,8]
-sc :: (Integral a) => SC_Name -> [a]
+sc :: SC_Name -> [Z12]
 sc n = snd (fromJust (find (\(m,_) -> n == m) sc_table))
 
 -- | List of set classes.
-scs :: (Integral a) => [[a]]
+scs :: [[Z12]]
 scs = map snd sc_table
 
 -- | Set class database with descriptors for historically and

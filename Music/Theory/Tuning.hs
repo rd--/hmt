@@ -3,7 +3,6 @@ module Music.Theory.Tuning where
 
 import Data.List
 import Data.Ratio
-import Music.Theory.Pitch
 
 -- * Either/Maybe
 
@@ -52,6 +51,18 @@ cents = either (map to_cents_r) id . ratios_or_cents
 -- | 'map' 'round' '.' 'cents'.
 cents_i :: Integral i => Tuning -> [i]
 cents_i = map round . cents
+
+-- | Convert from cents invterval to frequency ratio.
+--
+-- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
+cents_to_ratio :: Floating a => a -> a
+cents_to_ratio n = 2 ** (n / 1200)
+
+-- | Convert from frequency ratio to cents interval.
+--
+-- > map ratio_to_cents [1,4/3,2] == [0.0,498.04499913461245,1200.0]
+ratio_to_cents :: Floating a => a -> a
+ratio_to_cents n = logBase 2 n * 1200
 
 -- | Possibly inexact 'Approximate_Ratio's of tuning.
 approximate_ratios :: Tuning -> [Approximate_Ratio]

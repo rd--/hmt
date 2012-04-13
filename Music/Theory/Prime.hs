@@ -1,15 +1,14 @@
 -- | Forte and Rahn prime form operations.
-module Music.Theory.Prime (cmp_prime
-                          ,forte_cmp,forte_prime
-                          ,rahn_cmp,rahn_prime
-                          ,encode_prime) where
+module Music.Theory.Prime where
 
 import Data.Bits
 import Data.List
-import Music.Theory.PitchClass
+import Music.Theory.List
+import Music.Theory.SRO
+import Music.Theory.Z12
 
 -- | Prime form rule requiring comparator.
-cmp_prime :: (Integral a) => ([a] -> [a] -> Ordering) -> [a] -> [a]
+cmp_prime :: ([Z12] -> [Z12] -> Ordering) -> [Z12] -> [Z12]
 cmp_prime _ [] = []
 cmp_prime f p =
     let q = invert 0 p
@@ -29,7 +28,7 @@ forte_cmp p  q  =
 --
 -- > forte_prime [0,1,3,6,8,9] == [0,1,3,6,8,9]
 -- > forte_prime [0,1,3,6,8,9] /= rahn_prime [0,1,3,6,8,9]
-forte_prime :: (Integral a) => [a] -> [a]
+forte_prime :: [Z12] -> [Z12]
 forte_prime = cmp_prime forte_cmp
 
 -- | Rahn prime form (comparison is rightmost inwards).
@@ -41,13 +40,13 @@ rahn_cmp p q = compare (reverse p) (reverse q)
 -- | Rahn prime form, ie. 'cmp_prime' of 'rahn_cmp'.
 --
 -- > rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
-rahn_prime :: (Integral a) => [a] -> [a]
+rahn_prime :: [Z12] -> [Z12]
 rahn_prime = cmp_prime rahn_cmp
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --
 -- > encode_prime [0,1,3,6,8,9] == rahn_prime [0,1,3,6,8,9]
-encode_prime :: (Integral a, Bits a) => [a] -> [a]
+encode_prime :: [Z12] -> [Z12]
 encode_prime s =
     let t = map (`tn` s) [0..11]
         c = t ++ map (invert 0) t

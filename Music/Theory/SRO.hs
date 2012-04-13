@@ -1,11 +1,8 @@
 -- | Pitch class operations on 'Z12'.
-module Music.Theory.Z12.Operations where
+module Music.Theory.SRO where
 
-import Data.Maybe
 import Data.List
 import qualified Music.Theory.List as L
-import qualified Music.Theory.PitchClass as P
-import qualified Music.Theory.Set as S
 import Music.Theory.Z12
 
 -- * Pitch class operations
@@ -106,7 +103,7 @@ all_RTnI p =
 --
 -- > map (length . all_rR) [[0,1,3],[0,1,3,6]] == [6,8]
 all_rR :: [Z12] -> [[Z12]]
-all_rR p = P.rotations p ++ P.rotations (reverse p)
+all_rR p = L.rotations p ++ L.rotations (reverse p)
 
 -- | Set of all rotations,retrogrades,tranpositions and inversions.
 --
@@ -114,7 +111,7 @@ all_rR p = P.rotations p ++ P.rotations (reverse p)
 all_rRTnI :: [Z12] -> [[Z12]]
 all_rRTnI p =
     let ps = all_RTnI p
-    in ps ++ concatMap P.rotations ps
+    in ps ++ concatMap L.rotations ps
 
 -- | Set of all tranpositions,@M5@ and inversions.
 all_TnMI :: [Z12] -> [[Z12]]
@@ -224,23 +221,6 @@ sro_RTnMI = [SRO 0 r n m i |
 -- > int [0,1,3,6,10] == [1,2,3,4]
 int :: [Z12] -> [Z12]
 int = L.d_dx
-
--- | Interval class.
---
--- > map ic [5,6,7] == [5,6,5]
-ic :: Z12 -> Z12
-ic i = if i <= 6 then i else 12 - i
-
--- | Interval class vector.
---
--- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
-icv :: Integral i => [Z12] -> [i]
-icv s =
-    let i = map (ic . uncurry (-)) (S.dyads s)
-        j = map f (group (sort i))
-        k = map (`lookup` j) [1..6]
-        f l = (head l,genericLength l)
-    in map (fromMaybe 0) k
 
 -- * Set operations.
 

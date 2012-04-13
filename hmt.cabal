@@ -56,6 +56,7 @@ Library
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Castren_1994
+                   Music.Theory.Metric.Forte_1973
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Parse
@@ -64,9 +65,9 @@ Library
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Spelling
-                   Music.Theory.PitchClass
                    Music.Theory.Prime
                    Music.Theory.Set
+                   Music.Theory.SRO
                    Music.Theory.Table
                    Music.Theory.Tempo_Marking
                    Music.Theory.Time_Signature
@@ -80,7 +81,6 @@ Library
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z12
-                   Music.Theory.Z12.Operations
 
 Source-Repository  head
   Type:            darcs

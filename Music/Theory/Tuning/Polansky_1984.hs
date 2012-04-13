@@ -135,6 +135,8 @@ i_category_table = map (intercalate "  " .  map (pad 3 . i_category))
 --
 -- > polansky_1984_r == sort polansky_1984_r
 -- > polansky_1984_r == [1/1,8/7,21/16,512/343,12/7,96/49]
+--
+-- > import Music.Theory.List
 -- > d_dx polansky_1984_r == [1/7,19/112,989/5488,76/343,12/49]
 polansky_1984_r :: [Rational]
 polansky_1984_r =
@@ -143,12 +145,9 @@ polansky_1984_r =
         i' = 21/16 * v
     in [1,8/7,21/16,v,vi,i']
 
--- | Intervals, given by '-', of adjacent elements.
-d_dx :: Num c => [c] -> [c]
-d_dx z = zipWith (-) (tail z) z
-
 -- | 'to_cents_r' of 'polansky_1984_r'.
 --
+-- > import Music.Theory.List
 -- > map round (d_dx polansky_1984_c) == [231,240,223,240,231]
 polansky_1984_c :: [Cents]
 polansky_1984_c = map to_cents_r polansky_1984_r

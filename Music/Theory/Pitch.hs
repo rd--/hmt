@@ -3,6 +3,7 @@ module Music.Theory.Pitch where
 
 import Data.Function
 import Data.Maybe
+import Music.Theory.Tuning
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
@@ -299,18 +300,6 @@ cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: Floating n => OctPC -> n
 octpc_to_cps = midi_to_cps . octpc_to_midi
-
--- | Convert from cents invterval to frequency ratio.
---
--- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
-cents_to_ratio :: Floating a => a -> a
-cents_to_ratio n = 2 ** (n / 1200)
-
--- | Convert from frequency ratio to cents interval.
---
--- > map ratio_to_cents [1,4/3,2] == [0.0,498.04499913461245,1200.0]
-ratio_to_cents :: Floating a => a -> a
-ratio_to_cents n = logBase 2 n * 1200
 
 -- | Frequency /n/ cents from /f/.
 --

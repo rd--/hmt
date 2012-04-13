@@ -32,6 +32,26 @@ genericRotate_right n = reverse . genericRotate_left n . reverse
 rotate_right :: Int -> [a] -> [a]
 rotate_right = genericRotate_right
 
+-- | Rotate left by /n/ 'mod' /#p/ places.
+--
+-- > rotate 8 [1..5] == [4,5,1,2,3]
+rotate :: (Integral n) => n -> [a] -> [a]
+rotate n p =
+    let m = n `mod` genericLength p
+    in genericRotate_left m p
+
+-- | Rotate right by /n/ places.
+--
+-- > rotate_r 8 [1..5] == [3,4,5,1,2]
+rotate_r :: (Integral n) => n -> [a] -> [a]
+rotate_r = rotate . negate
+
+-- | All rotations.
+--
+-- > rotations [0,1,3] == [[0,1,3],[1,3,0],[3,0,1]]
+rotations :: [a] -> [[a]]
+rotations p = map (`rotate_left` p) [0 .. length p - 1]
+
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
 genericAdj2 n l =
     case l of
@@ -173,3 +193,12 @@ is_superset = flip is_subset
 -- > subsequence [1,2] [1,2,3] == True
 subsequence :: (Eq a) => [a] -> [a] -> Bool
 subsequence = isInfixOf
+
+-- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
+--
+-- > elem_index_unique 'a' "abcda" == undefined
+elem_index_unique :: (Eq a) => a -> [a] -> Int
+elem_index_unique e p =
+    case elemIndices e p of
+      [i] -> i
+      _ -> error "elem_index_unique"

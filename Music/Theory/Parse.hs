@@ -3,7 +3,8 @@ module Music.Theory.Parse (rnrtnmi,pco) where
 
 import Control.Monad
 import Data.Char
-import Music.Theory.PitchClass
+import Music.Theory.SRO
+import Music.Theory.Z12
 import Text.ParserCombinators.Parsec
 
 -- | A 'Char' parser.
@@ -17,13 +18,13 @@ is_char c =
     in liftM f (option '_' (char c))
 
 -- | Parse 'Int'.
-get_int :: P Int
-get_int = liftM read (many1 digit)
+get_int :: P Z12
+get_int = liftM (fromInteger . read) (many1 digit)
 
 -- | Parse a Morris format serial operator descriptor.
 --
 -- > rnrtnmi "r2RT3MI" == SRO 2 True 3 True True
-rnrtnmi :: String -> SRO Int
+rnrtnmi :: String -> SRO
 rnrtnmi s =
   let p = do { r <- rot
              ; r' <- is_char 'R'
@@ -45,11 +46,11 @@ rnrtnmi s =
 --
 -- > pco "13te" == [1,3,10,11]
 -- > pco "13te" == pco "13ab"
-pco :: String -> [Int]
+pco :: String -> [Z12]
 pco s =
     let s' = dropWhile isSpace s
         s'' = takeWhile (`elem` "0123456789taAebB") s'
         f c | c `elem` "taA" = 10
             | c `elem` "ebB" = 11
-            | otherwise = read [c]
+            | otherwise = fromInteger (read [c])
     in map f s''

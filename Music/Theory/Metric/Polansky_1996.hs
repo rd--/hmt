@@ -5,10 +5,11 @@ module Music.Theory.Metric.Polansky_1996 where
 import Data.List
 import Data.Maybe
 import Data.Ratio
-import qualified Music.Theory.Contour.Polansky_1992 as T
-import qualified Music.Theory.List as T
+import qualified Music.Theory.Contour.Polansky_1992 as C
+import qualified Music.Theory.List as L
 
--- | Distance function, ordinarily /n/ below is in 'Num', 'Fractional' or 'Real'.
+-- | Distance function, ordinarily /n/ below is in 'Num', 'Fractional'
+-- or 'Real'.
 type Interval a n = (a -> a -> n)
 
 -- | 'fromIntegral' '.' '-'.
@@ -198,7 +199,7 @@ direction_interval = d_dx (flip compare)
 -- > ord_hist [LT,GT,GT] == (1,0,2)
 ord_hist :: Integral t => [Ordering] -> (t,t,t)
 ord_hist x =
-    let h = T.histogram x
+    let h = L.histogram x
         f n = fromMaybe 0 (lookup n h)
     in (f LT,f EQ,f GT)
 
@@ -238,8 +239,8 @@ old m n =
 -- > ocd [5,3,6,1,4] [3,6,1,4,2] == 4/5
 ocd :: (Ord a,Integral i) => [a] -> [a] -> Ratio i
 ocd m n =
-    let p = concat (T.half_matrix_f compare m)
-        q = concat (T.half_matrix_f compare n)
+    let p = concat (C.half_matrix_f compare m)
+        q = concat (C.half_matrix_f compare n)
         f i j = if i == j then 0 else 1
     in sum (zipWith f p q) % genericLength p
 
@@ -252,12 +253,12 @@ ocd m n =
 -- > ucd [5,3,7,6] [8,3,5,4] == 1/3
 ucd :: (Integral n,Ord a) => [a] -> [a] -> Ratio n
 ucd m n =
-    let (i,j,k) = ord_hist (concat (T.half_matrix_f compare m))
-        (p,q,r) = ord_hist (concat (T.half_matrix_f compare n))
+    let (i,j,k) = ord_hist (concat (C.half_matrix_f compare m))
+        (p,q,r) = ord_hist (concat (C.half_matrix_f compare n))
         z = (i + j + k) * 2
     in (abs_dif (-) i p + abs_dif (-) j q + abs_dif (-) k r) % z
 
--- | 'T.half_matrix_f', Fig.9, p.318
+-- | 'C.half_matrix_f', Fig.9, p.318
 --
 -- > let r = [[2,3,1,4]
 -- >           ,[1,3,6]
@@ -265,7 +266,7 @@ ucd m n =
 -- >               ,[3]]
 -- > in combinatorial_magnitude_matrix (abs_dif (-)) [5,3,2,6,9] == r
 combinatorial_magnitude_matrix :: Interval a n -> [a] -> [[n]]
-combinatorial_magnitude_matrix f = T.half_matrix_f f
+combinatorial_magnitude_matrix f = C.half_matrix_f f
 
 -- | Unordered linear magnitude (simplified), p.320-321
 --
@@ -284,8 +285,8 @@ ulm_simplified f p q =
 -- > ocm (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 3.6
 ocm :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm f p q =
-    let p' = concat (T.half_matrix_f f p)
-        q' = concat (T.half_matrix_f f q)
+    let p' = concat (C.half_matrix_f f p)
+        q' = concat (C.half_matrix_f f q)
         r = zipWith (-) p' q'
         z = sum (map abs r)
         c = second_order_binonial_coefficient (fromIntegral (length p))
@@ -297,8 +298,8 @@ ocm f p q =
 -- > ocm_absolute_scaled (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 54/(15*11)
 ocm_absolute_scaled :: (Ord a,Fractional a,Enum a,Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm_absolute_scaled f p q =
-    let p' = concat (T.half_matrix_f f p)
-        q' = concat (T.half_matrix_f f q)
+    let p' = concat (C.half_matrix_f f p)
+        q' = concat (C.half_matrix_f f q)
         r = zipWith (-) p' q'
         z = sum (map abs r)
         c = second_order_binonial_coefficient (fromIntegral (length p))

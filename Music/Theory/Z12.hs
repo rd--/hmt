@@ -1,7 +1,9 @@
 {-# Language GeneralizedNewtypeDeriving #-}
 module Music.Theory.Z12 where
 
-newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bounded,Integral,Real)
+import Data.Bits
+
+newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bits,Bounded,Integral,Real)
 instance Show Z12 where showsPrec p (Z12 i) = showsPrec p i
 
 liftUZ12 :: (Int -> Int) -> Z12 -> Z12
