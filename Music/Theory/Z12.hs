@@ -20,3 +20,9 @@ instance Num Z12 where
   fromInteger i = Z12 (fromInteger i `mod` 12)
   signum _ = error "Z12 numbers are not signed"
   abs _ = error "Z12 numbers are not signed"
+
+toZ12 :: Integral i => i -> Z12
+toZ12 = fromIntegral
+
+fromZ12 :: Integral i => Z12 -> i
+fromZ12 = fromIntegral
