@@ -1,9 +1,9 @@
 {-# Language GeneralizedNewtypeDeriving #-}
 module Music.Theory.Z12 where
 
-import Data.Bits
+import Data.List
 
-newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bits,Bounded,Integral,Real)
+newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bounded,Integral,Real)
 instance Show Z12 where showsPrec p (Z12 i) = showsPrec p i
 
 liftUZ12 :: (Int -> Int) -> Z12 -> Z12
@@ -26,3 +26,9 @@ toZ12 = fromIntegral
 
 fromZ12 :: Integral i => Z12 -> i
 fromZ12 = fromIntegral
+
+-- | Z12 not in set.
+--
+-- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
+complement :: [Z12] -> [Z12]
+complement = (\\) [0..11]

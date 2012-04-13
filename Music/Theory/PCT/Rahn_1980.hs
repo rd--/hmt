@@ -1,0 +1,23 @@
+-- | Rahn, 1980
+module Music.Theory.PCT.Rahn_1980 where
+
+import Music.Theory.PCT.Forte_1973
+import Music.Theory.Z12
+
+-- | Rahn prime form (comparison is rightmost inwards).
+--
+-- > rahn_cmp [0,1,3,6,8,9] [0,2,3,6,7,9] == GT
+rahn_cmp :: Ord a => [a] -> [a] -> Ordering
+rahn_cmp p q = compare (reverse p) (reverse q)
+
+-- | Rahn prime form, ie. 'cmp_prime' of 'rahn_cmp'.
+--
+-- > rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
+--
+-- > let s = [[0,1,3,7,8]
+-- >         ,[0,1,3,6,8,9],[0,1,3,5,8,9]
+-- >         ,[0,1,2,4,7,8,9]
+-- >         ,[0,1,2,4,5,7,9,10]]
+-- > in all (\p -> forte_prime p /= rahn_prime p) s == True
+rahn_prime :: [Z12] -> [Z12]
+rahn_prime = cmp_prime rahn_cmp

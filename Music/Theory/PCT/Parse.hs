@@ -1,9 +1,9 @@
 -- | Parsers for pitch class sets and sequences, and for 'SRO's.
-module Music.Theory.Parse (rnrtnmi,pco) where
+module Music.Theory.PCT.Parse (rnrtnmi,pco) where
 
 import Control.Monad
 import Data.Char
-import Music.Theory.SRO
+import Music.Theory.PCT.SRO
 import Music.Theory.Z12
 import Text.ParserCombinators.Parsec
 

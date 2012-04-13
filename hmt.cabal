@@ -59,16 +59,19 @@ Library
                    Music.Theory.Metric.Forte_1973
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
-                   Music.Theory.Parse
-                   Music.Theory.Pct
+                   Music.Theory.PCT.Drape_1999
+                   Music.Theory.PCT.Forte_1973
+                   Music.Theory.PCT.Morris_1987
+                   Music.Theory.PCT.Parse
+                   Music.Theory.PCT.Rahn_1980
+                   Music.Theory.PCT.Read_1978
+                   Music.Theory.PCT.SRO
+                   Music.Theory.PCT.Table
                    Music.Theory.Permutations
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Spelling
-                   Music.Theory.Prime
                    Music.Theory.Set
-                   Music.Theory.SRO
-                   Music.Theory.Table
                    Music.Theory.Tempo_Marking
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning

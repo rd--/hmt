@@ -1,9 +1,9 @@
 -- | Set class tables and database.
-module Music.Theory.Table where
+module Music.Theory.PCT.Table where
 
 import Data.List
 import Data.Maybe
-import Music.Theory.Prime
+import Music.Theory.PCT.Forte_1973
 import Music.Theory.Z12
 
 -- | Synonym for 'String'.
@@ -240,6 +240,7 @@ sc_table =
 -- | Lookup a set-class name.  The input set is subject to
 -- 'forte_prime' before lookup.
 --
+-- > sc_name [0,2,3,6,7] == "5-Z18"
 -- > sc_name [0,1,4,6,7,8] == "6-Z17"
 sc_name :: [Z12] -> SC_Name
 sc_name p =

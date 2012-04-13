@@ -7,8 +7,8 @@ import Data.List
 import Data.Ratio
 import qualified Music.Theory.List as L
 import qualified Music.Theory.Metric.Forte_1973 as F
+import qualified Music.Theory.PCT.Table as T
 import qualified Music.Theory.Set as S
-import qualified Music.Theory.Table as T
 import Music.Theory.Z12
 
 -- | Predicate for list with cardinality /n/.

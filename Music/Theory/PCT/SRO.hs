@@ -1,17 +1,11 @@
--- | Pitch class operations on 'Z12'.
-module Music.Theory.SRO where
+-- | Serial pitch-class operations on 'Z12'.
+module Music.Theory.PCT.SRO where
 
 import Data.List
 import qualified Music.Theory.List as L
 import Music.Theory.Z12
 
 -- * Pitch class operations
-
--- | Map to pitch-class and reduce to set.
---
--- > pcset [1,13] == [1]
-pcset :: (Integral a) => [a] -> [Z12]
-pcset = nub . sort . map fromIntegral
 
 -- | Transpose by n.
 --
@@ -214,21 +208,13 @@ sro_RTnMI = [SRO 0 r n m i |
              m <- [True,False],
              i <- [True,False]]
 
--- * Interval operations
-
--- | Morris @INT@ operator.
---
--- > int [0,1,3,6,10] == [1,2,3,4]
-int :: [Z12] -> [Z12]
-int = L.d_dx
-
 -- * Set operations.
 
--- | Pitch classes not in set, ie. 'L.difference' @[0..11]@.
+-- | Map to pitch-class and reduce to set.
 --
--- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
-complement :: [Z12] -> [Z12]
-complement = L.difference [0..11]
+-- > pcset [1,13] == [1]
+pcset :: (Integral a) => [a] -> [Z12]
+pcset = nub . sort . map fromIntegral
 
 -- * Sequence operations
 
