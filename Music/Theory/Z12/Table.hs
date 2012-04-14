@@ -257,6 +257,12 @@ sc n = snd (fromJust (find (\(m,_) -> n == m) sc_table))
 scs :: [[Z12]]
 scs = map snd sc_table
 
+-- | Cardinality /n/ subset of 'scs'.
+--
+-- > map (length . scs_n) [2..10] == [6,12,29,38,50,38,29,12,6]
+scs_n :: Integral i => i -> [[Z12]]
+scs_n n = filter ((== n) . genericLength) scs
+
 -- | Set class database with descriptors for historically and
 -- theoretically significant set classes.
 --
@@ -264,7 +270,7 @@ scs = map snd sc_table
 -- > lookup "7-35" sc_db == Just "diatonic collection (d)"
 sc_db :: [(SC_Name,String)]
 sc_db =
-    [ ("4-Z15","All-Interval Tetrachord (see also 4-Z29)")
+    [("4-Z15","All-Interval Tetrachord (see also 4-Z29)")
     ,("4-Z29","All-Interval Tetrachord (see also 4-Z15)")
     ,("6-Z17","All-Trichord Hexachord")
     ,("8-Z15","All-Tetrachord Octochord (see also 8-Z29)")

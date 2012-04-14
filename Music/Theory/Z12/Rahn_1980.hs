@@ -20,4 +20,4 @@ rahn_cmp p q = compare (reverse p) (reverse q)
 -- >         ,[0,1,2,4,5,7,9,10]]
 -- > in all (\p -> forte_prime p /= rahn_prime p) s == True
 rahn_prime :: [Z12] -> [Z12]
-rahn_prime = cmp_prime rahn_cmp
+rahn_prime = cmp_prime_ti rahn_cmp

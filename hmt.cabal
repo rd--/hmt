@@ -76,8 +76,10 @@ Library
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z12
+                   Music.Theory.Z12.Castren_1994
                    Music.Theory.Z12.Drape_1999
                    Music.Theory.Z12.Forte_1973
+                   Music.Theory.Z12.Lewin_1980
                    Music.Theory.Z12.Morris_1987
                    Music.Theory.Z12.Parse
                    Music.Theory.Z12.Rahn_1980
