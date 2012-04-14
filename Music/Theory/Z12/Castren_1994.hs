@@ -6,23 +6,20 @@ import Data.List
 import Data.Maybe
 import qualified Music.Theory.List as L
 import Music.Theory.Z12
+import Music.Theory.Z12.TTO
 import qualified Music.Theory.Z12.Forte_1973 as F
-import qualified Music.Theory.Z12.Table as F
-import Music.Theory.Z12.SRO
 
--- | Transpositional equivalence prime form, ie. 'F.cmp_prime_t' of
+-- | Transpositional equivalence prime form, ie. 'F.t_cmp_prime' of
 -- 'F.forte_cmp'.
 --
 -- > (F.forte_prime [0,2,3],t_prime [0,2,3]) == ([0,1,3],[0,2,3])
 t_prime :: [Z12] -> [Z12]
-t_prime = F.cmp_prime_t F.forte_cmp
+t_prime = F.t_cmp_prime F.forte_cmp
 
 -- | Is /p/ symmetrical under inversion.
 --
 -- > map inv_sym (F.scs_n 2) == [True,True,True,True,True,True]
---
--- > map inv_sym (F.scs_n 3) == [True,False,False,False,False,True
--- >                            ,False,False,True,True,False,True]
+-- > map (fromEnum.inv_sym) (F.scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
 inv_sym :: [Z12] -> Bool
 inv_sym x = x `elem` map (\i -> sort (tn i (invert 0 x))) [0..11]
 
@@ -84,9 +81,7 @@ t_scs_n n = filter ((== n) . genericLength) t_scs
 -- > t_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4]]
 -- > t_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6]]
 t_subsets :: [Z12] -> [Z12] -> [[Z12]]
-t_subsets x a =
-    let a' = nub (map sort (all_Tn a))
-    in filter (`L.is_subset` x) a'
+t_subsets x a = filter (`L.is_subset` x) (t_related a)
 
 -- | T/I-related /q/ that are subsets of /p/.
 --
@@ -94,9 +89,7 @@ t_subsets x a =
 -- > ti_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4],[0,3,4]]
 -- > ti_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6],[3,6,7]]
 ti_subsets :: [Z12] -> [Z12] -> [[Z12]]
-ti_subsets x a =
-    let a' = nub (map sort (all_TnI a))
-    in filter (`L.is_subset` x) a'
+ti_subsets x a = filter (`L.is_subset` x) (ti_related a)
 
 -- | Trivial run length encoder.
 --

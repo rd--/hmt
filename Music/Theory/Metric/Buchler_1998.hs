@@ -6,10 +6,9 @@ module Music.Theory.Metric.Buchler_1998 where
 import Data.List
 import Data.Ratio
 import qualified Music.Theory.List as L
-import qualified Music.Theory.Metric.Forte_1973 as F
+import qualified Music.Theory.Z12.Forte_1973 as F
 import qualified Music.Theory.Set as S
 import Music.Theory.Z12
-import qualified Music.Theory.Z12.Table as T
 
 -- | Predicate for list with cardinality /n/.
 of_c :: Integral n => n -> [a] -> Bool
@@ -19,7 +18,7 @@ of_c n = (== n) . genericLength
 --
 -- > sc_table_n 2 == [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]]
 sc_table_n :: (Integral n) => n -> [[Z12]]
-sc_table_n n = filter (of_c n) (map snd T.sc_table)
+sc_table_n n = filter (of_c n) (map snd F.sc_table)
 
 -- | Minima and maxima of ICV of SCs of cardinality /n/.
 --
@@ -164,7 +163,7 @@ satsim p q =
 satsim_table :: Integral i => [(([Z12],[Z12]),Ratio i)]
 satsim_table =
     let f (i,j) = ((i,j),satsim i j)
-        t = filter ((`notElem` [0,1,12]) . length) (map snd T.sc_table)
+        t = filter ((`notElem` [0,1,12]) . length) (map snd F.sc_table)
     in map f (S.dyads_l t)
 
 -- | Histogram of values at 'satsim_table'.

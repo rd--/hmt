@@ -1,6 +1,6 @@
 -- | David Lewin. \"A Response to a Response: On PC Set
 -- Relatedness\". /Perspectives of New Music/, 18(1-2):498-502, 1980.
-module Music.Theory.Metric.Lewin_1980 where
+module Music.Theory.Z12.Lewin_1980 where
 
 import Data.List
 import Music.Theory.Z12

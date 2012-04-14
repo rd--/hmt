@@ -6,13 +6,12 @@ import Data.Function
 import Data.List
 import Data.Maybe
 import Music.Theory.List
-import Music.Theory.Metric.Forte_1973
-import qualified Music.Theory.Set as S
+import Music.Theory.Set
 import Music.Theory.Z12
 import Music.Theory.Z12.Forte_1973
 import Music.Theory.Z12.Morris_1987
-import Music.Theory.Z12.SRO
-import Music.Theory.Z12.Table
+import qualified Music.Theory.Z12.TTO as T
+import qualified Music.Theory.Z12.SRO as S
 
 -- | Cardinality filter
 --
@@ -30,11 +29,11 @@ cgg l =
       x:xs -> [ y:z | y <- x, z <- cgg xs ]
       _ -> [[]]
 
--- | Combinations generator, ie. synonym for 'S.powerset_l'.
+-- | Combinations generator, ie. synonym for 'powerset_l'.
 --
 -- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
-cg = S.powerset_l
+cg = powerset_l
 
 -- | Powerset filtered by cardinality.
 --
@@ -84,7 +83,7 @@ d_nm x =
 -- | Diatonic implications.
 dim :: [Z12] -> [(Z12,[Z12])]
 dim p =
-    let g (i,q) = is_subset p (tn i q)
+    let g (i,q) = is_subset p (T.tn i q)
         f = filter g . zip [0..11] . repeat
         d = [0,2,4,5,7,9,11]
         m = [0,2,3,5,7,9,11]
@@ -130,9 +129,9 @@ dis =
 -- > doi 2 (sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
 doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
-    let f j = [pcset (tn j p),pcset (tni j p)]
+    let f j = [T.tn j p,T.tni j p]
         xs = concatMap f [0..11]
-    in S.set_l (filter (\x -> length (x `intersect` q) == n) xs)
+    in set_l (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
 fn :: [Z12] -> String
@@ -154,7 +153,7 @@ has_ess (p:ps) (q:qs) = if p == q
 --
 -- > ess [2,3,10] [0,1,6,4,3,2,5] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: [Z12] -> [Z12] -> [[Z12]]
-ess p = filter (`has_ess` p) . all_RTnMI
+ess p = filter (`has_ess` p) . S.rtmi_related
 
 -- | Can the set-class q (under prime form algorithm pf) be
 --   drawn from the pcset p.
@@ -229,7 +228,7 @@ imb cs p =
 issb :: [Z12] -> [Z12] -> [String]
 issb p q =
     let k = length q - length p
-        f = any id . map (\x -> forte_prime (p ++ x) == q) . all_TnI
+        f = any id . map (\x -> forte_prime (p ++ x) == q) . T.ti_related
     in map sc_name (filter f (cf [k] scs))
 
 -- | Matrix search.
@@ -238,9 +237,9 @@ issb p q =
 -- 6421B9
 -- B97642
 --
--- > set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
+-- > set_l (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 mxs :: [Z12] -> [Z12] -> [[Z12]]
-mxs p q = filter (q `isInfixOf`) (all_RTnI p)
+mxs p q = filter (q `isInfixOf`) (S.rti_related p)
 
 -- | Normalize.
 --
@@ -249,7 +248,7 @@ mxs p q = filter (q `isInfixOf`) (all_RTnI p)
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
 nrm :: (Ord a) => [a] -> [a]
-nrm = S.set_l
+nrm = set_l
 
 -- | Normalize, retain duplicate elements.
 nrm_r :: (Ord a) => [a] -> [a]
@@ -266,21 +265,22 @@ nrm_r = sort
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
-    let f q = S.set_l (map (q `genericIndex`) i)
-    in filter (\q -> f q == f p) (all_RTnI p)
+    let f q = set_l (map (q `genericIndex`) i)
+    in filter (\q -> f q == f p) (S.rti_related p)
 
 -- | Relate sets.
 --
 -- >>> rs 0123 641e
 -- T1M
 --
+-- > import Music.Theory.Z12.Morris_1987.Parse
 -- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
 -- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
 rs :: [Z12] -> [Z12] -> [(SRO, [Z12])]
 rs x y =
     let xs = map (\o -> (o, o `sro` x)) sro_TnMI
-        q = S.set_l y
-    in filter (\(_,p) -> S.set_l p == q) xs
+        q = set_l y
+    in filter (\(_,p) -> set_l p == q) xs
 
 -- | Relate segments.
 --

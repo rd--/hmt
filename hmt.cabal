@@ -56,7 +56,6 @@ Library
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Castren_1994
-                   Music.Theory.Metric.Forte_1973
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Permutations
@@ -80,12 +79,13 @@ Library
                    Music.Theory.Z12.Drape_1999
                    Music.Theory.Z12.Forte_1973
                    Music.Theory.Z12.Lewin_1980
+                   Music.Theory.Z12.Literature
                    Music.Theory.Z12.Morris_1987
-                   Music.Theory.Z12.Parse
+                   Music.Theory.Z12.Morris_1987.Parse
                    Music.Theory.Z12.Rahn_1980
                    Music.Theory.Z12.Read_1978
                    Music.Theory.Z12.SRO
-                   Music.Theory.Z12.Table
+                   Music.Theory.Z12.TTO
 
 Source-Repository  head
   Type:            darcs

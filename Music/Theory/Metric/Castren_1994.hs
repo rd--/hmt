@@ -3,16 +3,16 @@
 module Music.Theory.Metric.Castren_1994 where
 
 import Data.Ratio
-import qualified Music.Theory.Metric.Forte_1973 as F
 import Music.Theory.Z12
+import Music.Theory.Z12.Forte_1973
 
--- | 'F.icv' scaled by sum of /icv/.
+-- | 'icv' scaled by sum of /icv/.
 --
 -- > dyad_class_percentage_vector [0,1,2,3,4] == [40,30,20,10,0,0]
 -- > dyad_class_percentage_vector [0,1,4,5,7] == [20,10,20,20,20,10]
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
-    let p' = F.icv p
+    let p' = icv p
     in map ((*) (sum p')) p'
 
 -- | /rel/ metric.

@@ -1,22 +1,73 @@
--- | Serial pitch-class operations on 'Z12'.
+-- | Pitch-class operations on 'Z12' sequences.
 module Music.Theory.Z12.SRO where
 
 import Data.List
-import qualified Music.Theory.List as L
 import Music.Theory.Z12
 
--- * Pitch class operations
-
--- | Transpose by n.
---
--- >>> sro T4 156
--- 59A
+-- | Transpose /p/ by /n/.
 --
 -- > tn 4 [1,5,6] == [5,9,10]
-tn :: Functor f => Z12 -> f Z12 -> f Z12
+tn :: Z12 -> [Z12] -> [Z12]
 tn n = fmap (+ n)
 
--- | Transpose so first element is n.
+-- | Invert /p/ about /n/.
+--
+-- > invert 6 [4,5,6] == [8,7,6]
+-- > invert 0 [0,1,3] == [0,11,9]
+invert :: Z12 -> [Z12] -> [Z12]
+invert n = fmap (\p -> n - (p - n))
+
+-- | Composition of 'invert' about @0@ and 'tn'.
+--
+-- > tni 4 [1,5,6] == [3,11,10]
+-- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
+tni :: Z12 -> [Z12] -> [Z12]
+tni n = tn n . invert 0
+
+-- | Modulo 12 multiplication
+--
+-- > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
+mn :: Z12 -> [Z12] -> [Z12]
+mn n = fmap (* n)
+
+-- | M5, ie. 'mn' @5@.
+--
+-- > m5 [0,1,3] == [0,5,3]
+m5 :: [Z12] -> [Z12]
+m5 = mn 5
+
+-- | T-related sequences of /p/.
+--
+-- > length (t_related [0,3,6,9]) == 12
+t_related :: [Z12] -> [[Z12]]
+t_related p = fmap (`tn` p) [0..11]
+
+-- | T/I-related sequences of /p/.
+--
+-- > length (ti_related [0,1,3]) == 24
+-- > length (ti_related [0,3,6,9]) == 24
+-- > ti_related [0] == map return [0..11]
+ti_related :: [Z12] -> [[Z12]]
+ti_related p = nub (t_related p ++ t_related (invert 0 p))
+
+-- | R/T/I-related sequences of /p/.
+--
+-- > length (rti_related [0,1,3]) == 48
+-- > length (rti_related [0,3,6,9]) == 24
+rti_related :: [Z12] -> [[Z12]]
+rti_related p = let q = ti_related p in nub (q ++ map reverse q)
+
+-- | T/M/I-related sequences of /p/.
+tmi_related :: [Z12] -> [[Z12]]
+tmi_related p = let q = ti_related p in nub (q ++ map m5 q)
+
+-- | R/T/M/I-related sequences of /p/.
+rtmi_related :: [Z12] -> [[Z12]]
+rtmi_related p = let q = tmi_related p in nub (q ++ map reverse q)
+
+-- * Sequence operations
+
+-- | Transpose /p/ so first element is /n/.
 --
 -- > transposeTo 5 [0,1,3] == [5,6,8]
 transposeTo :: Z12 -> [Z12] -> [Z12]
@@ -24,17 +75,6 @@ transposeTo n p =
     case p of
       [] -> []
       x:xs -> n : tn (n - x) xs
-
--- | All transpositions.
-transpositions :: Functor f => f Z12 -> [f Z12]
-transpositions p = fmap (`tn` p) [0..11]
-
--- | Invert about n.
---
--- > invert 6 [4,5,6] == [8,7,6]
--- > invert 0 [0,1,3] == [0,11,9]
-invert :: Functor f => Z12 -> f Z12 -> f Z12
-invert n = fmap (\p -> n - (p - n))
 
 -- | Invert about first element.
 --
@@ -44,182 +84,6 @@ invertSelf p =
     case p of
       [] -> []
       x:xs -> invert x (x:xs)
-
--- | Composition of 'invert' about @0@ and 'tn'.
---
--- >>> sro T4I 156
--- 3BA
---
--- > tni 4 [1,5,6] == [3,11,10]
---
--- >>> echo 156 | sro T4  | sro T0I
--- 732
---
--- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
-tni :: Functor f => Z12 -> f Z12 -> f Z12
-tni n = tn n . invert 0
-
--- | Modulo 12 multiplication
---
--- > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
-mn :: Functor f => Z12 -> f Z12 -> f Z12
-mn n = fmap (* n)
-
--- | M5, ie. 'mn' @5@.
---
--- > m5 [0,1,3] == [0,5,3]
-m5 :: Functor f => f Z12 -> f Z12
-m5 = mn 5
-
--- | Set of all tranpositions.  May contain duplicate elements.
---
--- > length (all_Tn [0,1,3]) == 12
---
--- > import qualified Data.Set as S
--- > length (nub (all_Tn (S.fromList [0,3,6,9])))
-all_Tn :: Functor f => f Z12 -> [f Z12]
-all_Tn p = fmap (`tn` p) [0..11]
-
--- | Set of all tranpositions and inversions.
---
--- > length (all_TnI [0,1,3]) == 24
-all_TnI :: Functor f => f Z12 -> [f Z12]
-all_TnI p =
-    let ps = all_Tn p
-    in ps ++ fmap (invert 0) ps
-
--- | Set of all retrogrades,tranpositions and inversions.
---
--- > length (all_RTnI [0,1,3]) == 48
-all_RTnI :: [Z12] -> [[Z12]]
-all_RTnI p =
-    let ps = all_TnI p
-    in ps ++ map reverse ps
-
--- | Set of all rotations and retrogrades.
---
--- > map (length . all_rR) [[0,1,3],[0,1,3,6]] == [6,8]
-all_rR :: [Z12] -> [[Z12]]
-all_rR p = L.rotations p ++ L.rotations (reverse p)
-
--- | Set of all rotations,retrogrades,tranpositions and inversions.
---
--- > length (all_rRTnI [0,1,3]) == 192
-all_rRTnI :: [Z12] -> [[Z12]]
-all_rRTnI p =
-    let ps = all_RTnI p
-    in ps ++ concatMap L.rotations ps
-
--- | Set of all tranpositions,@M5@ and inversions.
-all_TnMI :: [Z12] -> [[Z12]]
-all_TnMI p =
-    let ps = all_TnI p
-    in ps ++ map m5 ps
-
--- | Set of all retrogrades,tranpositions,@M5@ and inversions.
-all_RTnMI :: [Z12] -> [[Z12]]
-all_RTnMI p =
-    let ps = all_TnMI p
-    in ps ++ map reverse ps
-
--- | Set of all rotations,retrogrades,tranpositions,@M5@ and inversions.
-all_rRTnMI :: [Z12] -> [[Z12]]
-all_rRTnMI = map snd . sros
-
--- * Serial operations
-
--- | Serial Operator,of the form rRTMI.
-data SRO = SRO Z12 Bool Z12 Bool Bool
-           deriving (Eq,Show)
-
--- | Serial operation.
---
--- >>> sro T4 156
--- 59A
---
--- > sro (rnrtnmi "T4") (pco "156") == [5,9,10]
---
--- >>> echo 024579 | sro RT4I
--- 79B024
---
--- > sro (SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
---
--- >>> sro T4I 156
--- 3BA
---
--- > sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
--- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
---
--- >>> echo 156 | sro T4  | sro T0I
--- 732
---
--- > (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
---
--- >>> echo 024579 | sro RT4I
--- 79B024
---
--- > sro (rnrtnmi "RT4I") (pco "024579") == [7,9,11,0,2,4]
---
--- > sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
--- > sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
-sro :: SRO -> [Z12] -> [Z12]
-sro (SRO r r' t m i) x =
-    let x1 = if i then invert 0 x else x
-        x2 = if m then m5 x1 else x1
-        x3 = tn t x2
-        x4 = if r' then reverse x3 else x3
-    in L.genericRotate_left r x4
-
--- | The total set of serial operations.
-sros :: [Z12] -> [(SRO,[Z12])]
-sros x = [let o = (SRO r r' t m i) in (o,sro o x) |
-          r <- [0 .. genericLength x - 1],
-          r' <- [False,True],
-          t <- [0 .. 11],
-          m <- [False,True],
-          i <- [False,True]]
-
--- | The set of transposition 'SRO's.
-sro_Tn ::[SRO]
-sro_Tn = [SRO 0 False n False False | n <- [0..11]]
-
--- | The set of transposition and inversion 'SRO's.
-sro_TnI ::[SRO]
-sro_TnI = [SRO 0 False n False i |
-           n <- [0..11],
-           i <- [False,True]]
-
--- | The set of retrograde and transposition and inversion 'SRO's.
-sro_RTnI ::[SRO]
-sro_RTnI = [SRO 0 r n False i |
-            r <- [True,False],
-            n <- [0..11],
-            i <- [False,True]]
-
--- | The set of transposition,@M5@ and inversion 'SRO's.
-sro_TnMI ::[SRO]
-sro_TnMI = [SRO 0 False n m i |
-            n <- [0..11],
-            m <- [True,False],
-            i <- [True,False]]
-
--- | The set of retrograde,transposition,@M5@ and inversion 'SRO's.
-sro_RTnMI ::[SRO]
-sro_RTnMI = [SRO 0 r n m i |
-             r <- [True,False],
-             n <- [0..11],
-             m <- [True,False],
-             i <- [True,False]]
-
--- * Set operations.
-
--- | Map to pitch-class and reduce to set.
---
--- > pcset [1,13] == [1]
-pcset :: (Integral a) => [a] -> [Z12]
-pcset = nub . sort . map fromIntegral
-
--- * Sequence operations
 
 -- | The standard t-matrix of /p/.
 --
