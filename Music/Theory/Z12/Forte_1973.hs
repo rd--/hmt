@@ -17,7 +17,7 @@ import Music.Theory.Z12.SRO
 t_rotations :: [Z12] -> [[Z12]]
 t_rotations p =
     let r = rotations (sort p)
-    in map (transposeTo 0) r
+    in map (tn_to 0) r
 
 -- | T/I-related rotations of /p/.
 --
@@ -27,7 +27,7 @@ ti_rotations :: [Z12] -> [[Z12]]
 ti_rotations p =
     let q = invert 0 p
         r = rotations (sort p) ++ rotations (sort q)
-    in map (transposeTo 0) r
+    in map (tn_to 0) r
 
 -- | Variant with default value for empty input list case.
 minimumBy_or :: a -> (a -> a -> Ordering) -> [a] -> a

@@ -4,7 +4,7 @@ module Music.Theory.Z12.Lewin_1980 where
 
 import Data.List
 import Music.Theory.Z12
-import Music.Theory.Z12.Castren_1994
+import qualified Music.Theory.Z12.Castren_1994 as C
 
 -- | REL function with given /ncv/ function (see 't_rel' and 'ti_rel').
 rel :: Floating n => (Int -> [a] -> [n]) -> [a] -> [a] -> n
@@ -26,7 +26,7 @@ rel ncv x y =
 -- > t_rel [0,1,2,3,4] [0,2,4,6,8] ~= 0.28
 -- > t_rel [0,2,3,6,7] [0,2,4,6,8] ~= 0.31
 t_rel :: Floating n => [Z12] -> [Z12] -> n
-t_rel = rel t_n_class_vector
+t_rel = rel C.t_n_class_vector
 
 -- | T/I-equivalence REL function.
 --
@@ -44,4 +44,4 @@ t_rel = rel t_n_class_vector
 -- > ti_rel b j ~= 0.892
 -- > ti_rel g j ~= 0.707
 ti_rel :: Floating n => [Z12] -> [Z12] -> n
-ti_rel = rel ti_n_class_vector
+ti_rel = rel C.ti_n_class_vector

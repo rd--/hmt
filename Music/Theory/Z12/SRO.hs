@@ -1,4 +1,4 @@
--- | Pitch-class operations on 'Z12' sequences.
+-- | Serial (ordered) pitch-class operations on 'Z12'.
 module Music.Theory.Z12.SRO where
 
 import Data.List
@@ -42,7 +42,7 @@ m5 = mn 5
 t_related :: [Z12] -> [[Z12]]
 t_related p = fmap (`tn` p) [0..11]
 
--- | T/I-related sequences of /p/.
+-- | T\/I-related sequences of /p/.
 --
 -- > length (ti_related [0,1,3]) == 24
 -- > length (ti_related [0,3,6,9]) == 24
@@ -50,40 +50,38 @@ t_related p = fmap (`tn` p) [0..11]
 ti_related :: [Z12] -> [[Z12]]
 ti_related p = nub (t_related p ++ t_related (invert 0 p))
 
--- | R/T/I-related sequences of /p/.
+-- | R\/T\/I-related sequences of /p/.
 --
 -- > length (rti_related [0,1,3]) == 48
 -- > length (rti_related [0,3,6,9]) == 24
 rti_related :: [Z12] -> [[Z12]]
 rti_related p = let q = ti_related p in nub (q ++ map reverse q)
 
--- | T/M/I-related sequences of /p/.
+-- | T\/M\/I-related sequences of /p/.
 tmi_related :: [Z12] -> [[Z12]]
 tmi_related p = let q = ti_related p in nub (q ++ map m5 q)
 
--- | R/T/M/I-related sequences of /p/.
+-- | R\/T\/M\/I-related sequences of /p/.
 rtmi_related :: [Z12] -> [[Z12]]
 rtmi_related p = let q = tmi_related p in nub (q ++ map reverse q)
 
 -- * Sequence operations
 
--- | Transpose /p/ so first element is /n/.
+-- | Variant of 'tn', transpose /p/ so first element is /n/.
 --
--- > transposeTo 5 [0,1,3] == [5,6,8]
-transposeTo :: Z12 -> [Z12] -> [Z12]
-transposeTo n p =
+-- > tn_to 5 [0,1,3] == [5,6,8]
+tn_to :: Z12 -> [Z12] -> [Z12]
+tn_to n p =
     case p of
       [] -> []
       x:xs -> n : tn (n - x) xs
 
--- | Invert about first element.
+-- | Variant of 'invert', inverse about /n/th element.
 --
--- > map invertSelf [[0,1,3],[3,4,6]] == [[0,11,9],[3,2,0]]
-invertSelf :: [Z12] -> [Z12]
-invertSelf p =
-    case p of
-      [] -> []
-      x:xs -> invert x (x:xs)
+-- > map (invert_ix 0) [[0,1,3],[3,4,6]] == [[0,11,9],[3,2,0]]
+-- > map (invert_ix 1) [[0,1,3],[3,4,6]] == [[2,1,11],[5,4,2]]
+invert_ix :: Int -> [Z12] -> [Z12]
+invert_ix n p = invert (p!!n) p
 
 -- | The standard t-matrix of /p/.
 --
@@ -91,4 +89,4 @@ invertSelf p =
 -- >                    ,[11,0,2]
 -- >                    ,[9,10,0]]
 tmatrix :: [Z12] -> [[Z12]]
-tmatrix p = map (`tn` p) (transposeTo 0 (invertSelf p))
+tmatrix p = map (`tn` p) (tn_to 0 (invert_ix 0 p))

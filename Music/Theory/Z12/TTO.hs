@@ -1,4 +1,4 @@
--- | Pitch-class set operations on 'Z12' sets.
+-- | Pitch-class set (unordered) operations on 'Z12'.
 module Music.Theory.Z12.TTO where
 
 import Data.List
@@ -45,13 +45,14 @@ m5 = mn 5
 
 -- | T-related sets of /p/.
 --
+-- > length (t_related [0,1,3]) == 12
 -- > t_related [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
 t_related :: [Z12] -> [[Z12]]
 t_related p = nub (map (`tn` p) [0..11])
 
--- | T/I-related set of /p/.
+-- | T\/I-related set of /p/.
 --
 -- > length (ti_related [0,1,3]) == 24
--- > length (ti_related [0,3,6,9]) == 3
+-- > ti_related [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
 ti_related :: [Z12] -> [[Z12]]
 ti_related p = nub (t_related p ++ t_related (invert 0 p))
