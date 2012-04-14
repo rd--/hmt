@@ -19,10 +19,10 @@ t_rotations p =
     let r = rotations (sort p)
     in map (tn_to 0) r
 
--- | T/I-related rotations of /p/.
+-- | T\/I-related rotations of /p/.
 --
 -- > ti_rotations [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]
--- >                       ,[0,9,11],[0,2,3],[0,1,10]]
+-- >                         ,[0,9,11],[0,2,3],[0,1,10]]
 ti_rotations :: [Z12] -> [[Z12]]
 ti_rotations p =
     let q = invert 0 p
