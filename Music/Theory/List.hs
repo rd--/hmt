@@ -202,3 +202,16 @@ elem_index_unique e p =
     case elemIndices e p of
       [i] -> i
       _ -> error "elem_index_unique"
+
+-- | Find adjacent elements of list that bound element under given
+-- comparator.
+--
+-- > let f = find_bounds compare (adj [1..5])
+-- > in map f [1,3.5,5] == [Just (1,2),Just (3,4),Nothing]
+find_bounds :: (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
+find_bounds f l x =
+    case l of
+      (p,q):l' -> if f p x /= GT && f q x == GT
+                  then Just (p,q)
+                  else find_bounds f l' x
+      _ -> Nothing

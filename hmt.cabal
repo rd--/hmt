@@ -71,6 +71,7 @@ Library
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1990
                    Music.Theory.Tuning.Scala
+                   Music.Theory.Tuning.Table
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z12
