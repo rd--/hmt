@@ -77,12 +77,12 @@ ndp :: Int -> Double -> String
 ndp n = printf "%.*f" n
 
 -- | 'G.Table_Cell' from set of 'HS_R'.
-hs_r_cell :: Int -> [HS_R] -> (Int,Int) -> G.Table_Cell
-hs_r_cell n t (i,j) =
+hs_r_cell :: Int -> (Int -> String) -> [HS_R] -> (Int,Int) -> G.Table_Cell
+hs_r_cell n nm_f t (i,j) =
     let dp = ndp n
         (f,p,pf,fd,c) = t !! i
         e = case j of
-              0 -> show (i + 1)
+              0 -> nm_f i
               1 -> dp f
               2 -> pitch_pp p
               3 -> dp pf
