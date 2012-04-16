@@ -65,30 +65,32 @@ mk_bbox (r,c) =
 -- | A table cell is an 'X.Attr' and 'X.Content' duple.
 type Table_Cell = ([X.Attr],[X.Content])
 
+type Caption = [X.Content]
+
 -- | Table of row order 'Table_Cell's.
-type Table = [[Table_Cell]]
+type Table = (Caption,[[Table_Cell]])
 
 -- | Construct a 'Table' with one 'X.Content' per cell.
-simple_table :: [[X.Content]] -> Table
-simple_table = map (map (\x -> ([],[x])))
+simple_table :: Caption -> [[X.Content]] -> Table
+simple_table c z = (c,map (map (\x -> ([],[x]))) z)
 
 -- | Construct a 'Table' with one 'X.Content' per cell, and an
 -- associated class.
-simple_table_class :: [[(String,X.Content)]] -> Table
-simple_table_class = map (map (\(c,x) -> ([H.class' c],[x])))
+simple_table_class :: Caption -> [[(String,X.Content)]] -> Table
+simple_table_class c z = (c,map (map (\(nm,x) -> ([H.class' nm],[x]))) z)
 
 -- | Build a table of @(rows,columns)@ dimensions given a function
 -- from @(row,column)@ to 'Table_Cell'.
-build_table :: (Int,Int) -> ((Int,Int) -> Table_Cell) -> Table
-build_table (m,n) f =
+build_table :: Caption -> (Int,Int) -> ((Int,Int) -> Table_Cell) -> Table
+build_table c (m,n) f =
     let mk_row i = map (\j -> f (i,j)) [0 .. n - 1]
-    in map mk_row [0 .. m - 1]
+    in (c,map mk_row [0 .. m - 1])
 
 -- | Render 'Table' as @HTML@ table.
 table :: Table -> X.Content
-table =
+table (c,z) =
     let mk_r = H.tr [] . map (uncurry H.td)
-    in H.table [] . map mk_r
+    in H.table [] (H.caption [] c : map mk_r z)
 
 -- | A set of related tables.
 type Table_Set = [Table]
