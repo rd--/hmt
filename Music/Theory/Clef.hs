@@ -8,6 +8,10 @@ import Music.Theory.Pitch.Name
 data Clef_T = Bass | Tenor | Alto | Treble | Percussion
               deriving (Eq,Ord,Show)
 
+-- | Clef with octave offset.
+data Integral i => Clef i = Clef Clef_T i
+                            deriving (Eq,Ord,Show)
+
 -- | Give clef range as a 'Pitch' pair indicating the notes below and
 -- above the staff.
 --
@@ -22,13 +26,13 @@ clef_range c =
       Treble -> Just (d4,g5)
       Percussion -> Nothing
 
--- | Suggest a 'Clef_T' and octave offset given a 'Pitch'.
+-- | Suggest a 'Clef' given a 'Pitch'.
 --
 -- > map clef_suggest [c3,c4] == [(Bass,0),(Treble,0)]
-clef_suggest :: Pitch -> (Clef_T,Integer)
-clef_suggest p | p < f1 = (Bass,-2)
-               | p < f2 = (Bass,-1)
-               | p < b3 = (Bass,0)
-               | p < g5 = (Treble,0)
-               | p < g6 = (Treble,1)
-               | otherwise = (Treble,2)
+clef_suggest :: Integral i => Pitch -> Clef i
+clef_suggest p | p < f1 = Clef Bass (-2)
+               | p < f2 = Clef Bass (-1)
+               | p < b3 = Clef Bass 0
+               | p < g5 = Clef Treble 0
+               | p < g6 = Clef Treble 1
+               | otherwise = Clef Treble 2
