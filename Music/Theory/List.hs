@@ -215,3 +215,9 @@ find_bounds f l x =
                   then Just (p,q)
                   else find_bounds f l' x
       _ -> Nothing
+
+-- | Variant of 'drop' from right of list.
+--
+-- > dropRight 1 [1..9] == [1..8]
+dropRight :: Int -> [a] -> [a]
+dropRight n = reverse . drop n . reverse

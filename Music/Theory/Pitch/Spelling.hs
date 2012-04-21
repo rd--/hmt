@@ -4,12 +4,12 @@ module Music.Theory.Pitch.Spelling where
 import Music.Theory.Pitch
 
 -- | Variant of 'Spelling' for incomplete functions.
-type Spelling_M = PitchClass -> Maybe (Note_T, Alteration_T)
+type Spelling_M i = i -> Maybe (Note_T, Alteration_T)
 
 -- | Spelling for natural (♮) notes only.
 --
 -- > map pc_spell_natural_m [0,1] == [Just (C,Natural),Nothing]
-pc_spell_natural_m :: Spelling_M
+pc_spell_natural_m :: Integral i => Spelling_M i
 pc_spell_natural_m pc =
     case pc of
       0 -> Just (C,Natural)
@@ -24,7 +24,7 @@ pc_spell_natural_m pc =
 -- | Erroring variant of 'pc_spell_natural_m'.
 --
 -- > map pc_spell_natural [0,5,7] == [(C,Natural),(F,Natural),(G,Natural)]
-pc_spell_natural :: Spelling
+pc_spell_natural :: Integral i => Spelling i
 pc_spell_natural pc =
     case pc_spell_natural_m pc of
       Just p -> p
@@ -35,7 +35,7 @@ pc_spell_natural pc =
 -- or A Flat (♭) in /E Flat (♭) Major/.
 --
 -- > map pc_spell_ks [6,8] == [(F,Sharp),(A,Flat)]
-pc_spell_ks :: Spelling
+pc_spell_ks :: Integral i => Spelling i
 pc_spell_ks pc =
     case pc of
       1 -> (C,Sharp) -- 2#
@@ -50,7 +50,7 @@ pc_spell_ks pc =
 -- > map pc_spell_sharp [6,8] == [(F,Sharp),(G,Sharp)]
 -- > Data.List.nub (map (snd . pc_spell_sharp) [1,3,6,8,10]) == [Sharp]
 -- > octpc_to_pitch pc_spell_sharp (4,6) == Pitch F Sharp 4
-pc_spell_sharp :: Spelling
+pc_spell_sharp :: Integral i => Spelling i
 pc_spell_sharp pc =
     case pc of
       1 -> (C,Sharp)
@@ -64,7 +64,7 @@ pc_spell_sharp pc =
 --
 -- >  map pc_spell_flat [6,8] == [(G,Flat),(A,Flat)]
 -- >  Data.List.nub (map (snd . pc_spell_flat) [1,3,6,8,10]) == [Flat]
-pc_spell_flat :: Spelling
+pc_spell_flat :: Integral i => Spelling i
 pc_spell_flat pc =
     case pc of
       1 -> (D,Flat)

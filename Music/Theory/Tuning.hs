@@ -104,6 +104,22 @@ to_cents_r = to_cents . approximate_ratio
 reconstructed_ratio :: Double -> Cents -> Rational
 reconstructed_ratio epsilon c = approxRational (cents_to_ratio c) epsilon
 
+-- | Frequency /n/ cents from /f/.
+--
+-- > map (cps_shift_cents 440) [-100,100] == map octpc_to_cps [(4,8),(4,10)]
+cps_shift_cents :: Floating a => a -> a -> a
+cps_shift_cents f = (* f) . cents_to_ratio
+
+-- | Interval in /cents/ from /p/ to /q/, ie. 'ratio_to_cents' of /p/
+-- '/' /q/.
+--
+-- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
+--
+-- > let abs_dif i j = abs (i - j)
+-- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
+cps_difference_cents :: Floating a => a -> a -> a
+cps_difference_cents p q = ratio_to_cents (q / p)
+
 -- * Commas
 
 -- | The Syntonic comma.

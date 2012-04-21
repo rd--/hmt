@@ -12,7 +12,7 @@ import Text.Printf
 -- * Equal temperament
 
 -- | 'octpc_to_pitch' and 'octpc_to_cps.
-octpc_to_pitch_cps :: Floating n => OctPC -> (Pitch,n)
+octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
 octpc_to_pitch_cps x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps x)
 
 -- | 12-tone equal temperament table equating 'Pitch' and frequency
@@ -21,7 +21,9 @@ octpc_to_pitch_cps x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps x)
 -- > length tbl_12et == 132
 -- > min_max (map (round . snd) tbl_12et) == (16,31609)
 tbl_12et :: [(Pitch,Double)]
-tbl_12et = map octpc_to_pitch_cps [(o,pc) | o <- [0..10], pc <- [0..11]]
+tbl_12et =
+    let z = [(o,pc) | o <- [0..10], pc <- [0..11]]
+    in map octpc_to_pitch_cps z
 
 -- | 24-tone equal temperament variant of 'tbl_12et'.
 --
@@ -67,6 +69,12 @@ nearest_et_table_tone tbl f =
           in if abs ld < abs rd
              then (f,lp,lf,ld,to_cents (f/lf))
              else (f,rp,rf,rd,to_cents (f/rf))
+
+nearest_12et_tone :: Double -> HS_R
+nearest_12et_tone = nearest_et_table_tone tbl_12et
+
+nearest_24et_tone :: Double -> HS_R
+nearest_24et_tone = nearest_et_table_tone tbl_24et
 
 -- * Cell
 

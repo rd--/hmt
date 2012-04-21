@@ -3,15 +3,15 @@ module Music.Theory.Pitch where
 
 import Data.Function
 import Data.Maybe
-import Music.Theory.Tuning
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
 
--- | Octaves are integers, the octave of middle C is @4@.
+-- | Octaves are 'Integer's, the octave of middle C is @4@.
 type Octave = Integer
 
 -- | 'Octave' and 'PitchClass' duple.
+type Octave_PitchClass i = (i,i)
 type OctPC = (Octave,PitchClass)
 
 -- | Enumeration of common music notation note names (@C@ to @B@).
@@ -43,10 +43,10 @@ pitch_pp (Pitch n a o) =
     let a' = if a == Natural then "" else [alteration_symbol a]
     in show n ++ a' ++ show o
 
--- | Transform 'Note_T' to 'PitchClass'.
+-- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
-note_to_pc :: Note_T -> PitchClass
+note_to_pc :: Integral i => Note_T -> i
 note_to_pc n =
     case n of
       C -> 0
@@ -61,7 +61,7 @@ note_to_pc n =
 -- 'Nothing' for non-semitone alterations.
 --
 -- > map alteration_to_diff [Flat,QuarterToneSharp] == [Just (-1),Nothing]
-alteration_to_diff :: Alteration_T -> Maybe Integer
+alteration_to_diff :: Integral i => Alteration_T -> Maybe i
 alteration_to_diff a =
     case a of
       DoubleFlat -> Just (-2)
@@ -74,7 +74,7 @@ alteration_to_diff a =
 -- | Transform 'Alteration_T' to semitone alteration.
 --
 -- > map alteration_to_diff_err [Flat,Sharp] == [-1,1]
-alteration_to_diff_err :: Alteration_T -> Integer
+alteration_to_diff_err :: Integral i => Alteration_T -> i
 alteration_to_diff_err =
     let err = error "alteration_to_diff: quarter tone"
     in fromMaybe err . alteration_to_diff
@@ -83,21 +83,21 @@ alteration_to_diff_err =
 -- ie. allow quarter tones.
 --
 -- > alteration_to_fdiff QuarterToneSharp == 0.5
-alteration_to_fdiff :: Alteration_T -> Double
+alteration_to_fdiff :: Fractional n => Alteration_T -> n
 alteration_to_fdiff a =
     case a of
       ThreeQuarterToneFlat -> -1.5
       QuarterToneFlat -> -0.5
       QuarterToneSharp -> 0.5
       ThreeQuarterToneSharp -> 1.5
-      _ -> fromIntegral (alteration_to_diff_err a)
+      _ -> fromInteger (alteration_to_diff_err a)
 
 -- | Transform fractional semitone alteration to 'Alteration_T',
 -- ie. allow quarter tones.
 --
 -- > map fdiff_to_alteration [-0.5,0.5] == [Just QuarterToneFlat
 -- >                                       ,Just QuarterToneSharp]
-fdiff_to_alteration :: Double -> Maybe Alteration_T
+fdiff_to_alteration :: Fractional n => n -> Maybe Alteration_T
 fdiff_to_alteration d =
     case d of
       -2 -> Just DoubleFlat
@@ -160,17 +160,18 @@ alteration_edit_quarter_tone n a =
 -- | 'Pitch' to 'Octave' and 'PitchClass' notation.
 --
 -- > pitch_to_octpc (Pitch F Sharp 4) == (4,6)
-pitch_to_octpc :: Pitch -> OctPC
+pitch_to_octpc :: Integral i => Pitch -> Octave_PitchClass i
 pitch_to_octpc = midi_to_octpc . pitch_to_midi
 
 -- | 'Pitch' to midi note number notation.
 --
 -- > pitch_to_midi (Pitch A Natural 4) == 69
-pitch_to_midi :: Pitch -> Integer
+pitch_to_midi :: Integral i => Pitch -> i
 pitch_to_midi (Pitch n a o) =
     let a' = alteration_to_diff_err a
         n' = note_to_pc n
-    in 12 + o * 12 + n' + a'
+        o' = fromIntegral o
+    in 12 + o' * 12 + n' + a'
 
 -- | 'Pitch' to fractional midi note number notation.
 --
@@ -178,8 +179,8 @@ pitch_to_midi (Pitch n a o) =
 pitch_to_fmidi :: Pitch -> Double
 pitch_to_fmidi (Pitch n a o) =
     let a' = alteration_to_fdiff a
-        o' = fromIntegral o
-        n' = fromIntegral (note_to_pc n)
+        o' = fromInteger o
+        n' = fromInteger (note_to_pc n)
     in 12 + o' * 12 + n' + a'
 
 -- | Extract 'PitchClass' of 'Pitch'
@@ -196,19 +197,19 @@ pitch_compare :: Pitch -> Pitch -> Ordering
 pitch_compare = compare `on` pitch_to_fmidi
 
 -- | Function to spell a 'PitchClass'.
-type Spelling = PitchClass -> (Note_T, Alteration_T)
+type Spelling n = n -> (Note_T, Alteration_T)
 
 -- | Given 'Spelling' function translate from 'OctPC' notation to
 -- 'Pitch'.
-octpc_to_pitch :: Spelling -> OctPC -> Pitch
+octpc_to_pitch :: Integral i => Spelling i -> Octave_PitchClass i -> Pitch
 octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc
-    in Pitch n a o
+    in Pitch n a (fromIntegral o)
 
 -- | Normalise 'OctPC' value, ie. ensure 'PitchClass' is in (0,11).
 --
 -- > octpc_nrm (4,16) == (5,4)
-octpc_nrm :: OctPC -> OctPC
+octpc_nrm :: Integral i => Octave_PitchClass i -> Octave_PitchClass i
 octpc_nrm (o,pc) =
     if pc > 11
     then octpc_nrm (o+1,pc-12)
@@ -219,26 +220,31 @@ octpc_nrm (o,pc) =
 -- | Transpose 'OctPC' value.
 --
 -- > octpc_trs 7 (4,9) == (5,4)
-octpc_trs :: Integer -> OctPC -> OctPC
-octpc_trs n (o,pc) = octpc_nrm (o,pc+n)
+-- > octpc_trs (-11) (4,9) == (3,10)
+octpc_trs :: Integral i => i -> Octave_PitchClass i -> Octave_PitchClass i
+octpc_trs n (o,pc) =
+    let pc' = fromIntegral pc
+        k = pc' + n
+        (i,j) = k `divMod` 12
+    in (fromIntegral o + fromIntegral i,fromIntegral j)
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
 -- > octpc_to_midi (4,9) == 69
-octpc_to_midi :: OctPC -> Integer
-octpc_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
+octpc_to_midi :: Integral i => Octave_PitchClass i -> i
+octpc_to_midi (o,pc) = 60 + ((fromIntegral o - 4) * 12) + pc
 
 -- | Inverse of 'octpc_to_midi'.
 --
 -- > midi_to_octpc 69 == (4,9)
-midi_to_octpc :: Integer -> OctPC
+midi_to_octpc :: Integral i => i -> Octave_PitchClass i
 midi_to_octpc n = (n - 12) `divMod` 12
 
 -- | Midi note number to 'Pitch'.
 --
 -- > let r = ["C4","E♭4","F♯4"]
 -- > in map (pitch_pp . midi_to_pitch pc_spell_ks) [60,63,66] == r
-midi_to_pitch :: Spelling -> Integer -> Pitch
+midi_to_pitch :: Integral i => Spelling i -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 
 -- | Fractional midi note number to 'Pitch'.
@@ -246,7 +252,7 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 65.5) == "F𝄲4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
-fmidi_to_pitch :: Spelling -> Double -> Pitch
+fmidi_to_pitch :: RealFrac n => Spelling Integer -> n -> Pitch
 fmidi_to_pitch sp m =
     let m' = round m
         (Pitch n a o) = midi_to_pitch sp m'
@@ -268,7 +274,7 @@ note_t_transpose x n =
         n' = fromEnum (maxBound::Note_T) + 1
     in toEnum ((x' + n) `mod` n')
 
--- * Frequency
+-- * Frequency (CPS)
 
 -- | /Midi/ note number to cycles per second.
 --
@@ -298,21 +304,5 @@ cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 -- | 'midi_to_cps' of 'octpc_to_midi'.
 --
 -- > octpc_to_cps (4,9) == 440
-octpc_to_cps :: Floating n => OctPC -> n
+octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
 octpc_to_cps = midi_to_cps . octpc_to_midi
-
--- | Frequency /n/ cents from /f/.
---
--- > map (cps_shift_cents 440) [-100,100] == map octpc_to_cps [(4,8),(4,10)]
-cps_shift_cents :: Floating a => a -> a -> a
-cps_shift_cents f = (* f) . cents_to_ratio
-
--- | Interval in /cents/ from /p/ to /q/, ie. 'ratio_to_cents' of /p/
--- '/' /q/.
---
--- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
---
--- > let abs_dif i j = abs (i - j)
--- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
-cps_difference_cents :: Floating a => a -> a -> a
-cps_difference_cents p q = ratio_to_cents (q / p)
