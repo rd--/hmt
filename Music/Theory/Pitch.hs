@@ -38,6 +38,7 @@ instance Ord Pitch where
 -- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
 --
 -- > pitch_pp (Pitch E Flat 4) == "E♭4"
+-- > pitch_pp (Pitch F QuarterToneSharp 3) == "F𝄲3"
 pitch_pp :: Pitch -> String
 pitch_pp (Pitch n a o) =
     let a' = if a == Natural then "" else [alteration_symbol a]
@@ -249,8 +250,10 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 
 -- | Fractional midi note number to 'Pitch'.
 --
+-- > import Music.Theory.Pitch.Spelling
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 65.5) == "F𝄲4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
+-- > pitch_pp (fmidi_to_pitch pc_spell_ks 67.5) == "A𝄭4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
 fmidi_to_pitch :: RealFrac n => Spelling Integer -> n -> Pitch
 fmidi_to_pitch sp m =
@@ -258,6 +261,37 @@ fmidi_to_pitch sp m =
         (Pitch n a o) = midi_to_pitch sp m'
         Just a' = alteration_edit_quarter_tone (m - fromIntegral m') a
     in Pitch n a' o
+
+-- | Raise 'Note_T' of 'Pitch', account for octave transposition.
+--
+-- > pitch_note_raise (Pitch B Natural 3) == Pitch C Natural 4
+pitch_note_raise :: Pitch -> Pitch
+pitch_note_raise (Pitch n a o) =
+    if n == maxBound
+    then Pitch minBound a (o + 1)
+    else Pitch (succ n) a o
+
+-- | Lower 'Note_T' of 'Pitch', account for octave transposition.
+--
+-- > pitch_note_lower (Pitch C Flat 4) == Pitch B Flat 3
+pitch_note_lower :: Pitch -> Pitch
+pitch_note_lower (Pitch n a o) =
+    if n == minBound
+    then Pitch maxBound a (o - 1)
+    else Pitch (pred n) a o
+
+-- | Rewrite 'Pitch' to not use @3/4@ tone alterations, ie. re-spell
+-- to @1/4@ alteration.
+--
+-- > let {p = Pitch A ThreeQuarterToneFlat 4
+-- >     ;q = Pitch G QuarterToneSharp 4}
+-- > in pitch_rewrite_threequarter_alteration p == q
+pitch_rewrite_threequarter_alteration :: Pitch -> Pitch
+pitch_rewrite_threequarter_alteration (Pitch n a o) =
+    case a of
+      ThreeQuarterToneFlat -> pitch_note_lower (Pitch n QuarterToneSharp o)
+      ThreeQuarterToneSharp -> pitch_note_raise (Pitch n QuarterToneFlat o)
+      _ -> Pitch n a o
 
 -- | Apply function to 'octave' of 'PitchClass'.
 --
