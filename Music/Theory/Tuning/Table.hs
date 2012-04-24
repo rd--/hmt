@@ -31,7 +31,9 @@ tbl_12et =
 -- > min_max (map (round . snd) tbl_24et) == (16,32535)
 tbl_24et :: [(Pitch, Double)]
 tbl_24et =
-    let f x = (fmidi_to_pitch pc_spell_ks x,fmidi_to_cps x)
+    let f x = let p = fmidi_to_pitch pc_spell_ks x
+                  p' = pitch_rewrite_threequarter_alteration p
+              in (p',fmidi_to_cps x)
     in map f [12,12.5 .. 143.5]
 
 -- | Given an @ET@ table (or like) find bounds of frequency.
