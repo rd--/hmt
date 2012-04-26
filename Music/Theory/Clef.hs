@@ -9,7 +9,8 @@ data Clef_T = Bass | Tenor | Alto | Treble | Percussion
               deriving (Eq,Ord,Show)
 
 -- | Clef with octave offset.
-data Integral i => Clef i = Clef Clef_T i
+data Integral i => Clef i = Clef {clef_t :: Clef_T
+                                 ,clef_octave :: i}
                             deriving (Eq,Ord,Show)
 
 -- | Give clef range as a 'Pitch' pair indicating the notes below and
@@ -28,7 +29,7 @@ clef_range c =
 
 -- | Suggest a 'Clef' given a 'Pitch'.
 --
--- > map clef_suggest [c3,c4] == [(Bass,0),(Treble,0)]
+-- > map clef_suggest [c2,c4] == [Clef Bass (-1),Clef Treble 0]
 clef_suggest :: Integral i => Pitch -> Clef i
 clef_suggest p | p < f1 = Clef Bass (-2)
                | p < f2 = Clef Bass (-1)
