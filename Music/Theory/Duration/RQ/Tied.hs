@@ -4,6 +4,7 @@ module Music.Theory.Duration.RQ.Tied where
 import Data.Maybe
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
+import Music.Theory.List
 
 -- | Boolean.
 type Tied_Right = Bool
@@ -37,16 +38,6 @@ rqt_un_tuplet i (d,t) = (rq_un_tuplet i d,t)
 -- > rq_rqt 3 == (3,F)
 rq_rqt :: RQ -> RQ_T
 rq_rqt n = (n,False)
-
--- | Apply /f/ at all but last element, and /g/ at last element.
---
--- > at_last (* 2) negate [1..4] == [2,4,6,-4]
-at_last :: (a -> b) -> (a -> b) -> [a] -> [b]
-at_last f g x =
-    case x of
-      [] -> []
-      [i] -> [g i]
-      i:x' -> f i : at_last f g x'
 
 -- | Tie last element only of list of 'RQ'.
 --

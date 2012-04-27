@@ -145,7 +145,7 @@ rq_derive_tuplet =
 
 -- | Remove tuplet multiplier from value, ie. to give notated
 -- duration.  This seems odd but is neccessary to avoid ambiguity.
--- Ie. is 1 a quarter note or a 3:2 tuplet dotted-quarter-note etc.
+-- Ie. is @1@ a quarter note or a @3:2@ tuplet dotted-quarter-note etc.
 --
 -- > map (rq_un_tuplet (3,2)) [1,2/3,1/2,1/3] == [3/2,1,3/4,1/2]
 rq_un_tuplet :: (Integer,Integer) -> RQ -> RQ

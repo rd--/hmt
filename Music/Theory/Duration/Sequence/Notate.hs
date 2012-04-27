@@ -175,9 +175,11 @@ _f = False
 
 -- | Variant of 'split_sum' that operates at 'RQ_T' sequences.
 --
--- > rqt_split_sum 5 [(3,_f),(2,_t),(1,_f)] == Just ([(3,_f),(2,_t)],[(1,_f)])
--- > rqt_split_sum 4 [(3,_f),(2,_t),(1,_f)] == Just ([(3,_f),(1,_t)]
--- >                                             ,[(1,_t),(1,_f)])
+-- > let r = Just ([(3,_f),(2,_t)],[(1,_f)])
+-- > in rqt_split_sum 5 [(3,_f),(2,_t),(1,_f)] == r
+--
+-- > let r = Just ([(3,_f),(1,_t)],[(1,_t),(1,_f)])
+-- > in rqt_split_sum 4 [(3,_f),(2,_t),(1,_f)] == r
 rqt_split_sum :: RQ -> [RQ_T] -> Maybe ([RQ_T],[RQ_T])
 rqt_split_sum d x =
     case split_sum d (map rqt_rq x) of
@@ -367,7 +369,8 @@ p_tuplet_rqt x =
     let f t = (t,map (rqt_un_tuplet t) x)
     in fmap f (rq_derive_tuplet (map rqt_rq x))
 
--- | Notate pulse, ie. derive tuplet if neccesary.
+-- | Notate pulse, ie. derive tuplet if neccesary. The flag indicates
+-- if the initial value is tied left.
 --
 -- > p_notate False [(2/3,_f),(1/3,_t)]
 -- > p_notate False [(2/5,_f),(1/10,_t)]

@@ -221,3 +221,13 @@ find_bounds f l x =
 -- > dropRight 1 [1..9] == [1..8]
 dropRight :: Int -> [a] -> [a]
 dropRight n = reverse . drop n . reverse
+
+-- | Apply /f/ at all but last element, and /g/ at last element.
+--
+-- > at_last (* 2) negate [1..4] == [2,4,6,-4]
+at_last :: (a -> b) -> (a -> b) -> [a] -> [b]
+at_last f g x =
+    case x of
+      [] -> []
+      [i] -> [g i]
+      i:x' -> f i : at_last f g x'
