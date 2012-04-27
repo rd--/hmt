@@ -2,6 +2,7 @@
 module Music.Theory.Z12.SRO where
 
 import Data.List
+import qualified Music.Theory.List as T
 import Music.Theory.Z12
 
 -- | Transpose /p/ by /n/.
@@ -64,6 +65,10 @@ tmi_related p = let q = ti_related p in nub (q ++ map m5 q)
 -- | R\/T\/M\/I-related sequences of /p/.
 rtmi_related :: [Z12] -> [[Z12]]
 rtmi_related p = let q = tmi_related p in nub (q ++ map reverse q)
+
+-- | r\/R\/T\/M\/I-related sequences of /p/.
+rrtmi_related :: [Z12] -> [[Z12]]
+rrtmi_related p = nub (concatMap rtmi_related (T.rotations p))
 
 -- * Sequence operations
 
