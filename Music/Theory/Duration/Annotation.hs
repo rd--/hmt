@@ -217,3 +217,11 @@ adopt_shape_m jn l =
                       Just k' -> (j,Just (jn k' i))
         f [] _ = error "adopt_shape_m: rhs ends"
     in snd . T.mapAccumL f l
+
+-- | Does /a/ have 'Tie_Left' and 'Tie_Right'?
+d_annotated_tied_lr :: [D_Annotation] -> (Bool,Bool)
+d_annotated_tied_lr a = (Tie_Left `elem` a,Tie_Right `elem` a)
+
+-- | Does /d/ have 'Tie_Left' and 'Tie_Right'?
+duration_a_tied_lr :: Duration_A -> (Bool,Bool)
+duration_a_tied_lr (_,a) = d_annotated_tied_lr a
