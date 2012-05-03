@@ -392,3 +392,6 @@ fis7 = Pitch F Sharp 7
 gis7 = Pitch G Sharp 7
 ais7 = Pitch A Sharp 7
 bis7 = Pitch B Sharp 7
+
+c8 :: Pitch
+c8 = Pitch C Natural 8
