@@ -6,6 +6,17 @@ module Music.Theory.Pitch.Name where
 
 import Music.Theory.Pitch
 
+a0,b0 :: Pitch
+a0 = Pitch A Natural 0
+b0 = Pitch B Natural 0
+
+bes0 :: Pitch
+bes0 = Pitch B Flat 0
+
+ais0,bis0 :: Pitch
+ais0 = Pitch A Sharp 0
+bis0 = Pitch B Sharp 0
+
 c1,d1,e1,f1,g1,a1,b1 :: Pitch
 c1 = Pitch C Natural 1
 d1 = Pitch D Natural 1
