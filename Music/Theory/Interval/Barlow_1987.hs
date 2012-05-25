@@ -127,12 +127,14 @@ to_rational = uncurry (%)
 from_rational :: Integral t => Ratio t -> (t, t)
 from_rational n = (numerator n,denominator n)
 
-type Table_2_Column = (Double,[Integer],Rational,Double)
+-- | Set of 1. interval size (cents), 2. intervals as product of
+-- powers of primes, 3. frequency ratio and 4. harmonicity value.
+type Table_2_Row = (Double,[Integer],Rational,Double)
 
 -- | Table 2 (p.45)
 --
 -- > length (table_2 0.06) == 24
-table_2 :: Double -> [Table_2_Column]
+table_2 :: Double -> [Table_2_Row]
 table_2 z =
     let g n = n <= 2 && n >= 1
         r = nub (sort (filter g [(p%q) | p <- [1..81],q <- [1..81]]))
@@ -141,7 +143,7 @@ table_2 z =
         k (i,j) = (cents i,rational_prime_factors_t 6 (from_rational i),i,j)
     in map k (filter f (zip r h))
 
--- | Pretty printer for 'Table_2_Column' values.
+-- | Pretty printer for 'Table_2_Row' values.
 --
 -- > mapM_ (putStrLn . table_2_pp) (table_2 0.06)
 --
@@ -169,7 +171,7 @@ table_2 z =
 -- > 1017.596 |  0  2 -1  0  0  0 |  5:9  | 0.085227
 -- > 1088.269 | -3  1  1  0  0  0 |  8:15 | 0.082873
 -- > 1200.000 |  1  0  0  0  0  0 |  1:2  | 1.000000
-table_2_pp :: Table_2_Column -> String
+table_2_pp :: Table_2_Row -> String
 table_2_pp (i,j,k,l) =
     let i' = printf "%8.3f" i
         j' = intercalate " " (map (printf "%2d") j)
