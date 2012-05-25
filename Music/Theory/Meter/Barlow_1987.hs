@@ -185,7 +185,8 @@ relative_indispensibilities = relative_to_length . indispensibilities
 
 -- | Align two meters (given as stratifications) to least common
 -- multiple of their degrees.  The 'indispensibilities' function is
--- given as an argument so that it may be relative if required.
+-- given as an argument so that it may be relative if required.  This
+-- generates Table 7 (p.58).
 --
 -- > let r = [(5,5),(0,0),(2,3),(4,1),(1,4),(3,2)]
 -- > in align_meters indispensibilities [2,3] [3,2] == r
@@ -224,7 +225,7 @@ whole_quot i j =
       _ -> error "whole_quot"
 
 -- | Rule to prolong stratification of two 'S_MM' values such that
--- pulse at the deeper level are aligned.
+-- pulse at the deeper level are aligned.  (Paragraph 2, p.58)
 --
 -- > let x = ([2,2,2],1)
 -- > in prolong_stratifications x x == (fst x,fst x)
@@ -335,7 +336,10 @@ metrical_affinity' :: Integral t => [t] -> t -> [t] -> t -> R
 metrical_affinity' s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
         ix :: (Integer -> x) -> Integer -> x
-        ix f i = if i == 1 then f 1 else if i == 2 then f 2 else undefined
+        ix f i = case i of
+                   1 -> f 1
+                   2 -> f 2
+                   _ -> error (show ("ix",i))
         s = ix (at [s1,s2])
         v = ix (at [v1,v2])
         u = ix (genericLength . s)
@@ -350,7 +354,7 @@ metrical_affinity' s1 v1 s2 v2 =
         x2 = sum (map x1 [1 .. omega_0])
         x3 = 18 * x2 - 2
         x4 i = square (omega_z i - 1)
-        x5 = product (map x4 [1::Int,2])
+        x5 = product (map x4 [1::Integer,2])
         x6 = 7 * omega_0 * x5
         x7 = to_r x3 / to_r x6
         x8 = 2 * log x7
