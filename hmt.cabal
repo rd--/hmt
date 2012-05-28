@@ -65,6 +65,7 @@ Library
                    Music.Theory.Pitch.Spelling
                    Music.Theory.Set
                    Music.Theory.Tempo_Marking
+                   Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
