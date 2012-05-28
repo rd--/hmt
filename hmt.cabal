@@ -25,6 +25,7 @@ Library
                    filepath,
                    hcg-minus==0.12.*,
                    html-minimalist==0.12.*,
+                   logict,
                    multiset-comb,
                    parsec,
                    permutation,
@@ -81,6 +82,7 @@ Library
                    Music.Theory.Z12.Forte_1973
                    Music.Theory.Z12.Lewin_1980
                    Music.Theory.Z12.Literature
+                   Music.Theory.Z12.Morris_1974
                    Music.Theory.Z12.Morris_1987
                    Music.Theory.Z12.Morris_1987.Parse
                    Music.Theory.Z12.Rahn_1980
