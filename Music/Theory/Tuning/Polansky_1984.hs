@@ -1,5 +1,5 @@
 -- | Larry Polansky. \"Tuning Systems in American Gamelan, Part I:
--- Interval Sizes in Javanese Slendro\". Balungan, 1(2):9-11, 1984
+-- Interval Sizes in Javanese Slendro\". /Balungan/, 1(2):9-11, 1984
 module Music.Theory.Tuning.Polansky_1984 where
 
 import Data.List

@@ -171,10 +171,23 @@ dir_subset ext dir = do
 -- > length db == 4115
 -- > length (filter ((== 0) . scale_degree) db) == 1
 -- > length (filter (== Just (Right 2)) (map scale_octave db)) == 3562
--- > nub (sort (map scale_degree db)) == [0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,74,75,77,78,79,80,81,84,87,88,90,91,92,95,96,99,100,101,105,110,112,117,118,130,140,171,180,271,311,342,366,441,612]
 --
--- > filter (isInfixOf "Xenakis") (map scale_description db)
--- > map scale_description (filter (not . perfect_octave) db)
+-- > let r = [0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
+-- >         ,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44
+-- >         ,45,46,47,48,49,50,51,53,54,55,56,57,58,59,60,61,62,63,64
+-- >         ,65,66,67,68,69,70,71,72,74,75,77,78,79,80,81,84,87,88
+-- >         ,90,91,92,95,96,99,100,101,105,110,112,117,118,130,140,171
+-- >         ,180,271,311,342,366,441,612]
+-- > in nub (sort (map scale_degree db)) == r
+--
+-- > let r = ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
+-- >         ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
+-- >         ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
+-- > in filter (isInfixOf "Xenakis") (map scale_description db) == r
+--
+-- > length (filter (not . perfect_octave) db) == 544
+--
+-- > mapM_ (putStrLn.scale_description) (filter (not . perfect_octave) db)
 load_dir :: (Read i, Integral i) => FilePath -> IO [Scale i]
 load_dir d = dir_subset [".scl"] d >>= mapM load
 

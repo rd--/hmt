@@ -19,6 +19,12 @@ psaltery = [1,2/1,3/1,4/1,5/1,6/1,7/1,8/1,9/1,10/1,11/1,12/1,13/1,14/1,15/1,16/1
 -- | 'T.fold_to_octave' of 'psaltery'.
 --
 -- > length psaltery == 51 && length psaltery_o == 21
--- > psaltery_o == [1,65/64,33/32,17/16,35/32,9/8,75/64,39/32,5/4,21/16,85/64,11/8,45/32,3/2,25/16,51/32,13/8,27/16,55/32,7/4,15/8]
+-- > psaltery_o == [1,65/64,33/32,17/16,35/32,9/8,75/64,39/32
+-- >               ,5/4,21/16,85/64,11/8,45/32
+-- >               ,3/2,25/16,51/32,13/8,27/16,55/32,7/4,15/8]
 psaltery_o :: [Rational]
 psaltery_o = nub (sort (map T.fold_to_octave psaltery))
+
+-- Local Variables:
+-- truncate-lines:t
+-- End:

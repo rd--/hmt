@@ -1,5 +1,5 @@
 -- | Larry Polansky. \"Notes on the Tunings of Three Central Javanese
--- Slendro/Pelog Pairs\". Experimental Musical Instruments,
+-- Slendro\/Pelog Pairs\". /Experimental Musical Instruments/,
 -- 6(2):12-13,16-17, 1990.
 module Music.Theory.Tuning.Polansky_1990 where
 
@@ -51,7 +51,7 @@ lipur_sih_p = [216,326,479,732,878,991,1170]
 idealized_et_s :: Num n => [n]
 idealized_et_s = [0,240,480,720,960,1200]
 
--- | Idealized ET Peleog, subset of 9-tone equal temperament (p.17)
+-- | Idealized ET Pelog, subset of 9-tone equal temperament (p.17)
 --
 -- > L.d_dx idealized_et_p == [400/3,800/3,400/3,400/3,400/3,400/3,800/3]
 idealized_et_p :: Integral n => [Ratio n]
