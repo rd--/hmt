@@ -1,14 +1,21 @@
 module Music.Theory.Tiling.Canon where
 
+import Control.Monad.Logic {- logict -}
 import Data.List
 import Data.List.Split {- split -}
 import Text.Printf
 
+-- | Sequence.
+type S = [Int]
+
 -- | Canon of /(period,sequence,multipliers,displacements)/.
-type R = (Int,[Int],[Int],[Int])
+type R = (Int,S,[Int],[Int])
 
 -- | Voice.
 type V = [Int]
+
+-- | Tiling (sequence)
+type T = [[Int]]
 
 -- | Cycle at /period/.
 --
@@ -16,15 +23,107 @@ type V = [Int]
 p_cycle :: Int -> [Int] -> [Int]
 p_cycle n s = s ++ p_cycle n (map (+ n) s)
 
+-- | Element of /(sequence,multiplier,displacement)/.
+type E = (S,Int,Int)
+
+-- | Resolve sequence from 'E'.
+--
+-- > e_to_seq ([0,2,5],2,1) == [1,5,11]
+-- > e_to_seq ([0,1],3,4) == [4,7]
+-- > e_to_seq ([0],1,2) == [2]
+e_to_seq :: E -> [Int]
+e_to_seq (s,m,o) = map ((+ o) . (* m)) s
+
+-- | Infer 'E' from sequence.
+--
+-- > e_from_seq [1,5,11] == ([0,2,5],2,1)
+-- > e_from_seq [4,7] == ([0,1],3,4)
+-- > e_from_seq [2] == ([0],1,2)
+e_from_seq :: [Int] -> E
+e_from_seq p =
+    let i:_ = p
+        q = map (+ (negate i)) p
+        _:r = q
+        n = if null r then 1 else foldl1 gcd r
+    in (map (`div` n) q,n,i)
+
 -- | Set of 'V' from 'R'.
 r_voices :: R -> [V]
 r_voices (p,s,m,o) =
-    let f (i,j) = p_cycle p (map ((+ j) . (* i)) s)
+    let f (i,j) = p_cycle p (e_to_seq (s,i,j))
     in map f (zip m o)
 
 -- | 'concatMap' of 'r_voices'.
 rr_voices :: [R] -> [V]
 rr_voices = concatMap r_voices
+
+-- | Retrograde of 'T', the result 'T' is sorted.
+--
+-- > let r = [[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]
+-- > in t_retrograde [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
+t_retrograde :: T -> T
+t_retrograde t =
+    let n = maximum (concat t)
+    in sort (map (reverse . map (n -)) t)
+
+-- | The normal form of 'T' is the 'min' of /t/ and it's 't_retrograde'.
+--
+-- > let r = [[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]
+-- > in t_normal [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
+t_normal :: T -> T
+t_normal t = min t (t_retrograde t)
+
+-- * Construction
+
+-- | 'msum' '.' 'map' 'return'.
+--
+-- > observeAll (fromList [1..7]) == [1..7]
+fromList :: MonadPlus m => [a] -> m a
+fromList = msum . map return
+
+-- | Search for /perfect/ tilings of the sequence 'S' using
+-- multipliers from /m/ to degree /n/ with /k/ parts.
+perfect_tilings_m :: MonadPlus m => [S] -> [Int] -> Int -> Int -> m T
+perfect_tilings_m s m n k =
+    let rec p q =
+            if length q == k
+            then return (sort q)
+            else do m' <- fromList m
+                    guard (m' `notElem` p)
+                    s' <- fromList s
+                    let i = n - (maximum s' * m') - 1
+                    o <- fromList [0..i]
+                    let s'' = e_to_seq (s',m',o)
+                        q' = concat q
+                    guard (all (`notElem` q') s'')
+                    rec (m':p) (s'':q)
+    in rec [] []
+
+-- | 't_normal' of 'observeAll' of 'perfect_tilings_m'.
+--
+-- > perfect_tilings [[0,1]] [1..3] 6 3 == []
+--
+-- > let r = [[[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]]
+-- > in perfect_tilings [[0,1,2]] [1,2,4,5,7] 15 5 == r
+--
+-- > length (perfect_tilings [[0,1,2]] [1..12] 15 5) == 1
+--
+-- > let r = [[[0,1],[2,5],[3,7],[4,6]]
+-- >         ,[[0,1],[2,6],[3,5],[4,7]]
+-- >         ,[[0,2],[1,4],[3,7],[5,6]]]
+-- > in perfect_tilings [[0,1]] [1..4] 8 4 == r
+--
+-- > let r = [[[0,1],[2,5],[3,7],[4,9],[6,8]]
+-- >         ,[[0,1],[2,7],[3,5],[4,8],[6,9]]
+-- >         ,[[0,2],[1,4],[3,8],[5,9],[6,7]]
+-- >         ,[[0,2],[1,5],[3,6],[4,9],[7,8]]
+-- >         ,[[0,3],[1,6],[2,4],[5,9],[7,8]]]
+-- > in perfect_tilings [[0,1]] [1..5] 10 5 == r
+perfect_tilings :: [S] -> [Int] -> Int -> Int -> [T]
+perfect_tilings s m n =
+    nub . sort . map t_normal . observeAll . perfect_tilings_m s m n
+
+-- * Display
 
 -- | Variant of 'elem' for ordered sequences, which can therefore
 -- return 'False' when searching infinite sequences.
