@@ -26,6 +26,15 @@ p_cycle n s = s ++ p_cycle n (map (+ n) s)
 --
 -- > let r = (36,[0,1,3],[1,2,3,4,5,6,7,8],[0,7,25,51,52,78,105,130])
 -- > in v_print_m_from 18 6 6 (r_voices r)
+--
+-- > let r = (18,[0,1,2],[2,4,4,4,4,2],[0,1,3,6,8,13])
+-- > in v_print 18 (r_voices r)
+--
+-- > let r = (18,[0,1,2],[2,5,2,2,4,1],[0,1,3,8,9,14])
+-- > in v_print 18 (r_voices r)
+--
+-- > let r = (30,[0,6,12,15,18,24,30,36,42,45,48,54],[1,1,1],[0,20,40])
+-- > in v_print_m 20 5 (r_voices r)
 r_voices :: R -> [V]
 r_voices (p,s,m,o) =
     let f (i,j) = p_cycle p (map ((+ j) . (* i)) s)
