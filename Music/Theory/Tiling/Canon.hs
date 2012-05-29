@@ -1,6 +1,7 @@
 module Music.Theory.Tiling.Canon where
 
 import Control.Monad.Logic {- logict -}
+import Data.Function
 import Data.List
 import Data.List.Split {- split -}
 import Text.Printf
@@ -73,6 +74,19 @@ t_retrograde t =
 t_normal :: T -> T
 t_normal t = min t (t_retrograde t)
 
+-- | Derive set of 'R' from 'T'.
+--
+-- > let {r = [(21,[0,1,2],[10,8,2,4,7,5,1],[0,1,2,3,5,8,14])]
+-- >     ;t = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]}
+-- > in r_from_t t == r
+r_from_t :: T -> [R]
+r_from_t t =
+    let e = map e_from_seq t
+        n = maximum (concat t) + 1
+        t3_1 (i,_,_) = i
+        f z = let (s:_,m,o) = unzip3 z in (n,s,m,o)
+    in map f (groupBy ((==) `on` t3_1) e)
+
 -- * Construction
 
 -- | 'msum' '.' 'map' 'return'.
@@ -119,6 +133,14 @@ perfect_tilings_m s m n k =
 -- >         ,[[0,2],[1,5],[3,6],[4,9],[7,8]]
 -- >         ,[[0,3],[1,6],[2,4],[5,9],[7,8]]]
 -- > in perfect_tilings [[0,1]] [1..5] 10 5 == r
+--
+-- Johnson 2004, p.2
+--
+-- > let r = [[0,6,12],[1,8,15],[2,11,20],[3,5,7],[4,9,14],[10,13,16],[17,18,19]]
+-- > in perfect_tilings [[0,1,2]] [1,2,3,5,6,7,9] 21 7 == [r]
+--
+-- > let r = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
+-- > in perfect_tilings [[0,1,2]] [1,2,4,5,7,8,10] 21 7 == [t_retrograde r]
 perfect_tilings :: [S] -> [Int] -> Int -> Int -> [T]
 perfect_tilings s m n =
     nub . sort . map t_normal . observeAll . perfect_tilings_m s m n
