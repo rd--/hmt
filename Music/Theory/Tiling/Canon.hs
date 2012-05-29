@@ -2,6 +2,7 @@ module Music.Theory.Tiling.Canon where
 
 import Data.List
 import Data.List.Split {- split -}
+import Text.Printf
 
 -- | Canon of /(period,sequence,multipliers,displacements)/.
 type R = (Int,[Int],[Int],[Int])
@@ -45,6 +46,19 @@ v_dot_star :: Int -> V -> String
 v_dot_star n v =
     let f p i = if i `elemOrd` p then '*' else '.'
     in map (f v) [0..n-1]
+
+-- | A white space and index diagram of /n/ places of 'V'.
+--
+-- >>> mapM_ (putStrLn . v_space_ix 9) [[0,2..],[1,3..]]
+-- >
+-- >  0   2   4   6   8
+-- >    1   3   5   7
+v_space_ix :: Int -> V -> String
+v_space_ix n v =
+    let w = length (show n)
+        nil = replicate w ' '
+        f p i = if i `elemOrd` p then printf "%*d" w i else nil
+    in concat (intersperse " " (map (f v) [0..n-1]))
 
 -- | Insert @|@ every /n/ places.
 --
