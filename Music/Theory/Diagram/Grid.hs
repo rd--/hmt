@@ -79,12 +79,21 @@ simple_table c z = (c,map (map (\x -> ([],[x]))) z)
 simple_table_class :: Caption -> [[(String,X.Content)]] -> Table
 simple_table_class c z = (c,map (map (\(nm,x) -> ([H.class' nm],[x]))) z)
 
+type Build_F = ((Int,Int) -> Maybe Table_Cell)
+
+-- | Build a table of @(rows,columns)@ dimensions given a function
+-- from @(row,column)@ to 'Maybe' 'Table_Cell'.  If the function is
+-- 'Nothing' the cell is skipped, becase another cell has claimed it's
+-- locations with 'H.colspan' or 'H.rowspan'.
+build_table_m :: Caption -> (Int,Int) -> Build_F -> Table
+build_table_m c (m,n) f =
+    let mk_row i = mapMaybe (\j -> f (i,j)) [0 .. n - 1]
+    in (c,map mk_row [0 .. m - 1])
+
 -- | Build a table of @(rows,columns)@ dimensions given a function
 -- from @(row,column)@ to 'Table_Cell'.
 build_table :: Caption -> (Int,Int) -> ((Int,Int) -> Table_Cell) -> Table
-build_table c (m,n) f =
-    let mk_row i = map (\j -> f (i,j)) [0 .. n - 1]
-    in (c,map mk_row [0 .. m - 1])
+build_table c (m,n) f = build_table_m c (m,n) (Just . f)
 
 -- | Render 'Table' as @HTML@ table.
 table :: Table -> X.Content
