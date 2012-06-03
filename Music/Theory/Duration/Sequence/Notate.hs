@@ -446,14 +446,14 @@ default_table x =
 
 -- | The default eighth-note pulse simplifier rule.
 --
--- > default_e_rule ((3,8),0,(1/2,1/2)) == True
--- > default_e_rule ((3,8),1/2,(1/2,1/2)) == True
--- > default_e_rule ((3,8),1,(1/2,1/2)) == True
--- > default_e_rule ((2,8),0,(1/2,1/2)) == True
--- > default_e_rule ((5,8),0,(1,1/2)) == True
--- > default_e_rule ((5,8),0,(2,1/2)) == True
-default_e_rule :: Simplify_P
-default_e_rule ((i,j),t,(p,q)) =
+-- > default_8_rule ((3,8),0,(1/2,1/2)) == True
+-- > default_8_rule ((3,8),1/2,(1/2,1/2)) == True
+-- > default_8_rule ((3,8),1,(1/2,1/2)) == True
+-- > default_8_rule ((2,8),0,(1/2,1/2)) == True
+-- > default_8_rule ((5,8),0,(1,1/2)) == True
+-- > default_8_rule ((5,8),0,(2,1/2)) == True
+default_8_rule :: Simplify_P
+default_8_rule ((i,j),t,(p,q)) =
     let r = p + q
     in j == 8 &&
        denominator t `elem` [1,2] &&
@@ -461,15 +461,15 @@ default_e_rule ((i,j),t,(p,q)) =
 
 -- | The default quarter note pulse simplifier rule.
 --
--- > default_q_rule ((3,4),0,(1,1/2)) == True
--- > default_q_rule ((3,4),0,(1,3/4)) == True
--- > default_q_rule ((4,4),1,(1,1)) == False
--- > default_q_rule ((4,4),2,(1,1)) == True
--- > default_q_rule ((4,4),2,(1,2)) == True
--- > default_q_rule ((4,4),0,(2,1)) == True
--- > default_q_rule ((3,4),1,(1,1)) == False
-default_q_rule :: Simplify_P
-default_q_rule ((_,j),t,(p,q)) =
+-- > default_4_rule ((3,4),0,(1,1/2)) == True
+-- > default_4_rule ((3,4),0,(1,3/4)) == True
+-- > default_4_rule ((4,4),1,(1,1)) == False
+-- > default_4_rule ((4,4),2,(1,1)) == True
+-- > default_4_rule ((4,4),2,(1,2)) == True
+-- > default_4_rule ((4,4),0,(2,1)) == True
+-- > default_4_rule ((3,4),1,(1,1)) == False
+default_4_rule :: Simplify_P
+default_4_rule ((_,j),t,(p,q)) =
     let r = p + q
     in j == 4 &&
        denominator t == 1 &&
@@ -480,8 +480,8 @@ default_q_rule ((_,j),t,(p,q)) =
 -- 'Simplify_T'.
 default_rule :: [Simplify_T] -> Simplify_P
 default_rule x r = r `elem` x ||
-                   default_q_rule r ||
-                   default_e_rule r ||
+                   default_4_rule r ||
+                   default_8_rule r ||
                    default_table r
 
 -- | Measure simplifier.  Apply given 'Simplify_P'.

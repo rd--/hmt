@@ -404,5 +404,7 @@ gis7 = Pitch G Sharp 7
 ais7 = Pitch A Sharp 7
 bis7 = Pitch B Sharp 7
 
-c8 :: Pitch
+c8,cis8,d8 :: Pitch
 c8 = Pitch C Natural 8
+cis8 = Pitch C Sharp 8
+d8 = Pitch D Natural 8
