@@ -37,3 +37,8 @@ clef_suggest p | p < f1 = Clef Bass (-2)
                | p < g5 = Clef Treble 0
                | p < g6 = Clef Treble 1
                | otherwise = Clef Treble 2
+
+-- | Set 'clef_octave' to @0@.
+clef_zero :: Integral i => Clef i -> Clef i
+clef_zero (Clef c_t _) = Clef c_t 0
+
