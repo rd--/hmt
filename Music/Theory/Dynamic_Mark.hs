@@ -49,3 +49,15 @@ dynamic_sequence d =
                             Just _ -> (j,k) : rec True p'
     in rec False (zip (indicate_repetitions d) h)
 
+-- | Apply 'Hairpin_T' and 'Dynamic_Mark_T' functions in that order as
+-- required by 'Dynamic_Node'.
+--
+-- > let f _ x = show x
+-- > in apply_dynamic_node f f (Nothing,Just Crescendo) undefined
+apply_dynamic_node :: (a -> Dynamic_Mark_T -> a) -> (a -> Hairpin_T -> a)
+                   -> Dynamic_Node -> a -> a
+apply_dynamic_node f g (i,j) m =
+    let n = maybe m (g m) j
+    in maybe n (f n) i
+
+
