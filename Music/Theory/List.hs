@@ -248,3 +248,18 @@ separate_last :: [a] -> ([a],a)
 separate_last x =
     let e:x' = reverse x
     in (reverse x',e)
+
+-- | Replace directly repeated elements with 'Nothing'.
+--
+-- > indicate_repetitions "abba" == [Just 'a',Just 'b',Nothing,Just 'a']
+indicate_repetitions :: Eq a => [a] -> [Maybe a]
+indicate_repetitions q =
+    let rec i p =
+            case p of
+              [] -> []
+              j:p' -> if i == j
+                      then Nothing : rec j p'
+                      else Just j : rec j p'
+    in case q of
+         [] -> []
+         i:q' -> Just i : rec i q'
