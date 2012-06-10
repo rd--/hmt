@@ -7,9 +7,10 @@ import Data.Ratio
 import Music.Theory.Duration.RQ
 import Music.Theory.Duration.RQ.Tied
 import Music.Theory.List
+import Music.Theory.Permutations
 
 -- | Divisions of /n/ 'RQ' into /i/ equal parts grouped as /j/.
--- A quarter note and eighth note triplet is written @(1,1,[2,1],False)@.
+-- A quarter and eighth note triplet is written @(1,1,[2,1],False)@.
 type RQ_Div = (Rational,Integer,[Integer],Tied_Right)
 
 -- | Variant of 'RQ_Div' where /n/ is @1@.
@@ -43,33 +44,48 @@ rq_div_to_rq_set_t (n,k,d,t) =
 rq_set_t_to_rqt :: ([RQ],Tied_Right) -> [RQ_T]
 rq_set_t_to_rqt (x,t) = at_last (\i -> (i,False)) (\i -> (i,t)) x
 
--- > at_head negate [1..5] == [-1,2,3,4,5]
-at_head :: (a -> a) -> [a] -> [a]
-at_head f x =
-    case x of
-      e:x' -> f e : x'
-      _ -> x
-
--- > sep_last [1..5] == ([1..4],5)
-sep_last :: [a] -> ([a],a)
-sep_last x =
-    let e:x' = reverse x
-    in (reverse x',e)
-
--- | Transform sequence of 'RQ_Div' into sequence of 'RQ'.
+-- | Transform sequence of 'RQ_Div' into sequence of 'RQ', discarding
+-- any final tie.
 --
--- > let q = [(1,5,[1,3,1],True),(1/2,6,[3,1,2],False)]
+-- > let q = [(1,5,[1,3,1],True),(1/2,6,[3,1,2],True)]
 -- > in rq_div_seq_rq q == [1/5,3/5,9/20,1/12,1/6]
 rq_div_seq_rq :: [RQ_Div] -> [RQ]
 rq_div_seq_rq =
     let f i qq = case qq of
+                  [] -> maybe [] return i
                   q:qq' -> let (r,t) = rq_div_to_rq_set_t q
-                               r' = case i of
-                                      Just j -> at_head (+ j) r
-                                      Nothing -> r
+                               r' = maybe r (\j -> at_head (+ j) id r) i
                            in if t
-                              then let (r'',i') = sep_last r'
+                              then let (r'',i') = separate_last r'
                                    in r'' ++ f (Just i') qq'
                               else r' ++ f Nothing qq'
-                  _ -> []
     in f Nothing
+
+-- | Partitions of an 'Integral' that sum to /n/.  This includes the
+-- two 'trivial paritions, into a set /n/ @1@, and a set of @1@ /n/.
+--
+-- > partitions_sum 4 == [[1,1,1,1],[2,1,1],[2,2],[3,1],[4]]
+--
+-- > map (length . partitions_sum) [9..15] == [30,42,56,77,101,135,176]
+partitions_sum :: Integral i => i -> [[i]]
+partitions_sum n =
+    let f p = if null p then 0 else head p
+    in case n of
+         0 -> [[]]
+         _ -> [x:y | x <- [1..n], y <- partitions_sum (n - x), x >= f y]
+
+-- | The 'multiset_permutations' of 'partitions_sum'.
+--
+-- > map (length . partitions_sum_p) [9..12] == [256,512,1024,2048]
+partitions_sum_p :: Integral i => i -> [[i]]
+partitions_sum_p = concatMap multiset_permutations . partitions_sum
+
+-- | The set of all 'RQ1_Div' that sum to /n/, a variant on
+-- 'partitions_sum_p'.
+--
+-- > map (length . rq1_div_univ) [3..5] == [8,16,32]
+-- > map (length . rq1_div_univ) [9..12] == [512,1024,2048,4096]
+rq1_div_univ :: Integer -> [RQ1_Div]
+rq1_div_univ n =
+    let f l = [(n,l,k) | k <- [False,True]]
+    in concatMap f (partitions_sum_p n)

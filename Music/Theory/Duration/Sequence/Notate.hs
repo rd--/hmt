@@ -201,7 +201,8 @@ rqt_split_sum d x =
 -- >                                 ,[(1,_f),(2,_f)]]
 --
 -- > let d = [(5/8,_f),(1,_f),(3/8,_f)]
--- > in rqt_separate [1,1] d == Just [[(5/8,_f),(3/8,_t)],[(5/8,_f),(3/8,_f)]]
+-- > in rqt_separate [1,1] d == Just [[(5/8,_f),(3/8,_t)]
+-- >                                 ,[(5/8,_f),(3/8,_f)]]
 rqt_separate :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
 rqt_separate m x =
     case (m,x) of
@@ -222,6 +223,9 @@ rqt_separate m x =
 -- > let d = map rq_rqt [1/3,1/6,2/5,1/10]
 -- > in rqt_separate_tuplet (1/8) d == Just [[(1/3,_f),(1/6,_f)]
 -- >                                        ,[(2/5,_f),(1/10,_f)]]
+--
+-- > let d = [(1/5,True),(1/20,False),(1/2,False),(1/4,True)]
+-- > in rqt_separate_tuplet (1/16) d
 rqt_separate_tuplet :: RQ -> [RQ_T] -> Maybe [[RQ_T]]
 rqt_separate_tuplet i x =
     if rqt_can_notate x
@@ -242,6 +246,9 @@ rqt_tuplet_subdivide i x =
       Just r -> concatMap (rqt_tuplet_subdivide i) r
 
 -- | Sequence variant of 'rqt_tuplet_subdivide'.
+--
+-- > let d = [(1/5,True),(1/20,False),(1/2,False),(1/4,True)]
+-- > in rqt_tuplet_subdivide_seq (1/2) [d]
 rqt_tuplet_subdivide_seq :: RQ -> [[RQ_T]] -> [[RQ_T]]
 rqt_tuplet_subdivide_seq i = concatMap (rqt_tuplet_subdivide i)
 
@@ -290,6 +297,9 @@ to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 -- must be of correct length and contain only /cmn/ durations.  Pulses
 -- are further subdivided if required to notate tuplets correctly, see
 -- 'rqt_tuplet_subdivide_seq'.
+--
+-- > let d = [(1/4,_f),(1/4,_f),(2/3,_t),(1/6,_f),(16/15,_f),(1/5,_f),(1/5,_f),(2/5,_t),(1/20,_f),(1/2,_f),(1/4,_t)]
+-- > in m_divisions_rq [1,1,1,1] d
 m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
 m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq (1/16)) . rqt_separate z
 

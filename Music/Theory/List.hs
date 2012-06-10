@@ -222,6 +222,15 @@ find_bounds f l x =
 dropRight :: Int -> [a] -> [a]
 dropRight n = reverse . drop n . reverse
 
+-- | Apply /f/ at first element, and /g/ at all other elements.
+--
+-- > at_head negate id [1..5] == [-1,2,3,4,5]
+at_head :: (a -> b) -> (a -> b) -> [a] -> [b]
+at_head f g x =
+    case x of
+      [] -> []
+      e:x' -> f e : map g x'
+
 -- | Apply /f/ at all but last element, and /g/ at last element.
 --
 -- > at_last (* 2) negate [1..4] == [2,4,6,-4]
@@ -231,3 +240,11 @@ at_last f g x =
       [] -> []
       [i] -> [g i]
       i:x' -> f i : at_last f g x'
+
+-- | Separate list into an initial list and a last element tuple.
+--
+-- > separate_last [1..5] == ([1..4],5)
+separate_last :: [a] -> ([a],a)
+separate_last x =
+    let e:x' = reverse x
+    in (reverse x',e)

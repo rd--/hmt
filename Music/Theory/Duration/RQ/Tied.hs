@@ -12,6 +12,10 @@ type Tied_Right = Bool
 -- | 'RQ' with /tie right/.
 type RQ_T = (RQ,Tied_Right)
 
+-- | Construct 'RQ_T'.
+rqt :: Tied_Right -> RQ -> RQ_T
+rqt t d = (d,t)
+
 -- | 'RQ' field of 'RQ_T'.
 rqt_rq :: RQ_T -> RQ
 rqt_rq = fst
@@ -81,5 +85,7 @@ rqt_to_cmn_l x = maybe [x] (\(i,j) -> [i,j]) (rqt_to_cmn x)
 -- | 'concatMap' 'rqt_to_cmn_l'.
 --
 -- > rqt_set_to_cmn [(1,T),(5/4,F)] == [(1,T),(1,T),(1/4,F)]
+--
+-- > rqt_set_to_cmn [(1/5,True),(1/20,False),(1/2,False),(1/4,True)]
 rqt_set_to_cmn :: [RQ_T] -> [RQ_T]
 rqt_set_to_cmn = concatMap rqt_to_cmn_l

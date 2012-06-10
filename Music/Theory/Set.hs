@@ -58,3 +58,10 @@ se n xs =
 -- >                       ,["c","ab"],["c","b","a"]]
 partitions_l :: Eq a => [a] -> [[[a]]]
 partitions_l = map (map M.toList . M.toList) . M.partitions . M.fromListEq
+
+-- | Cartesian product of two sets.
+--
+-- > let r = [('a',1),('a',2),('b',1),('b',2),('c',1),('c',2)]
+-- > in cartesian_product "abc" [1,2] == r
+cartesian_product :: [a] -> [b] -> [(a,b)]
+cartesian_product p q = [(i,j) | i <- p, j <- q]
