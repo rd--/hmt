@@ -26,6 +26,7 @@ import Music.Theory.Duration
 import Music.Theory.Duration.Annotation
 import Music.Theory.Duration.RQ
 import Music.Theory.Duration.RQ.Tied
+import Music.Theory.List
 import Music.Theory.Time_Signature
 
 -- * Lists
@@ -226,6 +227,12 @@ rqt_separate m x =
 --
 -- > let d = [(1/5,True),(1/20,False),(1/2,False),(1/4,True)]
 -- > in rqt_separate_tuplet (1/16) d
+--
+-- > let d = [(2/5,_f),(1/5,_f),(1/5,_f),(1/5,_t),(1/2,_f),(1/2,_f)]
+-- > in rqt_separate_tuplet (1/2) d
+--
+-- > let d = [(4/10,True),(1/10,False),(1/2,True)]
+-- > in rqt_separate_tuplet (1/2) d
 rqt_separate_tuplet :: RQ -> [RQ_T] -> Maybe [[RQ_T]]
 rqt_separate_tuplet i x =
     if rqt_can_notate x
@@ -251,6 +258,22 @@ rqt_tuplet_subdivide i x =
 -- > in rqt_tuplet_subdivide_seq (1/2) [d]
 rqt_tuplet_subdivide_seq :: RQ -> [[RQ_T]] -> [[RQ_T]]
 rqt_tuplet_subdivide_seq i = concatMap (rqt_tuplet_subdivide i)
+
+-- | If a tuplet is all tied, it ought to be a plain value?!
+--
+-- > rqt_tuplet_sanity_ [(4/10,_t),(1/10,_f)] == [(1/2,_f)]
+rqt_tuplet_sanity_ :: [RQ_T] -> [RQ_T]
+rqt_tuplet_sanity_ t =
+    let last_tied = rqt_tied (last t)
+        all_tied = all rqt_tied (dropRight 1 t)
+    in if all_tied
+       then [(sum (map rqt_rq t),last_tied)]
+       else t
+
+rqt_tuplet_subdivide_seq_sanity_ :: RQ -> [[RQ_T]] -> [[RQ_T]]
+rqt_tuplet_subdivide_seq_sanity_ i =
+    map rqt_tuplet_sanity_ .
+    rqt_tuplet_subdivide_seq i
 
 -- * Divisions
 
@@ -301,7 +324,7 @@ to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 -- > let d = [(1/4,_f),(1/4,_f),(2/3,_t),(1/6,_f),(16/15,_f),(1/5,_f),(1/5,_f),(2/5,_t),(1/20,_f),(1/2,_f),(1/4,_t)]
 -- > in m_divisions_rq [1,1,1,1] d
 m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
-m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq (1/16)) . rqt_separate z
+m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) . rqt_separate z
 
 -- | Variant of 'm_divisions_rq' that determines pulse divisions from
 -- 'Time_Signature'.
@@ -486,10 +509,28 @@ default_4_rule ((_,j),t,(p,q)) =
        even (numerator t) &&
        (r <= 2 || rq_is_integral r)
 
+{-
+-- | Any pulse-division aligned pair that sums to a division of the
+-- pulse and does not cross a pulse boundary can be simplified.
+--
+-- > default_aligned_pulse_rule ((4,2),0,(2,1)) == True
+-- > default_aligned_pulse_rule ((4,2),1,(1,1)) == False
+-- > default_aligned_pulse_rule ((4,2),7,(4/10,1/10)) == True
+default_aligned_pulse_rule :: Simplify_P
+default_aligned_pulse_rule ((_,j),t,(p,q)) =
+    let r = p + q
+        w = whole_note_division_to_rq j
+        tw = t `rq_mod` w
+    in w `rq_mod` r == 0 &&
+       t `rq_mod` (w `min` 1) == 0 &&
+       (tw == 0 || tw + r <= w)
+-}
+
 -- | The default simplifier rule.  To extend provide a list of
 -- 'Simplify_T'.
 default_rule :: [Simplify_T] -> Simplify_P
 default_rule x r = r `elem` x ||
+                   {-default_aligned_pulse_rule r ||-}
                    default_4_rule r ||
                    default_8_rule r ||
                    default_table r
