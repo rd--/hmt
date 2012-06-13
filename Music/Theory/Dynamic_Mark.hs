@@ -1,6 +1,7 @@
 -- | Common music notation dynamic marks.
 module Music.Theory.Dynamic_Mark where
 
+import Data.Maybe
 import Music.Theory.List
 
 -- | Enumeration of dynamic mark symbols.
@@ -27,6 +28,10 @@ implied_hairpin p q =
 -- | A node in a dynamic sequence.
 type Dynamic_Node = (Maybe Dynamic_Mark_T,Maybe Hairpin_T)
 
+-- | The empty 'Dynamic_Node'.
+empty_dynamic_node :: Dynamic_Node
+empty_dynamic_node = (Nothing,Nothing)
+
 -- | Calculate a 'Dynamic_Node' sequence from a sequence of
 -- 'Dynamic_Mark_T's.
 --
@@ -48,6 +53,19 @@ dynamic_sequence d =
                                        else (j,k) : rec False p'
                             Just _ -> (j,k) : rec True p'
     in rec False (zip (indicate_repetitions d) h)
+
+-- | Variant of 'dynamic_sequence' for sequences of 'Dynamic_Mark_T'
+-- with holes (ie. rests).
+--
+-- > let r = [Just (Just P,Just Crescendo),Just (Just F,Just End_Hairpin)
+-- >         ,Nothing,Just (Just P,Nothing)]
+-- > in dynamic_sequence_sets [Just P,Just F,Nothing,Just P] == r
+dynamic_sequence_sets :: [Maybe Dynamic_Mark_T] -> [Maybe Dynamic_Node]
+dynamic_sequence_sets =
+    let f l = case l of
+                Nothing:_ -> map (const Nothing) l
+                _ -> map Just (dynamic_sequence (catMaybes l))
+    in concatMap f . group_just
 
 -- | Apply 'Hairpin_T' and 'Dynamic_Mark_T' functions in that order as
 -- required by 'Dynamic_Node'.

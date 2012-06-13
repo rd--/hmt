@@ -4,6 +4,7 @@ module Music.Theory.List where
 import Data.Function
 import Data.List
 import Data.List.Split {- split -}
+import Data.Maybe
 
 -- | Bracket sequence with left and right values.
 --
@@ -263,3 +264,19 @@ indicate_repetitions q =
     in case q of
          [] -> []
          i:q' -> Just i : rec i q'
+
+-- > adjacent_groupBy (<) [1,2,3,2,4,1,5,9] == [[1,2,3],[2,4],[1,5,9]]
+adjacent_groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
+adjacent_groupBy f p =
+    case p of
+      [] -> []
+      [x] -> [[x]]
+      x:y:p' -> let r = adjacent_groupBy f (y:p')
+                    r0:r' = r
+                in if f x y
+                   then (x:r0) : r'
+                   else [x] : r
+
+-- > group_just [Just 1,Nothing,Nothing,Just 4,Just 5]
+group_just :: [Maybe a] -> [[Maybe a]]
+group_just = groupBy ((==) `on` isJust)
