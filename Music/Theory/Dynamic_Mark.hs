@@ -1,6 +1,7 @@
 -- | Common music notation dynamic marks.
 module Music.Theory.Dynamic_Mark where
 
+import Data.List
 import Data.Maybe
 import Music.Theory.List
 
@@ -54,18 +55,33 @@ dynamic_sequence d =
                             Just _ -> (j,k) : rec True p'
     in rec False (zip (indicate_repetitions d) h)
 
+-- | Delete redundant (unaltered) dynamic marks.
+--
+-- > let s = [Just P,Nothing,Just P,Just P,Just F]
+-- > in delete_redundant_marks s == [Just P,Nothing,Nothing,Nothing,Just F]
+delete_redundant_marks :: [Maybe Dynamic_Mark_T] -> [Maybe Dynamic_Mark_T]
+delete_redundant_marks =
+    let f i j = case (i,j) of
+                  (Just a,Just b) -> if a == b then (j,Nothing) else (j,j)
+                  (Just _,Nothing) -> (i,Nothing)
+                  (Nothing,_) -> (j,j)
+    in snd . mapAccumL f Nothing
+
 -- | Variant of 'dynamic_sequence' for sequences of 'Dynamic_Mark_T'
--- with holes (ie. rests).
+-- with holes (ie. rests).  Runs 'delete_redundant_marks'.
 --
 -- > let r = [Just (Just P,Just Crescendo),Just (Just F,Just End_Hairpin)
 -- >         ,Nothing,Just (Just P,Nothing)]
 -- > in dynamic_sequence_sets [Just P,Just F,Nothing,Just P] == r
+--
+-- > let s = [Just P,Nothing,Just P]
+-- > in dynamic_sequence_sets s = [Just (Just P,Nothing),Nothing,Nothing]
 dynamic_sequence_sets :: [Maybe Dynamic_Mark_T] -> [Maybe Dynamic_Node]
 dynamic_sequence_sets =
     let f l = case l of
                 Nothing:_ -> map (const Nothing) l
                 _ -> map Just (dynamic_sequence (catMaybes l))
-    in concatMap f . group_just
+    in concatMap f . group_just . delete_redundant_marks
 
 -- | Apply 'Hairpin_T' and 'Dynamic_Mark_T' functions in that order as
 -- required by 'Dynamic_Node'.
