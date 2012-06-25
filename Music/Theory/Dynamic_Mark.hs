@@ -12,6 +12,19 @@ data Dynamic_Mark_T = Niente
                     | FP | SF | SFP | SFPP | SFZ | SFFZ
                       deriving (Eq,Ord,Enum,Bounded,Show)
 
+-- | Translate /fixed/ 'Dynamic_Mark_T's to /db/ amplitude over given
+-- /range/.
+--
+-- > mapMaybe (dynamic_mark_db 120) [Niente,P,F,FFFFF] == [-120,-70,-40,0]
+-- > mapMaybe (dynamic_mark_db 60) [Niente,P,F,FFFFF] == [-60,-35,-20,0]
+dynamic_mark_db :: Fractional n => n -> Dynamic_Mark_T -> Maybe n
+dynamic_mark_db r m =
+    let u = [Niente .. FFFFF]
+        n = length u - 1
+        k = r / fromIntegral n
+        f i = negate r + (fromIntegral i * k)
+    in fmap f (findIndex (== m) u)
+
 -- | Enumeration of hairpin indicators.
 data Hairpin_T = Crescendo | Diminuendo | End_Hairpin
                  deriving (Eq,Ord,Enum,Bounded,Show)
