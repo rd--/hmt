@@ -158,6 +158,27 @@ alteration_edit_quarter_tone n a =
       0.5 -> alteration_raise_quarter_tone a
       _ -> Nothing
 
+-- | Simplify 'Alteration_T' to standard 12ET by deleting quarter tones.
+--
+-- > Data.List.nub (map alteration_clear_quarter_tone [minBound..maxBound])
+alteration_clear_quarter_tone :: Alteration_T -> Alteration_T
+alteration_clear_quarter_tone x =
+    case x of
+      ThreeQuarterToneFlat -> Flat
+      QuarterToneFlat -> Flat
+      QuarterToneSharp -> Sharp
+      ThreeQuarterToneSharp -> Sharp
+      _ -> x
+
+-- | Simplify 'Pitch' to standard 12ET by deleting quarter tones.
+--
+-- > let p = Pitch A QuarterToneSharp 4
+-- > in alteration (pitch_clear_quarter_tone p) == Sharp
+pitch_clear_quarter_tone :: Pitch -> Pitch
+pitch_clear_quarter_tone p =
+    let Pitch n a o = p
+    in Pitch n (alteration_clear_quarter_tone a) o
+
 -- | 'Pitch' to 'Octave' and 'PitchClass' notation.
 --
 -- > pitch_to_octpc (Pitch F Sharp 4) == (4,6)
