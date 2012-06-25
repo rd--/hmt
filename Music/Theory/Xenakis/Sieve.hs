@@ -3,7 +3,8 @@
 -- Vol. 28, No. 1 (Winter, 1990), pp. 58-78
 module Music.Theory.Xenakis.Sieve where
 
-import qualified Data.List as L
+import Data.List
+import Music.Theory.List
 
 -- | Synonym for 'Integer'
 type I = Integer
@@ -74,18 +75,6 @@ element s n =
       Union s0 s1 -> element s0 n || element s1 n
       Intersection s0 s1 -> element s0 n && element s1 n
 
--- | Given a comparison function, merge two ascending lists.
---
--- > merge compare [1,3,5] [2,4] == [1..5]
-merge :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
-merge f p q =
-    case (p,q) of
-      ([],q') -> q'
-      (p',[]) -> p'
-      (i:p',j:q') -> case i `f` j of
-                       GT -> j : merge f (i:p') q'
-                       _ -> i : merge f p' (j:q')
-
 -- | Construct the sequence defined by a 'Sieve'.  Note that building
 -- a sieve that contains an intersection clause that has no elements
 -- gives @_|_@.
@@ -94,15 +83,15 @@ merge f p q =
 -- > in take 7 (build (union (map (l 12) d))) == d
 build :: Sieve -> [I]
 build s =
-    let u_f = map head . L.group
+    let u_f = map head . group
         i_f = let g [x,_] = [x]
                   g _ = []
-              in concatMap g . L.group
+              in concatMap g . group
     in case s of
          Empty -> []
          L (m,i) -> [i, i+m ..]
-         Union s0 s1 -> u_f (merge compare (build s0) (build s1))
-         Intersection s0 s1 -> i_f (merge compare (build s0) (build s1))
+         Union s0 s1 -> u_f (merge (build s0) (build s1))
+         Intersection s0 s1 -> i_f (merge (build s0) (build s1))
 
 -- | Variant of 'build' that gives the first /n/ places of the
 -- 'reduce' of 'Sieve'.

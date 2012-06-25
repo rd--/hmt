@@ -280,3 +280,29 @@ adjacent_groupBy f p =
 -- > group_just [Just 1,Nothing,Nothing,Just 4,Just 5]
 group_just :: [Maybe a] -> [[Maybe a]]
 group_just = groupBy ((==) `on` isJust)
+
+-- | Given a comparison function, merge two ascending lists.
+--
+-- > mergeBy compare [1,3,5] [2,4] == [1..5]
+mergeBy :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
+mergeBy f p q =
+    case (p,q) of
+      ([],_) -> q
+      (_,[]) -> p
+      (i:p',j:q') -> case f i j of
+                       GT -> j : mergeBy f p q'
+                       _ -> i : mergeBy f p' q
+
+-- | 'mergeBy' 'compare'.
+merge :: Ord a => [a] -> [a] -> [a]
+merge = mergeBy compare
+
+-- | 'merge' a set of ordered sequences.
+--
+-- > merge_set [[1,3..9],[2,4..8],[10]] == [1..10]
+merge_set :: Ord a => [[a]] -> [a]
+merge_set p =
+    case p of
+      [] -> []
+      [i] -> i
+      i:p' -> merge i (merge_set p')
