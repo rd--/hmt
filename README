@@ -6,6 +6,6 @@ theory' and 'common music notation'.
 
 © [rohan drape][rd], 2006-2012, [gpl][gpl].
 
-[gpl]: http://gnu.org/copyleft/
-[rd]:  http://rd.slavepianos.org/
 [hs]: http://haskell.org/
+[rd]:  http://rd.slavepianos.org/
+[gpl]: http://gnu.org/copyleft/
