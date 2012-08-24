@@ -560,20 +560,59 @@ syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) 2
 
 -- * Harmonic series
 
-fold_to_octave :: Integral i => Ratio i -> Ratio i
-fold_to_octave n =
+-- | Raise or lower the frequency /q/ by octaves until it is in the
+-- octave starting at /p/.
+--
+-- > fold_to_octave_of 55 392 == 98
+fold_cps_to_octave_of :: (Ord a, Fractional a) => a -> a -> a
+fold_cps_to_octave_of p q =
+    if q > p * 2
+    then fold_cps_to_octave_of p (q / 2)
+    else if q < p
+         then fold_cps_to_octave_of p (q * 2)
+         else q
+
+-- | Harmonic series on /n/.
+harmonic_series_cps :: (Num t, Enum t) => t -> [t]
+harmonic_series_cps n = [n,n * 2 ..]
+
+-- | /n/ elements of 'harmonic_series_cps'.
+--
+-- > harmonic_series_cps_n 14 55 == [55,110,165,220,275,330,385,440,495,550,605,660,715,770]
+harmonic_series_cps_n :: (Num a, Enum a) => Int -> a -> [a]
+harmonic_series_cps_n n = take n . harmonic_series_cps
+
+-- | /n/th partial of /f1/, ie. one indexed.
+--
+-- > map (partial 55) [1,5,3] == [55,275,165]
+partial :: (Num a, Enum a) => a -> Int -> a
+partial f1 k = harmonic_series_cps f1 !! (k - 1)
+
+-- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
+fold_ratio_to_octave :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave n =
     if n >= 2
-    then fold_to_octave (n / 2)
+    then fold_ratio_to_octave (n / 2)
     else if n < 1
-         then fold_to_octave (n * 2)
+         then fold_ratio_to_octave (n * 2)
          else n
+
+-- | Derivative harmonic series, based on /k/th partial of /f1/.
+--
+-- > let {r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
+-- >     ;d = harmonic_series_cps_derived 5 (octpc_to_cps (1,4))}
+-- > in map round (take 15 d) == r
+harmonic_series_cps_derived :: (Ord a, Fractional a, Enum a) => Int -> a -> [a]
+harmonic_series_cps_derived k f1 =
+    let f0 = fold_cps_to_octave_of f1 (partial f1 k)
+    in harmonic_series_cps f0
 
 -- | Harmonic series to /n/th harmonic (folded).
 --
 -- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
 harmonic_series_folded :: Integer -> [Rational]
 harmonic_series_folded n =
-    nub (sort (map fold_to_octave [1 .. n%1]))
+    nub (sort (map fold_ratio_to_octave [1 .. n%1]))
 
 -- | 'to_cents_r' variant of 'harmonic_series_folded'.
 --

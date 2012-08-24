@@ -11,7 +11,7 @@ import Text.Printf
 
 -- * Equal temperament
 
--- | 'octpc_to_pitch' and 'octpc_to_cps.
+-- | 'octpc_to_pitch' and 'octpc_to_cps'.
 octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
 octpc_to_pitch_cps x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps x)
 
