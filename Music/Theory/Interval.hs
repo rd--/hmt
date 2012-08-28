@@ -15,7 +15,9 @@ data Interval_Q = Diminished | Minor
                 | Major | Augmented
                   deriving (Eq,Enum,Bounded,Ord,Show)
 
--- | Common music notation interval.
+-- | Common music notation interval.  An 'Ordering' of 'LT' indicates
+-- an ascending interval, 'GT' a descending interval, and 'EQ' a
+-- unison.
 data Interval = Interval {interval_type :: Interval_T
                          ,interval_quality :: Interval_Q
                          ,interval_direction :: Ordering
