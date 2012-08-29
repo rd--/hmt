@@ -6,7 +6,7 @@ import Data.Function
 import Data.List
 import Data.Maybe
 import Music.Theory.List
-import Music.Theory.Set
+import qualified Music.Theory.Set.List as S
 import Music.Theory.Z12
 import Music.Theory.Z12.Forte_1973
 import Music.Theory.Z12.Morris_1987
@@ -29,11 +29,11 @@ cgg l =
       x:xs -> [ y:z | y <- x, z <- cgg xs ]
       _ -> [[]]
 
--- | Combinations generator, ie. synonym for 'powerset_l'.
+-- | Combinations generator, ie. synonym for 'S.powerset'.
 --
 -- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
-cg = powerset_l
+cg = S.powerset
 
 -- | Powerset filtered by cardinality.
 --
@@ -131,7 +131,7 @@ doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
     let f j = [T.tn j p,T.tni j p]
         xs = concatMap f [0..11]
-    in set_l (filter (\x -> length (x `intersect` q) == n) xs)
+    in S.set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
 fn :: [Z12] -> String
@@ -237,7 +237,7 @@ issb p q =
 -- 6421B9
 -- B97642
 --
--- > set_l (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
+-- > S.set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 mxs :: [Z12] -> [Z12] -> [[Z12]]
 mxs p q = filter (q `isInfixOf`) (S.rti_related p)
 
@@ -248,7 +248,7 @@ mxs p q = filter (q `isInfixOf`) (S.rti_related p)
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
 nrm :: (Ord a) => [a] -> [a]
-nrm = set_l
+nrm = S.set
 
 -- | Normalize, retain duplicate elements.
 nrm_r :: (Ord a) => [a] -> [a]
@@ -265,7 +265,7 @@ nrm_r = sort
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
-    let f q = set_l (map (q `genericIndex`) i)
+    let f q = S.set (map (q `genericIndex`) i)
     in filter (\q -> f q == f p) (S.rti_related p)
 
 -- | Relate sets.
@@ -279,8 +279,8 @@ pci p i =
 rs :: [Z12] -> [Z12] -> [(SRO, [Z12])]
 rs x y =
     let xs = map (\o -> (o, o `sro` x)) sro_TnMI
-        q = set_l y
-    in filter (\(_,p) -> set_l p == q) xs
+        q = S.set y
+    in filter (\(_,p) -> S.set p == q) xs
 
 -- | Relate segments.
 --

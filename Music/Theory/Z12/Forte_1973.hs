@@ -5,7 +5,7 @@ module Music.Theory.Z12.Forte_1973 where
 import Data.List
 import Data.Maybe
 import Music.Theory.List
-import Music.Theory.Set
+import qualified Music.Theory.Set.List as S
 import Music.Theory.Z12
 import Music.Theory.Z12.SRO
 
@@ -341,7 +341,7 @@ ic i = if i <= 6 then i else 12 - i
 -- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
 icv :: Integral i => [Z12] -> [i]
 icv s =
-    let i = map (ic . uncurry (-)) (dyads_l s)
+    let i = map (ic . uncurry (-)) (S.pairs s)
         j = map f (group (sort i))
         k = map (`lookup` j) [1..6]
         f l = (head l,genericLength l)

@@ -7,7 +7,7 @@ import Data.List
 import Data.Ratio
 import qualified Music.Theory.List as L
 import qualified Music.Theory.Z12.Forte_1973 as F
-import qualified Music.Theory.Set as S
+import qualified Music.Theory.Set.List as S
 import Music.Theory.Z12
 
 -- | Predicate for list with cardinality /n/.
@@ -164,7 +164,7 @@ satsim_table :: Integral i => [(([Z12],[Z12]),Ratio i)]
 satsim_table =
     let f (i,j) = ((i,j),satsim i j)
         t = filter ((`notElem` [0,1,12]) . length) (map snd F.sc_table)
-    in map f (S.dyads_l t)
+    in map f (S.pairs t)
 
 -- | Histogram of values at 'satsim_table'.
 --

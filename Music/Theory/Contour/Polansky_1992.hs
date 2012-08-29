@@ -9,7 +9,7 @@ import Data.List.Split {- split -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe
 import Data.Ratio
-import qualified Music.Theory.Set as S
+import qualified Music.Theory.Set.List as S
 import qualified Music.Theory.Permutations as P
 
 -- * List functions
@@ -198,10 +198,10 @@ all_contours :: Int -> [Contour_Description]
 all_contours n =
     let n' = contour_description_lm n
         ix = all_indices n
-        cs = filter (not.null) (S.powerset_l [LT,EQ,GT])
-        ps = concatMap (concatMap P.multiset_permutations . S.se n') cs
+        cs = filter (not.null) (S.powerset [LT,EQ,GT])
+        pf = concatMap P.multiset_permutations . S.expand_set n'
         mk p = Contour_Description n (M.fromList (zip ix p))
-    in map mk ps
+    in map mk (concatMap pf cs)
 
 -- | A sequence of orderings /(i,j)/ and /(j,k)/ may imply ordering
 -- for /(i,k)/.
