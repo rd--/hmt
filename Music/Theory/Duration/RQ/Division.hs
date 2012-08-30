@@ -7,7 +7,7 @@ import Data.Ratio
 import Music.Theory.Duration.RQ
 import Music.Theory.Duration.RQ.Tied
 import Music.Theory.List
-import Music.Theory.Permutations
+import Music.Theory.Permutations.List
 
 -- | Divisions of /n/ 'RQ' into /i/ equal parts grouped as /j/.
 -- A quarter and eighth note triplet is written @(1,1,[2,1],False)@.

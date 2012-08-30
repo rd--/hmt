@@ -2,17 +2,27 @@
 module Music.Theory.Permutations where
 
 import qualified Data.Permute as P
-import qualified Math.Combinatorics.Multiset as C
 import qualified Music.Theory.List as L
 import Numeric (showHex)
 
--- | Number of permutations.
+-- | Factorial function.
+--
+-- > (factorial 13,maxBound::Int)
+factorial :: (Ord a, Num a) => a -> a
+factorial n = if n <= 1 then 1 else n * factorial (n - 1)
+
+-- | Number of /k/ element permutations of a set of /n/ elements.
+--
+-- > (nk_permutations 4 3,nk_permutations 13 3) == (24,1716)
+nk_permutations :: Integral a => a -> a -> a
+nk_permutations n k = factorial n  `div` factorial (n - k)
+
+-- | Number of /nk/ permutations where /n/ '==' /k/.
 --
 -- > map n_permutations [1..8] == [1,2,6,24,120,720,5040,40320]
 -- > n_permutations 16 `div` 1000000 == 20922789
--- > length (permutations_l [1..5]) == n_permutations 5
 n_permutations :: (Integral a) => a -> a
-n_permutations n = if n == 1 then 1 else n * n_permutations (n - 1)
+n_permutations n = nk_permutations n n
 
 -- | Generate the permutation from /p/ to /q/, ie. the permutation
 -- that, when applied to /p/, gives /q/.
@@ -65,20 +75,6 @@ permutations_n n =
     let f p = let r = P.next p
               in maybe [p] (\np -> p : f np) r
     in f (P.permute n)
-
--- | Generate all permutations.
---
--- > permutations_l [0,3] == [[0,3],[3,0]]
-permutations_l :: (Eq a) => [a] -> [[a]]
-permutations_l i =
-    let f p = apply_permutation p i
-    in map f (permutations_n (length i))
-
--- | Generate all distinct permutations of a multi-set.
---
--- > multiset_permutations [0,1,1] == [[0,1,1],[1,1,0],[1,0,1]]
-multiset_permutations :: (Ord a) => [a] -> [[a]]
-multiset_permutations = C.permutations . C.fromList
 
 -- | Composition of /q/ then /p/.
 --

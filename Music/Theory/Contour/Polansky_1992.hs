@@ -10,7 +10,7 @@ import qualified Data.Map as M {- containers -}
 import Data.Maybe
 import Data.Ratio
 import qualified Music.Theory.Set.List as S
-import qualified Music.Theory.Permutations as P
+import qualified Music.Theory.Permutations.List as P
 
 -- * List functions
 

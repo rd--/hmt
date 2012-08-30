@@ -37,6 +37,7 @@ Library
   Exposed-modules: Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
+                   Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Diagram.Grid
                    Music.Theory.Diagram.Path
@@ -60,6 +61,7 @@ Library
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Permutations
+                   Music.Theory.Permutations.List
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Spelling

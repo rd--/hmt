@@ -11,9 +11,16 @@ import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
 set :: (Ord a) => [a] -> [a]
 set = sort . nub
 
+-- | Size of powerset of set of cardinality /n/, ie. @2@ '^' /n/.
+--
+-- > map n_powerset [6..9] == [64,128,256,512]
+n_powerset :: Integral n => n -> n
+n_powerset = (^) 2
+
 -- | Powerset, ie. set of all subsets.
 --
 -- > sort (powerset [1,2]) == [[],[1],[1,2],[2]]
+-- > map length (map (\n -> powerset [1..n]) [6..9]) == [64,128,256,512]
 powerset :: [a] -> [[a]]
 powerset = filterM (const [True,False])
 
@@ -26,29 +33,11 @@ pairs s =
       [] -> []
       x:s' -> [(x,y) | y <- s'] ++ pairs s'
 
--- | Factorial function.
---
--- > (factorial 13,maxBound::Int)
-factorial :: (Ord a, Num a) => a -> a
-factorial n = if n <= 1 then 1 else n * factorial (n - 1)
-
--- | Number of /k/ element permutations of a set of /n/ elements.
---
--- > (n_permutations 4 3,n_permutations 13 3) == (24,1716)
-n_permutations :: Integral a => a -> a -> a
-n_permutations n k = factorial n  `div` factorial (n - k)
-
--- | Number of /k/ element combinations of a set of /n/ elements.
---
--- > (n_combinations 6 3,n_combinations 13 3) == (20,286)
-n_combinations :: Integral a => a -> a -> a
-n_combinations n k = n_permutations n k `div` factorial k
-
 -- | Three element subsets.
 --
 -- > triples [1..4] == [(1,2,3),(1,2,4),(1,3,4),(2,3,4)]
 --
--- > let f n = genericLength (triples [1..n]) == n_combinations n 3
+-- > let f n = genericLength (triples [1..n]) == nk_combinations n 3
 -- > in all f [1..15]
 triples :: [a] -> [(a,a,a)]
 triples s =
@@ -70,8 +59,8 @@ expand_set n xs =
 -- > partitions "aab" == [["aab"],["a","ab"],["b","aa"],["b","a","a"]]
 --
 -- > partitions "abc" == [["abc"]
--- >                     ,["bc","a"],["b","ac"]
--- >                     ,["c","ab"],["c","b","a"]]
+-- >                     ,["bc","a"],["b","ac"],["c","ab"]
+-- >                     ,["c","b","a"]]
 partitions :: Eq a => [a] -> [[[a]]]
 partitions = map (map M.toList . M.toList) . M.partitions . M.fromListEq
 
