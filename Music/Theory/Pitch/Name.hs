@@ -107,6 +107,15 @@ gis3 = Pitch G Sharp 3
 ais3 = Pitch A Sharp 3
 bis3 = Pitch B Sharp 3
 
+ceses3,deses3,eeses3,feses3,geses3,aeses3,beses3 :: Pitch
+ceses3 = Pitch C DoubleFlat 3
+deses3 = Pitch D DoubleFlat 3
+eeses3 = Pitch E DoubleFlat 3
+feses3 = Pitch F DoubleFlat 3
+geses3 = Pitch G DoubleFlat 3
+aeses3 = Pitch A DoubleFlat 3
+beses3 = Pitch B DoubleFlat 3
+
 cisis3,disis3,eisis3,fisis3,gisis3,aisis3,bisis3 :: Pitch
 cisis3 = Pitch C DoubleSharp 3
 disis3 = Pitch D DoubleSharp 3
