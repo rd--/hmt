@@ -1,6 +1,7 @@
 -- | Common music notation intervals.
 module Music.Theory.Interval where
 
+import qualified Data.List as L
 import Data.Maybe
 import Music.Theory.Pitch
 
@@ -32,8 +33,9 @@ interval_ty n1 n2 = toEnum ((fromEnum n2 - fromEnum n1) `mod` 7)
 
 -- | Table of interval qualities.  For each 'Interval_T' gives
 -- directed semitone interval counts for each allowable 'Interval_Q'.
--- For lookup function see 'interval_q'.
-interval_q_tbl :: [(Interval_T, [(Int,Interval_Q)])]
+-- For lookup function see 'interval_q', for reverse lookup see
+-- 'interval_q_reverse'.
+interval_q_tbl :: Integral n => [(Interval_T, [(n,Interval_Q)])]
 interval_q_tbl =
     [(Unison,[(11,Diminished)
              ,(0,Perfect)
@@ -69,6 +71,27 @@ interval_q_tbl =
 -- > interval_q Unison 3 == Nothing
 interval_q :: Interval_T -> Int -> Maybe Interval_Q
 interval_q i n = lookup i interval_q_tbl >>= lookup n
+
+-- | Lookup semitone difference of 'Interval_T' with 'Interval_Q'.
+--
+-- > interval_q_reverse Third Minor == Just 3
+-- > interval_q_reverse Unison Diminished == Just 11
+interval_q_reverse :: Interval_T -> Interval_Q -> Maybe Integer
+interval_q_reverse ty qu =
+    case lookup ty interval_q_tbl of
+      Nothing -> Nothing
+      Just tbl -> fmap fst (L.find ((== qu) . snd) tbl)
+
+-- | Semitone difference of 'Interval'.
+--
+-- > interval_semitones (interval (Pitch C Sharp 4) (Pitch E Sharp 5)) == 16
+-- > interval_semitones (interval (Pitch C Natural 4) (Pitch D Sharp 3)) == -9
+interval_semitones :: Interval -> Integer
+interval_semitones (Interval ty qu dir oct) =
+    case interval_q_reverse ty qu of
+      Just n -> let o = 12 * oct
+                in if dir == GT then negate n - o else n + o
+      Nothing -> error "interval_semitones"
 
 -- | Inclusive set of 'Note_T' within indicated interval.  This is not
 -- equal to 'enumFromTo' which is not circular.
