@@ -70,6 +70,7 @@ spell_cluster_c4 p =
       [8,9] -> Just [gis4,a4]
       [8,9,10] -> Just [gis4,a4,bes4]
       [8,10] -> Just [aes4,bes4]
+      [9] -> Just [a4]
       [9,10] -> Just [a4,bes4]
       [10,11] -> Just [ais4,b4]
       [11] -> Just [b4]
