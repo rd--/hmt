@@ -175,6 +175,7 @@ rq_to_cmn x =
 -- > rq_can_notate [1/3,1/6] == True
 -- > rq_can_notate [2/5,1/10] == True
 -- > rq_can_notate [1/3,1/6,2/5,1/10] == False
+-- > rq_can_notate [4/7,1/7,6/7,3/7] == True
 rq_can_notate :: [RQ] -> Bool
 rq_can_notate x =
     let x' = case rq_derive_tuplet x of

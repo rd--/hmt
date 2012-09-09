@@ -204,6 +204,8 @@ rqt_split_sum d x =
 -- > let d = [(5/8,_f),(1,_f),(3/8,_f)]
 -- > in rqt_separate [1,1] d == Just [[(5/8,_f),(3/8,_t)]
 -- >                                 ,[(5/8,_f),(3/8,_f)]]
+--
+-- > rqt_separate [1,1,1] [(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]
 rqt_separate :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
 rqt_separate m x =
     case (m,x) of
@@ -285,10 +287,20 @@ rqt_tuplet_subdivide_seq_sanity_ i =
 -- > to_measures_rq [1,1,1] [3] == Just [[(1,_t)],[(1,_t)],[(1,_f)]]
 -- > to_measures_rq [3,3] [2,2,1] == Nothing
 -- > to_measures_rq [3,2] [2,2,2] == Nothing
+--
 -- > to_measures_rq [6,6] [5,5,2] == Just [[(4,_t),(1,_f),(1,_t)]
 -- >                                      ,[(4,_f),(2,_f)]]
+--
+-- > to_measures_rq [3] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]]
+--
+-- > to_measures_rq [1,1,1] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                ,[(4/7,_f),(3/7,_f)]]
 to_measures_rq :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
-to_measures_rq m = fmap (map rqt_set_to_cmn) . rqt_separate m . map rq_rqt
+to_measures_rq m =
+    fmap (map rqt_set_to_cmn) .
+    rqt_separate m .
+    map rq_rqt
 
 -- | Variant of 'to_measures_rq' with measures given by
 -- 'Time_Signature' values.  Ensures 'RQ_T' are /cmn/ durations.
@@ -317,14 +329,18 @@ to_measures_ts_by_eq :: (a -> RQ) -> [Time_Signature] -> [a] -> Maybe [[a]]
 to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 
 -- | Divide measure into pulses of indicated 'RQ' durations.  Measure
--- must be of correct length and contain only /cmn/ durations.  Pulses
--- are further subdivided if required to notate tuplets correctly, see
--- 'rqt_tuplet_subdivide_seq'.
+-- must be of correct length but need not contain only /cmn/
+-- durations.  Pulses are further subdivided if required to notate
+-- tuplets correctly, see 'rqt_tuplet_subdivide_seq'.
 --
--- > let d = [(1/4,_f),(1/4,_f),(2/3,_t),(1/6,_f),(16/15,_f),(1/5,_f),(1/5,_f),(2/5,_t),(1/20,_f),(1/2,_f),(1/4,_t)]
+-- > let d = [(1/4,_f),(1/4,_f),(2/3,_t),(1/6,_f),(16/15,_f),(1/5,_f)
+-- >         ,(1/5,_f),(2/5,_t),(1/20,_f),(1/2,_f),(1/4,_t)]
 -- > in m_divisions_rq [1,1,1,1] d
 m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
-m_divisions_rq z = fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) . rqt_separate z
+m_divisions_rq z =
+    fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) .
+    fmap (map rqt_set_to_cmn) .
+    rqt_separate z
 
 -- | Variant of 'm_divisions_rq' that determines pulse divisions from
 -- 'Time_Signature'.
@@ -351,11 +367,15 @@ m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 -- >                                           ,[(6/7,_f),(1/7,_t)]
 -- >                                           ,[(6/7,_f),(1/7,_f)]]]
 --
+-- > let d = [5/7,1,6/7,3/7]
+-- > in to_divisions_rq [[1,1,1]] d == Just [[[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                         ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                         ,[(4/7,_f),(3/7,_f)]]]
+--
 -- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
 -- > in to_divisions_rq [[1,1,1,1]] d == Just [[[(2/7,_f),(1/7,_f),(4/7,_f)]
 -- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                           ,[(1/2,_t)]
--- >                                           ,[(3/14,_f),(2/7,_t)]
+-- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
 -- >                                           ,[(4/7,_f),(3/7,_f)]]]
 to_divisions_rq :: [[RQ]] -> [RQ] -> Maybe [[[RQ_T]]]
 to_divisions_rq m x =
