@@ -12,6 +12,16 @@ data Dynamic_Mark_T = Niente
                     | FP | SF | SFP | SFPP | SFZ | SFFZ
                       deriving (Eq,Ord,Enum,Bounded,Show)
 
+-- | Lookup MIDI velocity for 'Dynamic_Mark_T'.  The range is linear
+-- in @0-127@.
+--
+-- > let r = [0,6,17,28,39,50,61,72,83,94,105,116,127]
+-- > in mapMaybe dynamic_mark_midi [Niente .. FFFFF] == r
+dynamic_mark_midi :: (Num n,Enum n) => Dynamic_Mark_T -> Maybe n
+dynamic_mark_midi m =
+    let r = zip [0..] (0 : reverse [127, 127-11 .. 0])
+    in lookup (fromEnum m) r
+
 -- | Translate /fixed/ 'Dynamic_Mark_T's to /db/ amplitude over given
 -- /range/.
 --
