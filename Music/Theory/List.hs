@@ -254,16 +254,11 @@ separate_last x =
 --
 -- > indicate_repetitions "abba" == [Just 'a',Just 'b',Nothing,Just 'a']
 indicate_repetitions :: Eq a => [a] -> [Maybe a]
-indicate_repetitions q =
-    let rec i p =
-            case p of
-              [] -> []
-              j:p' -> if i == j
-                      then Nothing : rec j p'
-                      else Just j : rec j p'
-    in case q of
-         [] -> []
-         i:q' -> Just i : rec i q'
+indicate_repetitions =
+    let f l = case l of
+                [] -> []
+                e:l' -> Just e : map (const Nothing) l'
+    in concatMap f . group
 
 -- > adjacent_groupBy (<) [1,2,3,2,4,1,5,9] == [[1,2,3],[2,4],[1,5,9]]
 adjacent_groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
