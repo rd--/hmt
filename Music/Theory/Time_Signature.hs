@@ -1,3 +1,4 @@
+-- | Time Signatures.
 module Music.Theory.Time_Signature where
 
 import Data.Ratio
@@ -5,6 +6,7 @@ import Music.Theory.Duration
 import Music.Theory.Duration.Name
 import Music.Theory.Duration.RQ
 
+-- | A Time Signature is a /(numerator,denominator)/ pair.
 type Time_Signature = (Integer,Integer)
 
 -- | Tied, non-multiplied durations to fill a whole measure.

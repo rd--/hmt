@@ -18,7 +18,7 @@ rq_to_seconds (d,n) x =
     in (x * s) / d'
 
 -- | The duration, in seconds, of a pulse at the indicated time
---   signaure and tempo marking.
+--   signature and tempo marking.
 --
 -- > import Music.Theory.Duration.Name
 -- > pulse_duration (6,8) (quarter_note,60) == 1/2

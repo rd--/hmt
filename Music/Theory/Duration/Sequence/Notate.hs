@@ -280,7 +280,6 @@ rqt_tuplet_subdivide_seq_sanity_ i =
 -- * Divisions
 
 -- | Separate 'RQ' sequence into measures given by 'RQ' length.
--- Ensures 'RQ_T' are /cmn/ durations.
 --
 -- > to_measures_rq [3,3] [2,2,2] == Just [[(2,_f),(1,_t)],[(1,_f),(2,_f)]]
 -- > to_measures_rq [3,3] [6] == Just [[(3,_t)],[(3,_f)]]
@@ -288,22 +287,28 @@ rqt_tuplet_subdivide_seq_sanity_ i =
 -- > to_measures_rq [3,3] [2,2,1] == Nothing
 -- > to_measures_rq [3,2] [2,2,2] == Nothing
 --
--- > to_measures_rq [6,6] [5,5,2] == Just [[(4,_t),(1,_f),(1,_t)]
--- >                                      ,[(4,_f),(2,_f)]]
---
--- > to_measures_rq [3] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]]
---
--- > to_measures_rq [1,1,1] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                                ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                                ,[(4/7,_f),(3/7,_f)]]
+-- > let d = [4/7,33/28,9/20,4/5]
+-- > in to_measures_rq [3] d == Just [[(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]]
 to_measures_rq :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
-to_measures_rq m =
-    fmap (map rqt_set_to_cmn) .
-    rqt_separate m .
-    map rq_rqt
+to_measures_rq m = rqt_separate m . map rq_rqt
+
+-- | Variant of 'to_measures_rq' that ensures 'RQ_T' are /cmn/
+-- durations.  This is not a good composition.
+--
+-- > to_measures_rq_cmn [6,6] [5,5,2] == Just [[(4,_t),(1,_f),(1,_t)]
+-- >                                          ,[(4,_f),(2,_f)]]
+--
+-- > to_measures_rq_cmn [3] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]]
+--
+-- > to_measures_rq_cmn [1,1,1] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                    ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                    ,[(4/7,_f),(3/7,_f)]]
+to_measures_rq_cmn :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
+to_measures_rq_cmn m = fmap (map rqt_set_to_cmn) . to_measures_rq m
 
 -- | Variant of 'to_measures_rq' with measures given by
--- 'Time_Signature' values.  Ensures 'RQ_T' are /cmn/ durations.
+-- 'Time_Signature' values.  Does not ensure 'RQ_T' are /cmn/
+-- durations.
 --
 -- > to_measures_ts [(1,4)] [5/8,3/8] == Just [[(1/2,_t),(1/8,_f),(3/8,_f)]]
 -- > to_measures_ts [(1,4)] [5/7,2/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_f)]]
@@ -319,6 +324,9 @@ to_measures_rq m =
 -- >                              ,[(1/1,_t)],[(3/4,_f),(1/4,_t)]
 -- >                              ,[(1/1,_t)],[(1/1,_t)]
 -- >                              ,[(1/2,_f),(1/2,_t)],[(1/1,_f)]]
+--
+-- > to_measures_ts [(3,4)] [4/7,33/28,9/20,4/5]
+-- > to_measures_ts (replicate 3 (1,4)) [4/7,33/28,9/20,4/5]
 to_measures_ts :: [Time_Signature] -> [RQ] -> Maybe [[RQ_T]]
 to_measures_ts m = to_measures_rq (map ts_rq m)
 
@@ -336,6 +344,8 @@ to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 -- > let d = [(1/4,_f),(1/4,_f),(2/3,_t),(1/6,_f),(16/15,_f),(1/5,_f)
 -- >         ,(1/5,_f),(2/5,_t),(1/20,_f),(1/2,_f),(1/4,_t)]
 -- > in m_divisions_rq [1,1,1,1] d
+--
+-- > m_divisions_rq [1,1,1] [(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]
 m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
 m_divisions_rq z =
     fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) .
@@ -351,6 +361,11 @@ m_divisions_rq z =
 -- > let d = map rq_rqt [1/3,1/6,2/5,1/10]
 -- > in m_divisions_ts (1,4) d == Just [[(1/3,_f),(1/6,_f)]
 -- >                                   ,[(2/5,_f),(1/10,_f)]]
+--
+-- > let d = map rq_rqt [4/7,33/28,9/20,4/5]
+-- > in m_divisions_ts (3,4) d == Just [[(4/7,_f),(3/7,_t)]
+-- >                                   ,[(3/4,_f),(1/4,_t)]
+-- >                                   ,[(1/5,_f),(4/5,_f)]]
 m_divisions_ts :: Time_Signature -> [RQ_T] -> Maybe [[RQ_T]]
 m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 
@@ -377,6 +392,11 @@ m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 -- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
 -- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
 -- >                                           ,[(4/7,_f),(3/7,_f)]]]
+--
+-- > let d = [4/7,33/28,9/20,4/5]
+-- > in to_divisions_rq [[1,1,1]] d == Just [[[(4/7,_f),(3/7,_t)]
+-- >                                         ,[(3/4,_f),(1/4,_t)]
+-- >                                         ,[(1/5,_f),(4/5,_f)]]]
 to_divisions_rq :: [[RQ]] -> [RQ] -> Maybe [[[RQ_T]]]
 to_divisions_rq m x =
     let m' = map sum m
@@ -389,24 +409,26 @@ to_divisions_rq m x =
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]
 -- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,_f),(2/5,_f)]
--- >                                      ,[(1/3,_f),(1/6,_f)]
--- >                                      ,[(2/5,_t),(1/10,_t)]
--- >                                      ,[(1/5,_f),(4/5,_t)]
--- >                                      ,[(1/3,_f),(1/2,_f),(1/6,_f)]]]
+-- >                                       ,[(1/3,_f),(1/6,_f),(1/2,_t)]
+-- >                                       ,[(1/5,_f),(4/5,_t)]
+-- >                                       ,[(1/3,_f),(1/2,_f),(1/6,_f)]]]
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]
 -- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,_f),(2/5,_f)]
--- >                                      ,[(1/3,_f),(1/6,_f)]
--- >                                      ,[(2/5,_t),(1/10,_t)]
--- >                                      ,[(1/5,_f),(4/5,_t)]
--- >                                      ,[(1/6,_f),(1/2,_f),(1/3,_f)]]]
+-- >                                       ,[(1/3,_f),(1/6,_f),(1/2,_t)]
+-- >                                       ,[(1/5,_f),(4/5,_t)]
+-- >                                       ,[(1/6,_f),(1/2,_f),(1/3,_f)]]]
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
 -- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,_f),(2/5,_f)]
--- >                                      ,[(1/3,_f),(1/6,_f)]
--- >                                      ,[(2/5,_t),(1/10,_t)]
--- >                                      ,[(1/5,_f),(4/5,_f)]
--- >                                      ,[(1/2,_f),(1/2,_f)]]]
+-- >                                       ,[(1/3,_f),(1/6,_f),(1/2,_t)]
+-- >                                       ,[(1/5,_f),(4/5,_f)]
+-- >                                       ,[(1/2,_f),(1/2,_f)]]]
+--
+-- > let d = [4/7,33/28,9/20,4/5]
+-- > in to_divisions_ts [(3,4)] d == Just [[[(4/7,_f),(3/7,_t)]
+-- >                                       ,[(3/4,_f),(1/4,_t)]
+-- >                                       ,[(1/5,_f),(4/5,_f)]]]
 to_divisions_ts :: [Time_Signature] -> [RQ] -> Maybe [[[RQ_T]]]
 to_divisions_ts ts x = to_divisions_rq (map ts_divisions ts) x
 
@@ -444,8 +466,10 @@ p_notate z x =
 --
 -- > m_notate True [[(2/3,_f),(1/3,_t)],[(1,_t)],[(1,_f)]]
 --
--- > m_notate False [map rq_rqt [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]]
--- > m_notate False [map rq_rqt [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]]
+-- > let f = m_notate False . concat
+--
+-- > fmap f (to_divisions_ts [(4,4)] [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6])
+-- > fmap f (to_divisions_ts [(4,4)] [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3])
 m_notate :: Bool -> [[RQ_T]] -> Maybe [Duration_A]
 m_notate z m =
     let z' = z : map (is_tied_right . last) m
