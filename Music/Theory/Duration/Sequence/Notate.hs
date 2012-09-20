@@ -43,6 +43,17 @@ all_just x =
       Just i:x' -> fmap (i :) (all_just x')
       Nothing:_ -> Nothing
 
+-- | Variant of 'Data.Either.rights' that preserves first 'Left'.
+--
+-- > all_right (map Right [1..3]) == Right [1..3]
+-- > all_right [Right 1,Left 'a',Left 'b'] == Left 'a'
+all_right :: [Either a b] -> Either a [b]
+all_right x =
+    case x of
+      [] -> Right []
+      Right i:x' -> fmap (i :) (all_right x')
+      Left i:_ -> Left i
+
 -- | Applies a /join/ function to the first two elements of the list.
 -- If the /join/ function succeeds the joined element is considered
 -- for further coalescing.
@@ -89,6 +100,12 @@ coalesce_sum add zero f =
                     Just r -> Left r
                     Nothing -> Right (i `add` p)
     in map snd . coalesce_accum g zero
+
+-- * Either
+
+-- | Lower 'Either' to 'Maybe' by discarding 'Left'.
+either_to_maybe :: Either a b -> Maybe b
+either_to_maybe = either (const Nothing) Just
 
 -- * Separate
 
@@ -198,34 +215,40 @@ rqt_split_sum d x =
 -- ensure /cmn/ notation of values.
 --
 -- > let d = [(2,_f),(2,_f),(2,_f)]
--- > in rqt_separate [3,3] d == Just [[(2,_f),(1,_t)]
+-- > in rqt_separate [3,3] d == Right [[(2,_f),(1,_t)]
 -- >                                 ,[(1,_f),(2,_f)]]
 --
 -- > let d = [(5/8,_f),(1,_f),(3/8,_f)]
--- > in rqt_separate [1,1] d == Just [[(5/8,_f),(3/8,_t)]
+-- > in rqt_separate [1,1] d == Right [[(5/8,_f),(3/8,_t)]
 -- >                                 ,[(5/8,_f),(3/8,_f)]]
 --
--- > rqt_separate [1,1,1] [(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]
-rqt_separate :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
+-- > let d = [(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]
+-- > in rqt_separate [1,1,1] d == Right [[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                    ,[(5/7,_f),(2/7,_t)]
+-- >                                    ,[(4/7,_f),(3/7,_f)]]
+rqt_separate :: [RQ] -> [RQ_T] -> Either String [[RQ_T]]
 rqt_separate m x =
     case (m,x) of
-      ([],[]) -> Just []
-      ([],_) -> Nothing
+      ([],[]) -> Right []
+      ([],_) -> Left (show ("rqt_separate",x))
       (i:m',_) ->
           case rqt_split_sum i x of
             Just (r,x') -> fmap (r :) (rqt_separate m' x')
-            Nothing -> Nothing
+            Nothing -> Left (show ("rqt_separate",i,m',x))
+
+rqt_separate_m :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
+rqt_separate_m m = either_to_maybe . rqt_separate m
 
 -- | If the input 'RQ_T' sequence cannot be notated (see
 -- 'rqt_can_notate') separate into equal parts, so long as each part
 -- is not less than /i/.
 --
--- > rqt_separate_tuplet undefined [(1/3,_f),(1/6,_f)] == Nothing
--- > rqt_separate_tuplet undefined [(4/7,_t),(1/7,_f),(2/7,_f)] == Nothing
+-- > rqt_separate_tuplet undefined [(1/3,_f),(1/6,_f)]
+-- > rqt_separate_tuplet undefined [(4/7,_t),(1/7,_f),(2/7,_f)]
 --
 -- > let d = map rq_rqt [1/3,1/6,2/5,1/10]
--- > in rqt_separate_tuplet (1/8) d == Just [[(1/3,_f),(1/6,_f)]
--- >                                        ,[(2/5,_f),(1/10,_f)]]
+-- > in rqt_separate_tuplet (1/8) d == Right [[(1/3,_f),(1/6,_f)]
+-- >                                         ,[(2/5,_f),(1/10,_f)]]
 --
 -- > let d = [(1/5,True),(1/20,False),(1/2,False),(1/4,True)]
 -- > in rqt_separate_tuplet (1/16) d
@@ -235,12 +258,14 @@ rqt_separate m x =
 --
 -- > let d = [(4/10,True),(1/10,False),(1/2,True)]
 -- > in rqt_separate_tuplet (1/2) d
-rqt_separate_tuplet :: RQ -> [RQ_T] -> Maybe [[RQ_T]]
+rqt_separate_tuplet :: RQ -> [RQ_T] -> Either String [[RQ_T]]
 rqt_separate_tuplet i x =
     if rqt_can_notate x
-    then Nothing
+    then Left (show ("rqt_separate_tuplet: cannot notate",x))
     else let j = sum (map rqt_rq x) / 2
-         in if j < i then Nothing else rqt_separate [j,j] x
+         in if j < i
+            then Left (show ("rqt_separate_tuplet: j < i",j,i))
+            else rqt_separate [j,j] x
 
 -- | Recursive variant of 'rqt_separate_tuplet'.
 --
@@ -251,8 +276,8 @@ rqt_separate_tuplet i x =
 rqt_tuplet_subdivide :: RQ -> [RQ_T] -> [[RQ_T]]
 rqt_tuplet_subdivide i x =
     case rqt_separate_tuplet i x of
-      Nothing -> [x]
-      Just r -> concatMap (rqt_tuplet_subdivide i) r
+      Left _ -> [x]
+      Right r -> concatMap (rqt_tuplet_subdivide i) r
 
 -- | Sequence variant of 'rqt_tuplet_subdivide'.
 --
@@ -281,53 +306,54 @@ rqt_tuplet_subdivide_seq_sanity_ i =
 
 -- | Separate 'RQ' sequence into measures given by 'RQ' length.
 --
--- > to_measures_rq [3,3] [2,2,2] == Just [[(2,_f),(1,_t)],[(1,_f),(2,_f)]]
--- > to_measures_rq [3,3] [6] == Just [[(3,_t)],[(3,_f)]]
--- > to_measures_rq [1,1,1] [3] == Just [[(1,_t)],[(1,_t)],[(1,_f)]]
--- > to_measures_rq [3,3] [2,2,1] == Nothing
--- > to_measures_rq [3,2] [2,2,2] == Nothing
+-- > to_measures_rq [3,3] [2,2,2] == Right [[(2,_f),(1,_t)],[(1,_f),(2,_f)]]
+-- > to_measures_rq [3,3] [6] == Right [[(3,_t)],[(3,_f)]]
+-- > to_measures_rq [1,1,1] [3] == Right [[(1,_t)],[(1,_t)],[(1,_f)]]
+-- > to_measures_rq [3,3] [2,2,1]
+-- > to_measures_rq [3,2] [2,2,2]
 --
 -- > let d = [4/7,33/28,9/20,4/5]
--- > in to_measures_rq [3] d == Just [[(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]]
-to_measures_rq :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
+-- > in to_measures_rq [3] d == Right [[(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]]
+to_measures_rq :: [RQ] -> [RQ] -> Either String [[RQ_T]]
 to_measures_rq m = rqt_separate m . map rq_rqt
 
 -- | Variant of 'to_measures_rq' that ensures 'RQ_T' are /cmn/
 -- durations.  This is not a good composition.
 --
--- > to_measures_rq_cmn [6,6] [5,5,2] == Just [[(4,_t),(1,_f),(1,_t)]
--- >                                          ,[(4,_f),(2,_f)]]
+-- > to_measures_rq_cmn [6,6] [5,5,2] == Right [[(4,_t),(1,_f),(1,_t)]
+-- >                                           ,[(4,_f),(2,_f)]]
 --
--- > to_measures_rq_cmn [3] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]]
+-- > let r = [[(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]]
+-- > in to_measures_rq_cmn [3] [5/7,1,6/7,3/7] == Right r
 --
--- > to_measures_rq_cmn [1,1,1] [5/7,1,6/7,3/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                                    ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                                    ,[(4/7,_f),(3/7,_f)]]
-to_measures_rq_cmn :: [RQ] -> [RQ] -> Maybe [[RQ_T]]
+-- > to_measures_rq_cmn [1,1,1] [5/7,1,6/7,3/7] == Right [[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                     ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+-- >                                                     ,[(4/7,_f),(3/7,_f)]]
+to_measures_rq_cmn :: [RQ] -> [RQ] -> Either String [[RQ_T]]
 to_measures_rq_cmn m = fmap (map rqt_set_to_cmn) . to_measures_rq m
 
 -- | Variant of 'to_measures_rq' with measures given by
 -- 'Time_Signature' values.  Does not ensure 'RQ_T' are /cmn/
 -- durations.
 --
--- > to_measures_ts [(1,4)] [5/8,3/8] == Just [[(1/2,_t),(1/8,_f),(3/8,_f)]]
--- > to_measures_ts [(1,4)] [5/7,2/7] == Just [[(4/7,_t),(1/7,_f),(2/7,_f)]]
+-- > to_measures_ts [(1,4)] [5/8,3/8] /= Right [[(1/2,_t),(1/8,_f),(3/8,_f)]]
+-- > to_measures_ts [(1,4)] [5/7,2/7] /= Right [[(4/7,_t),(1/7,_f),(2/7,_f)]]
 --
 -- > let {m = replicate 18 (1,4)
 -- >     ;x = [3/4,2,5/4,9/4,1/4,3/2,1/2,7/4,1,5/2,11/4,3/2]}
--- > in to_measures_ts m x == Just [[(3/4,_f),(1/4,_t)],[(1/1,_t)]
--- >                              ,[(3/4,_f),(1/4,_t)],[(1/1,_f)]
--- >                              ,[(1/1,_t)],[(1/1,_t)]
--- >                              ,[(1/4,_f),(1/4,_f),(1/2,_t)],[(1/1,_f)]
--- >                              ,[(1/2,_f),(1/2,_t)],[(1/1,_t)]
--- >                              ,[(1/4,_f),(3/4,_t)],[(1/4,_f),(3/4,_t)]
--- >                              ,[(1/1,_t)],[(3/4,_f),(1/4,_t)]
--- >                              ,[(1/1,_t)],[(1/1,_t)]
--- >                              ,[(1/2,_f),(1/2,_t)],[(1/1,_f)]]
+-- > in to_measures_ts m x == Right [[(3/4,_f),(1/4,_t)],[(1/1,_t)]
+-- >                                ,[(3/4,_f),(1/4,_t)],[(1/1,_f)]
+-- >                                ,[(1/1,_t)],[(1/1,_t)]
+-- >                                ,[(1/4,_f),(1/4,_f),(1/2,_t)],[(1/1,_f)]
+-- >                                ,[(1/2,_f),(1/2,_t)],[(1/1,_t)]
+-- >                                ,[(1/4,_f),(3/4,_t)],[(1/4,_f),(3/4,_t)]
+-- >                                ,[(1/1,_t)],[(3/4,_f),(1/4,_t)]
+-- >                                ,[(1/1,_t)],[(1/1,_t)]
+-- >                                ,[(1/2,_f),(1/2,_t)],[(1/1,_f)]]
 --
 -- > to_measures_ts [(3,4)] [4/7,33/28,9/20,4/5]
 -- > to_measures_ts (replicate 3 (1,4)) [4/7,33/28,9/20,4/5]
-to_measures_ts :: [Time_Signature] -> [RQ] -> Maybe [[RQ_T]]
+to_measures_ts :: [Time_Signature] -> [RQ] -> Either String [[RQ_T]]
 to_measures_ts m = to_measures_rq (map ts_rq m)
 
 -- | Variant of 'to_measures_ts' that allows for duration field
@@ -346,7 +372,7 @@ to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 -- > in m_divisions_rq [1,1,1,1] d
 --
 -- > m_divisions_rq [1,1,1] [(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]
-m_divisions_rq :: [RQ] -> [RQ_T] -> Maybe [[RQ_T]]
+m_divisions_rq :: [RQ] -> [RQ_T] -> Either String [[RQ_T]]
 m_divisions_rq z =
     fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) .
     fmap (map rqt_set_to_cmn) .
@@ -366,7 +392,7 @@ m_divisions_rq z =
 -- > in m_divisions_ts (3,4) d == Just [[(4/7,_f),(3/7,_t)]
 -- >                                   ,[(3/4,_f),(1/4,_t)]
 -- >                                   ,[(1/5,_f),(4/5,_f)]]
-m_divisions_ts :: Time_Signature -> [RQ_T] -> Maybe [[RQ_T]]
+m_divisions_ts :: Time_Signature -> [RQ_T] -> Either String [[RQ_T]]
 m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 
 -- | Composition of 'to_measures_rq' and 'm_divisions_rq', where
@@ -397,12 +423,12 @@ m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 -- > in to_divisions_rq [[1,1,1]] d == Just [[[(4/7,_f),(3/7,_t)]
 -- >                                         ,[(3/4,_f),(1/4,_t)]
 -- >                                         ,[(1/5,_f),(4/5,_f)]]]
-to_divisions_rq :: [[RQ]] -> [RQ] -> Maybe [[[RQ_T]]]
+to_divisions_rq :: [[RQ]] -> [RQ] -> Either String [[[RQ_T]]]
 to_divisions_rq m x =
     let m' = map sum m
     in case to_measures_rq m' x of
-         Just y -> all_just (zipWith m_divisions_rq m y)
-         Nothing -> Nothing
+         Right y -> all_right (zipWith m_divisions_rq m y)
+         Left e -> Left e
 
 -- | Variant of 'to_divisions_rq' with measures given as set of
 -- 'Time_Signature'.
@@ -429,7 +455,7 @@ to_divisions_rq m x =
 -- > in to_divisions_ts [(3,4)] d == Just [[[(4/7,_f),(3/7,_t)]
 -- >                                       ,[(3/4,_f),(1/4,_t)]
 -- >                                       ,[(1/5,_f),(4/5,_f)]]]
-to_divisions_ts :: [Time_Signature] -> [RQ] -> Maybe [[[RQ_T]]]
+to_divisions_ts :: [Time_Signature] -> [RQ] -> Either String [[[RQ_T]]]
 to_divisions_ts ts x = to_divisions_rq (map ts_divisions ts) x
 
 -- * Durations
@@ -454,13 +480,13 @@ p_tuplet_rqt x =
 -- > p_notate False (map rq_rqt [1/3,1/6])
 -- > p_notate False (map rq_rqt [2/5,1/10])
 -- > p_notate False (map rq_rqt [1/3,1/6,2/5,1/10]) == Nothing
-p_notate :: Bool -> [RQ_T] -> Maybe [Duration_A]
+p_notate :: Bool -> [RQ_T] -> Either String [Duration_A]
 p_notate z x =
     let f = p_simplify . rqt_to_duration_a z
         d = case p_tuplet_rqt x of
               Just (t,x') -> da_tuplet t (f x')
               Nothing -> f x
-    in if rq_can_notate (map rqt_rq x) then Just d else Nothing
+    in if rq_can_notate (map rqt_rq x) then Right d else Left (show ("p_notate",z,x))
 
 -- | Notate measure.
 --
@@ -470,10 +496,10 @@ p_notate z x =
 --
 -- > fmap f (to_divisions_ts [(4,4)] [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6])
 -- > fmap f (to_divisions_ts [(4,4)] [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3])
-m_notate :: Bool -> [[RQ_T]] -> Maybe [Duration_A]
+m_notate :: Bool -> [[RQ_T]] -> Either String [Duration_A]
 m_notate z m =
     let z' = z : map (is_tied_right . last) m
-    in fmap concat (all_just (zipWith p_notate z' m))
+    in fmap concat (all_right (zipWith p_notate z' m))
 
 -- | Multiple measure notation.
 --
@@ -485,10 +511,10 @@ m_notate z m =
 --
 -- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
 -- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
-mm_notate :: [[[RQ_T]]] -> Maybe [[Duration_A]]
+mm_notate :: [[[RQ_T]]] -> Either String [[Duration_A]]
 mm_notate d =
     let z = False : map (is_tied_right . last . last) d
-    in all_just (zipWith m_notate z d)
+    in all_right (zipWith m_notate z d)
 
 -- * Simplifications
 
@@ -618,7 +644,7 @@ p_simplify = m_simplify p_simplify_rule undefined
 -- * Notate
 
 -- | Composition of 'to_divisions_ts', 'mm_notate' 'm_simplify'.
-notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Maybe [[Duration_A]]
+notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Either String [[Duration_A]]
 notate r ts x = do
     mm <- to_divisions_ts ts x
     dd <- mm_notate mm
