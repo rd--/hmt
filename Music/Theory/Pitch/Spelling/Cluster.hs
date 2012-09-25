@@ -45,7 +45,7 @@ spell_cluster_c4 p =
       [4,5] -> Just [e4,f4]
       [5] -> Just [f4]
       [5,6] -> Just [f4,ges4]
-      [5,6,7] -> Just [eis4,f4,ges4]
+      [5,6,7] -> Just [eis4,fis4,g4]
       [5,6,8] -> Just [f4,ges4,aes4]
       [5,6,9] -> Just [f4,ges4,a4]
       [5,6,7,8] -> Just [eis4,fis4,g4,aes4]
