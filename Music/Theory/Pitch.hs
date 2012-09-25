@@ -1,6 +1,7 @@
 -- | Common music notation pitch values.
 module Music.Theory.Pitch where
 
+import Data.Char
 import Data.Function
 import Data.Maybe
 
@@ -43,6 +44,15 @@ pitch_pp :: Pitch -> String
 pitch_pp (Pitch n a o) =
     let a' = if a == Natural then "" else [alteration_symbol a]
     in show n ++ a' ++ show o
+
+-- | Pretty printer for 'Pitch' (ASCII, see 'alteration_ly_name').
+--
+-- > pitch_pp_ascii (Pitch E Flat 4) == "ees4"
+-- > pitch_pp_ascii (Pitch F QuarterToneSharp 3) == "fih3"
+pitch_pp_ascii :: Pitch -> String
+pitch_pp_ascii (Pitch n a o) =
+    let n' = map toLower (show n)
+    in n' ++ alteration_ly_name a ++ show o
 
 -- | Transform 'Note_T' to pitch-class number.
 --
@@ -130,6 +140,22 @@ alteration_symbol a =
       Sharp -> '♯'
       ThreeQuarterToneSharp -> '𝄰'
       DoubleSharp -> '𝄪'
+
+-- | The @Lilypond@ ASCII spellings for alterations.
+--
+-- > map alteration_ly_name [Flat .. Sharp] == ["es","eh","","ih","is"]
+alteration_ly_name :: Alteration_T -> String
+alteration_ly_name a =
+    case a of
+      DoubleFlat -> "eses"
+      ThreeQuarterToneFlat -> "eseh"
+      Flat -> "es"
+      QuarterToneFlat -> "eh"
+      Natural -> ""
+      QuarterToneSharp -> "ih"
+      Sharp -> "is"
+      ThreeQuarterToneSharp -> "isih"
+      DoubleSharp -> "isis"
 
 -- | Raise 'Alteration_T' by a quarter tone where possible.
 --
