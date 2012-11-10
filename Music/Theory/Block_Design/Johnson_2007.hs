@@ -2,6 +2,7 @@
 -- Computation in Music, Berlin, May 2007.
 module Music.Theory.Block_Design.Johnson_2007 where
 
+import Control.Arrow
 import Data.List
 import qualified Music.Theory.List as L
 
@@ -25,9 +26,7 @@ b_7_3_1 =
        ,zipWith f c (L.adj2_cyclic 1 (L.rotate_left 2 c)))
 
 d_7_3_1 :: (Enum n,Ord n,Num n) => (Design n,Design n)
-d_7_3_1 =
-    (Design [1..7] (fst b_7_3_1)
-    ,Design [1..7] (snd b_7_3_1))
+d_7_3_1 = let d = Design [1..7] in (d *** d) b_7_3_1
 
 -- > length n_7_3_1 == 7 && sort n_7_3_1 == n_7_3_1
 n_7_3_1 :: Num i => [(i,i)]
@@ -50,9 +49,7 @@ b_13_4_1 =
        ,zipWith f (L.adj2 1 c') (L.adj2 2 e))
 
 d_13_4_1 :: (Enum n,Ord n,Num n) => (Design n,Design n)
-d_13_4_1 =
-    (Design [1..13] (fst b_13_4_1)
-    ,Design [1..13] (snd b_13_4_1))
+d_13_4_1 = let d = Design [1..13] in (d *** d) b_13_4_1
 
 -- > length n_13_4_1 == 13 && sort n_13_4_1 == n_13_4_1
 n_13_4_1 :: Num i => [(i,i)]

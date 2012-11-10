@@ -42,7 +42,7 @@ tbl_24et =
 -- > in bounds_et_table tbl_12et 256 == r
 bounds_et_table :: Ord s => [(t,s)] -> s -> Maybe ((t,s),(t,s))
 bounds_et_table tbl =
-    let f (_,p) q = compare p q
+    let f (_,p) = compare p
     in find_bounds f (adj2 1 tbl)
 
 -- | 'bounds_et_table' of 'tbl_12et'.
@@ -84,7 +84,7 @@ nearest_24et_tone = nearest_et_table_tone tbl_24et
 --
 -- > ndp 3 (1/3) == "0.333"
 ndp :: Int -> Double -> String
-ndp n = printf "%.*f" n
+ndp = printf "%.*f"
 
 -- | 'G.Table_Cell' from set of 'HS_R'.
 hs_r_cell :: Int -> (Int -> String) -> [HS_R] -> (Int,Int) -> G.Table_Cell

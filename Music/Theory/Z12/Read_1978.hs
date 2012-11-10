@@ -11,7 +11,7 @@ import Music.Theory.Z12.SRO
 --
 -- > encode [0,1,3,6,8,9] == 843
 encode :: [Z12] -> Integer
-encode = sum . map (2 ^) . map (fromZ12::Z12->Integer)
+encode = sum . map ((2 ^) . (fromZ12::Z12->Integer))
 
 -- | Decoder for 'encode_prime'.
 --

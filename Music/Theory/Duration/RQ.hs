@@ -149,7 +149,7 @@ rq_derive_tuplet =
 --
 -- > map (rq_un_tuplet (3,2)) [1,2/3,1/2,1/3] == [3/2,1,3/4,1/2]
 rq_un_tuplet :: (Integer,Integer) -> RQ -> RQ
-rq_un_tuplet (i,j) x = x * (i%j)
+rq_un_tuplet (i,j) x = x * (i % j)
 
 -- | If an 'RQ' duration is un-representable by a single /cmn/
 -- duration, give tied notation.
@@ -181,4 +181,4 @@ rq_can_notate x =
     let x' = case rq_derive_tuplet x of
                Nothing -> x
                Just t -> map (rq_un_tuplet t) x
-    in and (map rq_is_cmn x')
+    in all rq_is_cmn x'

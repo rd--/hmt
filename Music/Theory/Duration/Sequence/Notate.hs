@@ -207,7 +207,7 @@ rqt_split_sum d x =
             Nothing -> Just (splitAt (length i) x)
             Just (p,q) -> let (s,(_,z):t) = splitAt (length i - 1) x
                           in Just (s ++ [(p,True)]
-                                  ,((q,z) : t))
+                                  ,(q,z) : t)
       Nothing -> Nothing
 
 -- | Separate 'RQ_T' values in sequences summing to 'RQ' values.  This
@@ -374,8 +374,8 @@ to_measures_ts_by_eq f m = split_sum_by_eq f (map ts_rq m)
 -- > m_divisions_rq [1,1,1] [(4/7,_f),(33/28,_f),(9/20,_f),(4/5,_f)]
 m_divisions_rq :: [RQ] -> [RQ_T] -> Either String [[RQ_T]]
 m_divisions_rq z =
-    fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16)) .
-    fmap (map rqt_set_to_cmn) .
+    fmap (rqt_tuplet_subdivide_seq_sanity_ (1/16) .
+          map rqt_set_to_cmn) .
     rqt_separate z
 
 -- | Variant of 'm_divisions_rq' that determines pulse divisions from
@@ -456,7 +456,7 @@ to_divisions_rq m x =
 -- >                                       ,[(3/4,_f),(1/4,_t)]
 -- >                                       ,[(1/5,_f),(4/5,_f)]]]
 to_divisions_ts :: [Time_Signature] -> [RQ] -> Either String [[[RQ_T]]]
-to_divisions_ts ts x = to_divisions_rq (map ts_divisions ts) x
+to_divisions_ts ts = to_divisions_rq (map ts_divisions ts)
 
 -- * Durations
 

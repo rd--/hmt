@@ -27,7 +27,7 @@ begin_tuplet a =
 
 da_begin_tuplet :: Duration_A -> Maybe (Integer,Integer,Duration)
 da_begin_tuplet (_,a) =
-    case catMaybes (map begin_tuplet a) of
+    case mapMaybe begin_tuplet a of
       [t] -> Just t
       _ -> Nothing
 
@@ -43,7 +43,7 @@ da_begins_tuplet (_,a) = any begins_tuplet a
 
 -- | Does 'Duration_A' end a tuplet?
 da_ends_tuplet :: Duration_A -> Bool
-da_ends_tuplet (_,a) = any (== End_Tuplet) a
+da_ends_tuplet (_,a) = End_Tuplet `elem` a
 
 -- | Is 'Duration_A' tied to the the right?
 da_tied_right :: Duration_A -> Bool
@@ -180,7 +180,7 @@ zip_with_kr f =
 --
 -- > zip_kr [1..4] ['a'..'f'] == ([(1,'a'),(2,'b'),(3,'c'),(4,'d')],"ef")
 zip_kr :: [a] -> [b] -> ([(a,b)],[b])
-zip_kr p = zip_with_kr (,) p
+zip_kr = zip_with_kr (,)
 
 -- | 'zipWith' variant that adopts the shape of the lhs.
 --

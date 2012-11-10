@@ -33,7 +33,7 @@ dynamic_mark_db r m =
         n = length u - 1
         k = r / fromIntegral n
         f i = negate r + (fromIntegral i * k)
-    in fmap f (findIndex (== m) u)
+    in fmap f (elemIndex m u)
 
 -- | Enumeration of hairpin indicators.
 data Hairpin_T = Crescendo | Diminuendo | End_Hairpin

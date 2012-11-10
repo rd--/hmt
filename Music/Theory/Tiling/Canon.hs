@@ -43,7 +43,7 @@ e_to_seq (s,m,o) = map ((+ o) . (* m)) s
 e_from_seq :: [Int] -> E
 e_from_seq p =
     let i:_ = p
-        q = map (+ (negate i)) p
+        q = map (+ negate i) p
         _:r = q
         n = if null r then 1 else foldl1 gcd r
     in (map (`div` n) q,n,i)
@@ -51,8 +51,8 @@ e_from_seq p =
 -- | Set of 'V' from 'R'.
 r_voices :: R -> [V]
 r_voices (p,s,m,o) =
-    let f (i,j) = p_cycle p (e_to_seq (s,i,j))
-    in map f (zip m o)
+    let f i j = p_cycle p (e_to_seq (s,i,j))
+    in zipWith f m o
 
 -- | 'concatMap' of 'r_voices'.
 rr_voices :: [R] -> [V]
@@ -179,13 +179,13 @@ v_space_ix n v =
     let w = length (show n)
         nil = replicate w ' '
         f p i = if i `elemOrd` p then printf "%*d" w i else nil
-    in concat (intersperse " " (map (f v) [0..n-1]))
+    in unwords (map (f v) [0..n-1])
 
 -- | Insert @|@ every /n/ places.
 --
 -- > with_bars 6 (v_dot_star 18 [0,2..]) == "*.*.*.|*.*.*.|*.*.*."
 with_bars :: Int -> String -> String
-with_bars m = concat . intersperse "|" . chunksOf m
+with_bars m = intercalate "|" . chunksOf m
 
 -- | Variant with measure length /m/ and number of measures /n/.
 --

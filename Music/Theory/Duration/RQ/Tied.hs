@@ -58,9 +58,9 @@ rqt_to_duration_a z x =
     let rt = map is_tied_right x
         lt = z : rt
         f p e = if p then Just e else Nothing
-        g (r,l) = catMaybes [f r Tie_Right,f l Tie_Left]
+        g r l = catMaybes [f r Tie_Right,f l Tie_Left]
         h = rq_to_duration_err (show ("rqt_to_duration_a",z,x)) . rqt_rq
-    in zip (map h x) (map g (zip rt lt))
+    in zip (map h x) (zipWith g rt lt)
 
 -- | 'RQ_T' variant of 'rq_can_notate'.
 rqt_can_notate :: [RQ_T] -> Bool

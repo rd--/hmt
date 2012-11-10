@@ -10,9 +10,9 @@ import qualified Music.Theory.Z12.Castren_1994 as C
 rel :: Floating n => (Int -> [a] -> [n]) -> [a] -> [a] -> n
 rel ncv x y =
     let n = min (genericLength x) (genericLength y)
-        p = map (\i -> ncv i x) [2..n]
-        q = map (\i -> ncv i y) [2..n]
-        f a b = zipWith (\i j -> sqrt (i * j)) a b
+        p = map (`ncv` x) [2..n]
+        q = map (`ncv` y) [2..n]
+        f = zipWith (\i j -> sqrt (i * j))
         pt = sum (map sum p)
         qt = sum (map sum q)
     in sum (map sum (zipWith f p q)) / sqrt (pt * qt)

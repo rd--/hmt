@@ -8,7 +8,7 @@ import Music.Theory.Tuning
 -- > let c = [0,231,498,765,996]
 -- > in map (round.to_cents_r) alves_slendro_r == c
 alves_slendro_r :: [Rational]
-alves_slendro_r = [1/1,8/7,4/3,14/9,16/9]
+alves_slendro_r = [1,8/7,4/3,14/9,16/9]
 
 -- | HMC /slendro/ tuning.
 --

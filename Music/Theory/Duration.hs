@@ -54,7 +54,7 @@ sort_pair :: (t -> t -> Ordering) -> (t,t) -> (t,t)
 sort_pair fn (x,y) = order_pair (fn x y) (x,y)
 
 sort_pair_m :: (t -> t -> Maybe Ordering) -> (t,t) -> Maybe (t,t)
-sort_pair_m fn (x,y) = fmap (flip order_pair (x,y)) (fn x y)
+sort_pair_m fn (x,y) = fmap (`order_pair` (x,y)) (fn x y)
 
 -- | True if neither duration is dotted.
 no_dots :: (Duration, Duration) -> Bool

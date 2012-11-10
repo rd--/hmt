@@ -141,7 +141,7 @@ ti_n_class_vector n x =
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
     let p' = icv p
-    in map ((*) (sum p')) p'
+    in map (sum p' *) p'
 
 -- | /rel/ metric.
 --

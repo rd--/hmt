@@ -102,7 +102,7 @@ p_or :: [a -> Bool] -> a -> Bool
 p_or p x =
     case p of
       [] -> False
-      f:p' -> if f x then True else p_or p' x
+      f:p' -> f x || p_or p' x
 
 -- | Remove to end of line @!@ comments.
 remove_eol_comments :: String -> String

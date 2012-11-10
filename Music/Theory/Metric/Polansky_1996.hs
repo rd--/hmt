@@ -266,7 +266,7 @@ ucd m n =
 -- >               ,[3]]
 -- > in combinatorial_magnitude_matrix (abs_dif (-)) [5,3,2,6,9] == r
 combinatorial_magnitude_matrix :: Interval a n -> [a] -> [[n]]
-combinatorial_magnitude_matrix f = C.half_matrix_f f
+combinatorial_magnitude_matrix = C.half_matrix_f
 
 -- | Unordered linear magnitude (simplified), p.320-321
 --
@@ -279,17 +279,23 @@ ulm_simplified f p q =
     let g = abs . sum . d_dx f
     in abs (g p - g q) / fromIntegral (length p - 1)
 
+ocm_zcm :: (Fractional n, Num a) => Interval a n -> [a] -> [a] -> (n, n, [n])
+ocm_zcm f p q =
+    let p' = concat (C.half_matrix_f f p)
+        q' = concat (C.half_matrix_f f q)
+        r = zipWith (-) p' q'
+        z = sum (map abs r)
+        c = second_order_binonial_coefficient (fromIntegral (length p))
+        m = p' ++ q'
+    in (z,c,m)
+
 -- | Ordered combinatorial magnitude (OCM), p.323
 --
 -- > ocm (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == 5.2
 -- > ocm (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 3.6
 ocm :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm f p q =
-    let p' = concat (C.half_matrix_f f p)
-        q' = concat (C.half_matrix_f f q)
-        r = zipWith (-) p' q'
-        z = sum (map abs r)
-        c = second_order_binonial_coefficient (fromIntegral (length p))
+    let (z,c,_) = ocm_zcm f p q
     in z / c
 
 -- | Ordered combinatorial magnitude (OCM), p.323
@@ -298,9 +304,5 @@ ocm f p q =
 -- > ocm_absolute_scaled (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 54/(15*11)
 ocm_absolute_scaled :: (Ord a,Fractional a,Enum a,Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm_absolute_scaled f p q =
-    let p' = concat (C.half_matrix_f f p)
-        q' = concat (C.half_matrix_f f q)
-        r = zipWith (-) p' q'
-        z = sum (map abs r)
-        c = second_order_binonial_coefficient (fromIntegral (length p))
-    in z / (c * maximum (p' ++ q'))
+    let (z,c,m) = ocm_zcm f p q
+    in z / (c * maximum m)

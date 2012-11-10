@@ -35,6 +35,13 @@ in_oct_mul i j = T.fold_ratio_to_octave (i * j)
 inner :: Integral i => ([Ratio i],[Ratio i]) -> (i,i) -> Ratio i
 inner (r,c) (i,j) = in_oct_mul (r `genericIndex` j) (c `genericIndex` i)
 
+meyer_table_rck :: Integral i => i -> ([Ratio i],[Ratio i],i)
+meyer_table_rck n =
+    let r = row n
+        c = column n
+        k = n `div` 2
+    in (r,c,k)
+
 -- | Meyer table in form /(r,c,n)/.
 --
 -- > meyer_table_indices 7 == [(0,0,1/1),(0,1,5/4),(0,2,3/2),(0,3,7/4)
@@ -43,9 +50,7 @@ inner (r,c) (i,j) = in_oct_mul (r `genericIndex` j) (c `genericIndex` i)
 -- >                          ,(3,0,8/7),(3,1,10/7),(3,2,12/7),(3,3,1/1)]
 meyer_table_indices :: Integral i => i -> [(i,i,Ratio i)]
 meyer_table_indices n =
-    let r = row n
-        c = column n
-        k = n `div` 2
+    let (r,c,k) = meyer_table_rck n
     in [(i,j,inner (r,c) (i,j)) | i <- [0..k], j <- [0..k]]
 
 -- | Meyer table as set of rows.
@@ -66,9 +71,7 @@ meyer_table_indices n =
 -- > in meyer_table_rows 15 == r
 meyer_table_rows :: Integral a => a -> [[Ratio a]]
 meyer_table_rows n =
-    let r = row n
-        c = column n
-        k = n `div` 2
+    let (r,c,k) = meyer_table_rck n
         rn i = [inner (r,c) (i,j) | j <- [0..k]]
     in map rn [0..k]
 
@@ -100,4 +103,4 @@ degree = genericLength . elements
 -- >         ,[0,1/6,1/5,1/4,1/3,2/5,1/2,3/5,2/3,3/4,4/5,5/6,1]]
 -- > in map farey_sequence [2..6] == r
 farey_sequence :: Integral a => a -> [Ratio a]
-farey_sequence k = 0 : nub (sort ([n%d | d <- [1..k], n <- [1..d]]))
+farey_sequence k = 0 : nub (sort [n%d | d <- [1..k], n <- [1..d]])

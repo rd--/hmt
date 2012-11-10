@@ -161,7 +161,7 @@ twelve_tone_equal_temperament_comma = 12 `nth_root` 2
 -- > in map (round.to_cents_r) ditone_r == c
 ditone_r :: [Rational]
 ditone_r =
-    [1/1,2187/2048 {- 256/243 -}
+    [1,2187/2048 {- 256/243 -}
     ,9/8,32/27
     ,81/64
     ,4/3,729/512
@@ -385,7 +385,7 @@ seven_limit_just_intonation = Tuning (Left seven_limit_just_intonation_r) 2
 kirnberger_iii_ar :: [Approximate_Ratio]
 kirnberger_iii_ar =
     [1,256/243
-    ,(sqrt 5)/2,32/27
+    ,sqrt 5 / 2,32/27
     ,5/4
     ,4/3,45/32
     ,5 ** 0.25,128/81
@@ -432,7 +432,7 @@ mayumi_reinhard = Tuning (Left mayumi_reinhard_r) 2
 -- > in map (round.to_cents_r) la_monte_young_r == c
 la_monte_young_r :: [Rational]
 la_monte_young_r =
-    [1/1,567/512
+    [1,567/512
     ,9/8,147/128
     ,21/16
     ,1323/1024,189/128
@@ -451,7 +451,7 @@ la_monte_young = Tuning (Left la_monte_young_r) 2
 -- > in map (round.to_cents_r) ben_johnston_r == c
 ben_johnston_r :: [Rational]
 ben_johnston_r =
-    [1/1,17/16
+    [1,17/16
     ,9/8,19/16
     ,5/4
     ,21/16,11/8

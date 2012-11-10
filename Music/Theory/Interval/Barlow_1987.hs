@@ -137,7 +137,7 @@ type Table_2_Row = (Double,[Integer],Rational,Double)
 table_2 :: Double -> [Table_2_Row]
 table_2 z =
     let g n = n <= 2 && n >= 1
-        r = nub (sort (filter g [(p%q) | p <- [1..81],q <- [1..81]]))
+        r = nub (sort (filter g [p % q | p <- [1..81],q <- [1..81]]))
         h = map (harmonicity_r barlow) r
         f = (> z) . snd
         k (i,j) = (cents i,rational_prime_factors_t 6 (from_rational i),i,j)
@@ -174,7 +174,7 @@ table_2 z =
 table_2_pp :: Table_2_Row -> String
 table_2_pp (i,j,k,l) =
     let i' = printf "%8.3f" i
-        j' = intercalate " " (map (printf "%2d") j)
+        j' = unwords (map (printf "%2d") j)
         k' = let (p,q) = from_rational k in printf "%2d:%-2d" q p
         l' = printf "%1.6f" l
     in intercalate " | " [i',j',k',l']

@@ -84,7 +84,7 @@ lower_psi q z n =
                 c = at' "c" q (z - r)
                 s5 = s4 `mod'` c
                 s6 = upper_psi c (1 + s5)
-                s7 = let f i = at' "s7" q i
+                s7 = let f = at' "s7" q
                      in product (map f [0 .. z - r - 1])
             in traceShow ("lower_psi:s",s1,s2,s3,s4,s5,s6,s7) (s7 * s6)
     in traceShow ("lower_psi",q,z,n) (sum (map s8 [0 .. z - 1]))
@@ -127,7 +127,7 @@ upper_psi p n =
          then p - n
          else if n == p - 1
               then div' "upper_psi" p 4
-              else let n' = n - (div' "n'" n p)
+              else let n' = n - div' "n'" n p
                        s = prime_stratification (p - 1)
                        q = lower_psi s (genericLength s) n'
                        q' = to_r q

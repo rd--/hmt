@@ -304,7 +304,7 @@ draw_contour d =
         normalise :: Integral i => [Rational] -> [i]
         normalise xs =
             let xs' = nub (sort xs)
-            in map (\i -> fromIntegral (fromJust (findIndex (== i) xs'))) xs
+            in map (\i -> fromIntegral (fromJust (elemIndex i xs'))) xs
         adjustment x = if x == 0 then 1 else 1 % (denominator x * 2)
         step (i,j) ns = let c = contour_description_ix d (i,j)
                             i' = ns !! i

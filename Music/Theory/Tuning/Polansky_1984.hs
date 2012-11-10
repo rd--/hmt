@@ -3,7 +3,6 @@
 module Music.Theory.Tuning.Polansky_1984 where
 
 import Data.List
-import Data.Maybe
 import Music.Theory.Tuning
 
 k_manisrenga :: Fractional n => [n]
@@ -99,7 +98,7 @@ i_categories =
 i_category :: (Ord a, Num a) => a -> String
 i_category x =
     let f n (i,j) = i <= n && n < j
-    in fromMaybe "U" (fmap snd (find (f x . fst) i_categories))
+    in maybe "U" snd (find (f x . fst) i_categories)
 
 -- | Pad 'String' to right with spaces until at least /n/ characters.
 --
