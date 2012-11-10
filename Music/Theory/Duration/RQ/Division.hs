@@ -27,7 +27,7 @@ rq_div_verify (_,n,m,_) = n == sum m
 rq_div_mm_verify :: Int -> [RQ_Div] -> [(Integer,[RQ])]
 rq_div_mm_verify n x =
     let q = map (sum . fst . rq_div_to_rq_set_t) x
-    in zip [1..] (splitEvery n q)
+    in zip [1..] (chunksOf n q)
 
 -- | Translate from 'RQ_Div' to a sequence of 'RQ' values.
 --

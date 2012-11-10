@@ -143,7 +143,7 @@ mercators_comma = 19383245667680019896796723 / 19342813113834066795298816
 -- | Calculate /n/th root of /x/.
 --
 -- > 12 `nth_root` 2  == twelve_tone_equal_temperament_comma
-nth_root :: (Floating a) => a -> a -> a
+nth_root :: (Floating a,Eq a) => a -> a -> a
 nth_root n x =
     let f (_,x0) = (x0, ((n-1)*x0+x/x0**(n-1))/n)
         e = uncurry (==)
@@ -152,7 +152,7 @@ nth_root n x =
 -- | 12-tone equal temperament comma (ie. 12th root of 2).
 --
 -- > twelve_tone_equal_temperament_comma == 1.0594630943592953
-twelve_tone_equal_temperament_comma :: (Floating a) => a
+twelve_tone_equal_temperament_comma :: (Floating a,Eq a) => a
 twelve_tone_equal_temperament_comma = 12 `nth_root` 2
 
 -- * 12-tone tunings

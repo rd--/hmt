@@ -54,7 +54,7 @@ prime_factors_m :: Integral a => a -> [(a,a)]
 prime_factors_m = multiplicities . prime_factors
 
 -- | Merging function for 'rational_prime_factors_m'.
-merge :: (Ord a,Num b) => [(a,b)] -> [(a,b)] -> [(a,b)]
+merge :: (Ord a,Num b,Eq b) => [(a,b)] -> [(a,b)] -> [(a,b)]
 merge p q =
     case (p,q) of
       (_,[]) -> p

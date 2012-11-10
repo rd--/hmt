@@ -139,7 +139,7 @@ adj_intersect n = map intersect_l . segments 2 n
 -- > cycles 3 [1..9] == [[1,4,7],[2,5,8],[3,6,9]]
 -- > cycles 4 [1..8] == [[1,5],[2,6],[3,7],[4,8]]
 cycles :: Int -> [a] -> [[a]]
-cycles n = transpose . splitEvery n
+cycles n = transpose . chunksOf n
 
 -- * Association lists
 

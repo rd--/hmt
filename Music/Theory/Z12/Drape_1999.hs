@@ -172,7 +172,7 @@ has_sc = has_sc_pf forte_prime
 -- 22341
 --
 -- > icf [[2,2,3,4,1]] == [[2,2,3,4,1]]
-icf :: (Num a) => [[a]] -> [[a]]
+icf :: (Num a,Eq a) => [[a]] -> [[a]]
 icf = filter ((== 12) . sum)
 
 -- | Interval class set to interval sets.

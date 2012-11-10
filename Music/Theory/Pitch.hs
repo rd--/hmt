@@ -31,7 +31,7 @@ data Alteration_T = DoubleFlat
 data Pitch = Pitch {note :: Note_T
                    ,alteration :: Alteration_T
                    ,octave :: Octave}
-           deriving (Eq, Show)
+           deriving (Eq,Show)
 
 instance Ord Pitch where
     compare = pitch_compare
@@ -108,7 +108,7 @@ alteration_to_fdiff a =
 --
 -- > map fdiff_to_alteration [-0.5,0.5] == [Just QuarterToneFlat
 -- >                                       ,Just QuarterToneSharp]
-fdiff_to_alteration :: Fractional n => n -> Maybe Alteration_T
+fdiff_to_alteration :: (Fractional n,Eq n) => n -> Maybe Alteration_T
 fdiff_to_alteration d =
     case d of
       -2 -> Just DoubleFlat
@@ -129,8 +129,7 @@ fdiff_to_alteration d =
 --
 -- > map alteration_symbol [minBound .. maxBound] == "𝄫𝄭♭𝄳♮𝄲♯𝄰𝄪"
 alteration_symbol :: Alteration_T -> Char
-alteration_symbol a =
-    case a of
+alteration_symbol a =    case a of
       DoubleFlat -> '𝄫'
       ThreeQuarterToneFlat -> '𝄭'
       Flat -> '♭'
@@ -175,8 +174,8 @@ alteration_lower_quarter_tone a =
 
 -- | Edit 'Alteration_T' by a quarter tone where possible, @-0.5@
 -- lowers, @0@ retains, @0.5@ raises.
-alteration_edit_quarter_tone :: Fractional a =>
-                                a -> Alteration_T -> Maybe Alteration_T
+alteration_edit_quarter_tone :: (Fractional n,Eq n) =>
+                                n -> Alteration_T -> Maybe Alteration_T
 alteration_edit_quarter_tone n a =
     case n of
       -0.5 -> alteration_lower_quarter_tone a
@@ -245,7 +244,7 @@ pitch_compare :: Pitch -> Pitch -> Ordering
 pitch_compare = compare `on` pitch_to_fmidi
 
 -- | Function to spell a 'PitchClass'.
-type Spelling n = n -> (Note_T, Alteration_T)
+type Spelling n = n -> (Note_T,Alteration_T)
 
 -- | Given 'Spelling' function translate from 'OctPC' notation to
 -- 'Pitch'.

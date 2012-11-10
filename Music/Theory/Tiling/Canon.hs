@@ -185,7 +185,7 @@ v_space_ix n v =
 --
 -- > with_bars 6 (v_dot_star 18 [0,2..]) == "*.*.*.|*.*.*.|*.*.*."
 with_bars :: Int -> String -> String
-with_bars m = concat . intersperse "|" . splitEvery m
+with_bars m = concat . intersperse "|" . chunksOf m
 
 -- | Variant with measure length /m/ and number of measures /n/.
 --

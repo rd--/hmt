@@ -8,8 +8,8 @@ Copyright:         Rohan Drape, 2006-2012
 Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
-Homepage:          http://slavepianos.org/rd/?t=hmt
-Tested-With:       GHC == 7.0.4
+Homepage:          http://rd.slavepianos.org/?t=hmt
+Tested-With:       GHC == 7.6.1
 Build-Type:        Simple
 Cabal-Version:     >= 1.8
 
@@ -99,4 +99,4 @@ Library
 
 Source-Repository  head
   Type:            darcs
-  Location:        http://slavepianos.org/rd/sw/hmt
+  Location:        http://rd.slavepianos.org/sw/hmt

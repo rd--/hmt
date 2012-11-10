@@ -21,6 +21,7 @@ instance Num Z12 where
   signum _ = error "Z12 numbers are not signed"
   abs _ = error "Z12 numbers are not signed"
 
+-- > map toZ12 [-9,-3,0] == [3,9,0]
 toZ12 :: Integral i => i -> Z12
 toZ12 = fromIntegral
 

@@ -20,7 +20,7 @@ at x i = x `genericIndex` (i - 1)
 --
 -- > map (at' 'x' [11..13]) [0..4] == [1,11,12,13,1]
 -- > at' 'x' [0] 3 == undefined
-at' :: (Num a,Integral n,Show m) => m -> [a] -> n -> a
+at' :: (Num a,Show a,Integral n,Show n,Show m) => m -> [a] -> n -> a
 at' m x i =
     let n = genericLength x
     in if i == 0 || i == n + 1
@@ -32,7 +32,7 @@ at' m x i =
 -- | Variant of 'mod' with input constraints.
 --
 -- > mod' (-1) 2 == 1
-mod' :: Integral a => a -> a -> a
+mod' :: (Integral a,Show a) => a -> a -> a
 mod' a b =
     let r = mod a b
     in if r < 0 || r >= b
@@ -43,11 +43,11 @@ mod' a b =
 type R = Double
 
 -- | Specialised variant of 'fromIntegral'.
-to_r :: Integral i => i -> R
+to_r :: (Integral n,Show n) => n -> R
 to_r = fromIntegral
 
 -- | Variant on 'div' with input constraints.
-div' :: Integral a => String -> a -> a -> a
+div' :: (Integral a,Show a) => String -> a -> a -> a
 div' m i j =
     if i < 0 || j < 0
     then error (show ("div'",m,i,j))
@@ -62,7 +62,7 @@ type Stratification t = [t]
 -- > indispensibilities [2,3,2] == [11,0,6,2,8,4,10,1,7,3,9,5]
 -- > indispensibilities [2,2,3] == [11,0,4,8,2,6,10,1,5,9,3,7]
 -- > indispensibilities [3,5] == [14,0,9,3,6,12,1,10,4,7,13,2,11,5,8]
-indispensibilities :: Integral a => Stratification a -> [a]
+indispensibilities :: (Integral n,Show n) => Stratification n -> [n]
 indispensibilities x = map (lower_psi x (genericLength x)) [1 .. product x]
 
 -- | The indispensibility measure (ψ).
@@ -73,7 +73,7 @@ indispensibilities x = map (lower_psi x (genericLength x)) [1 .. product x]
 -- > map (lower_psi [5] 1) [1..5] == [4,0,3,1,2]
 -- > map (lower_psi [3,2] 2) [1..6] == [5,0,3,1,4,2]
 -- > map (lower_psi [2,3] 2) [1..6] == [5,0,2,4,1,3]
-lower_psi :: Integral a => Stratification a -> a -> a -> a
+lower_psi :: (Integral a,Show a) => Stratification a -> a -> a -> a
 lower_psi q z n =
     let s8 r =
             let s1 = product q
@@ -92,7 +92,7 @@ lower_psi q z n =
 -- | The first /n/th primes, reversed.
 --
 -- > reverse_primes 14 == [43,41,37,31,29,23,19,17,13,11,7,5,3,2]
-reverse_primes :: Integral n => n -> [n]
+reverse_primes :: (Integral n,Show n) => n -> [n]
 reverse_primes n = reverse (genericTake n primes)
 
 -- | Generate prime stratification for /n/.
@@ -101,7 +101,7 @@ reverse_primes n = reverse (genericTake n primes)
 -- > map prime_stratification [6,8,9,12] == [[3,2],[2,2,2],[3,3],[3,2,2]]
 -- > map prime_stratification [22,10,4,1] == [[11,2],[5,2],[2,2],[]]
 -- > map prime_stratification [18,16,12] == [[3,3,2],[2,2,2,2],[3,2,2]]
-prime_stratification :: Integral n => n -> Stratification n
+prime_stratification :: (Integral n,Show n) => n -> Stratification n
 prime_stratification =
     let go x k =
             case x of
@@ -119,7 +119,7 @@ prime_stratification =
 -- > map (upper_psi 7) [1..7] == [6,0,4,2,5,1,3]
 -- > map (upper_psi 11) [1..11] == [10,0,6,4,9,1,7,3,8,2,5]
 -- > map (upper_psi 13) [1..13] == [12,0,7,4,10,1,8,5,11,2,9,3,6]
-upper_psi :: Integral a => a -> a -> a
+upper_psi :: (Integral a,Show a) => a -> a -> a
 upper_psi p n =
     if p `notElem` reverse_primes 14
     then error (show ("upper_psi","not prime",p,n))
@@ -143,7 +143,7 @@ upper_psi p n =
 -- >                         ,[True,False,True,False,True,False]
 -- >                         ,[True,False,False,False,True,False]
 -- >                         ,[True,False,False,False,False,False]]
-thinning_table :: Integral a => Stratification a -> [[Bool]]
+thinning_table :: (Integral n,Show n) => Stratification n -> [[Bool]]
 thinning_table s =
     let x = indispensibilities s
         n = genericLength x
@@ -163,7 +163,7 @@ thinning_table s =
 -- > *.*.*.   *..*.*
 -- > *...*.   *..*..
 -- > *.....   *.....
-thinning_table_pp :: Integral n => Stratification n -> String
+thinning_table_pp :: (Integral n,Show n) => Stratification n -> String
 thinning_table_pp s =
     let f x = if x then '*' else '.'
     in unlines (map (map f) (thinning_table s))
@@ -180,7 +180,7 @@ relative_to_length x =
 -- @(0,1)@.
 --
 -- relative_indispensibilities [3,2] == [1,0,0.6,0.2,0.8,0.4]
-relative_indispensibilities :: Integral n => Stratification n -> [R]
+relative_indispensibilities :: (Integral n,Show n) => Stratification n -> [R]
 relative_indispensibilities = relative_to_length . indispensibilities
 
 -- | Align two meters (given as stratifications) to least common
@@ -234,7 +234,7 @@ whole_quot i j =
 -- > in prolong_stratifications ([2,5],50) ([3,2],60) == r
 --
 -- > prolong_stratifications ([2,2,3],5) ([3,5],4) == ([2,2,3],[3,5])
-prolong_stratifications :: Integral a => S_MM a -> S_MM a -> ([a],[a])
+prolong_stratifications :: (Integral n,Show n) => S_MM n -> S_MM n -> ([n],[n])
 prolong_stratifications (s1,v1) (s2,v2) =
     let t1 = product s1 * v1
         t2 = product s2 * v2
@@ -258,7 +258,7 @@ square n = n * n
 -- | Composition of 'prolong_stratifications' and 'align_meters'.
 --
 -- > align_s_mm indispensibilities ([2,2,3],5) ([3,5],4)
-align_s_mm :: Integral n => ([n] -> [t]) -> S_MM n -> S_MM n -> [(t,t)]
+align_s_mm :: (Integral n,Show n) => ([n] -> [t]) -> S_MM n -> S_MM n -> [(t,t)]
 align_s_mm f (s1,v1) (s2,v2) =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
     in align_meters f s1' s2'
@@ -271,7 +271,7 @@ align_s_mm f (s1,v1) (s2,v2) =
 -- > map (upper_psi' 7) [1..7] /= [6,0,4,2,5,1,3]
 -- > map (upper_psi' 11) [1..11] /= [10,0,6,4,9,1,7,3,8,2,5]
 -- > map (upper_psi' 13) [1..13] /= [12,0,7,4,10,1,8,5,11,2,9,3,6]
-upper_psi' :: Integral a => a -> a -> a
+upper_psi' :: (Integral a,Show a) => a -> a -> a
 upper_psi' h n =
     if h > 3
     then let omega x = if x == 0 then 0 else 1
@@ -312,7 +312,7 @@ mean_square_product x =
 -- > let p ~= q = abs (p - q) < 1e-4
 -- > metrical_affinity [2,3] 1 [3,2] 1 ~= 0.0324
 -- > metrical_affinity [2,2,3] 20 [3,5] 16 ~= 0.0028
-metrical_affinity :: Integral i => [i] -> i -> [i] -> i -> R
+metrical_affinity :: (Integral n,Show n) => [n] -> n -> [n] -> n -> R
 metrical_affinity s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
         i1 = relative_indispensibilities s1'
@@ -332,7 +332,7 @@ metrical_affinity s1 v1 s2 v2 =
 -- > metrical_affinity' [2,2,2] 1 [3,2,2] 1 ~= 0.45872
 --
 -- > metrical_affinity' [3,2,2] 3 [2,2,3] 2 ~= 0.10282
-metrical_affinity' :: Integral t => [t] -> t -> [t] -> t -> R
+metrical_affinity' :: (Integral t,Show t) => [t] -> t -> [t] -> t -> R
 metrical_affinity' s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
         ix :: (Integer -> x) -> Integer -> x

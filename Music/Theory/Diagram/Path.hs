@@ -68,11 +68,11 @@ pt_fn :: ((a,a) -> b) -> Pt a -> b
 pt_fn f p = let (x,y) = pt_xy p in f (x,y)
 
 -- | Apply /f/ to /start/ and /end/ 'Pt' duple of 'Ln'.
-ln_fn :: Num a => ((Pt a,Pt a) -> b) -> Ln a -> b
+ln_fn :: (Num a,Eq a) => ((Pt a,Pt a) -> b) -> Ln a -> b
 ln_fn f l = let (p,q) = ln_pt l in f (p,q)
 
 -- | Apply /f/ to /start/ and /end/ 'Pt's of 'Ln' and construct 'Ln'.
-ln_pt_fn :: (Num a, Num b) => (Pt a -> Pt b) -> Ln a -> Ln b
+ln_pt_fn :: (Num a,Eq a,Num b,Eq b) => (Pt a -> Pt b) -> Ln a -> Ln b
 ln_pt_fn f = ln_fn (\(p,q) -> ln (f p) (f q))
 
 -- | Scale set of 'Ln' to lie in area given by /(0,n)/.
@@ -96,7 +96,7 @@ data Orientation a = Vertical | Horizontal | Diagonal a
 -- > orientation (ln' (0,0) (0,1)) == Vertical
 -- > orientation (ln' (0,0) (1,0)) == Horizontal
 -- > orientation (ln' (0,0) (1,1)) == Diagonal 1
-orientation :: (Fractional a) => Ln a -> Orientation a
+orientation :: (Fractional a,Eq a) => Ln a -> Orientation a
 orientation l =
     case ln_slope l of
       Nothing -> Vertical

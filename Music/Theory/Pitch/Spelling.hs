@@ -28,7 +28,7 @@ pc_spell_natural :: Integral i => Spelling i
 pc_spell_natural pc =
     case pc_spell_natural_m pc of
       Just p -> p
-      _ -> error ("pc_spell_natural: " ++ show pc)
+      _ -> error "pc_spell_natural"
 
 -- | Use spelling from simplest key-signature.  Note that this is
 -- ambiguous for @8@, which could be either G Sharp (♯) in /A Major/
