@@ -1,10 +1,10 @@
 Name:              hmt
-Version:           0.13
+Version:           0.14
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
 Category:          Music
-Copyright:         Rohan Drape, 2006-2012
+Copyright:         Rohan Drape, 2006-2013
 Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
@@ -23,8 +23,8 @@ Library
                    containers,
                    directory,
                    filepath,
-                   hcg-minus==0.13.*,
-                   html-minimalist==0.13.*,
+                   hcg-minus==0.14.*,
+                   html-minimalist==0.14.*,
                    logict,
                    multiset-comb,
                    parsec,
