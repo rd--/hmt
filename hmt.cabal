@@ -23,8 +23,6 @@ Library
                    containers,
                    directory,
                    filepath,
-                   hcg-minus==0.14.*,
-                   html-minimalist==0.14.*,
                    logict,
                    multiset-comb,
                    parsec,
