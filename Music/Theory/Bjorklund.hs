@@ -5,7 +5,7 @@
 -- (<http://dx.doi.org/10.1016/j.comgeo.2008.04.005>)
 module Music.Theory.Bjorklund (bjorklund,xdot,iseq,iseq_str) where
 
-import Data.List.Split
+import Data.List.Split {- split -}
 
 type STEP a = ((Int,Int),([[a]],[[a]]))
 

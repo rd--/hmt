@@ -1,10 +1,10 @@
 module Music.Theory.Tiling.Canon where
 
 import Control.Monad.Logic {- logict -}
-import Data.Function
-import Data.List
+import Data.Function {- base -}
+import Data.List {- base -}
 import Data.List.Split {- split -}
-import Text.Printf
+import Text.Printf {- base -}
 
 -- | Sequence.
 type S = [Int]

@@ -4,11 +4,11 @@
 -- (<http://www.jstor.org/pss/843933>)
 module Music.Theory.Contour.Polansky_1992 where
 
-import Data.List
+import Data.List {- base -}
 import Data.List.Split {- split -}
 import qualified Data.Map as M {- containers -}
-import Data.Maybe
-import Data.Ratio
+import Data.Maybe {- base -}
+import Data.Ratio {- base -}
 import qualified Music.Theory.Set.List as S
 import qualified Music.Theory.Permutations.List as P
 

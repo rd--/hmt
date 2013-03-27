@@ -6,7 +6,7 @@ import Data.List
 import Data.Maybe
 import Data.Ratio
 
--- | Standard music notation durational model
+-- | Common music notation durational model
 data Duration = Duration {division :: Integer -- ^ division of whole note
                          ,dots :: Integer -- ^ number of dots
                          ,multiplier :: Rational -- ^ tuplet modifier

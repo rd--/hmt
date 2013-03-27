@@ -4,8 +4,12 @@ hmt - haskell music theory
 Music theory operations in [haskell][hs], primarily focused on 'set
 theory' and 'common music notation'.
 
-© [rohan drape][rd], 2006-2012, [gpl][gpl].
+- [hmt-diagrams][hmt-diagrams]
 
 [hs]: http://haskell.org/
+[hmt-diagrams]:  http://rd.slavepianos.org/?t=hmt-diagrams
+
+© [rohan drape][rd], 2006-2013, [gpl][gpl].
+
 [rd]:  http://rd.slavepianos.org/
 [gpl]: http://gnu.org/copyleft/

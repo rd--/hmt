@@ -2,8 +2,8 @@
 -- Computation in Music, Berlin, May 2007.
 module Music.Theory.Block_Design.Johnson_2007 where
 
-import Control.Arrow
-import Data.List
+import Control.Arrow {- base -}
+import Data.List {- base -}
 import qualified Music.Theory.List as L
 
 -- * Designs
