@@ -29,16 +29,13 @@ Library
                    permutation,
                    primes,
                    split,
-                   utf8-string,
-                   xml
+                   utf8-string
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
                    Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992
-                   Music.Theory.Diagram.Grid
-                   Music.Theory.Diagram.Path
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.Name
@@ -78,7 +75,6 @@ Library
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1990
                    Music.Theory.Tuning.Scala
-                   Music.Theory.Tuning.Table
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z12
