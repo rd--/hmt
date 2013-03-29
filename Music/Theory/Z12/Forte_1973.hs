@@ -297,13 +297,13 @@ sc_table =
 sc_name :: [Z12] -> SC_Name
 sc_name p =
     let n = find (\(_,q) -> forte_prime p == q) sc_table
-    in fst (fromJust n)
+    in fst (fromMaybe (error "sc_name") n)
 
 -- | Lookup a set-class given a set-class name.
 --
 -- > sc "6-Z17" == [0,1,2,4,7,8]
 sc :: SC_Name -> [Z12]
-sc n = snd (fromJust (find (\(m,_) -> n == m) sc_table))
+sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
 
 -- | List of set classes.
 scs :: [[Z12]]

@@ -101,7 +101,9 @@ dim p =
 dim_nm :: [Z12] -> [(Z12,Char)]
 dim_nm =
     let pk f (i,j) = (i,f j)
-    in nubBy ((==) `on` snd) . map (pk (fromJust.d_nm)) . dim
+    in nubBy ((==) `on` snd) .
+       map (pk (fromMaybe (error "dim_mn") . d_nm)) .
+       dim
 
 -- | Diatonic interval set to interval set.
 --

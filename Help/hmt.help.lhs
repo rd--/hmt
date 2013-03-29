@@ -1,16 +1,17 @@
 # Pct
 
-> import Control.Arrow
-> import Data.Function
-> import Data.List
-> import Data.Maybe
-> import Music.Theory.Parse
-> import Music.Theory.Pct
-> import Music.Theory.Permutations
-> import Music.Theory.PitchClass
-> import Music.Theory.Prime
-> import Music.Theory.Table
-> import Music.Theory.Set
+> import Control.Arrow {- base -}
+> import Data.Function {- base -}
+> import Data.List {- base -}
+> import Data.Maybe {- base -}
+> import Music.Theory.List {- hmt -}
+> import Music.Theory.Permutations {- hmt -}
+> import Music.Theory.Set.List {- hmt -}
+> import Music.Theory.Z12.Drape_1999 {- hmt -}
+> import Music.Theory.Z12.Forte_1973 {- hmt -}
+> import Music.Theory.Z12.Morris_1987 {- hmt -}
+> import Music.Theory.Z12.Morris_1987.Parse {- hmt -}
+> import Music.Theory.Z12.SRO {- hmt -}
 
 This file illustrates equivalent expressions in pct and hmt terms.
 
@@ -30,9 +31,6 @@ This file illustrates equivalent expressions in pct and hmt terms.
       pg 5-Z37 | bip | sort -u > 5-Z37.bip ; \
       comm 5-Z17.bip 5-Z37.bip -1 -2 | wc -l
     16
-
-> let f g = sort (g [1..4])
-> in f permutations_l == f permutations
 
 > let f = nub . map bip . permutations . sc
 > in length (f "5-Z17" `intersect` f "5-Z37") == 16
@@ -82,7 +80,7 @@ This file illustrates equivalent expressions in pct and hmt terms.
 >     ;a = filter (\p -> length p `elem` [8,9]) (map cyc scs)
 >     ;b = filter (\p -> set (int p) == [1,2]) a
 >     ;c = filter (\p -> not ([1,1] `isInfixOf` int p)) b}
-> in map sc_name c == ["7-34","7-35","8-28"]
+> in map (sc_name . nub) c == ["7-34","7-35","8-28"]
 
     $ epmq < ~/src/pct/lib/univ "in cset 6" "in pcset 579t024" \
     > "has sc 5-35" "hasnt sc 2-6" "notin pcset 024579e"
@@ -133,7 +131,7 @@ Note that pct uses right rotation rotation.
     11223
     11123
 
-> se 5 [1,2,3]
+> expand_set 5 [1,2,3]
 
 > ici [1,2,3]
 > cgg [[0],[1,11],[2,10],[3,9],[4,8],[5,7],[6]]
@@ -142,7 +140,7 @@ Note that pct uses right rotation rotation.
       sort -u | epmq "in cset 6" | wc -l
     42
 
-> let {a = se 5 [1,2,4,5]
+> let {a = expand_set 5 [1,2,4,5]
 >     ;b = concatMap permutations a
 >     ;c = concatMap ici b
 >     ;d = map (forte_prime . dx_d 0) c
