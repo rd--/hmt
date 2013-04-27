@@ -17,7 +17,7 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base==4.*,
+  Build-Depends:   base == 4.*,
                    bytestring,
                    colour,
                    containers,
