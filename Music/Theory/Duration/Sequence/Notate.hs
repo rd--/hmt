@@ -160,7 +160,7 @@ split_sum_by_eq f mm l =
 
 -- | Split sequence such that the prefix sums to precisely /m/.  The
 -- third element of the result indicates if it was required to divide
--- an element.  Not that zero elements are kept left.  If the required
+-- an element.  Note that zero elements are kept left.  If the required
 -- sum is non positive, or the input list does not sum to at least the
 -- required sum, gives nothing.
 --
@@ -199,6 +199,8 @@ _f = False
 --
 -- > let r = Just ([(3,_f),(1,_t)],[(1,_t),(1,_f)])
 -- > in rqt_split_sum 4 [(3,_f),(2,_t),(1,_f)] == r
+--
+-- > rqt_split_sum 4 [(5/2,False)] == Nothing
 rqt_split_sum :: RQ -> [RQ_T] -> Maybe ([RQ_T],[RQ_T])
 rqt_split_sum d x =
     case split_sum d (map rqt_rq x) of
@@ -216,11 +218,11 @@ rqt_split_sum d x =
 --
 -- > let d = [(2,_f),(2,_f),(2,_f)]
 -- > in rqt_separate [3,3] d == Right [[(2,_f),(1,_t)]
--- >                                 ,[(1,_f),(2,_f)]]
+-- >                                  ,[(1,_f),(2,_f)]]
 --
 -- > let d = [(5/8,_f),(1,_f),(3/8,_f)]
 -- > in rqt_separate [1,1] d == Right [[(5/8,_f),(3/8,_t)]
--- >                                 ,[(5/8,_f),(3/8,_f)]]
+-- >                                  ,[(5/8,_f),(3/8,_f)]]
 --
 -- > let d = [(4/7,_t),(1/7,_f),(1,_f),(6/7,_f),(3/7,_f)]
 -- > in rqt_separate [1,1,1] d == Right [[(4/7,_t),(1/7,_f),(2/7,_t)]
@@ -486,7 +488,9 @@ p_notate z x =
         d = case p_tuplet_rqt x of
               Just (t,x') -> da_tuplet t (f x')
               Nothing -> f x
-    in if rq_can_notate (map rqt_rq x) then Right d else Left (show ("p_notate",z,x))
+    in if rq_can_notate (map rqt_rq x)
+       then Right d
+       else Left (show ("p_notate",z,x))
 
 -- | Notate measure.
 --
