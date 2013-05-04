@@ -36,24 +36,6 @@ data Pitch = Pitch {note :: Note_T
 instance Ord Pitch where
     compare = pitch_compare
 
--- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
---
--- > pitch_pp (Pitch E Flat 4) == "E♭4"
--- > pitch_pp (Pitch F QuarterToneSharp 3) == "F𝄲3"
-pitch_pp :: Pitch -> String
-pitch_pp (Pitch n a o) =
-    let a' = if a == Natural then "" else [alteration_symbol a]
-    in show n ++ a' ++ show o
-
--- | Pretty printer for 'Pitch' (ASCII, see 'alteration_ly_name').
---
--- > pitch_pp_ascii (Pitch E Flat 4) == "ees4"
--- > pitch_pp_ascii (Pitch F QuarterToneSharp 3) == "fih3"
-pitch_pp_ascii :: Pitch -> String
-pitch_pp_ascii (Pitch n a o) =
-    let n' = map toLower (show n)
-    in n' ++ alteration_ly_name a ++ show o
-
 -- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
@@ -121,40 +103,6 @@ fdiff_to_alteration d =
       1.5 -> Just ThreeQuarterToneSharp
       2 -> Just DoubleSharp
       _ -> undefined
-
--- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@
--- through @U+1D1FF@.  The @3/4@ symbols are non-standard, here they
--- correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP
--- UP@.
---
--- > map alteration_symbol [minBound .. maxBound] == "𝄫𝄭♭𝄳♮𝄲♯𝄰𝄪"
-alteration_symbol :: Alteration_T -> Char
-alteration_symbol a =    case a of
-      DoubleFlat -> '𝄫'
-      ThreeQuarterToneFlat -> '𝄭'
-      Flat -> '♭'
-      QuarterToneFlat -> '𝄳'
-      Natural -> '♮'
-      QuarterToneSharp -> '𝄲'
-      Sharp -> '♯'
-      ThreeQuarterToneSharp -> '𝄰'
-      DoubleSharp -> '𝄪'
-
--- | The @Lilypond@ ASCII spellings for alterations.
---
--- > map alteration_ly_name [Flat .. Sharp] == ["es","eh","","ih","is"]
-alteration_ly_name :: Alteration_T -> String
-alteration_ly_name a =
-    case a of
-      DoubleFlat -> "eses"
-      ThreeQuarterToneFlat -> "eseh"
-      Flat -> "es"
-      QuarterToneFlat -> "eh"
-      Natural -> ""
-      QuarterToneSharp -> "ih"
-      Sharp -> "is"
-      ThreeQuarterToneSharp -> "isih"
-      DoubleSharp -> "isis"
 
 -- | Raise 'Alteration_T' by a quarter tone where possible.
 --
@@ -386,3 +334,138 @@ cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
 octpc_to_cps = midi_to_cps . octpc_to_midi
+
+-- * Parsers
+
+-- | Slight generalisation of ISO pitch representation.  Allows octave
+-- to be elided, pitch names to be lower case, and double sharps
+-- written as @##@.
+--
+-- See <http://www.musiccog.ohio-state.edu/Humdrum/guide04.html>
+--
+-- > let r = [Pitch C Natural 4,Pitch A Flat 5,Pitch F DoubleSharp 6]
+-- > in mapMaybe (parse_iso_pitch_ext 4) ["C","Ab5","f##6",""] == r
+parse_iso_pitch_oct :: Octave -> String -> Maybe Pitch
+parse_iso_pitch_oct def_o s =
+    let nte n = let tb = zip "cdefgab" [C,D,E,F,G,A,B]
+                in lookup (toLower n) tb
+        oct o = case o of {[] -> def_o;_ -> read o}
+        mk n a o = case nte n of
+                   Nothing -> Nothing
+                   Just n' -> Just (Pitch n' a (oct o))
+    in case s of
+         [] -> Nothing
+         n:'b':'b':o -> mk n DoubleFlat o
+         n:'#':'#':o -> mk n DoubleSharp o
+         n:'x':o -> mk n DoubleSharp o
+         n:'b':o -> mk n Flat o
+         n:'#':o -> mk n Sharp o
+         n:o -> mk n Natural o
+
+-- | Variant of 'parse_iso_pitch_oct' requiring octave.
+parse_iso_pitch :: String -> Maybe Pitch
+parse_iso_pitch = parse_iso_pitch_oct (error "parse_iso_pitch: no octave")
+
+-- * Pretty printers
+
+-- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@
+-- through @U+1D1FF@.  The @3/4@ symbols are non-standard, here they
+-- correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP
+-- UP@.
+--
+-- > map alteration_symbol [minBound .. maxBound] == "𝄫𝄭♭𝄳♮𝄲♯𝄰𝄪"
+alteration_symbol :: Alteration_T -> Char
+alteration_symbol a =    case a of
+      DoubleFlat -> '𝄫'
+      ThreeQuarterToneFlat -> '𝄭'
+      Flat -> '♭'
+      QuarterToneFlat -> '𝄳'
+      Natural -> '♮'
+      QuarterToneSharp -> '𝄲'
+      Sharp -> '♯'
+      ThreeQuarterToneSharp -> '𝄰'
+      DoubleSharp -> '𝄪'
+
+-- | The @ISO@ ASCII spellings for alterations.  Naturals as written
+-- as the empty string.
+--
+-- > mapMaybe alteration_iso_m [Flat .. Sharp] == ["b","","#"]
+alteration_iso_m :: Alteration_T -> Maybe String
+alteration_iso_m a =
+    case a of
+      DoubleFlat -> Just "bb"
+      ThreeQuarterToneFlat -> Nothing
+      Flat -> Just "b"
+      QuarterToneFlat -> Nothing
+      Natural -> Just ""
+      QuarterToneSharp -> Nothing
+      Sharp -> Just "#"
+      ThreeQuarterToneSharp -> Nothing
+      DoubleSharp -> Just "x"
+
+-- | The @ISO@ ASCII spellings for alterations.
+alteration_iso :: Alteration_T -> String
+alteration_iso =
+    let qt = error "alteration_iso: quarter tone"
+    in fromMaybe qt . alteration_iso_m
+
+-- | The /Tonhöhe/ ASCII spellings for alterations.
+--
+-- See <http://www.musiccog.ohio-state.edu/Humdrum/guide04.html> and
+-- <http://lilypond.org/doc/v2.16/Documentation/notation/writing-pitches>
+--
+-- > map alteration_tonh [Flat .. Sharp] == ["es","eh","","ih","is"]
+alteration_tonh :: Alteration_T -> String
+alteration_tonh a =
+    case a of
+      DoubleFlat -> "eses"
+      ThreeQuarterToneFlat -> "eseh"
+      Flat -> "es"
+      QuarterToneFlat -> "eh"
+      Natural -> ""
+      QuarterToneSharp -> "ih"
+      Sharp -> "is"
+      ThreeQuarterToneSharp -> "isih"
+      DoubleSharp -> "isis"
+
+-- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
+--
+-- > pitch_pp (Pitch E Flat 4) == "E♭4"
+-- > pitch_pp (Pitch F QuarterToneSharp 3) == "F𝄲3"
+pitch_pp :: Pitch -> String
+pitch_pp (Pitch n a o) =
+    let a' = if a == Natural then "" else [alteration_symbol a]
+    in show n ++ a' ++ show o
+
+-- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
+--
+-- > pitch_pp_iso (Pitch E Flat 4) == "Eb4"
+-- > pitch_pp_iso (Pitch F DoubleSharp 3) == "Fx3"
+pitch_pp_iso :: Pitch -> String
+pitch_pp_iso (Pitch n a o) = show n ++ alteration_iso a ++ show o
+
+-- | Pretty printer for 'Pitch' (ASCII, see 'alteration_tonh').
+--
+-- > pitch_pp_hly (Pitch E Flat 4) == "ees4"
+-- > pitch_pp_hly (Pitch F QuarterToneSharp 3) == "fih3"
+-- > pitch_pp_hly (Pitch B Natural 6) == "b6"
+pitch_pp_hly :: Pitch -> String
+pitch_pp_hly (Pitch n a o) =
+    let n' = map toLower (show n)
+    in n' ++ alteration_tonh a ++ show o
+
+-- | Pretty printer for 'Pitch' (Tonhöhe, see 'alteration_tonh').
+--
+-- > pitch_pp_tonh (Pitch E Flat 4) == "Es4"
+-- > pitch_pp_tonh (Pitch F QuarterToneSharp 3) == "Fih3"
+-- > pitch_pp_tonh (Pitch B Natural 6) == "H6"
+pitch_pp_tonh :: Pitch -> String
+pitch_pp_tonh (Pitch n a o) =
+    let o' = show o
+    in case (n,a) of
+         (B,Natural) -> "H" ++ o'
+         (B,Flat) -> "B" ++ o'
+         (B,DoubleFlat) -> "Heses" ++ o'
+         (A,Flat) -> "As" ++ o'
+         (E,Flat) -> "Es" ++ o'
+         _ -> show n ++ alteration_tonh a ++ o'
