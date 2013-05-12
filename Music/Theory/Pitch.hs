@@ -344,15 +344,20 @@ octpc_to_cps = midi_to_cps . octpc_to_midi
 -- See <http://www.musiccog.ohio-state.edu/Humdrum/guide04.html>
 --
 -- > let r = [Pitch C Natural 4,Pitch A Flat 5,Pitch F DoubleSharp 6]
--- > in mapMaybe (parse_iso_pitch_ext 4) ["C","Ab5","f##6",""] == r
+-- > in mapMaybe (parse_iso_pitch_oct 4) ["C","Ab5","f##6",""] == r
 parse_iso_pitch_oct :: Octave -> String -> Maybe Pitch
 parse_iso_pitch_oct def_o s =
     let nte n = let tb = zip "cdefgab" [C,D,E,F,G,A,B]
                 in lookup (toLower n) tb
-        oct o = case o of {[] -> def_o;_ -> read o}
+        oct o = case o of
+                  [] -> Just def_o
+                  [n] -> if isDigit n
+                         then Just (fromIntegral (digitToInt n))
+                         else Nothing
+                  _ -> Nothing
         mk n a o = case nte n of
                    Nothing -> Nothing
-                   Just n' -> Just (Pitch n' a (oct o))
+                   Just n' -> fmap (Pitch n' a) (oct o)
     in case s of
          [] -> Nothing
          n:'b':'b':o -> mk n DoubleFlat o
