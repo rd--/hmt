@@ -17,12 +17,14 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   base == 4.*,
+  Build-Depends:   array,
+                   base == 4.*,
                    bytestring,
                    colour,
                    containers,
                    directory,
                    filepath,
+                   lazy-csv,
                    logict,
                    multiset-comb,
                    parsec,
@@ -31,7 +33,8 @@ Library
                    split,
                    utf8-string
   GHC-Options:     -Wall -fwarn-tabs
-  Exposed-modules: Music.Theory.Bjorklund
+  Exposed-modules: Music.Theory.Array.CSV
+                   Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
                    Music.Theory.Combinations
