@@ -182,3 +182,20 @@ duration_pp (Duration x d m) =
     in case whole_note_division_pp x of
          Just x' -> Just (x' : d' ++ m')
          _ -> Nothing
+
+-- | Duration to @**recip@ notation.
+--
+-- http://humdrum.org/Humdrum/representations/recip.rep.html
+--
+-- > let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
+-- > in map duration_recip_pp d == ["0","1","2","4","8","16","32"]
+--
+-- > let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
+-- > in map duration_recip_pp d == ["3.","4.","6."]
+duration_recip_pp :: Duration -> String
+duration_recip_pp (Duration x d m) =
+    let (mn,md) = (numerator m,denominator m)
+        r = (x % mn) * (md % 1)
+    in if denominator r == 1
+       then show (numerator r) ++ genericReplicate d '.'
+       else error (show ("duration_recip_pp",x,d,m,r))
