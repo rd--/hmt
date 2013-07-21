@@ -17,17 +17,18 @@
 -- 5. Ascribe values to notated durations, see 'ascribe'.
 module Music.Theory.Duration.Sequence.Notate where
 
-import Control.Applicative
-import Control.Monad
-import Data.List
+import Control.Applicative {- base -}
+import Control.Monad {- base -}
+import Data.List {- base -}
 import Data.List.Split {- split -}
-import Data.Ratio
-import Music.Theory.Duration
-import Music.Theory.Duration.Annotation
-import Music.Theory.Duration.RQ
-import Music.Theory.Duration.RQ.Tied
-import Music.Theory.List
-import Music.Theory.Time_Signature
+import Data.Maybe {- base -}
+import Data.Ratio {- base -}
+import Music.Theory.Duration {- hmt -}
+import Music.Theory.Duration.Annotation {- hmt -}
+import Music.Theory.Duration.RQ {- hmt -}
+import Music.Theory.Duration.RQ.Tied {- hmt -}
+import Music.Theory.List {- hmt -}
+import Music.Theory.Time_Signature {- hmt -}
 
 -- * Lists
 
@@ -647,12 +648,20 @@ p_simplify = m_simplify p_simplify_rule undefined
 
 -- * Notate
 
--- | Composition of 'to_divisions_ts', 'mm_notate' 'm_simplify'.
+-- | Notate RQ duration sequence.  Derive pulse divisions from
+-- 'Time_Signature' if not given directly.  Composition of
+-- 'to_divisions_ts', 'mm_notate' 'm_simplify'.
+notate_rqp :: Simplify_P -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] ->
+              Either String [[Duration_A]]
+notate_rqp r ts ts_p x = do
+  let ts_p' = fromMaybe (map ts_divisions ts) ts_p
+  mm <- to_divisions_rq ts_p' x
+  dd <- mm_notate mm
+  return (zipWith (m_simplify r) ts dd)
+
+-- | Variant of 'notate_rqp' without pulse divisions (derive).
 notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Either String [[Duration_A]]
-notate r ts x = do
-    mm <- to_divisions_ts ts x
-    dd <- mm_notate mm
-    return (zipWith (m_simplify r) ts dd)
+notate r ts x = notate_rqp r ts Nothing x
 
 -- * Ascribe
 
