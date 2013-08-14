@@ -85,10 +85,24 @@ adj2_cyclic n = adj2 n . close
 -- | Interleave elements of /p/ and /q/.
 --
 -- > interleave [1..3] [4..6] == [1,4,2,5,3,6]
+-- > interleave ".+-" "abc" == ".a+b-c"
+-- > interleave [1..3] [] == []
 interleave :: [b] -> [b] -> [b]
 interleave p q =
     let u (i,j) = [i,j]
     in concatMap u (zip p q)
+
+-- | Variant that continues with the longer input.
+--
+-- > interleave_continue ".+-" "abc" == ".a+b-c"
+-- > interleave_continue [1..3] [] == [1..3]
+-- > interleave_continue [] [1..3] == [1..3]
+interleave_continue :: [a] -> [a] -> [a]
+interleave_continue p q =
+    case (p,q) of
+      ([],_) -> q
+      (_,[]) -> p
+      (i:p',j:q') -> i : j : interleave_continue p' q'
 
 -- | 'interleave' of 'rotate_left' by /i/ and /j/.
 --
