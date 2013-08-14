@@ -38,7 +38,7 @@ rq_to_duration x =
 
 -- | Is 'RQ' a /cmn/ duration.
 --
--- > map rq_is_cmn [1/4,1/5,1/8] == [True,False,True]
+-- > map rq_is_cmn [1/4,1/5,1/8,3/32] == [True,False,True,False]
 rq_is_cmn :: RQ -> Bool
 rq_is_cmn = isJust . rq_to_duration
 

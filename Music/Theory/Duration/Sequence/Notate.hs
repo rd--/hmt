@@ -675,13 +675,13 @@ notate r ts x = notate_rqp r ts Nothing x
 -- > zip_hold_lhs odd [1..6] "abc" == ([],zip [1..6] "aabbcc")
 -- > zip_hold_lhs even [1] "ab" == ("b",[(1,'a')])
 -- > zip_hold_lhs even [1,2] "a" == undefined
-zip_hold_lhs :: (x -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
+zip_hold_lhs :: (Show t,Show x) => (x -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
 zip_hold_lhs lhs_f =
     let f st e =
             case st of
               r:s -> let st' = if lhs_f e then st else s
                      in (st',(e,r))
-              _ -> error "zip_hold_lhs: rhs ends"
+              _ -> error (show ("zip_hold_lhs: rhs ends",st,e))
     in flip (mapAccumL f)
 
 -- | Variant of 'zip_hold' that requires the right hand side to be
@@ -691,15 +691,15 @@ zip_hold_lhs lhs_f =
 -- > zip_hold_lhs_err odd [1..6] "abc" == zip [1..6] "aabbcc"
 -- > zip_hold_lhs_err id [False,False] "a" == undefined
 -- > zip_hold_lhs_err id [False] "ab" == undefined
-zip_hold_lhs_err :: (x -> Bool) -> [x] -> [a] -> [(x,a)]
+zip_hold_lhs_err :: (Show t,Show x) => (x -> Bool) -> [x] -> [t] -> [(x,t)]
 zip_hold_lhs_err lhs_f p q =
     case zip_hold_lhs lhs_f p q of
       ([],r) -> r
-      _ -> error "zip_hold_lhs_err: lhs ends"
+      e -> error (show ("zip_hold_lhs_err: lhs ends",e))
 
 -- | Variant of 'zip' that retains elements of the right hand (rhs)
 -- list where elements of the left hand (lhs) list meet the given lhs
--- predicate, and elements of the lhs list where elements of the ths
+-- predicate, and elements of the lhs list where elements of the rhs
 -- meet the rhs predicate.  If the right hand side is longer the
 -- remaining elements to be processed are given.  It is an error for
 -- the right hand side to be short.
@@ -710,7 +710,7 @@ zip_hold_lhs_err lhs_f p q =
 -- > zip_hold even (const False) [1,2] "a" == undefined
 --
 -- > zip_hold odd even [1,2,6] [1..5] == ([4,5],[(1,1),(2,1),(6,2),(6,3)])
-zip_hold :: (x -> Bool) -> (t -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
+zip_hold :: (Show t,Show x) => (x -> Bool) -> (t -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
 zip_hold lhs_f rhs_f =
     let f r x t =
             case (x,t) of
@@ -727,15 +727,15 @@ zip_hold lhs_f rhs_f =
 -- > let {Just d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
 -- >     ;f = map snd . snd . flip m_ascribe "xyz"}
 -- > in fmap f (notate d) == Just "xxxyyyzz"
-m_ascribe :: [Duration_A] -> [x] -> ([x],[(Duration_A,x)])
+m_ascribe :: Show x => [Duration_A] -> [x] -> ([x],[(Duration_A,x)])
 m_ascribe = zip_hold_lhs da_tied_right
 
 -- | 'snd' '.' 'm_ascribe'.
-ascribe :: [Duration_A] -> [x] -> [(Duration_A, x)]
+ascribe :: Show x => [Duration_A] -> [x] -> [(Duration_A, x)]
 ascribe d = snd . m_ascribe d
 
 -- | Variant of 'm_ascribe' for a set of measures.
-mm_ascribe :: [[Duration_A]] -> [x] -> [[(Duration_A,x)]]
+mm_ascribe :: Show x => [[Duration_A]] -> [x] -> [[(Duration_A,x)]]
 mm_ascribe mm x =
     case mm of
       [] -> []
@@ -755,14 +755,14 @@ group_chd f x =
 -- | Variant of 'ascribe' that groups the /rhs/ elements using
 -- 'group_chd' and with the indicated /chord/ function, then rejoins
 -- the resulting sequence.
-ascribe_chd :: (x -> Bool) -> [Duration_A] -> [x] -> [(Duration_A, x)]
+ascribe_chd :: Show x => (x -> Bool) -> [Duration_A] -> [x] -> [(Duration_A, x)]
 ascribe_chd chd_f d x =
     let x' = group_chd chd_f x
         jn (i,j) = zip (repeat i) j
     in concatMap jn (ascribe d x')
 
 -- | Variant of 'mm_ascribe' using 'group_chd'
-mm_ascribe_chd :: (x -> Bool) -> [[Duration_A]] -> [x] -> [[(Duration_A,x)]]
+mm_ascribe_chd :: Show x => (x -> Bool) -> [[Duration_A]] -> [x] -> [[(Duration_A,x)]]
 mm_ascribe_chd chd_f d x =
     let x' = group_chd chd_f x
         jn (i,j) = zip (repeat i) j
