@@ -1,11 +1,11 @@
 -- | Duration annotations.
 module Music.Theory.Duration.Annotation where
 
---import Control.Applicative
-import Data.Maybe
-import Data.Ratio
-import qualified Data.Traversable as T
-import Data.Tree
+import Data.Maybe {- base -}
+import Data.Ratio {- base -}
+import qualified Data.Traversable as T {- base -}
+import Data.Tree {- containers -}
+
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
 
@@ -37,7 +37,7 @@ begins_tuplet a =
       Begin_Tuplet _ -> True
       _ -> False
 
--- | Does 'Duration_A' being a tuplet?
+-- | Does 'Duration_A' begin a tuplet?
 da_begins_tuplet :: Duration_A -> Bool
 da_begins_tuplet (_,a) = any begins_tuplet a
 

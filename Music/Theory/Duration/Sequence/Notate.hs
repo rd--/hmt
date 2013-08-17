@@ -264,7 +264,7 @@ rqt_separate_m m = either_to_maybe . rqt_separate m
 rqt_separate_tuplet :: RQ -> [RQ_T] -> Either String [[RQ_T]]
 rqt_separate_tuplet i x =
     if rqt_can_notate x
-    then Left (show ("rqt_separate_tuplet: cannot notate",x))
+    then Left (show ("rqt_separate_tuplet: separation not required",x))
     else let j = sum (map rqt_rq x) / 2
          in if j < i
             then Left (show ("rqt_separate_tuplet: j < i",j,i))
@@ -398,34 +398,44 @@ m_divisions_rq z =
 m_divisions_ts :: Time_Signature -> [RQ_T] -> Either String [[RQ_T]]
 m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 
--- | Composition of 'to_measures_rq' and 'm_divisions_rq', where
--- measures are initially given as sets of divisions.
---
--- > let m = [[1,1,1],[1,1,1]]
--- > in to_divisions_rq m [2,2,2] == Just [[[(1,_t)],[(1,_f)],[(1,_t)]]
--- >                                      ,[[(1,_f)],[(1,_t)],[(1,_f)]]]
---
--- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
--- > in to_divisions_rq [[1,1,1,1]] d == Just [[[(2/7,_f),(1/7,_f),(4/7,_f)]
--- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                           ,[(6/7,_f),(1/7,_t)]
--- >                                           ,[(6/7,_f),(1/7,_f)]]]
---
--- > let d = [5/7,1,6/7,3/7]
--- > in to_divisions_rq [[1,1,1]] d == Just [[[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                         ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                         ,[(4/7,_f),(3/7,_f)]]]
---
--- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
--- > in to_divisions_rq [[1,1,1,1]] d == Just [[[(2/7,_f),(1/7,_f),(4/7,_f)]
--- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
--- >                                           ,[(4/7,_f),(3/7,_f)]]]
---
--- > let d = [4/7,33/28,9/20,4/5]
--- > in to_divisions_rq [[1,1,1]] d == Just [[[(4/7,_f),(3/7,_t)]
--- >                                         ,[(3/4,_f),(1/4,_t)]
--- >                                         ,[(1/5,_f),(4/5,_f)]]]
+{-| Composition of 'to_measures_rq' and 'm_divisions_rq', where
+measures are initially given as sets of divisions.
+
+> let m = [[1,1,1],[1,1,1]]
+> in to_divisions_rq m [2,2,2] == Right [[[(1,_t)],[(1,_f)],[(1,_t)]]
+>                                      ,[[(1,_f)],[(1,_t)],[(1,_f)]]]
+
+> let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
+> in to_divisions_rq [[1,1,1,1]] d == Right [[[(2/7,_f),(1/7,_f),(4/7,_f)]
+>                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+>                                           ,[(6/7,_f),(1/7,_t)]
+>                                           ,[(6/7,_f),(1/7,_f)]]]
+
+> let d = [5/7,1,6/7,3/7]
+> in to_divisions_rq [[1,1,1]] d == Right [[[(4/7,_t),(1/7,_f),(2/7,_t)]
+>                                         ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+>                                         ,[(4/7,_f),(3/7,_f)]]]
+
+> let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
+> in to_divisions_rq [[1,1,1,1]] d == Right [[[(2/7,_f),(1/7,_f),(4/7,_f)]
+>                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+>                                           ,[(4/7,_t),(1/7,_f),(2/7,_t)]
+>                                           ,[(4/7,_f),(3/7,_f)]]]
+
+> let d = [4/7,33/28,9/20,4/5]
+> in to_divisions_rq [[1,1,1]] d == Right [[[(4/7,_f),(3/7,_t)]
+>                                          ,[(3/4,_f),(1/4,_t)]
+>                                          ,[(1/5,_f),(4/5,_f)]]]
+
+> let {p = [[1/2,1,1/2],[1/2,1]]
+>     ;d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]}
+> in to_divisions_rq p d == Right [[[(1/6,_f),(1/6,_f),(1/6,_f)]
+>                                  ,[(1/6,_f),(1/6,_f),(1/6,_f),(1/2,True)]
+>                                  ,[(1/6,_f),(1/6,_f),(1/6,True)]]
+>                                 ,[[(1/6,_f),(1/6,_f),(1/6,_f)]
+>                                  ,[(1/3,_f),(1/6,_f),(1/2,_f)]]]
+
+-}
 to_divisions_rq :: [[RQ]] -> [RQ] -> Either String [[[RQ_T]]]
 to_divisions_rq m x =
     let m' = map sum m
@@ -506,16 +516,22 @@ m_notate z m =
     let z' = z : map (is_tied_right . last) m
     in fmap concat (all_right (zipWith p_notate z' m))
 
--- | Multiple measure notation.
---
--- > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
--- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
---
--- > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
--- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
---
--- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in fmap mm_notate (to_divisions_ts [(4,4)] d)
+{-| Multiple measure notation.
+
+> let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
+> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+
+> let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
+> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+
+> let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
+> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+
+> let {p = [[1/2,1,1/2],[1/2,1]]
+>     ;d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]}
+> in fmap mm_notate (to_divisions_rq p d)
+
+-}
 mm_notate :: [[[RQ_T]]] -> Either String [[Duration_A]]
 mm_notate d =
     let z = False : map (is_tied_right . last . last) d
@@ -615,7 +631,7 @@ m_simplify :: Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
 m_simplify p ts =
     let f st (d0,a0) (d1,a1) =
             let t = Tie_Right `elem` a0 && Tie_Left `elem` a1
-                e = End_Tuplet `notElem` a0 || any begins_tuplet a1
+                e = End_Tuplet `notElem` a0 && not (any begins_tuplet a1)
                 m = duration_meq d0 d1
                 d = sum_dur d0 d1
                 a = delete Tie_Right a0 ++ delete Tie_Left a1
@@ -648,9 +664,17 @@ p_simplify = m_simplify p_simplify_rule undefined
 
 -- * Notate
 
--- | Notate RQ duration sequence.  Derive pulse divisions from
--- 'Time_Signature' if not given directly.  Composition of
--- 'to_divisions_ts', 'mm_notate' 'm_simplify'.
+{-| Notate RQ duration sequence.  Derive pulse divisions from
+'Time_Signature' if not given directly.  Composition of
+'to_divisions_ts', 'mm_notate' 'm_simplify'.
+
+>  let ts = [(4,8),(3,8)]
+>      ts_p = [[1/2,1,1/2],[1/2,1]]
+>      rq = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]
+>      sr x = T.default_rule [] x
+>  in T.notate_rqp sr ts (Just ts_p) rq
+
+-}
 notate_rqp :: Simplify_P -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] ->
               Either String [[Duration_A]]
 notate_rqp r ts ts_p x = do
