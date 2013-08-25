@@ -52,7 +52,7 @@ cents = either (map to_cents_r) id . ratios_or_cents
 cents_i :: Integral i => Tuning -> [i]
 cents_i = map round . cents
 
--- | Convert from cents invterval to frequency ratio.
+-- | Convert from interval in cents to frequency ratio.
 --
 -- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
 cents_to_ratio :: Floating a => a -> a

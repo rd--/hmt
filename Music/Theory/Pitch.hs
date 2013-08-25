@@ -229,6 +229,10 @@ octpc_trs n (o,pc) =
 octpc_to_midi :: Integral i => Octave_PitchClass i -> i
 octpc_to_midi (o,pc) = 60 + ((fromIntegral o - 4) * 12) + pc
 
+-- | 'fromIntegral' of 'octpc_to_midi'.
+octpc_to_fmidi :: (Integral i,Num n) => Octave_PitchClass i -> n
+octpc_to_fmidi = fromIntegral . octpc_to_midi
+
 -- | Inverse of 'octpc_to_midi'.
 --
 -- > midi_to_octpc 69 == (4,9)
@@ -334,6 +338,10 @@ cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
 octpc_to_cps = midi_to_cps . octpc_to_midi
+
+-- | 'midi_to_octpc' of 'cps_to_midi'.
+cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
+cps_to_octpc = midi_to_octpc . cps_to_midi
 
 -- * Parsers
 
