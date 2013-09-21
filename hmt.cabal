@@ -61,6 +61,7 @@ Library
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Permutations
                    Music.Theory.Permutations.List
+                   Music.Theory.Permutations.Morris_1984
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Spelling

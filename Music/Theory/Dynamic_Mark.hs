@@ -17,6 +17,8 @@ data Dynamic_Mark_T = Niente
 --
 -- > let r = [0,6,17,28,39,50,61,72,83,94,105,116,127]
 -- > in mapMaybe dynamic_mark_midi [Niente .. FFFFF] == r
+--
+-- > map dynamic_mark_midi [FP,SF,SFP,SFPP,SFZ,SFFZ] == replicate 6 Nothing
 dynamic_mark_midi :: (Num n,Enum n) => Dynamic_Mark_T -> Maybe n
 dynamic_mark_midi m =
     let r = zip [0..] (0 : reverse [127, 127-11 .. 0])
