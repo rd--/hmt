@@ -13,7 +13,7 @@ import qualified Music.Theory.Permutations as T {- hmt -}
 -- | A change either swaps all adjacent bells, or holds a subset of bells.
 data Change = Swap_All | Hold [Int] deriving (Eq,Show)
 
--- | A method is a sequence of changes, if symetrical only have the
+-- | A method is a sequence of changes, if symmetrical only have the
 -- changes are given and the lead end.
 data Method = Method [Change] (Maybe Change) deriving (Eq,Show)
 
@@ -30,6 +30,16 @@ method_changes (Method p q) =
 parse_change :: String -> Change
 parse_change s = if is_swap_all s then Swap_All else Hold (to_abbrev s)
 
+-- | Cambridgeshire Slow Course Doubles.
+--
+-- <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Slow_Course_Doubles>
+--
+-- > closed_method cambridgeshire_slow_course_doubles [1..5]
+cambridgeshire_slow_course_doubles :: Method
+cambridgeshire_slow_course_doubles =
+    let a = ("345.145.5.1.345",Just "123")
+    in parse_method a
+
 -- | Cambridge Surprise Major.
 --
 -- <https://rsw.me.uk/blueline/methods/view/Cambridge_Surprise_Major>
@@ -38,11 +48,22 @@ cambridge_surprise_major =
     let a = ("-38-14-1258-36-14-58-16-78",Just "12")
     in parse_method a
 
+-- | Double Cambridge Cyclic Bob Minor.
+--
+-- <https://rsw.me.uk/blueline/methods/view/Double_Cambridge_Cyclic_Bob_Minor>
+--
+-- > closed_method double_cambridge_cyclic_bob_minor [1..6]
+double_cambridge_cyclic_bob_minor :: Method
+double_cambridge_cyclic_bob_minor =
+    let a = ("-14-16-56-36-16-12",Nothing)
+    in parse_method a
+
 -- | Separate changes.
 --
 -- > split_changes "-38-14-1258-36-14-58-16-78"
+-- > split_changes "345.145.5.1.345" == ["345","145","5","1","345"]
 split_changes :: String -> [String]
-split_changes = split (dropInitBlank (oneOf "-x"))
+split_changes = filter (/= ".") . split (dropInitBlank (oneOf "-x."))
 
 -- | Parse 'Method' from the sequence of changes with possible lead end.
 --
@@ -153,7 +174,7 @@ apply_method m l =
 -- | Iteratively apply a 'Method' until it closes (ie. arrives back at
 -- the starting sequence).
 --
--- > length (closed_method cambridge_surprise_major [1..8]) == 7 * 31 + 1
+-- > length (closed_method cambridge_surprise_major [1..8]) == 7 * 31 + 2
 closed_method :: Eq a => Method -> [a] -> [[a]]
 closed_method m l =
     let rec c r =
@@ -162,4 +183,4 @@ closed_method m l =
             in if e == l
                then concat (reverse (z : r))
                else rec e (T.dropRight 1 z : r)
-    in rec l []
+    in rec l [[l]]
