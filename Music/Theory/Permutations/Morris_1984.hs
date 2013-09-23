@@ -5,7 +5,8 @@
 module Music.Theory.Permutations.Morris_1984 where
 
 import Data.Char {- base -}
-import Data.List.Split {- base -}
+import Data.List {- base -}
+import Data.List.Split {- split -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Permutations as T {- hmt -}
@@ -131,31 +132,35 @@ apply_change k p l =
       Swap_All -> swap_all l
       Hold q -> swap_abbrev k q l
 
--- | Apply a 'Method'.
+-- | Apply a 'Method', gives next starting sequence and the course of
+-- the method.
 --
--- > apply_method cambridge_surprise_major [1..8]
-apply_method :: Eq a => Method -> [a] -> [[a]]
+-- > let r = ([1,2,4,5,3]
+-- >         ,[[1,2,3,4,5],[2,1,3,4,5],[2,3,1,4,5],[3,2,4,1,5],[3,4,2,5,1]
+-- >          ,[4,3,2,5,1],[4,2,3,1,5],[2,4,1,3,5],[2,1,4,3,5],[1,2,4,3,5]])
+-- > in apply_method cambridgeshire_slow_course_doubles [1..5] == r
+apply_method :: Eq a => Method -> [a] -> ([a],[[a]])
 apply_method m l =
     let k = length l
-        rec z p = case p of
-                    [] -> []
-                    e : p' -> let z' = apply_change k e z
-                              in z' : rec z' p'
-    in rec l (method_changes m)
+        f z e = (apply_change k e z,z)
+    in mapAccumL f l (method_changes m)
 
 -- | Iteratively apply a 'Method' until it closes (ie. arrives back at
 -- the starting sequence).
 --
--- > length (closed_method cambridge_surprise_major [1..8]) == 7 * 31 + 2
-closed_method :: Eq a => Method -> [a] -> [[a]]
+-- > length (closed_method cambridgeshire_slow_course_doubles [1..5]) == 3
+closed_method :: Eq a => Method -> [a] -> [[[a]]]
 closed_method m l =
     let rec c r =
-            let z = apply_method m c
-                e = last z
+            let (e,z) = apply_method m c
             in if e == l
-               then concat (reverse (z : r))
-               else rec e (T.dropRight 1 z : r)
-    in rec l [[l]]
+               then reverse (z : r)
+               else rec e (z : r)
+    in rec l []
+
+-- | 'concat' of 'closed_method' with initial sequence appended.
+closed_method' :: Eq a => Method -> [a] -> [[a]]
+closed_method' m l = concat (closed_method m l) ++ [l]
 
 -- * Methods
 
@@ -163,7 +168,7 @@ closed_method m l =
 --
 -- <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Slow_Course_Doubles>
 --
--- > closed_method cambridgeshire_slow_course_doubles [1..5]
+-- > length (closed_method cambridgeshire_slow_course_doubles [1..5]) == 3
 cambridgeshire_slow_course_doubles :: Method
 cambridgeshire_slow_course_doubles =
     let a = ("345.145.5.1.345",Just "123")
@@ -173,16 +178,38 @@ cambridgeshire_slow_course_doubles =
 --
 -- <https://rsw.me.uk/blueline/methods/view/Double_Cambridge_Cyclic_Bob_Minor>
 --
--- > closed_method double_cambridge_cyclic_bob_minor [1..6]
+-- > length (closed_method double_cambridge_cyclic_bob_minor [1..6]) == 5
 double_cambridge_cyclic_bob_minor :: Method
 double_cambridge_cyclic_bob_minor =
     let a = ("-14-16-56-36-16-12",Nothing)
     in parse_method a
 
+-- | Hammersmith Bob Triples
+--
+-- <https://rsw.me.uk/blueline/methods/view/Hammersmith_Bob_Triples>
+--
+-- > length (closed_method hammersmith_bob_triples [1..7]) == 6
+hammersmith_bob_triples :: Method
+hammersmith_bob_triples =
+    let a = ("7.1.5.123.7.345.7",Just "127")
+    in parse_method a
+
 -- | Cambridge Surprise Major.
 --
 -- <https://rsw.me.uk/blueline/methods/view/Cambridge_Surprise_Major>
+--
+-- > length (closed_method cambridge_surprise_major [1..8]) == 7
 cambridge_surprise_major :: Method
 cambridge_surprise_major =
     let a = ("-38-14-1258-36-14-58-16-78",Just "12")
+    in parse_method a
+
+-- | Smithsonian Surprise Royal.
+--
+-- <https://rsw.me.uk/blueline/methods/view/Smithsonian_Surprise_Royal>
+--
+-- > length (closed_method smithsonian_surprise_royal [1..10]) == 4
+smithsonian_surprise_royal :: Method
+smithsonian_surprise_royal =
+    let a = ("-30-14-50-16-3470-18-1456-50-16-70",Just "12")
     in parse_method a
