@@ -75,9 +75,9 @@ flatten_pairs l =
 swap_all :: [a] -> [a]
 swap_all = flatten_pairs . map swap_pair . T.adj2 2
 
--- | Parse abbreviated 'Hold' notation.
+-- | Parse abbreviated 'Hold' notation, characters are hexedecimal.
 --
--- > to_abbrev "38" == [3,8]
+-- > to_abbrev "38A" == [3,8,10]
 to_abbrev :: String -> [Int]
 to_abbrev = map digitToInt
 
@@ -208,8 +208,8 @@ cambridge_surprise_major =
 --
 -- <https://rsw.me.uk/blueline/methods/view/Smithsonian_Surprise_Royal>
 --
--- > length (closed_method smithsonian_surprise_royal [1..10]) == 4
+-- > length (closed_method smithsonian_surprise_royal [1..10]) == 9
 smithsonian_surprise_royal :: Method
 smithsonian_surprise_royal =
-    let a = ("-30-14-50-16-3470-18-1456-50-16-70",Just "12")
+    let a = ("-3A-14-5A-16-347A-18-1456-5A-16-7A",Just "12")
     in parse_method a
