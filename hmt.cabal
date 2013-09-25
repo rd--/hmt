@@ -81,6 +81,9 @@ Library
                    Music.Theory.Tuning.Scala
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
+                   Music.Theory.Z
+                   Music.Theory.Z.Forte_1973
+                   Music.Theory.Z.SRO
                    Music.Theory.Z12
                    Music.Theory.Z12.Castren_1994
                    Music.Theory.Z12.Drape_1999

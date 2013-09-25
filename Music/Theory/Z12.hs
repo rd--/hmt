@@ -6,17 +6,17 @@ import Data.List
 newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bounded,Integral,Real)
 instance Show Z12 where showsPrec p (Z12 i) = showsPrec p i
 
-liftUZ12 :: (Int -> Int) -> Z12 -> Z12
-liftUZ12 f (Z12 a) = Z12 (mod (f a) 12)
+lift_unary_Z12 :: (Int -> Int) -> Z12 -> Z12
+lift_unary_Z12 f (Z12 a) = Z12 (mod (f a) 12)
 
-liftBZ12 :: (Int -> Int -> Int) -> Z12 -> Z12 -> Z12
-liftBZ12 f (Z12 a) (Z12 b) = Z12 (mod (a `f` b) 12)
+lift_binary_Z12 :: (Int -> Int -> Int) -> Z12 -> Z12 -> Z12
+lift_binary_Z12 f (Z12 a) (Z12 b) = Z12 (mod (a `f` b) 12)
 
 instance Num Z12 where
-  (+) = liftBZ12 (+)
-  (-) = liftBZ12 (-)
-  (*) = liftBZ12 (*)
-  negate = liftUZ12 negate
+  (+) = lift_binary_Z12 (+)
+  (-) = lift_binary_Z12 (-)
+  (*) = lift_binary_Z12 (*)
+  negate = lift_unary_Z12 negate
   fromInteger i = Z12 (fromInteger i `mod` 12)
   signum _ = error "Z12 numbers are not signed"
   abs _ = error "Z12 numbers are not signed"

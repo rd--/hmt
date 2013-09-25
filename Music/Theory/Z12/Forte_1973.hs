@@ -2,8 +2,9 @@
 -- Press, New Haven, 1973.
 module Music.Theory.Z12.Forte_1973 where
 
-import Data.List
-import Data.Maybe
+import Data.List {- base -}
+import Data.Maybe {- base -}
+
 import Music.Theory.List
 import qualified Music.Theory.Set.List as S
 import Music.Theory.Z12
@@ -333,6 +334,7 @@ bip = sort . map ic . d_dx
 -- | Interval class of Z12 interval /i/.
 --
 -- > map ic [5,6,7] == [5,6,5]
+-- > map ic [-13,-1,0,1,13] == [1,1,0,1,1]
 ic :: Z12 -> Z12
 ic i = if i <= 6 then i else 12 - i
 
