@@ -60,6 +60,13 @@ forte_cmp p  q  =
 forte_prime :: Integral a => a -> [a] -> [a]
 forte_prime z = ti_cmp_prime z forte_cmp
 
+-- | Transpositional equivalence prime form, ie. 't_cmp_prime' of
+-- 'forte_cmp'.
+--
+-- > (forte_prime 12 [0,2,3],t_prime 12 [0,2,3]) == ([0,1,3],[0,2,3])
+t_prime :: Integral a => a -> [a] -> [a]
+t_prime z = t_cmp_prime z forte_cmp
+
 -- * ICV Metric
 
 -- | Interval class of i interval /i/.

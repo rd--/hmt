@@ -6,17 +6,9 @@ import Data.List
 import Data.Maybe
 import Data.Ratio
 import Music.Theory.List
-import qualified Music.Theory.Z.Forte_1973 as Z
 import Music.Theory.Z12
 import Music.Theory.Z12.Forte_1973
 import Music.Theory.Z12.TTO
-
--- | Transpositional equivalence prime form, ie. 't_cmp_prime' of
--- 'forte_cmp'.
---
--- > (forte_prime [0,2,3],t_prime [0,2,3]) == ([0,1,3],[0,2,3])
-t_prime :: [Z12] -> [Z12]
-t_prime = Z.t_cmp_prime z12_modulo Z.forte_cmp
 
 -- | Is /p/ symmetrical under inversion.
 --

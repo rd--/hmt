@@ -29,6 +29,13 @@ ti_rotations = Z.ti_rotations z12_modulo
 forte_prime :: [Z12] -> [Z12]
 forte_prime = Z.forte_prime z12_modulo
 
+-- | Transpositional equivalence prime form, ie. 't_cmp_prime' of
+-- 'forte_cmp'.
+--
+-- > (forte_prime [0,2,3],t_prime [0,2,3]) == ([0,1,3],[0,2,3])
+t_prime :: [Z12] -> [Z12]
+t_prime = Z.t_prime z12_modulo
+
 -- * Set Class Table
 
 -- | Synonym for 'String'.
