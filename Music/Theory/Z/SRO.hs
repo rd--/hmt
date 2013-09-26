@@ -3,7 +3,6 @@ module Music.Theory.Z.SRO where
 
 import Data.List {- base -}
 
-import qualified Music.Theory.List as T
 import Music.Theory.Z
 
 -- | Transpose /p/ by /n/.
@@ -61,6 +60,7 @@ rti_related z p = let q = ti_related z p in nub (q ++ map reverse q)
 -- | Variant of 'tn', transpose /p/ so first element is /n/.
 --
 -- > tn_to 12 5 [0,1,3] == [5,6,8]
+-- > map (tn_to 12 0) [[0,1,3],[1,3,0],[3,0,1]]
 tn_to :: Integral a => a -> a -> [a] -> [a]
 tn_to z n p =
     case p of

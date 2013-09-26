@@ -11,7 +11,7 @@ import Music.Theory.Z12.SRO
 --
 -- > encode [0,1,3,6,8,9] == 843
 encode :: [Z12] -> Integer
-encode = sum . map ((2 ^) . (fromZ12::Z12->Integer))
+encode = sum . map ((2 ^) . (from_Z12 :: Z12 -> Integer))
 
 -- | Decoder for 'encode_prime'.
 --
@@ -19,7 +19,7 @@ encode = sum . map ((2 ^) . (fromZ12::Z12->Integer))
 decode :: Integer -> [Z12]
 decode n =
     let f i = (i, testBit n i)
-    in map (toZ12 . fst) (filter snd (map f [0..11]))
+    in map (to_Z12 . fst) (filter snd (map f [0..11]))
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --

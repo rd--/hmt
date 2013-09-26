@@ -90,5 +90,5 @@ icv z s =
 -- 11223344556
 --
 -- > bip 12 [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]
-bip :: Integral a => a -> [Integer] -> [a]
+bip :: Integral a => a -> [a] -> [a]
 bip z = sort . map (ic z . to_Z z) . d_dx
