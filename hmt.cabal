@@ -72,6 +72,7 @@ Library
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time_Signature
+                   Music.Theory.Tuple
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
                    Music.Theory.Tuning.Meyer_1929

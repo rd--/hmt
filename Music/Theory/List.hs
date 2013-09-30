@@ -1,4 +1,4 @@
--- | Shared list functions.
+-- | List functions.
 module Music.Theory.List where
 
 import Data.Function
@@ -35,6 +35,7 @@ rotate_right = genericRotate_right
 
 -- | Rotate left by /n/ 'mod' /#p/ places.
 --
+-- > rotate 1 [1..3] == [2,3,1]
 -- > rotate 8 [1..5] == [4,5,1,2,3]
 rotate :: (Integral n) => n -> [a] -> [a]
 rotate n p =
