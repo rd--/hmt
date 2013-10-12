@@ -42,3 +42,8 @@ clef_suggest p | p < f1 = Clef Bass (-2)
 clef_zero :: Integral i => Clef i -> Clef i
 clef_zero (Clef c_t _) = Clef c_t 0
 
+-- | Set 'clef_octave' to be no further than /r/ from @0@.
+clef_restrict :: Integral i => i -> Clef i -> Clef i
+clef_restrict r (Clef c_t n) =
+    let n' = if abs n > r then signum n * r else n
+    in Clef c_t n'

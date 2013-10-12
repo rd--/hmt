@@ -86,6 +86,8 @@ t3_map f (p,q,r) = (f p,f q,f r)
 
 t3_zipWith :: (p -> q -> r) -> T3 p -> T3 q -> T3 r
 t3_zipWith f (p,q,r) (p',q',r') = (f p p',f q q',f r r')
+t3_list :: T3 a -> [a]
+t3_list (i,j,k) = [i,j,k]
 
 t3_infix :: (a -> a -> a) -> T3 a -> a
 t3_infix f (i,j,k) = (i `f` j) `f` k
