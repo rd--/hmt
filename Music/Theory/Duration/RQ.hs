@@ -70,7 +70,8 @@ rq_apply_dots n d =
 -- | Convert 'Duration' to 'RQ' value, see 'rq_to_duration' for
 -- partial inverse.
 --
--- > map duration_to_rq [half_note,dotted_quarter_note] == [2,3/2]
+-- > let d = [half_note,dotted_quarter_note,dotted_whole_note]
+-- > in map duration_to_rq d == [2,3/2,6]
 duration_to_rq :: Duration -> RQ
 duration_to_rq (Duration n d m) =
     let x = whole_note_division_to_rq n

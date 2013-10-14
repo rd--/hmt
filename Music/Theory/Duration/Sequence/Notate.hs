@@ -684,6 +684,8 @@ notate_rqp r ts ts_p x = do
   return (zipWith (m_simplify r) ts dd)
 
 -- | Variant of 'notate_rqp' without pulse divisions (derive).
+--
+-- > notate (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
 notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Either String [[Duration_A]]
 notate r ts x = notate_rqp r ts Nothing x
 
