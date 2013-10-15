@@ -143,6 +143,23 @@ t4_infix f (i,j,k,l) = ((i `f` j) `f` k) `f` l
 t4_join :: T4 [a] -> [a]
 t4_join = t4_infix (++)
 
+-- * P5 (5 product)
+
+p5_fst :: (a,b,c,d,e) -> a
+p5_fst (a,_,_,_,_) = a
+
+p5_snd :: (a,b,c,d,e) -> b
+p5_snd (_,b,_,_,_) = b
+
+p5_third :: (a,b,c,d,e) -> c
+p5_third (_,_,c,_,_) = c
+
+p5_fourth :: (a,b,c,d,e) -> d
+p5_fourth (_,_,_,d,_) = d
+
+p5_fifth :: (a,b,c,d,e) -> e
+p5_fifth (_,_,_,_,e) = e
+
 -- * T5 (5 triple, regular)
 
 type T5 a = (a,a,a,a,a)
