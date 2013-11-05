@@ -1,8 +1,8 @@
 -- | Tuning theory
 module Music.Theory.Tuning where
 
-import Data.List
-import Data.Ratio
+import Data.List {- base -}
+import Data.Ratio {- base -}
 
 -- * Either/Maybe
 

@@ -171,7 +171,7 @@ pitch_to_midi (Pitch n a o) =
 -- | 'Pitch' to fractional midi note number notation.
 --
 -- > pitch_to_fmidi (Pitch A QuarterToneSharp 4) == 69.5
-pitch_to_fmidi :: Pitch -> Double
+pitch_to_fmidi :: Fractional n => Pitch -> n
 pitch_to_fmidi (Pitch n a o) =
     let a' = alteration_to_fdiff a
         o' = fromInteger o
@@ -320,7 +320,12 @@ midi_to_cps = fmidi_to_cps . fromIntegral
 fmidi_to_cps :: Floating a => a -> a
 fmidi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
 
--- | Frequency (cycles per second) to /midi/ note number.
+-- | 'fmidi_to_cps' of 'pitch_to_fmidi'.
+pitch_to_cps :: Floating n => Pitch -> n
+pitch_to_cps = fmidi_to_cps . pitch_to_fmidi
+
+-- | Frequency (cycles per second) to /midi/ note number, ie. 'round'
+-- of 'cps_to_fmidi'.
 --
 -- > map cps_to_midi [261.6,440] == [60,69]
 cps_to_midi :: (Integral i,Floating f,RealFrac f) => f -> i

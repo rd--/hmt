@@ -75,6 +75,7 @@ Library
                    Music.Theory.Tuple
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
+                   Music.Theory.Tuning.ET
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984
