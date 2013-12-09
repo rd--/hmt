@@ -39,3 +39,37 @@ measure_duration (n,d) t = pulse_duration (n,d) t * fromIntegral n
 -- | 'Fractional' variant of 'measure_duration'.
 measure_duration_f :: Fractional c => Time_Signature -> Tempo_Marking -> c
 measure_duration_f ts = fromRational . measure_duration ts
+
+-- | Italian terms and markings from Wittner metronome (W.-Germany).
+-- <http://wittner-gmbh.de/>
+metronome_table_wittner :: Num n => [(String,(n,n))]
+metronome_table_wittner =
+    [("Largo",(40,60))
+    ,("Larghetto",(60,66))
+    ,("Adagio",(66,76))
+    ,("Andante",(76,108))
+    ,("Moderato",(108,120))
+    ,("Allegro",(120,168))
+    ,("Presto",(168,208))]
+
+-- | Italian terms and markings from Nikko Seiki metronome (Japan).
+-- <http://nikkoseiki.com/>
+metronome_table_nikko :: Num n => [(String,(n,n))]
+metronome_table_nikko =
+    [("Grave",(40,46))
+    ,("Largo",(46,52))
+    ,("Lento",(52,56))
+    ,("Adagio",(56,60))
+    ,("Larghetto",(60,66))
+    ,("Adagietto",(66,72))
+    ,("Andante",(72,80))
+    ,("Andantino",(80,88))
+    ,("Maestoso",(88,96))
+    ,("Moderato",(96,108))
+    ,("Allegretto",(108,120))
+    ,("Animato",(120,132))
+    ,("Allegro",(132,144))
+    ,("Assai",(144,160))
+    ,("Vivace",(160,184))
+    ,("Presto",(184,208))
+    ,("Prestissimo",(208,240))]
