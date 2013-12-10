@@ -1,6 +1,8 @@
 -- | Common music notation tempo indications.
 module Music.Theory.Tempo_Marking where
 
+import Data.List {- base -}
+
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
 import Music.Theory.Time_Signature
@@ -73,3 +75,11 @@ metronome_table_nikko =
     ,("Vivace",(160,184))
     ,("Presto",(184,208))
     ,("Prestissimo",(208,240))]
+
+-- | Lookup metronome mark in table.
+--
+-- > mm_name metronome_table_nikko 72 == Just "Andante"
+mm_name :: (Num a, Ord a) => [(String,(a,a))] -> a -> Maybe String
+mm_name tbl x =
+    let f (_,(p,q)) = x >= p && x < q
+    in fmap fst (find f tbl)
