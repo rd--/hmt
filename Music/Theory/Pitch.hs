@@ -189,7 +189,9 @@ pitch_to_pc (Pitch n a _) = note_to_pc n + alteration_to_diff_err a
 --
 -- > pitch_compare (Pitch A Natural 4) (Pitch A QuarterToneSharp 4) == LT
 pitch_compare :: Pitch -> Pitch -> Ordering
-pitch_compare = compare `on` pitch_to_fmidi
+pitch_compare =
+    let f = pitch_to_fmidi :: Pitch -> Double
+    in compare `on` f
 
 -- | Function to spell a 'PitchClass'.
 type Spelling n = n -> (Note_T,Alteration_T)

@@ -1,8 +1,9 @@
 -- | Common music notation intervals.
 module Music.Theory.Interval where
 
-import qualified Data.List as L
-import Data.Maybe
+import Data.List {- base -}
+import Data.Maybe {- base -}
+
 import Music.Theory.Pitch
 
 -- | Interval type or degree.
@@ -80,7 +81,7 @@ interval_q_reverse :: Interval_T -> Interval_Q -> Maybe Integer
 interval_q_reverse ty qu =
     case lookup ty interval_q_tbl of
       Nothing -> Nothing
-      Just tbl -> fmap fst (L.find ((== qu) . snd) tbl)
+      Just tbl -> fmap fst (find ((== qu) . snd) tbl)
 
 -- | Semitone difference of 'Interval'.
 --
@@ -113,9 +114,9 @@ note_span n1 n2 =
 invert_ordering :: Ordering -> Ordering
 invert_ordering x =
     case x of
-      GT -> LT
       LT -> GT
       EQ -> EQ
+      GT -> LT
 
 -- | Determine 'Interval' between two 'Pitch'es.
 --
@@ -183,8 +184,8 @@ quality_difference a b =
 -- | Transpose a 'Pitch' by an 'Interval'.
 --
 -- > transpose (Interval Third Diminished LT 0) (Pitch C Sharp 4) == Pitch E Flat 4
-transpose :: Interval -> Pitch -> Pitch
-transpose i ip =
+pitch_transpose :: Interval -> Pitch -> Pitch
+pitch_transpose i ip =
     let (Pitch p_n p_a p_o) = ip
         (Interval i_t i_q i_d i_o) = i
         i_d' = if i_d == GT
@@ -219,5 +220,83 @@ circle_of_fifths :: Pitch -> ([Pitch], [Pitch])
 circle_of_fifths x =
     let p4 = Interval Fourth Perfect LT 0
         p5 = Interval Fifth Perfect LT 0
-        mk y = take 12 (iterate (transpose y) x)
+        mk y = take 12 (iterate (pitch_transpose y) x)
     in (mk p4,mk p5)
+
+-- | Parse a positive integer into interval type and octave
+-- displacement.
+--
+-- > mapMaybe parse_interval_type (map show [1 .. 15])
+parse_interval_type :: String -> Maybe (Interval_T,Octave)
+parse_interval_type n =
+    case reads n of
+      [(n',[])] -> if n' == 0
+                   then Nothing
+                   else let (o,t) = (n' - 1) `divMod` 7
+                        in Just (toEnum t,fromIntegral o)
+      _ -> Nothing
+
+-- | Parse interval quality notation.
+--
+-- > mapMaybe parse_interval_quality "dmPMA" == [minBound .. maxBound]
+parse_interval_quality :: Char -> Maybe Interval_Q
+parse_interval_quality q =
+    let c = zip "dmPMA" [0..]
+    in fmap toEnum (lookup q c)
+
+-- | Degree of interval type and octave displacement.  Inverse of
+-- 'parse_interval_type'.
+--
+-- > map interval_type_degree [(Third,0),(Second,1),(Unison,2)] == [3,9,15]
+interval_type_degree :: (Interval_T,Octave) -> Int
+interval_type_degree (t,o) = fromEnum t + 1 + (fromIntegral o * 7)
+
+-- | Inverse of 'parse_interval_quality.
+interval_quality_pp :: Interval_Q -> Char
+interval_quality_pp q = "dmPMA" !! fromEnum q
+
+-- | Parse standard common music interval notation.
+--
+-- > let i = mapMaybe parse_interval (words "P1 d2 m2 M2 A3 P8 +M9 -M2")
+-- > in unwords (map interval_pp i) == "P1 d2 m2 M2 A3 P8 M9 -M2"
+--
+-- > mapMaybe (fmap interval_octave . parse_interval) (words "d1 d8 d15") == [-1,0,1]
+parse_interval :: String -> Maybe Interval
+parse_interval i =
+    let unisons = [(Perfect,Unison)
+                  ,(Diminished,Second)
+                  ,(Augmented,Seventh)]
+        f q n = case (parse_interval_quality q,parse_interval_type n) of
+                    (Just q',Just (n',o)) ->
+                       let o' = if (q',n') == (Diminished,Unison)
+                                then o - 1
+                                else o
+                           d = if o' == 0 && (q',n') `elem` unisons
+                               then EQ
+                               else LT
+                       in Just (Interval n' q' d o')
+                    _ -> Nothing
+    in case i of
+         '-':q:n -> fmap invert_interval (f q n)
+         '+':q:n -> f q n
+         q:n -> f q n
+         _ -> Nothing
+
+-- | Pretty printer for intervals, inverse of 'parse_interval'.
+interval_pp :: Interval -> String
+interval_pp (Interval n q d o) =
+    let d' = if d == GT then ('-' :) else id
+    in d' (interval_quality_pp q : show (interval_type_degree (n,o)))
+
+-- | Standard names for the intervals within the octave, divided into
+-- perfect, major and minor at the left, and diminished and augmented
+-- at the right.
+--
+-- > let {bimap f (p,q) = (f p,f q)
+-- >     ;f = mapMaybe (fmap interval_semitones . parse_interval)}
+-- > in bimap f std_interval_names
+std_interval_names :: ([String],[String])
+std_interval_names =
+    let pmM = "P1 m2 M2 m3 M3 P4 P5 m6 M6 m7 M7 P8"
+        dA = "d2 A1 d3 A2 d4 A3 d5 A4 d6 A5 d7 A6 d8 A7"
+    in (words pmM,words dA)

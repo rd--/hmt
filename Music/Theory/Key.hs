@@ -1,7 +1,8 @@
 -- | Common music keys.
 module Music.Theory.Key where
 
-import Data.List
+import Data.List {- base -}
+
 import Music.Theory.Pitch
 import Music.Theory.Pitch.Name
 import Music.Theory.Interval

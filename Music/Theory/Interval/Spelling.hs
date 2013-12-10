@@ -30,17 +30,18 @@ i_to_interval x =
 -- spellings are poor, ie. (f,g#).
 --
 -- > interval_simplify (Interval Second Augmented LT 0) == Interval Third Minor LT 0
+-- > interval_simplify (Interval Seventh Augmented GT 0) == Interval Unison Perfect GT 1
 interval_simplify :: Interval -> Interval
 interval_simplify x =
     let (Interval ty qu d o) = x
-        (qu',ty') = case (qu,ty) of
-                     (Diminished,Second) -> (Perfect,Unison)
-                     (Diminished,Third) -> (Major,Second)
-                     (Augmented,Second) -> (Minor,Third)
-                     (Augmented,Third) -> (Perfect,Fourth)
-                     (Diminished,Sixth) -> (Perfect,Fifth)
-                     (Diminished,Seventh) -> (Major,Sixth)
-                     (Augmented,Sixth) -> (Minor,Seventh)
-                     -- (Augmented,Seventh) -> (Perfect,Octave)
-                     _ -> (qu,ty)
-    in Interval ty' qu' d o
+        (qu',ty',o') = case (qu,ty) of
+                         (Diminished,Second) -> (Perfect,Unison,o)
+                         (Diminished,Third) -> (Major,Second,o)
+                         (Augmented,Second) -> (Minor,Third,o)
+                         (Augmented,Third) -> (Perfect,Fourth,o)
+                         (Diminished,Sixth) -> (Perfect,Fifth,o)
+                         (Diminished,Seventh) -> (Major,Sixth,o)
+                         (Augmented,Sixth) -> (Minor,Seventh,o)
+                         (Augmented,Seventh) -> (Perfect,Unison,o + 1)
+                         _ -> (qu,ty,o)
+    in Interval ty' qu' d o'
