@@ -1,10 +1,12 @@
 -- | Equal temperament tuning tables.
 module Music.Theory.Tuning.ET where
 
-import Music.Theory.List
-import Music.Theory.Pitch
-import Music.Theory.Pitch.Spelling
-import Music.Theory.Tuning
+import Text.Printf {- base -}
+
+import Music.Theory.List {- hmt -}
+import Music.Theory.Pitch {- hmt -}
+import Music.Theory.Pitch.Spelling {- hmt -}
+import Music.Theory.Tuning {- hmt -}
 
 -- | 'octpc_to_pitch' and 'octpc_to_cps'.
 octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
@@ -50,6 +52,22 @@ bounds_12et_tone = bounds_et_table tbl_12et
 -- frequency, and deviation in hertz and 'Cents'.
 type HS_R = (Double,Pitch,Double,Double,Cents)
 
+-- | /n/-decimal places.
+--
+-- > ndp 3 (1/3) == "0.333"
+ndp :: Int -> Double -> String
+ndp = printf "%.*f"
+
+-- | Pretty print 'HS_R'.
+hs_r_pp :: Int -> HS_R -> [String]
+hs_r_pp n (f,p,pf,fd,c) =
+    let dp = ndp n
+    in [dp f
+       ,pitch_pp p
+       ,dp pf
+       ,dp fd
+       ,dp c]
+
 -- | Form 'HS_R' for /frequency/ by consulting table.
 --
 -- > let {f = 256
@@ -72,5 +90,7 @@ nearest_12et_tone :: Double -> HS_R
 nearest_12et_tone = nearest_et_table_tone tbl_12et
 
 -- | 'nearest_et_table_tone' for 'tbl_24et'.
+--
+-- > unwords (hs_r_pp 1 (nearest_24et_tone 55)) == "55.0 A1 55.0 0.0 0.0"
 nearest_24et_tone :: Double -> HS_R
 nearest_24et_tone = nearest_et_table_tone tbl_24et
