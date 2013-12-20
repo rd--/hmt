@@ -181,8 +181,9 @@ dx_d = scanl (+)
 -- | Integrate, ie. pitch class segment to interval sequence.
 --
 -- > d_dx [5,6,8,11] == [1,2,3]
+-- > d_dx [] == []
 d_dx :: (Num a) => [a] -> [a]
-d_dx l = zipWith (-) (tail l) l
+d_dx l = if null l then [] else zipWith (-) (tail l) l
 
 -- | Elements of /p/ not in /q/.
 --
