@@ -1,10 +1,10 @@
 -- | List functions.
 module Music.Theory.List where
 
-import Data.Function
-import Data.List
+import Data.Function {- base -}
+import Data.List {- base -}
 import Data.List.Split {- split -}
-import Data.Maybe
+import Data.Maybe {- base -}
 
 -- | Bracket sequence with left and right values.
 --

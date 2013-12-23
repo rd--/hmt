@@ -1,10 +1,11 @@
 -- | Rational quarter-note notation for durations.
 module Music.Theory.Duration.RQ where
 
-import Data.Function
-import Data.List
-import Data.Maybe
-import Data.Ratio
+import Data.Function {- base -}
+import Data.List {- base -}
+import Data.Maybe {- base -}
+import Data.Ratio {- base -}
+
 import Music.Theory.Duration
 import Music.Theory.Duration.Name
 

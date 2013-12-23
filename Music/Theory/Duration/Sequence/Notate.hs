@@ -23,8 +23,10 @@ import Data.List {- base -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+
 import Music.Theory.Duration {- hmt -}
 import Music.Theory.Duration.Annotation {- hmt -}
+import Music.Theory.Function {- hmt -}
 import Music.Theory.Duration.RQ {- hmt -}
 import Music.Theory.Duration.RQ.Tied {- hmt -}
 import Music.Theory.List {- hmt -}
@@ -686,7 +688,8 @@ notate_rqp r ts ts_p x = do
 -- | Variant of 'notate_rqp' without pulse divisions (derive).
 --
 -- > notate (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
-notate :: Simplify_P -> [Time_Signature] -> [RQ] -> Either String [[Duration_A]]
+notate :: Simplify_P -> [Time_Signature] -> [RQ] ->
+          Either String [[Duration_A]]
 notate r ts x = notate_rqp r ts Nothing x
 
 -- * Ascribe
@@ -768,7 +771,20 @@ mm_ascribe mm x =
       m:mm' -> let (x',r) = m_ascribe m x
                in r : mm_ascribe mm' x'
 
--- | Group elements as /chords/ where a chord element is inidicated by
+-- | 'mm_ascribe of 'notate'.
+notate_mm_ascribe :: Show a => [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
+                     Either String [[(Duration_A,a)]]
+notate_mm_ascribe r ts rqp d p =
+    let n = notate_rqp (default_rule r) ts rqp d
+        f = flip mm_ascribe p
+        err str = show ("notate_ascribe",str,ts,d,p)
+    in either (Left . err) (Right . f) n
+
+notate_mm_ascribe_err :: Show a => [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
+                         [[(Duration_A,a)]]
+notate_mm_ascribe_err = either error id .:::: notate_mm_ascribe
+
+-- | Group elements as /chords/ where a chord element is indicated by
 -- the given predicate.
 --
 -- > group_chd even [1,2,3,4,4,5,7,8] == [[1,2],[3,4,4],[5],[7,8]]
