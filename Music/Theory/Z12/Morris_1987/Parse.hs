@@ -1,11 +1,12 @@
 -- | Parsers for pitch class sets and sequences, and for 'SRO's.
 module Music.Theory.Z12.Morris_1987.Parse (rnrtnmi,pco) where
 
-import Control.Monad
-import Data.Char
+import Control.Monad {- base -}
+import Data.Char {- base -}
+import Text.ParserCombinators.Parsec {- parsec -}
+
 import Music.Theory.Z12
 import Music.Theory.Z12.Morris_1987
-import Text.ParserCombinators.Parsec
 
 -- | A 'Char' parser.
 type P a = GenParser Char () a
@@ -26,14 +27,14 @@ get_int = liftM (fromInteger . read) (many1 digit)
 -- > rnrtnmi "r2RT3MI" == SRO 2 True 3 True True
 rnrtnmi :: String -> SRO
 rnrtnmi s =
-  let p = do { r <- rot
-             ; r' <- is_char 'R'
-             ; _ <- char 'T'
-             ; t <- get_int
-             ; m <- is_char 'M'
-             ; i <- is_char 'I'
-             ; eof
-             ; return (SRO r r' t m i) }
+  let p = do r <- rot
+             r' <- is_char 'R'
+             _ <- char 'T'
+             t <- get_int
+             m <- is_char 'M'
+             i <- is_char 'I'
+             eof
+             return (SRO r r' t m i)
       rot = option 0 (char 'r' >> get_int)
   in either
          (\e -> error ("rnRTnMI parse failed\n" ++ show e))
