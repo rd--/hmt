@@ -41,7 +41,6 @@ Library
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
-                   Music.Theory.Duration.Bel1990.R
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Name.Abbreviation
                    Music.Theory.Duration.RQ
@@ -74,6 +73,7 @@ Library
                    Music.Theory.Tiling.Canon
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
+                   Music.Theory.Time.Bel1990.R
                    Music.Theory.Time_Signature
                    Music.Theory.Tuple
                    Music.Theory.Tuning

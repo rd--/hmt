@@ -1,4 +1,4 @@
-{- | /Bel(R)/, a simplified form of the /Bel/ notation as described in:
+{- | /Bel(R)/, a simplified form of the /Bel/ notation described in:
 
 - Bernard Bel.
   \"Time and musical structures\".
@@ -13,14 +13,8 @@
   /GRTC 458/
   (<http://www.lpl.univ-aix.fr/~belbernard/music/2algorithms.pdf>)
 
-/Bel(R)/ replaces the @\/n@ notation for explicit tempo marks with a
-@*n@ notation indicating a relative tempo multiplier and a set of
-bracketing notations to specify interpretation rules for parallel
-structures.
-
-For patterns without tempo indications, the /Bel(R)/ notation should
-give equivalent phase diagrams.  Compare the following with the phase
-diagrams in §11 (Bel 1990, p.24):
+For patterns without tempo indications, the two notations should give
+equivalent phase diagrams, for instance (Bel 1990, §11, p.24):
 
 > > bel_ascii_pp "ab{ab,cde}cd"
 >
@@ -28,6 +22,8 @@ diagrams in §11 (Bel 1990, p.24):
 >
 > a _ b _ a _ _ b _ _ c _ d _
 >         c _ d _ e _        
+
+and:
 
 > > bel_ascii_pp "{a{bc,def},ghijk}"
 >
@@ -37,9 +33,10 @@ diagrams in §11 (Bel 1990, p.24):
 >                     d _ _ _ _ _ _ _ _ _ e _ _ _ _ _ _ _ _ _ f _ _ _ _ _ _ _ _ _
 > g _ _ _ _ _ _ _ h _ _ _ _ _ _ _ i _ _ _ _ _ _ _ j _ _ _ _ _ _ _ k _ _ _ _ _ _ _
 
-Where the /Bel/ notation allows non-binary parallel structures,
+The /Bel/ notation allows /n/-ary parallel structures,
 ie. @{a_bcd_e,a_f_gh_,ji_a_i_}@ (Bel 1992, p.29), the /Bel(R)/
-notation requires these be written as nested binary structures:
+notation allows only binary structures.  The standard parallel
+interpretation rule is associative:
 
 > > bel_ascii_pp "{a_bcd_e,{a_f_gh_,ji_a_i_}}"
 >
@@ -53,7 +50,12 @@ Patterns with tempo indications have completely different meanings in
 /Bel/ and /Bel(R)/, though in both cases parallel nodes delimit the
 scope of tempo markings.
 
-The the tempo indication @\/1@ in the expression @ab{\/1ab,cde}cd@
+/Bel(R)/ replaces the @\/n@ notation for explicit tempo marks
+with a @*n@ notation indicating a relative tempo multiplier and a set
+of bracketing notations to specify interpretation rules for parallel
+(concurrent) temporal structures.
+
+The tempo indication @\/1@ in the expression @ab{\/1ab,cde}cd@
 (Bel 1990, p.24) requires that the inner @ab@ have the same tempo as
 the outer @ab@, which is implicitly @\/1@.  Setting the tempo of one
 part of a parallel structure requires assigning a tempo to the other
@@ -69,8 +71,7 @@ of the interpretation system.
 
 In comparison, all syntactically valid /Bel(R)/ strings have an
 interpretation.  The expression @{*1ab,*1cde}@ is trivially equal to
-@{ab,cde}@, and more complex tempo variations have a simple
-interpretation.  In /Bel(R)/ notation @\/n@ is equivalent to @*1\/n@:
+@{ab,cde}@, and tempo marks in parallel parts do not interact:
 
 > > bel_ascii_pp "{a*2b,*3c/2d/3e}"
 >
@@ -79,24 +80,34 @@ interpretation.  In /Bel(R)/ notation @\/n@ is equivalent to @*1\/n@:
 > a _ _ _ _ _ b _ _
 > c d _ e _ _ _ _ _
 
+Here @a@ is twice the duration of @b@, and @e@ is three times the
+duration of @d@, which is twice the duration of @c@.  The duration of
+any /Bel(R)/ expression can be calculated directly, given an initial
+'Tempo':
+
+> bel_dur 1 (bel_char_parse "a*2b") == 3/2
+> bel_dur 1 (bel_char_parse "*3c*1/2d*1/3e") == 3
+
+Therefore in the composite expression the left part is slowed by a
+factor of two to align with the right part.
+
 The /Bel/ string @ab{\/1ab,cde}cd@ can be re-written in /Bel(R)/
 notation as either @ab~{ab,cde}cd@ or @ab(ab,cde)cd@.  The absolute
-tempo indication is replaced by alternate modes of interpretation for
-parallel structures.
+tempo indication is replaced by notations giving alternate modes of
+interpretation for the parallel structure.
 
 In the first case the @~@ indicates the /opposite/ of the normal rule
-for parallel nodes, which is the same as in /Bel/ notation, and is
-that the duration of the whole is equal to duration of the longer of
-the two parts.  The @~@ inverts this so that the whole has the
-duration of the shorter of the two parts, and the longer part is
-scaled to have equal duration.
+for parallel nodes.  The normal rule, which is the same as in /Bel/
+notation, and is that the duration of the whole is equal to duration
+of the longer of the two parts.  The @~@ inverts this so that the
+whole has the duration of the shorter of the two parts, and the longer
+part is scaled to have equal duration.
 
 In the second case the parentheses @()@ replacing the braces @{}@
 indicates that the duration of the whole is equal to the duration of
-the left hand side and that the right hand is to be scaled.
-Similarly, a @~@ preceding parentheses indicates the duration of the
-whole should be the duration of the right hand side and the left
-scaled.
+the left side, and that the right is to be scaled.  Similarly, a @~@
+preceding parentheses indicates the duration of the whole should be
+the duration of the right side, and the left scaled.
 
 > > bel_ascii_pp "ab~{ab,cde}cd"
 >
@@ -106,8 +117,9 @@ scaled.
 >             c _ d _ e _            
 
 There is one other parallel mode that has no equivalent in /Bel/
-notation and that does not scale either part, leaving a /hole/ at the
-end of the shorter part.
+notation.  It is a mode that does not scale either part, leaving a
+/hole/ at the end of the shorter part, and is indicated by square
+brackets:
 
 > > bel_ascii_pp "ab[ab,cde]cd"
 >
@@ -126,8 +138,8 @@ as:
 >
 > a _ _ b _ _ c _ _ d _ e _
 
-or using the shorthand notation for rest sequences, where an integer
-/n/ indicates a sequence of /n/ rests, as:
+It can also be written using the shorthand notation for rest
+sequences, where an integer /n/ indicates a sequence of /n/ rests, as:
 
 > > bel_ascii_pp "(9,abc)(4,de)"
 >
@@ -173,7 +185,7 @@ The paper assigns tempi of @\/6@ to both @i@ and @ab@, which in
 
 -}
 
-module Music.Theory.Duration.Bel1990.R where
+module Music.Theory.Time.Bel1990.R where
 
 import Control.Monad {- base -}
 import Data.Function {- base -}
@@ -245,8 +257,8 @@ bel_char_pp = bel_pp return
 -- > par_analyse 1 Par_None (nseq "cd") (nseq "efg") == (3,1,1)
 par_analyse :: Tempo -> Par_Mode -> Bel a -> Bel a -> (Rational,Rational,Rational)
 par_analyse t m p q =
-    let (_,d_p) = bel_dur t p
-        (_,d_q) = bel_dur t q
+    let (_,d_p) = bel_tdur t p
+        (_,d_q) = bel_tdur t q
     in case m of
          Par_Left -> (d_p,1,d_q / d_p)
          Par_Right -> (d_q,d_p / d_q,1)
@@ -261,16 +273,20 @@ par_dur t m p q =
     in d
 
 -- | Calculate final tempo and duration of 'Bel'.
-bel_dur :: Tempo -> Bel a -> (Tempo,Rational)
-bel_dur t b =
+bel_tdur :: Tempo -> Bel a -> (Tempo,Rational)
+bel_tdur t b =
     case b of
       Node _ -> (t,1 / t)
       Seq p q ->
-          let (t_p,d_p) = bel_dur t p
-              (t_q,d_q) = bel_dur t_p q
+          let (t_p,d_p) = bel_tdur t p
+              (t_q,d_q) = bel_tdur t_p q
           in (t_q,d_p + d_q)
       Par m p q -> (t,par_dur t m p q)
       Mul n -> (t * n,0)
+
+-- | 'snd' of 'bel_tdur'.
+bel_dur :: Tempo -> Bel a -> Rational
+bel_dur t = snd . bel_tdur t
 
 -- * Linearisation
 
