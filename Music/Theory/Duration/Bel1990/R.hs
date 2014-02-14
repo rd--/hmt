@@ -1,4 +1,4 @@
-{- | /Bel(R)/, a simplified form of the /Bel/ notation described in:
+{- | /Bel(R)/, a simplified form of the /Bel/ notation as described in:
 
 - Bernard Bel.
   \"Time and musical structures\".
@@ -15,11 +15,12 @@
 
 /Bel(R)/ replaces the @\/n@ notation for explicit tempo marks with a
 @*n@ notation indicating a relative tempo multiplier and a set of
-bracketing notations to select between types of parallel structures.
+bracketing notations to specify interpretation rules for parallel
+structures.
 
-For patterns without tempo indications, the /Bel(R)/ notation gives
-equivalent phase diagrams.  Compare the following with the diagrams in
-§11 (Bel 1990, p.24):
+For patterns without tempo indications, the /Bel(R)/ notation should
+give equivalent phase diagrams.  Compare the following with the phase
+diagrams in §11 (Bel 1990, p.24):
 
 > > bel_ascii_pp "ab{ab,cde}cd"
 >
@@ -36,6 +37,118 @@ equivalent phase diagrams.  Compare the following with the diagrams in
 >                     d _ _ _ _ _ _ _ _ _ e _ _ _ _ _ _ _ _ _ f _ _ _ _ _ _ _ _ _
 > g _ _ _ _ _ _ _ h _ _ _ _ _ _ _ i _ _ _ _ _ _ _ j _ _ _ _ _ _ _ k _ _ _ _ _ _ _
 
+Where the /Bel/ notation allows non-binary parallel structures,
+ie. @{a_bcd_e,a_f_gh_,ji_a_i_}@ (Bel 1992, p.29), the /Bel(R)/
+notation requires these be written as nested binary structures:
+
+> > bel_ascii_pp "{a_bcd_e,{a_f_gh_,ji_a_i_}}"
+>
+> Bel(R): {a_bcd_e,{a_f_gh_,ji_a_i_}}
+>
+> a _ b c d _ e
+> a _ f _ g h _
+> j i _ a _ i _
+
+Patterns with tempo indications have completely different meanings in
+/Bel/ and /Bel(R)/, though in both cases parallel nodes delimit the
+scope of tempo markings.
+
+The the tempo indication @\/1@ in the expression @ab{\/1ab,cde}cd@
+(Bel 1990, p.24) requires that the inner @ab@ have the same tempo as
+the outer @ab@, which is implicitly @\/1@.  Setting the tempo of one
+part of a parallel structure requires assigning a tempo to the other
+part in order that the two parts have equal duration.  Here the tempo
+assigned to @cde@ is @\/1.5@, but since fractional tempi are not
+allowed the expression is re-written as @\/2ab{\/2ab,\/3cde}\/2cd@.
+
+Importantly the explicit tempo indications make it possible to write
+syntactically correct expressions in /Bel/ that do not have a coherent
+interpretation, ie. @{\/1ab,\/1cde}@.  Determining if a coherent set
+of tempos can be assigned, and assigning these tempos, is the object
+of the interpretation system.
+
+In comparison, all syntactically valid /Bel(R)/ strings have an
+interpretation.  The expression @{*1ab,*1cde}@ is trivially equal to
+@{ab,cde}@, and more complex tempo variations have a simple
+interpretation.  In /Bel(R)/ notation @\/n@ is equivalent to @*1\/n@:
+
+> > bel_ascii_pp "{a*2b,*3c/2d/3e}"
+>
+> Bel(R): {a*2b,*3c*1/2d*1/3e}
+>
+> a _ _ _ _ _ b _ _
+> c d _ e _ _ _ _ _
+
+The /Bel/ string @ab{\/1ab,cde}cd@ can be re-written in /Bel(R)/
+notation as either @ab~{ab,cde}cd@ or @ab(ab,cde)cd@.  The absolute
+tempo indication is replaced by alternate modes of interpretation for
+parallel structures.
+
+In the first case the @~@ indicates the /opposite/ of the normal rule
+for parallel nodes, which is the same as in /Bel/ notation, and is
+that the duration of the whole is equal to duration of the longer of
+the two parts.  The @~@ inverts this so that the whole has the
+duration of the shorter of the two parts, and the longer part is
+scaled to have equal duration.
+
+In the second case the parentheses @()@ replacing the braces @{}@
+indicates that the duration of the whole is equal to the duration of
+the left hand side and that the right hand is to be scaled.
+Similarly, a @~@ preceding parentheses indicates the duration of the
+whole should be the duration of the right hand side and the left
+scaled.
+
+> > bel_ascii_pp "ab~{ab,cde}cd"
+>
+> Bel(R): ab~{ab,cde}cd
+>
+> a _ _ b _ _ a _ _ b _ _ c _ _ d _ _
+>             c _ d _ e _            
+
+There is one other parallel mode that has no equivalent in /Bel/
+notation and that does not scale either part, leaving a /hole/ at the
+end of the shorter part.
+
+> > bel_ascii_pp "ab[ab,cde]cd"
+>
+> Bel(R): ab[ab,cde]cd
+>
+> a b a b   c d
+>     c d e    
+
+The /Bel/ string @\/2abc\/3de@ (Bel 1992, p.53) can be written as
+@*2abc*1/2*3de@, or equivalently as @*2abc*3/2de@, or more concisely
+as:
+
+> > bel_ascii_pp "abc*3/2de"
+>
+> Bel(R): abc*3/2de
+>
+> a _ _ b _ _ c _ _ d _ e _
+
+or using the shorthand notation for rest sequences, where an integer
+/n/ indicates a sequence of /n/ rests, as:
+
+> > bel_ascii_pp "(9,abc)(4,de)"
+>
+> Bel(R): (---------,abc)(----,de)
+>
+> - - - - - - - - - - - - -
+> a _ _ b _ _ c _ _ d _ e _
+
+In the /Bel/ string @{ab{/3abc,de},fghijk}@ (Bel 1992, p.20) the tempo
+indication does not change the inter-relation of the parts but rather
+scales the parallel node altogether, and can be re-written in /Bel(R)/
+notation as:
+
+> > bel_ascii_pp "{ab*3{abc,de},fghijk}"
+>
+> Bel(R): {ab*3{abc,de},fghijk}
+>
+> a _ _ _ _ _ b _ _ _ _ _ a _ b _ c _
+>                         d _ _ e _ _
+> f _ _ g _ _ h _ _ i _ _ j _ _ k _ _
+
 Curiously the following example (Bel 1990, p. 24) does not correspond
 to the phase diagram given:
 
@@ -48,7 +161,7 @@ to the phase diagram given:
 > j _ _ _ k _ _ _
 
 The paper assigns tempi of @\/6@ to both @i@ and @ab@, which in
-/Bel(R)/ we would write:
+/Bel(R)/ could be written:
 
 > > bel_ascii_pp "{i~{ab,cde},jk}"
 >
@@ -58,93 +171,11 @@ The paper assigns tempi of @\/6@ to both @i@ and @ab@, which in
 >             c _ _ _ d _ _ _ e _ _ _
 > j _ _ _ _ _ _ _ _ k _ _ _ _ _ _ _ _
 
-See below for a description of the @~@ notation.
-
-The /Bel/ notation allows non-binary parallel structures,
-ie. @{a_bcd_e,a_f_gh_,ji_a_i_}@ (Bel 1992, p.29), which must be
-re-written in /Bel(R)/ as nested binary structures:
-
-> > bel_ascii_pp "{a_bcd_e,{a_f_gh_,ji_a_i_}}"
->
-> Bel(R): {a_bcd_e,{a_f_gh_,ji_a_i_}}
->
-> a _ b c d _ e
-> a _ f _ g h _
-> j i _ a _ i _
-
-Patterns with tempo indications have completely different meanings in
-/Bel/ and /Bel(R)/.
-
-In the /Bel/ expression @ab{\/1ab,cde}cd@ (Bel 1990, p.24) the
-parallel branch @ab@ is assigned the tempo @\/1@, which is equal to
-the implicit tempo of the outer @ab@.  Setting the tempo at one side
-of a parallel structure requires assigning a tempo to the right hand
-side in order that the two branches have equal durations.  Here the
-tempo assigned to "cde" is @\/1.5@, but since fractional tempi are not
-allowed the expression is re-written as @\/2ab{\/2ab,\/3cde}\/2cd@.
-
-Importantly the explicit tempo indications make it possible to write
-syntactically correct expressions in /Bel/ that do not have a coherent
-interpretation, ie. @{\/1ab,\/1cde}@.  Determining if a coherent set
-of tempos can be assigned is the object of the interpretation system.
-
-In comparison, all syntactically valid /Bel(R)/ strings have an
-interpretation.
-
-The /Bel/ string @ab{\/1ab,cde}cd@ can be re-written in /Bel(R)/
-notation as either @ab~{ab,cde}cd@ or @ab(ab,cde)cd@.  In the first
-case the @~@ indicates the /opposite/ of the normal rule, ie. that the
-duration of the parallel node is equal to the least duration of the
-two branches, and that the longer branch is scaled so that it's
-duration is equal to the shorter.  In the second case the parentheses
-replacing the braces indicates that the duration of the whole is equal
-to the duration of the left hand branch and that the right hand is
-scaled.  Similarly, a @~@ preceding parentheses indicates the duration
-of the whole should be the duration of the right hand branch and the
-left scaled.
-
-> > bel_ascii_pp "ab~{ab,cde}cd"
->
-> Bel(R): ab~{ab,cde}cd
->
-> a _ _ b _ _ a _ _ b _ _ c _ _ d _ _
->             c _ d _ e _            
-
-The /Bel/ string @/2abc/3de@ (Bel 1992, p.53) can be written:
-
-> > bel_ascii_pp "*2abc*3/2de"
->
-> Bel(R): *2abc*3/2de
->
-> a _ _ b _ _ c _ _ d _ e _
-
-or equivalently as @*2abc*1/2*3de@, or using the shorthand notation
-for rest sequences as:
-
-> > bel_ascii_pp "(9,abc)(4,de)"
->
-> Bel(R): (---------,abc)(----,de)
->
-> - - - - - - - - - - - - -
-> a _ _ b _ _ c _ _ d _ e _
-
-The /Bel/ string @{ab{/3abc,de},fghijk}@ (Bel 1992, p.20) is
-re-written in /Bel(R)/ notation as:
-
-> > bel_ascii_pp "{ab*3{abc,de},fghijk}"
->
-> Bel(R): {ab*3{abc,de},fghijk}
->
-> a _ _ _ _ _ b _ _ _ _ _ a _ b _ c _
->                         d _ _ e _ _
-> f _ _ g _ _ h _ _ i _ _ j _ _ k _ _
-
 -}
 
 module Music.Theory.Duration.Bel1990.R where
 
 import Control.Monad {- base -}
-import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
@@ -188,7 +219,7 @@ data Bel a = Node (Term a)
            | Mul Tempo
            deriving (Eq,Show)
 
--- | Pretty printer for 'Bel'.
+-- | Pretty printer for 'Bel', given pretty printer for the term type.
 bel_pp :: (a -> String) -> Bel a -> String
 bel_pp f b =
     case b of
@@ -250,7 +281,9 @@ type Time = Rational
 -- within nested 'Par' structures.
 type Voice = [Char]
 
--- | Linear state.
+-- | Linear state.  'Time' is the start time of the term, 'Tempo' is
+-- the active tempo & therefore the reciprocal of the duration,
+-- 'Voice' is the part label.
 type L_St = (Time,Tempo,Voice)
 
 -- | Linear term.
@@ -260,10 +293,18 @@ type L_Term a = (L_St,Term a)
 lterm_time :: L_Term a -> Time
 lterm_time ((st,_,_),_) = st
 
--- | Linear form.
+-- | Duration of 'L_Term' (reciprocal of tempo).
+lterm_duration :: L_Term a -> Time
+lterm_duration ((_,tm,_),_) = 1 / tm
+
+-- | End time of 'L_Term'.
+lterm_end_time :: L_Term a -> Time
+lterm_end_time e = lterm_time e + lterm_duration e
+
+-- | Linear form of 'Bel', an ascending sequence of 'L_Term'.
 type L_Bel a = [L_Term a]
 
--- | Linearise 'Bel' given initial 'L_St'.
+-- | Linearise 'Bel' given initial 'L_St', ascending by construction.
 bel_linearise :: L_St -> Bel a -> (L_Bel a,L_St)
 bel_linearise l_st b =
     let (st,tm,vc) = l_st
@@ -277,8 +318,12 @@ bel_linearise l_st b =
              let (du,p_m,q_m) = par_analyse tm m p q
                  (p',_) = bel_linearise (st,tm * p_m,'l':vc) p
                  (q',_) = bel_linearise (st,tm * q_m,'r':vc) q
-             in (p' ++ q',(st + du,tm,vc))
+             in (p' `lbel_merge` q',(st + du,tm,vc))
          Mul n -> ([],(st,tm * n,vc))
+
+-- | Merge two ascending 'L_Bel'.
+lbel_merge :: L_Bel a -> L_Bel a -> L_Bel a
+lbel_merge = T.mergeBy (compare `on` lterm_time)
 
 -- | Set of unique 'Tempo' at 'L_Bel'.
 lbel_tempi :: L_Bel a -> [Tempo]
@@ -288,15 +333,13 @@ lbel_tempi = nub . sort . map (\((_,t,_),_) -> t)
 lbel_tempo_mul :: Rational -> L_Bel a -> L_Bel a
 lbel_tempo_mul n = map (\((st,tm,vc),e) -> ((st / n,tm * n,vc),e))
 
--- | After normalisation all start times and durations are integral,
--- and terms are ascending.
+-- | After normalisation all start times and durations are integral.
 lbel_normalise :: L_Bel a -> L_Bel a
 lbel_normalise b =
     let t = lbel_tempi b
         n = foldl1 lcm (map denominator t) % 1
         m = foldl1 lcm (map numerator (map (* n) t)) % 1
-        b' = lbel_tempo_mul (n / m) b
-    in sortBy (compare `on` lterm_time) b'
+    in lbel_tempo_mul (n / m) b
 
 -- | All leftmost voices are the /outer/ voice.
 --
@@ -324,12 +367,15 @@ lbel_duration b =
     let l = last (groupBy ((==) `on` lterm_time) b)
     in maximum (map (\((st,tm,_),_) -> st + recip tm) l)
 
+-- | Locate an 'L_Term' that is active at the indicated 'Time' and in
+-- the indicated 'Voice'.
 lbel_lookup :: (Time,Voice) -> L_Bel a -> Maybe (L_Term a)
 lbel_lookup (st,vc) =
     let f ((st',tm,vc'),_) = (st >= st' && st < st' + (1 / tm)) &&
                              vc `voice_eq` vc'
     in find f
 
+-- | Calculate grid (phase diagram) for 'L_Bel'.
 lbel_grid :: L_Bel a -> [[Maybe (Term a)]]
 lbel_grid l =
     let n = lbel_normalise l
@@ -340,11 +386,14 @@ lbel_grid l =
         f vc = map (get vc) [0 .. d - 1]
     in map f v
 
+-- | 'lbel_grid' of 'bel_linearise'.
 bel_grid :: Bel a -> [[Maybe (Term a)]]
 bel_grid b =
     let (l,_) = bel_linearise (0,1,[]) b
     in lbel_grid l
 
+-- | /Bel/ type phase diagram for 'Bel' of 'Char'.  Optionally print
+-- whitespace between columns.
 bel_ascii :: Bool -> Bel Char -> String
 bel_ascii opt =
     let f e = case e of
@@ -355,6 +404,7 @@ bel_ascii opt =
         g = if opt then intersperse ' ' else id
     in unlines . map (g . map f) . bel_grid
 
+-- | 'putStrLn' of 'bel_ascii'.
 bel_ascii_pr :: Bel Char -> IO ()
 bel_ascii_pr = putStrLn . ('\n' :) . bel_ascii True
 
@@ -404,6 +454,7 @@ nrests n = lseq (genericReplicate n rest)
 bel_parse_pp_ident :: String -> Bool
 bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 
+-- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
   let p = bel_char_parse s
@@ -489,9 +540,16 @@ p_number = P.choice [P.try p_rational
 
 -- | Parse 'Mul'.
 --
--- > P.parse p_mul "" "*3"
+-- > P.parse (P.many1 p_mul) "" "/3*3/2"
 p_mul :: P (Bel a)
-p_mul = liftM Mul (P.char '*' >> p_number)
+p_mul = do
+  op <- P.oneOf "*/"
+  n <- p_number
+  let n' = case op of
+             '*' -> n
+             '/' -> recip n
+             _ -> error "p_mul"
+  return (Mul n')
 
 -- | Given parser for 'Bel' /a/, generate 'Par' parser.
 p_par :: P (Bel a) -> P (Bel a)
