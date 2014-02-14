@@ -41,6 +41,7 @@ Library
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
+                   Music.Theory.Duration.Bel1990.R
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Name.Abbreviation
                    Music.Theory.Duration.RQ
@@ -56,6 +57,7 @@ Library
                    Music.Theory.Pitch.Spelling.Cluster
                    Music.Theory.Key
                    Music.Theory.List
+                   Music.Theory.Math
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Morris_1980

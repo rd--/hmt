@@ -12,6 +12,13 @@ import Data.Maybe {- base -}
 bracket :: (a,a) -> [a] -> [a]
 bracket (l,r) x = l : x ++ [r]
 
+-- | Variant where brackets are sequences.
+--
+-- > bracket_l ("<:",":>") "1,2,3" == "<:1,2,3:>"
+bracket_l :: ([a],[a]) -> [a] -> [a]
+bracket_l (l,r) s = l ++ s ++ r
+
+-- | Generic form of 'rotate_left'.
 genericRotate_left :: Integral i => i -> [a] -> [a]
 genericRotate_left n =
     let f (p,q) = q ++ p
@@ -24,6 +31,7 @@ genericRotate_left n =
 rotate_left :: Int -> [a] -> [a]
 rotate_left = genericRotate_left
 
+-- | Generic form of 'rotate_right'.
 genericRotate_right :: Integral n => n -> [a] -> [a]
 genericRotate_right n = reverse . genericRotate_left n . reverse
 
@@ -54,6 +62,7 @@ rotate_r = rotate . negate
 rotations :: [a] -> [[a]]
 rotations p = map (`rotate_left` p) [0 .. length p - 1]
 
+-- | Generic form of 'adj2'.
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
 genericAdj2 n l =
     case l of
@@ -317,3 +326,7 @@ merge_set p =
       [] -> []
       [i] -> i
       i:p' -> merge i (merge_set p')
+
+-- | Predicate to determine if all elements of the list are '=='.
+all_eq :: Eq n => [n] -> Bool
+all_eq = (== 1) . length . nub
