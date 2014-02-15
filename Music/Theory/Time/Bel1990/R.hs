@@ -339,7 +339,7 @@ bel_linearise l_st b =
 
 -- | Merge two ascending 'L_Bel'.
 lbel_merge :: L_Bel a -> L_Bel a -> L_Bel a
-lbel_merge = T.mergeBy (compare `on` lterm_time)
+lbel_merge = T.merge_by (compare `on` lterm_time)
 
 -- | Set of unique 'Tempo' at 'L_Bel'.
 lbel_tempi :: L_Bel a -> [Tempo]

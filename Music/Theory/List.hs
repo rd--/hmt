@@ -3,6 +3,7 @@ module Music.Theory.List where
 
 import Data.Function {- base -}
 import Data.List {- base -}
+import qualified Data.List.Ordered as L {- data-ordlist -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
@@ -304,28 +305,23 @@ group_just = groupBy ((==) `on` isJust)
 -- | Given a comparison function, merge two ascending lists.
 --
 -- > mergeBy compare [1,3,5] [2,4] == [1..5]
-mergeBy :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
-mergeBy f p q =
-    case (p,q) of
-      ([],_) -> q
-      (_,[]) -> p
-      (i:p',j:q') -> case f i j of
-                       GT -> j : mergeBy f p q'
-                       _ -> i : mergeBy f p' q
+merge_by :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
+merge_by = L.mergeBy
 
 -- | 'mergeBy' 'compare'.
 merge :: Ord a => [a] -> [a] -> [a]
-merge = mergeBy compare
+merge = L.merge
 
--- | 'merge' a set of ordered sequences.
+-- | Merge list of sorted lists given comparison function.  Note that
+-- this is not equal to 'L.mergeAll'.
+merge_set_by :: (a -> a -> Ordering) -> [[a]] -> [a]
+merge_set_by f = foldr (merge_by f) []
+
+-- | 'merge_set_by' of 'compare'.
 --
--- > merge_set [[1,3..9],[2,4..8],[10]] == [1..10]
+-- > merge_set [[1,3,5,7,9],[2,4,6,8],[10]] == [1..10]
 merge_set :: Ord a => [[a]] -> [a]
-merge_set p =
-    case p of
-      [] -> []
-      [i] -> i
-      i:p' -> merge i (merge_set p')
+merge_set = merge_set_by compare
 
 -- | Predicate to determine if all elements of the list are '=='.
 all_eq :: Eq n => [n] -> Bool
