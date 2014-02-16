@@ -34,9 +34,9 @@ and:
 > g _ _ _ _ _ _ _ h _ _ _ _ _ _ _ i _ _ _ _ _ _ _ j _ _ _ _ _ _ _ k _ _ _ _ _ _ _
 
 The /Bel/ notation allows /n/-ary parallel structures,
-ie. @{a_bcd_e,a_f_gh_,ji_a_i_}@ (Bel 1992, p.29), the /Bel(R)/
-notation allows only binary structures.  The standard parallel
-interpretation rule is associative:
+ie. @{a_bcd_e,a_f_gh_,ji_a_i_}@ (Bel 1992, p.29), however /Bel(R)/
+allows only binary structures.  The parallel interpretation rules are
+associative:
 
 > > bel_ascii_pp "{a_bcd_e,{a_f_gh_,ji_a_i_}}"
 >
@@ -46,8 +46,8 @@ interpretation rule is associative:
 > a _ f _ g h _
 > j i _ a _ i _
 
-However /Bel(R)/ does allow unary parallel structures, which can be
-used to /isolate/ tempo changes:
+/Bel(R)/ does allow unary parallel structures (see 'Iso'), which can
+be used to /isolate/ tempo changes:
 
 > > bel_ascii_pp "ab{*2cd}ef{*2/3gh}ij"
 >
@@ -100,17 +100,17 @@ any /Bel(R)/ expression can be calculated directly, given an initial
 Therefore in the composite expression the left part is slowed by a
 factor of two to align with the right part.
 
-The /Bel/ string @ab{\/1ab,cde}cd@ can be re-written in /Bel(R)/
-notation as either @ab~{ab,cde}cd@ or @ab(ab,cde)cd@.  The absolute
-tempo indication is replaced by notations giving alternate modes of
+The /Bel/ string @ab{\/1ab,cde}cd@ can be re-written in /Bel(R)/ as
+either @ab~{ab,cde}cd@ or @ab(ab,cde)cd@.  The absolute tempo
+indication is replaced by notations giving alternate modes of
 interpretation for the parallel structure.
 
 In the first case the @~@ indicates the /opposite/ of the normal rule
-for parallel nodes.  The normal rule, which is the same as in /Bel/
-notation, and is that the duration of the whole is equal to duration
-of the longer of the two parts.  The @~@ inverts this so that the
-whole has the duration of the shorter of the two parts, and the longer
-part is scaled to have equal duration.
+for parallel nodes.  The normal rule is the same as for /Bel/ and is
+that the duration of the whole is equal to duration of the longer of
+the two parts.  The @~@ inverts this so that the whole has the
+duration of the shorter of the two parts, and the longer part is
+scaled to have equal duration.
 
 In the second case the parentheses @()@ replacing the braces @{}@
 indicates that the duration of the whole is equal to the duration of
