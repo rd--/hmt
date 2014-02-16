@@ -588,7 +588,7 @@ p_mul = do
              _ -> error "p_mul"
   return (Mul n')
 
--- | Given parser for 'Bel' /a/, generate 'Par' parser.
+-- | Given parser for 'Bel' /a/, generate 'Iso' parser.
 p_iso :: P (Bel a) -> P (Bel a)
 p_iso f = do
   open <- P.oneOf "{(["
