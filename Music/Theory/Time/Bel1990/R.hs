@@ -18,7 +18,7 @@ equivalent phase diagrams, for instance (Bel 1990, §11, p.24):
 
 > > bel_ascii_pp "ab{ab,cde}cd"
 >
-> Bel(R): ab{ab,cde}cd
+> Bel(R): "ab{ab,cde}cd", Dur: 7
 >
 > a _ b _ a _ _ b _ _ c _ d _
 >         c _ d _ e _        
@@ -27,7 +27,7 @@ and:
 
 > > bel_ascii_pp "{a{bc,def},ghijk}"
 >
-> Bel(R): {a{bc,def},ghijk}
+> Bel(R): "{a{bc,def},ghijk}", Dur: 5
 >
 > a _ _ _ _ _ _ _ _ _ b _ _ _ _ _ _ _ _ _ _ _ _ _ _ c _ _ _ _ _ _ _ _ _ _ _ _ _ _
 >                     d _ _ _ _ _ _ _ _ _ e _ _ _ _ _ _ _ _ _ f _ _ _ _ _ _ _ _ _
@@ -40,11 +40,20 @@ interpretation rule is associative:
 
 > > bel_ascii_pp "{a_bcd_e,{a_f_gh_,ji_a_i_}}"
 >
-> Bel(R): {a_bcd_e,{a_f_gh_,ji_a_i_}}
+> Bel(R): "{a_bcd_e,{a_f_gh_,ji_a_i_}}", Dur: 7
 >
 > a _ b c d _ e
 > a _ f _ g h _
 > j i _ a _ i _
+
+However /Bel(R)/ does allow unary parallel structures, which can be
+used to /isolate/ tempo changes:
+
+> > bel_ascii_pp "ab{*2cd}ef{*2/3gh}ij"
+>
+> Bel(R): "ab{*2cd}ef{*2/3gh}ij", Dur: 10
+>
+> a _ b _ c d e _ f _ g _ _ h _ _ i _ j _
 
 Patterns with tempo indications have completely different meanings in
 /Bel/ and /Bel(R)/, though in both cases parallel nodes delimit the
@@ -75,7 +84,7 @@ interpretation.  The expression @{*1ab,*1cde}@ is trivially equal to
 
 > > bel_ascii_pp "{a*2b,*3c/2d/3e}"
 >
-> Bel(R): {a*2b,*3c*1/2d*1/3e}
+> Bel(R): "{a*2b,*3c*1/2d*1/3e}", Dur: 3
 >
 > a _ _ _ _ _ b _ _
 > c d _ e _ _ _ _ _
@@ -111,7 +120,7 @@ the duration of the right side, and the left scaled.
 
 > > bel_ascii_pp "ab~{ab,cde}cd"
 >
-> Bel(R): ab~{ab,cde}cd
+> Bel(R): "ab~{ab,cde}cd", Dur: 6
 >
 > a _ _ b _ _ a _ _ b _ _ c _ _ d _ _
 >             c _ d _ e _            
@@ -123,18 +132,17 @@ brackets:
 
 > > bel_ascii_pp "ab[ab,cde]cd"
 >
-> Bel(R): ab[ab,cde]cd
+> Bel(R): "ab[ab,cde]cd", Dur: 7
 >
 > a b a b   c d
 >     c d e    
 
 The /Bel/ string @\/2abc\/3de@ (Bel 1992, p.53) can be written as
-@*2abc*1/2*3de@, or equivalently as @*2abc*3/2de@, or more concisely
-as:
+@*2abc*1/2*3de@, or equivalently as @*2abc*3/2de@:
 
-> > bel_ascii_pp "abc*3/2de"
+> > bel_ascii_pp "*2abc*3/2de"
 >
-> Bel(R): abc*3/2de
+> Bel(R): "*2abc*3/2de", Dur: 13/6
 >
 > a _ _ b _ _ c _ _ d _ e _
 
@@ -143,7 +151,7 @@ sequences, where an integer /n/ indicates a sequence of /n/ rests, as:
 
 > > bel_ascii_pp "(9,abc)(4,de)"
 >
-> Bel(R): (---------,abc)(----,de)
+> Bel(R): "(---------,abc)(----,de)", Dur: 13
 >
 > - - - - - - - - - - - - -
 > a _ _ b _ _ c _ _ d _ e _
@@ -155,7 +163,7 @@ notation as:
 
 > > bel_ascii_pp "{ab*3{abc,de},fghijk}"
 >
-> Bel(R): {ab*3{abc,de},fghijk}
+> Bel(R): "{ab*3{abc,de},fghijk}", Dur: 6
 >
 > a _ _ _ _ _ b _ _ _ _ _ a _ b _ c _
 >                         d _ _ e _ _
@@ -166,7 +174,7 @@ to the phase diagram given:
 
 > > bel_ascii_pp "{i{ab,cde},jk}"
 >
-> Bel(R): {i{ab,cde},jk}
+> Bel(R): "{i{ab,cde},jk}", Dur: 4
 >
 > i _ a _ _ b _ _
 >     c _ d _ e _
@@ -177,7 +185,7 @@ The paper assigns tempi of @\/6@ to both @i@ and @ab@, which in
 
 > > bel_ascii_pp "{i~{ab,cde},jk}"
 >
-> Bel(R): {i~{ab,cde},jk}
+> Bel(R): "{i~{ab,cde},jk}", Dur: 3
 >
 > i _ _ _ _ _ a _ _ _ _ _ b _ _ _ _ _
 >             c _ _ _ d _ _ _ e _ _ _
@@ -214,6 +222,14 @@ par_mode_brackets m =
       Par_Max -> ("{","}")
       Par_None -> ("[","]")
 
+bel_brackets_match :: (Char,Char) -> Bool
+bel_brackets_match (open,close) =
+    case (open,close) of
+      ('{','}') -> True
+      ('(',')') -> True
+      ('[',']') -> True
+      _ -> False
+
 -- | Tempo is rational.  The duration of a 'Term' is the reciprocal of
 -- the 'Tempo' that is in place at the 'Term'.
 type Tempo = Rational
@@ -225,10 +241,11 @@ data Term a = Value a
            deriving (Eq,Show)
 
 -- | Recursive temporal structure.
-data Bel a = Node (Term a)
-           | Seq (Bel a) (Bel a)
-           | Par Par_Mode (Bel a) (Bel a)
-           | Mul Tempo
+data Bel a = Node (Term a) -- ^ Leaf node
+           | Iso (Bel a) -- ^ Isolate
+           | Seq (Bel a) (Bel a) -- ^ Sequence
+           | Par Par_Mode (Bel a) (Bel a) -- ^ Parallel
+           | Mul Tempo -- ^ Tempo multiplier
            deriving (Eq,Show)
 
 -- | Pretty printer for 'Bel', given pretty printer for the term type.
@@ -238,6 +255,7 @@ bel_pp f b =
       Node Rest -> "-"
       Node Continue -> "_"
       Node (Value c) -> f c
+      Iso b' -> T.bracket_l ("{","}") (bel_pp f b')
       Seq p q -> concat [bel_pp f p,bel_pp f q]
       Par m p q ->
           let pq = concat [bel_pp f p,",",bel_pp f q]
@@ -277,6 +295,7 @@ bel_tdur :: Tempo -> Bel a -> (Tempo,Rational)
 bel_tdur t b =
     case b of
       Node _ -> (t,1 / t)
+      Iso b' -> (t,snd (bel_tdur t b'))
       Seq p q ->
           let (t_p,d_p) = bel_tdur t p
               (t_q,d_q) = bel_tdur t_p q
@@ -326,6 +345,9 @@ bel_linearise l_st b =
     let (st,tm,vc) = l_st
     in case b of
          Node e -> ([(l_st,e)],(st + 1/tm,tm,vc))
+         Iso p ->
+             let (p',(st',_,_)) = bel_linearise l_st p
+             in (p',(st',tm,vc))
          Seq p q ->
              let (p',l_st') = bel_linearise l_st p
                  (q',l_st'') = bel_linearise l_st' q
@@ -357,14 +379,12 @@ lbel_normalise b =
         m = foldl1 lcm (map numerator (map (* n) t)) % 1
     in lbel_tempo_mul (n / m) b
 
--- | All leftmost voices are the /outer/ voice.
+-- | All leftmost voices are re-written to the last non-left turning point.
 --
 -- > map voice_normalise ["","l","ll","lll"] == replicate 4 ""
+-- > voice_normalise "lllrlrl" == "rlrl"
 voice_normalise :: Voice -> Voice
-voice_normalise v =
-    if nub v == "l"
-    then ""
-    else v
+voice_normalise = dropWhile (== 'l')
 
 -- | '==' 'on' 'voice_normalise'
 voice_eq :: Voice -> Voice -> Bool
@@ -471,11 +491,12 @@ bel_parse_pp_ident :: String -> Bool
 bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 
 -- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
+--
+-- > bel_ascii_pp "{i{ab,{c[d,oh]e,sr{p,qr}}},{jk,ghjkj}}"
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
   let p = bel_char_parse s
-  putStr "\nBel(R): "
-  putStrLn (bel_char_pp p)
+  putStrLn (concat ["\nBel(R): \"",bel_char_pp p,"\", Dur: ",T.rational_pp (bel_dur 1 p),""])
   bel_ascii_pr p
 
 -- * Parsing
@@ -568,6 +589,22 @@ p_mul = do
   return (Mul n')
 
 -- | Given parser for 'Bel' /a/, generate 'Par' parser.
+p_iso :: P (Bel a) -> P (Bel a)
+p_iso f = do
+  open <- P.oneOf "{(["
+  iso <- P.many1 f
+  close <- P.oneOf "})]"
+  if bel_brackets_match (open,close)
+    then return (Iso (lseq iso))
+    else error "p_iso: open/close mismatch"
+
+-- | 'p_iso' of 'p_char_bel'.
+--
+-- > P.parse p_char_iso "" "{abcde}"
+p_char_iso :: P (Bel Char)
+p_char_iso = p_iso p_char_bel
+
+-- | Given parser for 'Bel' /a/, generate 'Par' parser.
 p_par :: P (Bel a) -> P (Bel a)
 p_par f = do
   tilde <- P.optionMaybe (P.char '~')
@@ -596,7 +633,7 @@ p_char_par = p_par p_char_bel
 --
 -- > P.parse (P.many1 p_char_bel) "" "-_a*3"
 p_char_bel :: P (Bel Char)
-p_char_bel = P.choice [p_char_par,p_mul,p_nrests,p_char_node]
+p_char_bel = P.choice [P.try p_char_par,p_char_iso,p_mul,p_nrests,p_char_node]
 
 -- | Run parser for 'Bel' of 'Char'.
 bel_char_parse :: String -> Bel Char
