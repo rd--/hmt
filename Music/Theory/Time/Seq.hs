@@ -31,17 +31,24 @@ type Pseq t a = [((t,t,t),a)]
 -- an /nil/ (end of sequence) value.
 type Tseq t a = [(t,a)]
 
--- | Window sequence.  Holes exist where @t(n) + d(n)@ '<' @t(n+1)@.
--- Overlaps exist where the same relation is '>'.
+-- | Window sequence.  The temporal field is (/time/,/duration/).
+-- Holes exist where @t(n) + d(n)@ '<' @t(n+1)@.  Overlaps exist where
+-- the same relation is '>'.
 type Wseq t a = [((t,t),a)]
 
 -- * Zip
+
+pseq_zip :: [t] -> [t] -> [t] -> [a] -> Pseq t a
+pseq_zip l o f a = (zip (zip3 l o f) a)
 
 wseq_zip :: [t] -> [t] -> [a] -> Wseq t a
 wseq_zip t d a = (zip (zip t d) a)
 
 -- * Time span
 
+-- | Given functions for deriving start and end times calculate time
+-- span of sequence.
+--
 -- > seq_tspan id id [] == (0,0)
 -- > seq_tspan id id (zip [0..9] ['a'..]) == (0,9)
 seq_tspan :: Num n => (t -> n) -> (t -> n) -> [(t,a)] -> (n,n)
@@ -66,13 +73,17 @@ iseq_dur = sum . map fst
 pseq_dur :: Num t => Pseq t a -> t
 pseq_dur = sum . map (T.t3_third . fst)
 
--- > tseq_dur (zip [0..9] ['a'..])
+-- | The interval of 'tseq_tspan'.
+--
+-- > tseq_dur (zip [0..] "abcde|") == 5
 tseq_dur :: Num t => Tseq t a -> t
-tseq_dur = uncurry (flip (-)) . tseq_tspan
+tseq_dur = uncurry subtract . tseq_tspan
 
+-- | The interval of 'wseq_tspan'.
+--
 -- > wseq_dur (zip (zip [0..9] (repeat 2)) ['a'..]) == 11
 wseq_dur :: Num t => Wseq t a -> t
-wseq_dur = uncurry (flip (-)) . wseq_tspan
+wseq_dur = uncurry subtract . wseq_tspan
 
 -- * Append
 
@@ -122,6 +133,8 @@ seq_partition voice sq =
                    M.toList
     in from_map (foldl assign M.empty sq)
 
+-- | Type specialised 'seq_partition'.
+--
 -- > let {p = zip [0,1,3,5] (zip (repeat 0) "abcd")
 -- >     ;q = zip [2,4,6,7] (zip (repeat 1) "ABCD")
 -- >     ;sq = tseq_merge p q}
@@ -184,23 +197,27 @@ wseq_tcoalesce = seq_tcoalesce
 
 -- * Group
 
+-- | Post-process 'groupBy' of /cmp/ 'on' 'fst'.
+--
+-- > let r = [(0,"a"),(1,"bc"),(2,"de"),(3,"f")]
+-- > in group_f (==) (zip [0,1,1,2,2,3] ['a'..]) == r
 group_f :: (Eq t,Num t) => (t -> t -> Bool) -> [(t,a)] -> [(t,[a])]
 group_f cmp =
-    let recur t r sq =
-            case sq of
-              [] -> if null r then [] else [(t,reverse r)]
-              (d,a):sq' -> if cmp t d
-                           then recur t (a:r) sq'
-                           else if null r
-                                then recur d [a] sq'
-                                else (t,reverse r) : recur d [a] sq'
-    in recur 0 []
+    let f l = let (t,a) = unzip l
+              in case t of
+                   [] -> error "group_f: []?"
+                   t0:_ -> (t0,a)
+    in map f . groupBy (cmp `on` fst)
 
+-- | Group values at equal time points.
+--
 -- > let r = [(0,"a"),(1,"bc"),(2,"de"),(3,"f")]
 -- > in tseq_group (zip [0,1,1,2,2,3] ['a'..]) == r
 tseq_group :: (Eq t,Num t) => Tseq t a -> Tseq t [a]
 tseq_group = group_f (==)
 
+-- | Group values where the inter-offset time is @0@ to the left.
+--
 -- > let r = [(0,"a"),(1,"bcd"),(1,"ef")]
 -- > in iseq_group (zip [0,1,0,0,1,0] ['a'..]) == r
 iseq_group :: (Eq t,Num t) => Iseq t a -> Iseq t [a]
@@ -219,6 +236,9 @@ wseq_fill_dur l =
 
 -- * Interop
 
+-- | The conversion requires a start time and a /nil/ value used as an
+-- /eof/ marker.
+--
 -- > let r = zip [0,1,3,6,8,9] "abcde|"
 -- > in dseq_to_tseq 0 '|' (zip [1,2,3,2,1] "abcde") == r
 dseq_to_tseq :: Num t => t -> a -> Dseq t a -> Tseq t a
@@ -227,6 +247,18 @@ dseq_to_tseq t0 nil sq =
         t = T.dx_d t0 d
         a' = a ++ [nil]
     in zip t a'
+
+-- | The conversion requires a start time and does not consult the
+-- /logical/ duration.
+--
+-- > let p = pseq_zip (repeat undefined) (cycle [1,2]) (cycle [1,1,2]) "abcdef"
+-- > in pseq_to_wseq 0 p == wseq_zip [0,1,2,4,5,6] (cycle [1,2]) "abcdef"
+pseq_to_wseq :: Num t => t -> Pseq t a -> Wseq t a
+pseq_to_wseq t0 sq =
+    let (p,a) = unzip sq
+        (_,d,f) = unzip3 p
+        t = T.dx_d t0 f
+    in wseq_zip t d a
 
 -- | The last element of 'Tseq' is required to be an /eof/ marker that
 -- has no duration and is not represented in the 'Dseq'.
@@ -239,6 +271,24 @@ tseq_to_dseq sq =
         d = T.d_dx t
     in zip d a
 
+-- | The last element of 'Tseq' is required to be an /eof/ marker that
+-- has no duration and is not represented in the 'Wseq'.  The duration
+-- of each value is either derived from the value, if an /dur/
+-- function is given, or else the inter-offset time.
+--
+-- > let r = wseq_zip [0,1,3,6,8] [1,2,3,2,1] "abcde"
+-- > in tseq_to_wseq Nothing (zip [0,1,3,6,8,9] "abcde|") == r
+--
+-- > let r = wseq_zip [0,1,3,6,8] (map fromEnum "abcde") "abcde"
+-- > in tseq_to_wseq (Just fromEnum) (zip [0,1,3,6,8,9] "abcde|") == r
+tseq_to_wseq :: Num t => Maybe (a -> t) -> Tseq t a -> Wseq t a
+tseq_to_wseq dur_f sq =
+    let (t,a) = unzip sq
+        d = case dur_f of
+              Just f -> map f (fst (T.separate_last a))
+              Nothing -> T.d_dx t
+    in wseq_zip t d a
+
 tseq_to_iseq :: Num t => Tseq t a -> Dseq t a
 tseq_to_iseq =
     let recur n p =
@@ -247,6 +297,8 @@ tseq_to_iseq =
               (t,e):p' -> (t - n,e) : recur t p'
     in recur 0
 
+-- | Requires start time.
+--
 -- > let r = zip (zip [0,1,3,6,8,9] [1,2,3,2,1]) "abcde"
 -- > in dseq_to_wseq 0 (zip [1,2,3,2,1] "abcde") == r
 dseq_to_wseq :: Num t => t -> Dseq t a -> Wseq t a
