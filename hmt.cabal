@@ -31,6 +31,7 @@ Library
                    parsec,
                    permutation,
                    primes,
+                   safe,
                    split,
                    utf8-string
   GHC-Options:     -Wall -fwarn-tabs
@@ -75,6 +76,7 @@ Library
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time.Bel1990.R
+                   Music.Theory.Time.Seq
                    Music.Theory.Time_Signature
                    Music.Theory.Tuple
                    Music.Theory.Tuning
