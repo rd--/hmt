@@ -59,10 +59,10 @@ Patterns with tempo indications have completely different meanings in
 /Bel/ and /Bel(R)/, though in both cases parallel nodes delimit the
 scope of tempo markings.
 
-/Bel(R)/ replaces the @\/n@ notation for explicit tempo marks
-with a @*n@ notation indicating a relative tempo multiplier and a set
-of bracketing notations to specify interpretation rules for parallel
-(concurrent) temporal structures.
+/Bel(R)/ replaces the @\/n@ notation for explicit tempo marks with a
+@*n@ notation to indicate a tempo multiplier, and a set of bracketing
+notations to specify interpretation rules for parallel (concurrent)
+temporal structures.
 
 The tempo indication @\/1@ in the expression @ab{\/1ab,cde}cd@
 (Bel 1990, p.24) requires that the inner @ab@ have the same tempo as
@@ -90,12 +90,12 @@ interpretation.  The expression @{*1ab,*1cde}@ is trivially equal to
 > c d _ e _ _ _ _ _
 
 Here @a@ is twice the duration of @b@, and @e@ is three times the
-duration of @d@, which is twice the duration of @c@.  The duration of
-any /Bel(R)/ expression can be calculated directly, given an initial
-'Tempo':
+duration of @d@, which is twice the duration of @c@ (in /Bel(R)/ @\/n@
+is equivalent to @*1\/n@).  The duration of any /Bel(R)/ expression
+can be calculated directly, given an initial 'Tempo':
 
 > bel_dur 1 (bel_char_parse "a*2b") == 3/2
-> bel_dur 1 (bel_char_parse "*3c*1/2d*1/3e") == 3
+> bel_dur 1 (bel_char_parse "*3c/2d/3e") == 3
 
 Therefore in the composite expression the left part is slowed by a
 factor of two to align with the right part.
