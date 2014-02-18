@@ -13,8 +13,8 @@ import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
 
--- | Duration sequence.  The duration is the /logical/ duration of the
--- value.
+-- | Duration sequence.  The duration is the /forward/ duration of the
+-- value, if it has other durations they must be encoded at /a/.
 type Dseq t a = [(t,a)]
 
 -- | Inter-offset sequence.  The duration is the interval /before/ the
@@ -81,7 +81,7 @@ tseq_dur = uncurry subtract . tseq_tspan
 
 -- | The interval of 'wseq_tspan'.
 --
--- > wseq_dur (zip (zip [0..9] (repeat 2)) ['a'..]) == 11
+-- > wseq_dur (zip (zip [0..] (repeat 2)) "abcde") == 6
 wseq_dur :: Num t => Wseq t a -> t
 wseq_dur = uncurry subtract . wseq_tspan
 
@@ -120,6 +120,16 @@ seq_filter f = filter (f . snd)
 
 seq_find :: (a -> Bool) -> [(t,a)] -> Maybe (t,a)
 seq_find f = let f' (_,a) = f a in find f'
+
+-- * Specialised temporal maps.
+
+-- | Apply /f/ at time points of 'Wseq'.
+wseq_tmap_st :: (t -> t) -> Wseq t a -> Wseq t a
+wseq_tmap_st f = let g (t,d) = (f t,d) in seq_tmap g
+
+-- | Apply /f/ at durations of elements of 'Wseq'.
+wseq_tmap_dur :: (t -> t) -> Wseq t a -> Wseq t a
+wseq_tmap_dur f = let g (t,d) = (t,f d) in seq_tmap g
 
 -- * Partition
 
@@ -264,12 +274,17 @@ pseq_to_wseq t0 sq =
 -- has no duration and is not represented in the 'Dseq'.
 --
 -- > let r = zip [1,2,3,2,1] "abcde"
--- > in tseq_to_dseq (zip [0,1,3,6,8,9] "abcde|") == r
-tseq_to_dseq :: Num t => Tseq t a -> Dseq t a
-tseq_to_dseq sq =
+-- > in tseq_to_dseq undefined (zip [0,1,3,6,8,9] "abcde|") == r
+--
+-- > let r = zip [1,2,3,2,1] "-abcd"
+-- > in tseq_to_dseq '-' (zip [1,3,6,8,9] "abcd|") == r
+tseq_to_dseq :: (Ord t,Num t) => a -> Tseq t a -> Dseq t a
+tseq_to_dseq empty sq =
     let (t,a) = unzip sq
         d = T.d_dx t
-    in zip d a
+    in case t of
+         [] -> []
+         t0:_ -> if t0 > 0 then (t0,empty) : zip d a else zip d a
 
 -- | The last element of 'Tseq' is required to be an /eof/ marker that
 -- has no duration and is not represented in the 'Wseq'.  The duration
