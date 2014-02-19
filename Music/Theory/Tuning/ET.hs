@@ -1,6 +1,8 @@
 -- | Equal temperament tuning tables.
 module Music.Theory.Tuning.ET where
 
+import Data.List {- base -}
+import Data.List.Split {- split -}
 import Text.Printf {- base -}
 
 import Music.Theory.List {- hmt -}
@@ -94,3 +96,24 @@ nearest_12et_tone = nearest_et_table_tone tbl_12et
 -- > unwords (hs_r_pp 1 (nearest_24et_tone 55)) == "55.0 A1 55.0 0.0 0.0"
 nearest_24et_tone :: Double -> HS_R
 nearest_24et_tone = nearest_et_table_tone tbl_24et
+
+-- * 72ET
+
+-- | Monzo 72-edo HEWM notation.  The domain is (-9,9).
+-- <http://www.tonalsoft.com/enc/number/72edo.aspx>
+--
+-- > let r = ["+",">","^","#<","#-","#","#+","#>","#^"]
+-- > in map alteration_72et_monzo [1 .. 9] == r
+--
+-- > let r = ["-","<","v","b>","b+","b","b-","b<","bv"]
+-- > in map alteration_72et_monzo [-1,-2 .. -9] == r
+alteration_72et_monzo :: Integral n => n -> String
+alteration_72et_monzo n =
+    let spl = splitOn ","
+        asc = spl ",+,>,^,#<,#-,#,#+,#>,#^"
+        dsc = spl ",-,<,v,b>,b+,b,b-,b<,bv"
+    in case compare n 0 of
+         LT -> genericIndex dsc (- n)
+         EQ -> ""
+         GT -> genericIndex asc n
+
