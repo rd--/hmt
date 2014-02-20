@@ -36,6 +36,25 @@ data Pitch = Pitch {note :: Note_T
 instance Ord Pitch where
     compare = pitch_compare
 
+-- | Generalised alteration, given as a rational semitone difference
+-- and a string representation of the alteration.
+type Alteration_T' = (Rational,String)
+
+-- | Transform 'Alteration_T' to 'Alteration_T''.
+--
+-- > let r = [(-1,"♭"),(0,"♮"),(1,"♯")]
+-- > in map alteration_t' [Flat,Natural,Sharp] == r
+alteration_t' :: Alteration_T -> Alteration_T'
+alteration_t' a = (alteration_to_fdiff a,[alteration_symbol a])
+
+-- | Generalised pitch, given by a generalised alteration.
+data Pitch' = Pitch' Note_T Alteration_T' Octave
+            deriving (Eq,Show)
+
+-- | Pretty printer for 'Pitch''.
+pitch'_pp :: Pitch' -> String
+pitch'_pp (Pitch' n (_,a) o) = show n ++ a ++ show o
+
 -- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
