@@ -6,10 +6,22 @@ import Data.Ratio {- base -}
 -- | Pretty printer for 'Rational' that elides denominators of @1@.
 --
 -- > map rational_pp [1,3/2,2] == ["1","3/2","2"]
-rational_pp :: Rational -> String
+rational_pp :: (Show a,Integral a) => Ratio a -> String
 rational_pp r =
     let n = numerator r
         d = denominator r
     in if d == 1
        then show n
        else concat [show n,"/",show d]
+
+-- | Predicate that is true if @n/d@ can be simplified, ie. where
+-- 'gcd' of @n@ and @d@ is not @1@.
+--
+-- > let r = [False,True,False]
+-- > in map rational_simplifies [(2,3),(4,6),(5,7)] == r
+rational_simplifies :: Integral a => (a,a) -> Bool
+rational_simplifies (n,d) = gcd n d /= 1
+
+-- | 'numerator' and 'denominator' of rational.
+rational_nd :: Integral t => Ratio t -> (t,t)
+rational_nd r = (numerator r,denominator r)
