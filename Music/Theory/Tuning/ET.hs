@@ -129,18 +129,35 @@ alteration_72et_monzo n =
 -- > let {f = pitch'_pp . fst . pitch_72et
 -- >     ;r = "C4 C+4 C>4 C^4 C#<4 C#-4 C#4 C#+4 C#>4 C#^4"}
 -- > in unwords (map f (zip (repeat 60) [0..9])) == r
+--
+-- > let {f = pitch'_pp . fst . pitch_72et
+-- >     ;r = "A4 A+4 A>4 A^4 Bb<4 Bb-4 Bb4 Bb+4 Bb>4 Bv4"}
+-- > in unwords (map f (zip (repeat 69) [0..9]))
+--
+-- > let {f = pitch'_pp . fst . pitch_72et
+-- >     ;r = "Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"}
+-- > in unwords (map f (zip (repeat 70) [0..9])) == r
 pitch_72et :: (Integer,Integer) -> (Pitch',Double)
 pitch_72et (x,n) =
-    let p = midi_to_pitch pc_spell_sharp x
+    let p = midi_to_pitch pc_spell_ks x
         t = note p
-        (t',n') = case alteration p of
+        a = alteration p
+        (t',n') = case a of
+                    Flat -> if n < (-3) then (pred t,n + 6) else (t,n - 6)
                     Natural -> (t,n)
                     Sharp -> if n > 3 then (succ t,n - 6) else (t,n + 6)
                     _ -> error "pitch_72et: alteration?"
-        a = alteration_72et_monzo n'
+        a' = alteration_72et_monzo n'
         x' = fromIntegral x + (fromIntegral n / 6)
-    in (Pitch' t' (n' % 12,a) (octave p)
-       ,fmidi_to_cps x')
+        r = (Pitch' t' (n' % 12,a') (octave p),fmidi_to_cps x')
+        r' = if n > 3
+             then pitch_72et (x + 1,n - 6)
+             else if n < (-3)
+                  then pitch_72et (x - 1,n + 6)
+                  else r
+    in case a of
+         Natural -> r'
+         _ -> r
 
 -- | 72-tone equal temperament table equating 'Pitch'' and frequency
 -- over range of human hearing, where @A4@ = @440@hz.
