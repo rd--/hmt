@@ -144,9 +144,9 @@ polansky_1984_r =
         i' = 21/16 * v
     in [1,8/7,21/16,v,vi,i']
 
--- | 'to_cents_r' of 'polansky_1984_r'.
+-- | 'ratio_to_cents' of 'polansky_1984_r'.
 --
 -- > import Music.Theory.List
 -- > map round (d_dx polansky_1984_c) == [231,240,223,240,231]
 polansky_1984_c :: [Cents]
-polansky_1984_c = map to_cents_r polansky_1984_r
+polansky_1984_c = map ratio_to_cents polansky_1984_r

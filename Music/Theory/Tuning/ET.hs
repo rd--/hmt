@@ -79,7 +79,7 @@ hs_r_pitch_pp = hs_r_pp pitch_pp
 --
 -- > let {f = 256
 -- >     ;f' = octpc_to_cps (4,0)
--- >     ;r = (f,Pitch C Natural 4,f',f-f',to_cents (f/f'))}
+-- >     ;r = (f,Pitch C Natural 4,f',f-f',fratio_to_cents (f/f'))}
 -- > in nearest_et_table_tone tbl_12et 256 == r
 nearest_et_table_tone :: [(p,Double)] -> Double -> HS_R p
 nearest_et_table_tone tbl f =
@@ -89,8 +89,8 @@ nearest_et_table_tone tbl f =
           let ld = f - lf
               rd = f - rf
           in if abs ld < abs rd
-             then (f,lp,lf,ld,to_cents (f/lf))
-             else (f,rp,rf,rd,to_cents (f/rf))
+             then (f,lp,lf,ld,fratio_to_cents (f/lf))
+             else (f,rp,rf,rd,fratio_to_cents (f/rf))
 
 -- | 'nearest_et_table_tone' for 'tbl_12et'.
 nearest_12et_tone :: Double -> HS_R Pitch

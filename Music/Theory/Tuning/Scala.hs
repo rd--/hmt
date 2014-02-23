@@ -56,7 +56,7 @@ pitch_cents :: Pitch Integer -> T.Cents
 pitch_cents p =
     case p of
       Left c -> c
-      Right r -> T.to_cents_r r
+      Right r -> T.ratio_to_cents r
 
 type Epsilon = Double
 

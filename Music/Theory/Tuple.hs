@@ -45,6 +45,9 @@ t2_join = t2_infix mappend
 t2_concat :: [T2 [a]] -> T2 [a]
 t2_concat = t2_map mconcat . unzip
 
+t2_sort :: Ord t => (t,t) -> (t,t)
+t2_sort (p,q) = (min p q,max p q)
+
 -- * P3 (3 product)
 
 -- | Left rotation.

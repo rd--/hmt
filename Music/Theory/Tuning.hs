@@ -46,7 +46,7 @@ ratios = fromLeft . ratios_or_cents
 
 -- | Possibly inexact 'Cents' of tuning.
 cents :: Tuning -> [Cents]
-cents = either (map to_cents_r) id . ratios_or_cents
+cents = either (map ratio_to_cents) id . ratios_or_cents
 
 -- | 'map' 'round' '.' 'cents'.
 cents_i :: Integral i => Tuning -> [i]
@@ -57,12 +57,6 @@ cents_i = map round . cents
 -- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
 cents_to_ratio :: Floating a => a -> a
 cents_to_ratio n = 2 ** (n / 1200)
-
--- | Convert from frequency ratio to cents interval.
---
--- > map ratio_to_cents [1,4/3,2] == [0.0,498.04499913461245,1200.0]
-ratio_to_cents :: Floating a => a -> a
-ratio_to_cents n = logBase 2 n * 1200
 
 -- | Possibly inexact 'Approximate_Ratio's of tuning.
 approximate_ratios :: Tuning -> [Approximate_Ratio]
@@ -81,31 +75,37 @@ reconstructed_ratios epsilon =
     fromRight .
     ratios_or_cents
 
--- | Convert from an 'Approximate_Ratio' to 'Cents'.
+-- | Convert from a 'Floating' ratio to /cents/.
 --
--- > round (to_cents (3/2)) == 702
-to_cents :: Approximate_Ratio -> Cents
-to_cents x = 1200 * logBase 2 x
+-- > let r = [0,498,702,1200]
+-- > in map (round . fratio_to_cents) [1,4/3,3/2,2] == r
+fratio_to_cents :: Floating n => n -> n
+fratio_to_cents = (1200 *) . logBase 2
 
--- | Convert from 'Rational' to 'Approximate_Ratio', ie. 'fromRational'.
+-- | Type specialised 'fratio_to_cents'.
+approximate_ratio_to_cents :: Approximate_Ratio -> Cents
+approximate_ratio_to_cents = fratio_to_cents
+
+-- | Type specialised 'fromRational'.
 approximate_ratio :: Rational -> Approximate_Ratio
 approximate_ratio = fromRational
 
--- | 'to_cents' '.' 'approximate_ratio'.
-to_cents_r :: Rational -> Cents
-to_cents_r = to_cents . approximate_ratio
+-- | 'approximate_ratio_to_cents' '.' 'approximate_ratio'.
+ratio_to_cents :: Rational -> Cents
+ratio_to_cents = approximate_ratio_to_cents . approximate_ratio
 
 -- | Construct an exact 'Rational' that approximates 'Cents' to within
 -- /epsilon/.
 --
 -- > map (reconstructed_ratio 1e-5) [0,700,1200] == [1,442/295,2]
 --
--- > to_cents_r (442/295) == 699.9976981706735
+-- > ratio_to_cents (442/295) == 699.9976981706734
 reconstructed_ratio :: Double -> Cents -> Rational
 reconstructed_ratio epsilon c = approxRational (cents_to_ratio c) epsilon
 
 -- | Frequency /n/ cents from /f/.
 --
+-- > import Music.Theory.Pitch
 -- > map (cps_shift_cents 440) [-100,100] == map octpc_to_cps [(4,8),(4,10)]
 cps_shift_cents :: Floating a => a -> a -> a
 cps_shift_cents f = (* f) . cents_to_ratio
@@ -118,7 +118,7 @@ cps_shift_cents f = (* f) . cents_to_ratio
 -- > let abs_dif i j = abs (i - j)
 -- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
 cps_difference_cents :: Floating a => a -> a -> a
-cps_difference_cents p q = ratio_to_cents (q / p)
+cps_difference_cents p q = fratio_to_cents (q / p)
 
 -- * Commas
 
@@ -142,7 +142,7 @@ mercators_comma = 19383245667680019896796723 / 19342813113834066795298816
 
 -- | Calculate /n/th root of /x/.
 --
--- > 12 `nth_root` 2  == twelve_tone_equal_temperament_comma
+-- > 12 `nth_root` 2 == twelve_tone_equal_temperament_comma
 nth_root :: (Floating a,Eq a) => a -> a -> a
 nth_root n x =
     let f (_,x0) = (x0, ((n-1)*x0+x/x0**(n-1))/n)
@@ -157,8 +157,10 @@ twelve_tone_equal_temperament_comma = 12 `nth_root` 2
 
 -- * 12-tone tunings
 
+-- | Ratios for 'ditone'.
+--
 -- > let c = [0,114,204,294,408,498,612,702,816,906,996,1110]
--- > in map (round.to_cents_r) ditone_r == c
+-- > in map (round . ratio_to_cents) ditone_r == c
 ditone_r :: [Rational]
 ditone_r =
     [1,2187/2048 {- 256/243 -}
@@ -176,8 +178,10 @@ ditone_r =
 ditone :: Tuning
 ditone = Tuning (Left ditone_r) 2
 
+-- | Ratios for 'pythagorean'.
+--
 -- > let c = [0,90,204,294,408,498,612,702,792,906,996,1110]
--- > in map (round.to_cents_r) pythagorean_r == c
+-- > in map (round . ratio_to_cents) pythagorean_r == c
 pythagorean_r :: [Rational]
 pythagorean_r =
     [1,256/243 {- 2187/2048 -}
@@ -194,8 +198,10 @@ pythagorean_r =
 pythagorean :: Tuning
 pythagorean = Tuning (Left pythagorean_r) 2
 
+-- | Approximate ratios for 'werckmeister_iii'.
+--
 -- > let c = [0,90,192,294,390,498,588,696,792,888,996,1092]
--- > in map (round.to_cents) werckmeister_iii_ar == c
+-- > in map (round . ratio_to_cents) werckmeister_iii_ar == c
 werckmeister_iii_ar :: [Approximate_Ratio]
 werckmeister_iii_ar =
     let c0 = 2 ** (1/2)
@@ -209,8 +215,9 @@ werckmeister_iii_ar =
        ,1024/729 * c1,16/9
        ,128/81 * c1]
 
+-- | Cents for 'werckmeister_iii'.
 werckmeister_iii_c :: [Cents]
-werckmeister_iii_c = map to_cents werckmeister_iii_ar
+werckmeister_iii_c = map approximate_ratio_to_cents werckmeister_iii_ar
 
 -- | Werckmeister III, Andreas Werckmeister (1645-1706)
 --
@@ -218,8 +225,10 @@ werckmeister_iii_c = map to_cents werckmeister_iii_ar
 werckmeister_iii :: Tuning
 werckmeister_iii = Tuning (Right werckmeister_iii_c) 2
 
+-- | Approximate ratios for 'werckmeister_iv'.
+--
 -- > let c = [0,82,196,294,392,498,588,694,784,890,1004,1086]
--- > in map (round.to_cents) werckmeister_iv_ar == c
+-- > in map (round . ratio_to_cents) werckmeister_iv_ar == c
 werckmeister_iv_ar :: [Approximate_Ratio]
 werckmeister_iv_ar =
     let c0 = 2 ** (1/3)
@@ -232,8 +241,9 @@ werckmeister_iv_ar =
        ,256/243 * c1,9/(4*c0)
        ,4096/2187]
 
+-- | Cents for 'werckmeister_iv'.
 werckmeister_iv_c :: [Cents]
-werckmeister_iv_c = map to_cents werckmeister_iv_ar
+werckmeister_iv_c = map approximate_ratio_to_cents werckmeister_iv_ar
 
 -- | Werckmeister IV, Andreas Werckmeister (1645-1706)
 --
@@ -241,8 +251,10 @@ werckmeister_iv_c = map to_cents werckmeister_iv_ar
 werckmeister_iv :: Tuning
 werckmeister_iv = Tuning (Right werckmeister_iv_c) 2
 
+-- | Approximate ratios for 'werckmeister_v'.
+--
 -- > let c = [0,96,204,300,396,504,600,702,792,900,1002,1098]
--- > in map (round.to_cents) werckmeister_v_ar == c
+-- > in map (round . ratio_to_cents) werckmeister_v_ar == c
 werckmeister_v_ar :: [Approximate_Ratio]
 werckmeister_v_ar =
     let c0 = 2 ** (1/4)
@@ -256,8 +268,9 @@ werckmeister_v_ar =
        ,c2,3/c2
        ,4/3 * c1]
 
+-- | Cents for 'werckmeister_v'.
 werckmeister_v_c :: [Cents]
-werckmeister_v_c = map to_cents werckmeister_v_ar
+werckmeister_v_c = map approximate_ratio_to_cents werckmeister_v_ar
 
 -- | Werckmeister V, Andreas Werckmeister (1645-1706)
 --
@@ -265,8 +278,10 @@ werckmeister_v_c = map to_cents werckmeister_v_ar
 werckmeister_v :: Tuning
 werckmeister_v = Tuning (Right werckmeister_v_c) 2
 
+-- | Ratios for 'werckmeister_vi'.
+--
 -- > let c = [0,91,196,298,395,498,595,698,793,893,1000,1097]
--- > in map (round.to_cents_r) werckmeister_vi_r == c
+-- > in map (round . ratio_to_cents) werckmeister_vi_r == c
 werckmeister_vi_r :: [Rational]
 werckmeister_vi_r =
     [1,98/93
@@ -283,6 +298,8 @@ werckmeister_vi_r =
 werckmeister_vi :: Tuning
 werckmeister_vi = Tuning (Left werckmeister_vi_r) 2
 
+-- | Cents for 'pietro_aaron_1523'.
+--
 -- > let c = [0,76,193,310,386,503,580,697,773,890,1007,1083]
 -- > in map round pietro_aaron_1523_c == c
 pietro_aaron_1523_c :: [Cents]
@@ -302,6 +319,8 @@ pietro_aaron_1523_c =
 pietro_aaron_1523 :: Tuning
 pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
 
+-- | Cents for 'thomas_young_1799'.
+--
 -- > let c = [0,94,196,298,392,500,592,698,796,894,1000,1092]
 -- > in map round thomas_young_1799_c == c
 thomas_young_1799_c :: [Cents]
@@ -320,8 +339,10 @@ thomas_young_1799_c =
 thomas_young_1799 :: Tuning
 thomas_young_1799 = Tuning (Right thomas_young_1799_c) 2
 
+-- | Ratios for 'five_limit_tuning'.
+--
 -- > let c = [0,112,204,316,386,498,590,702,814,884,996,1088]
--- > in map (round.to_cents_r) five_limit_tuning_r == c
+-- > in map (round . ratio_to_cents) five_limit_tuning_r == c
 five_limit_tuning_r :: [Rational]
 five_limit_tuning_r =
     [1,16/15
@@ -338,6 +359,8 @@ five_limit_tuning_r =
 five_limit_tuning :: Tuning
 five_limit_tuning = Tuning (Left five_limit_tuning_r) 2
 
+-- | Cents for 'equal_temperament'
+--
 -- > equal_temperament_c == [0,100..1100]
 equal_temperament_c :: [Cents]
 equal_temperament_c = [0, 100 .. 1100]
@@ -348,8 +371,10 @@ equal_temperament_c = [0, 100 .. 1100]
 equal_temperament :: Tuning
 equal_temperament = Tuning (Right equal_temperament_c) 2
 
+-- | Ratios for 'septimal_tritone_just_intonation'.
+--
 -- > let c = [0,112,204,316,386,498,583,702,814,884,1018,1088]
--- > in map (round.to_cents_r) septimal_tritone_just_intonation == c
+-- > in map (round . ratio_to_cents) septimal_tritone_just_intonation == c
 septimal_tritone_just_intonation_r :: [Rational]
 septimal_tritone_just_intonation_r =
     [1,16/15
@@ -360,12 +385,16 @@ septimal_tritone_just_intonation_r =
     ,5/3,9/5
     ,15/8]
 
+-- | Septimal tritone Just Intonation.
+--
 -- > cents_i septimal_tritone_just_intonation == [0,112,204,316,386,498,583,702,814,884,1018,1088]
 septimal_tritone_just_intonation :: Tuning
 septimal_tritone_just_intonation = Tuning (Left septimal_tritone_just_intonation_r) 2
 
+-- | Ratios for 'seven_limit_just_intonation'.
+--
 -- > let c = [0,112,204,316,386,498,583,702,814,884,969,1088]
--- > in map (round.to_cents_r) seven_limit_just_intonation == c
+-- > in map (round . ratio_to_cents) seven_limit_just_intonation == c
 seven_limit_just_intonation_r :: [Rational]
 seven_limit_just_intonation_r =
     [1,16/15
@@ -376,6 +405,8 @@ seven_limit_just_intonation_r =
     ,5/3,7/4
     ,15/8]
 
+-- | Seven limit Just Intonation.
+--
 -- > cents_i seven_limit_just_intonation == [0,112,204,316,386,498,583,702,814,884,969,1088]
 seven_limit_just_intonation :: Tuning
 seven_limit_just_intonation = Tuning (Left seven_limit_just_intonation_r) 2
@@ -394,7 +425,7 @@ kirnberger_iii_ar =
 
 -- > cents_i kirnberger_iii == [0,90,193,294,386,498,590,697,792,890,996,1088]
 kirnberger_iii :: Tuning
-kirnberger_iii = Tuning (Right (map to_cents kirnberger_iii_ar)) 2
+kirnberger_iii = Tuning (Right (map approximate_ratio_to_cents kirnberger_iii_ar)) 2
 
 -- > let c = [0,94,196,298,392,502,592,698,796,894,1000,1090]
 -- > in map round vallotti_c == c
@@ -413,7 +444,7 @@ vallotti :: Tuning
 vallotti = Tuning (Right vallotti_c) 2
 
 -- > let c = [0,128,139,359,454,563,637,746,841,911,1072,1183]
--- > in map (round.to_cents_r) mayumi_reinhard == c
+-- > in map (round . ratio_to_cents) mayumi_reinhard == c
 mayumi_reinhard_r :: [Rational]
 mayumi_reinhard_r =
     [1,14/13
@@ -429,7 +460,7 @@ mayumi_reinhard :: Tuning
 mayumi_reinhard = Tuning (Left mayumi_reinhard_r) 2
 
 -- > let c = [0,177,204,240,471,444,675,702,738,969,942,1173]
--- > in map (round.to_cents_r) la_monte_young_r == c
+-- > in map (round . ratio_to_cents) la_monte_young_r == c
 la_monte_young_r :: [Rational]
 la_monte_young_r =
     [1,567/512
@@ -448,7 +479,7 @@ la_monte_young :: Tuning
 la_monte_young = Tuning (Left la_monte_young_r) 2
 
 -- > let c = [0,105,204,298,386,471,551,702,841,906,969,1088]
--- > in map (round.to_cents_r) ben_johnston_r == c
+-- > in map (round . ratio_to_cents) ben_johnston_r == c
 ben_johnston_r :: [Rational]
 ben_johnston_r =
     [1,17/16
@@ -467,7 +498,7 @@ ben_johnston :: Tuning
 ben_johnston = Tuning (Left ben_johnston_r) 2
 
 -- > let c = [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
--- > in map (round.to_cents_r) lou_harrison_16_r == c
+-- > in map (round . ratio_to_cents) lou_harrison_16_r == c
 lou_harrison_16_r :: [Rational]
 lou_harrison_16_r =
     [1,16/15
@@ -563,14 +594,11 @@ syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) 2
 -- | Raise or lower the frequency /q/ by octaves until it is in the
 -- octave starting at /p/.
 --
--- > fold_to_octave_of 55 392 == 98
+-- > fold_cps_to_octave_of 55 392 == 98
 fold_cps_to_octave_of :: (Ord a, Fractional a) => a -> a -> a
-fold_cps_to_octave_of p q =
-    if q > p * 2
-    then fold_cps_to_octave_of p (q / 2)
-    else if q < p
-         then fold_cps_to_octave_of p (q * 2)
-         else q
+fold_cps_to_octave_of p =
+    let f q = if q > p * 2 then f (q / 2) else if q < p then f (q * 2) else q
+    in f
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
@@ -599,6 +627,8 @@ fold_ratio_to_octave n =
 
 -- | Derivative harmonic series, based on /k/th partial of /f1/.
 --
+-- > import Music.Theory.Pitch
+--
 -- > let {r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
 -- >     ;d = harmonic_series_cps_derived 5 (octpc_to_cps (1,4))}
 -- > in map round (take 15 d) == r
@@ -614,11 +644,11 @@ harmonic_series_folded :: Integer -> [Rational]
 harmonic_series_folded n =
     nub (sort (map fold_ratio_to_octave [1 .. n%1]))
 
--- | 'to_cents_r' variant of 'harmonic_series_folded'.
+-- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
 --
 -- > map round (harmonic_series_folded_c 21) == [0,105,204,298,386,471,551,702,841,969,1088]
 harmonic_series_folded_c :: Integer -> [Cents]
-harmonic_series_folded_c = map to_cents_r . harmonic_series_folded
+harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded
 
 -- | @12@-tone tuning of first @21@ elements of the harmonic series.
 --
