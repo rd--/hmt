@@ -168,13 +168,22 @@ cycles n = transpose . chunksOf n
 
 -- * Association lists
 
--- | Collate values of equal keys at /assoc/ list.
+-- | Given accesors for /key/ and /value/ collate input.
 --
--- > collate [(1,'a'),(2,'b'),(1,'c')] == [(1,"ac"),(2,"b")]
+-- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
+-- > in collate_on fst snd (zip "ABCBCD" "abcdef")
+collate_on :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
+collate_on f g =
+    let h l = case l of
+                [] -> error "collate_on"
+                l0:_ -> (f l0,map g l)
+    in map h . groupBy ((==) `on` f) . sortBy (compare `on` f)
+
+-- | 'collate_on' of 'fst' and 'snd'.
+--
+-- > collate (zip [1,2,1] "abc") == [(1,"ac"),(2,"b")]
 collate :: Ord a => [(a,b)] -> [(a,[b])]
-collate =
-    let f l = (fst (head l), map snd l)
-    in map f . groupBy ((==) `on` fst) . sortBy (compare `on` fst)
+collate = collate_on fst snd
 
 -- | Make /assoc/ list with given /key/.
 --
