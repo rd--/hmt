@@ -3,6 +3,9 @@ module Music.Theory.Function where
 
 -- * Function composition.
 
+-- . is infixr 9, this allows f . g .: h
+infixr 8 .:, .::, .:::, .::::, .:::::
+
 -- | 'fmap' '.' 'fmap', ie. @(t -> c) -> (a -> b -> t) -> a -> b -> c@.
 (.:) :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
 (.:) = fmap . fmap
