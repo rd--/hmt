@@ -617,6 +617,8 @@ partial :: (Num a, Enum a) => a -> Int -> a
 partial f1 k = harmonic_series_cps f1 !! (k - 1)
 
 -- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
+--
+-- > map fold_ratio_to_octave [2/3,3/4] == [4/3,3/2]
 fold_ratio_to_octave :: Integral i => Ratio i -> Ratio i
 fold_ratio_to_octave n =
     if n >= 2
@@ -624,6 +626,17 @@ fold_ratio_to_octave n =
     else if n < 1
          then fold_ratio_to_octave (n * 2)
          else n
+
+-- | The interval between two pitches /p/ and /q/ given as ratio
+-- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
+-- intervals consider the 'fold_ratio_to_octave' of both /p/ to /q/
+-- and /q/ to /p/.
+--
+-- > map ratio_interval_class [2/3,3/2,3/4,4/3] == [3/2,3/2,3/2,3/2]
+ratio_interval_class :: Integral i => Ratio i -> Ratio i
+ratio_interval_class i =
+    let f = fold_ratio_to_octave
+    in max (f i) (f (recip i))
 
 -- | Derivative harmonic series, based on /k/th partial of /f1/.
 --
