@@ -4,28 +4,16 @@ module Music.Theory.Tuning where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
--- * Either/Maybe
-
--- | Maybe 'Left' of 'Either'.
-fromLeft :: Either a b -> Maybe a
-fromLeft e =
-    case e of
-      Left x -> Just x
-      _ -> Nothing
-
--- | Maybe 'Right' of 'Either'.
-fromRight :: Either a b -> Maybe b
-fromRight e =
-    case e of
-      Right x -> Just x
-      _ -> Nothing
+import Music.Theory.Either {- hmt -}
+import Music.Theory.List {- hmt -}
 
 -- * Types
 
 -- | An approximation of a ratio.
 type Approximate_Ratio = Double
 
--- | A real valued division of a tone into one hundred parts.
+-- | A real valued division of a semi-tone into one hundred parts, and
+-- hence of the octave into @1200@ parts.
 type Cents = Double
 
 -- | A tuning specified 'Either' as a sequence of exact ratios, or as
@@ -668,6 +656,52 @@ harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded
 -- > cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
 harmonic_series_folded_21 :: Tuning
 harmonic_series_folded_21 = Tuning (Left (harmonic_series_folded 21)) 2
+
+-- * Cents
+
+-- | Give cents difference from nearest 12ET tone.
+--
+-- > let r = [50,-49,-2,0,2,49,50]
+-- > in map cents_et12_diff [650,651,698,700,702,749,750] == r
+cents_et12_diff :: Integral n => n -> n
+cents_et12_diff n =
+    let m = n `mod` 100
+    in if m > 50 then m - 100 else m
+
+-- | The class of cents intervals has range @(0,600)@.
+--
+-- > map cents_interval_class [50,1150,1250] == [50,50,50]
+--
+-- > let r = concat [[0,50 .. 550],[600],[550,500 .. 0]]
+-- > in map cents_interval_class [1200,1250 .. 2400] == r
+cents_interval_class :: Integral a => a -> a
+cents_interval_class n =
+    let n' = n `mod` 1200
+    in if n' > 600 then 1200 - n' else n'
+
+-- | Given brackets, print cents difference.  Always include the sign,
+-- elide @0@.
+cents_diff_br :: (Num a, Ord a, Show a) => (String,String) -> a -> String
+cents_diff_br br n =
+    let f = bracket_l br
+    in case compare n 0 of
+         LT -> f (show n)
+         EQ -> ""
+         GT -> f ('+' : show n)
+
+-- | 'cents_diff_br' with parentheses.
+--
+-- > map cents_diff_text [-1,0,1] == ["(-1)","","(+1)"]
+cents_diff_text :: (Num a, Ord a, Show a) => a -> String
+cents_diff_text = cents_diff_br ("(",")")
+
+-- | 'cents_diff_br' with markdown superscript (@^@).
+cents_diff_md :: (Num a, Ord a, Show a) => a -> String
+cents_diff_md = cents_diff_br ("^","^")
+
+-- | 'cents_diff_br' with HTML superscript (@<sup>@).
+cents_diff_html :: (Num a, Ord a, Show a) => a -> String
+cents_diff_html = cents_diff_br ("<SUP>","</SUP>")
 
 -- Local Variables:
 -- truncate-lines:t

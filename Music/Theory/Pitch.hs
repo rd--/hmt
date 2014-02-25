@@ -1,9 +1,11 @@
 -- | Common music notation pitch values.
 module Music.Theory.Pitch where
 
-import Data.Char
-import Data.Function
-import Data.Maybe
+import Data.Char {- base -}
+import Data.Function {- base -}
+import Data.Maybe {- base -}
+
+import Music.Theory.List {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
@@ -54,6 +56,10 @@ data Pitch' = Pitch' Note_T Alteration_T' Octave
 -- | Pretty printer for 'Pitch''.
 pitch'_pp :: Pitch' -> String
 pitch'_pp (Pitch' n (_,a) o) = show n ++ a ++ show o
+
+-- | 'Pitch'' printed without octave.
+pitch'_class_pp :: Pitch' -> String
+pitch'_class_pp = dropWhileRight isDigit . pitch'_pp
 
 -- | Transform 'Note_T' to pitch-class number.
 --
@@ -475,6 +481,10 @@ pitch_pp :: Pitch -> String
 pitch_pp (Pitch n a o) =
     let a' = if a == Natural then "" else [alteration_symbol a]
     in show n ++ a' ++ show o
+
+-- | 'Pitch' printed without octave.
+pitch_class_pp :: Pitch -> String
+pitch_class_pp = dropWhileRight isDigit . pitch_pp
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
 --

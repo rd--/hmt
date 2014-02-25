@@ -178,3 +178,35 @@ tbl_72et =
 -- > in mapM_ (print . unwords . f) tbl_72et
 nearest_72et_tone :: Double -> HS_R Pitch'
 nearest_72et_tone = nearest_et_table_tone tbl_72et
+
+-- * Detune
+
+-- | 'Pitch' with 12-ET tuning deviation given in 'Cents'.
+type Pitch_Detune = (Pitch,Cents)
+
+-- | Given /f0/ and ratio derive 'Pitch_Detune'.
+ratio_to_pitch_detune :: OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune f0 r =
+    let f = octpc_to_cps f0 * realToFrac r
+        (_,p,_,_,c) = nearest_12et_tone f
+    in (p,c)
+
+-- | Markdown pretty-printer for 'Pitch_Detune'.
+pitch_detune_md :: Pitch_Detune -> String
+pitch_detune_md (p,c) =
+    pitch_pp p ++ cents_diff_md (round c :: Integer)
+
+-- | HTML pretty-printer for 'Pitch_Detune'.
+pitch_detune_html :: Pitch_Detune -> String
+pitch_detune_html (p,c) =
+    pitch_pp p ++ cents_diff_html (round c :: Integer)
+
+-- | No-octave variant of 'pitch_detune_md'.
+pitch_class_detune_md :: Pitch_Detune -> String
+pitch_class_detune_md (p,c) =
+    pitch_class_pp p ++ cents_diff_md (round c :: Integer)
+
+-- | No-octave variant of 'pitch_detune_html'.
+pitch_class_detune_html :: Pitch_Detune -> String
+pitch_class_detune_html (p,c) =
+    pitch_class_pp p ++ cents_diff_html (round c :: Integer)

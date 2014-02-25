@@ -50,6 +50,7 @@ Library
                    Music.Theory.Duration.RQ.Tied
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Dynamic_Mark
+                   Music.Theory.Either
                    Music.Theory.Function
                    Music.Theory.Interval
                    Music.Theory.Interval.Barlow_1987

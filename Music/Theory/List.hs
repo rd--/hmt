@@ -258,6 +258,12 @@ find_bounds f l x =
 dropRight :: Int -> [a] -> [a]
 dropRight n = reverse . drop n . reverse
 
+-- | Variant of 'dropWhile' from right of list.
+--
+-- > dropWhileRight Data.Char.isDigit "A440" == "A"
+dropWhileRight :: (a -> Bool) -> [a] -> [a]
+dropWhileRight p = reverse . dropWhile p . reverse
+
 -- | Apply /f/ at first element, and /g/ at all other elements.
 --
 -- > at_head negate id [1..5] == [-1,2,3,4,5]
@@ -335,3 +341,10 @@ merge_set = merge_set_by compare
 -- | Predicate to determine if all elements of the list are '=='.
 all_eq :: Eq n => [n] -> Bool
 all_eq = (== 1) . length . nub
+
+-- | 'groupBy' of 'sortBy'.
+--
+-- > let r = [[('1','a'),('1','c')],[('2','d')],[('3','b'),('3','e')]]
+-- > in sort_group_on fst (zip "13123" "abcde") == r
+sort_group_on :: Ord b => (a -> b) -> [a] -> [[a]]
+sort_group_on f = groupBy ((==) `on` f) . sortBy (compare `on` f)

@@ -1,6 +1,30 @@
 -- | "Data.Function" related functions.
 module Music.Theory.Function where
 
+-- * Predicate composition.
+
+-- | '&&' of predicates.
+predicate_and :: (t -> Bool) -> (t -> Bool) -> t -> Bool
+predicate_and f g x = f x && g x
+
+-- | 'all' of predicates.
+--
+-- > let r = [False,False,True,False,True,False]
+-- > in map (predicate_all [(> 0),(< 5),even]) [0..5] == r
+predicate_all :: [t -> Bool] -> t -> Bool
+predicate_all p x = all id (map ($ x) p)
+
+-- | '||' of predicates.
+predicate_or :: (t -> Bool) -> (t -> Bool) -> t -> Bool
+predicate_or f g x = f x || g x
+
+-- | 'any' of predicates.
+--
+-- > let r = [True,False,True,False,True,True]
+-- > in map (predicate_any [(== 0),(== 5),even]) [0..5] == r
+predicate_any :: [t -> Bool] -> t -> Bool
+predicate_any p x = any id (map ($ x) p)
+
 -- * Function composition.
 
 -- . is infixr 9, this allows f . g .: h
