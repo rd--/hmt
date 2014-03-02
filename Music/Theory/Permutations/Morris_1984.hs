@@ -1,7 +1,8 @@
 -- | Place notation (method ringing).
 --
 -- Morris, R. G. T. "Place Notation"
--- Central Council of Church Bell Ringers (1984)
+-- Central Council of Church Bell Ringers (1984).
+-- <http://www.cccbr.org.uk/bibliography/>
 module Music.Theory.Permutations.Morris_1984 where
 
 import Data.Char {- base -}
