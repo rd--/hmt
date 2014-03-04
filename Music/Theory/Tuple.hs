@@ -200,3 +200,9 @@ type T6 a = (a,a,a,a,a,a)
 
 t6 :: [t] -> T6 t
 t6 l = case l of {[p,q,r,s,t,u] -> (p,q,r,s,t,u);_ -> error "t6"}
+
+t6_list :: T6 t -> [t]
+t6_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
+
+t6_map :: (p -> q) -> T6 p -> T6 q
+t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
