@@ -13,7 +13,7 @@ import Data.Monoid {- base -}
 p2_swap :: (s,t) -> (t,s)
 p2_swap (i,j) = (j,i)
 
--- * T2 (2 triple, regular)
+-- * T2 (2-tuple, regular)
 
 -- | Uniform two-tuple.
 type T2 a = (a,a)
@@ -112,7 +112,7 @@ p4_third (_,_,c,_) = c
 p4_fourth :: (a,b,c,d) -> d
 p4_fourth (_,_,_,d) = d
 
--- * T4 (4 triple, regular)
+-- * T4 (4-tuple, regular)
 
 type T4 a = (a,a,a,a)
 
@@ -163,7 +163,7 @@ p5_fourth (_,_,_,d,_) = d
 p5_fifth :: (a,b,c,d,e) -> e
 p5_fifth (_,_,_,_,e) = e
 
--- * T5 (5 triple, regular)
+-- * T5 (5-tuple, regular)
 
 type T5 a = (a,a,a,a,a)
 
@@ -194,7 +194,7 @@ t5_infix f (i,j,k,l,m) = (((i `f` j) `f` k) `f` l) `f` m
 t5_join :: T5 [a] -> [a]
 t5_join = t5_infix (++)
 
--- * T6 (6 triple, regular)
+-- * T6 (6-tuple, regular)
 
 type T6 a = (a,a,a,a,a,a)
 
@@ -206,3 +206,10 @@ t6_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
 
 t6_map :: (p -> q) -> T6 p -> T6 q
 t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
+
+-- * T9 (9-tuple, regular)
+
+type T9 a = (a,a,a,a,a,a,a,a,a)
+
+t9_map :: (p -> q) -> T9 p -> T9 q
+t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)
