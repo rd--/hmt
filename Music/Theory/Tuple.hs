@@ -207,6 +207,20 @@ t6_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
 t6_map :: (p -> q) -> T6 p -> T6 q
 t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
 
+-- * T7 (7-tuple, regular)
+
+type T7 a = (a,a,a,a,a,a,a)
+
+t7_map :: (p -> q) -> T7 p -> T7 q
+t7_map f (p,q,r,s,t,u,v) = (f p,f q,f r,f s,f t,f u,f v)
+
+-- * T8 (8-tuple, regular)
+
+type T8 a = (a,a,a,a,a,a,a,a)
+
+t8_map :: (p -> q) -> T8 p -> T8 q
+t8_map f (p,q,r,s,t,u,v,w) = (f p,f q,f r,f s,f t,f u,f v,f w)
+
 -- * T9 (9-tuple, regular)
 
 type T9 a = (a,a,a,a,a,a,a,a,a)
