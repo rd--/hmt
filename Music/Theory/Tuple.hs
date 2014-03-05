@@ -211,6 +211,9 @@ t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
 
 type T7 a = (a,a,a,a,a,a,a)
 
+t7_list :: T7 t -> [t]
+t7_list (p,q,r,s,t,u,v) = [p,q,r,s,t,u,v]
+
 t7_map :: (p -> q) -> T7 p -> T7 q
 t7_map f (p,q,r,s,t,u,v) = (f p,f q,f r,f s,f t,f u,f v)
 
@@ -218,12 +221,18 @@ t7_map f (p,q,r,s,t,u,v) = (f p,f q,f r,f s,f t,f u,f v)
 
 type T8 a = (a,a,a,a,a,a,a,a)
 
+t8_list :: T8 t -> [t]
+t8_list (p,q,r,s,t,u,v,w) = [p,q,r,s,t,u,v,w]
+
 t8_map :: (p -> q) -> T8 p -> T8 q
 t8_map f (p,q,r,s,t,u,v,w) = (f p,f q,f r,f s,f t,f u,f v,f w)
 
 -- * T9 (9-tuple, regular)
 
 type T9 a = (a,a,a,a,a,a,a,a,a)
+
+t9_list :: T9 t -> [t]
+t9_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
 
 t9_map :: (p -> q) -> T9 p -> T9 q
 t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)
