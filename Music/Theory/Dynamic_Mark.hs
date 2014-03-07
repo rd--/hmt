@@ -1,8 +1,10 @@
 -- | Common music notation dynamic marks.
 module Music.Theory.Dynamic_Mark where
 
-import Data.List
-import Data.Maybe
+import Data.Char {- base -}
+import Data.List {- base -}
+import Data.Maybe {- base -}
+
 import Music.Theory.List
 
 -- | Enumeration of dynamic mark symbols.
@@ -119,4 +121,34 @@ apply_dynamic_node f g (i,j) m =
     let n = maybe m (g m) j
     in maybe n (f n) i
 
+-- * ASCII
 
+-- | ASCII pretty printer for 'Dynamic_Mark_T'.
+dynamic_mark_ascii :: Dynamic_Mark_T -> String
+dynamic_mark_ascii = map toLower . show
+
+-- | ASCII pretty printer for 'Hairpin_T'.
+hairpin_ascii :: Hairpin_T -> String
+hairpin_ascii hp =
+    case hp of
+      Crescendo -> "<"
+      Diminuendo -> ">"
+      End_Hairpin -> ""
+
+-- | ASCII pretty printer for 'Dynamic_Node'.
+dynamic_node_ascii :: Dynamic_Node -> String
+dynamic_node_ascii (mk,hp) =
+    let mk' = maybe "" dynamic_mark_ascii mk
+        hp' = maybe "" hairpin_ascii hp
+    in case (mk',hp') of
+         ([],[]) -> []
+         ([],_) -> hp'
+         (_,[]) -> mk'
+         _ -> mk' ++ " " ++ hp'
+
+-- | ASCII pretty printer for 'Dynamic_Node' sequence.
+dynamic_sequence_ascii :: [Dynamic_Node] -> String
+dynamic_sequence_ascii =
+    intercalate " " .
+    filter (not . null) .
+    map dynamic_node_ascii
