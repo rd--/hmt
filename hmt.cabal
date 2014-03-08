@@ -77,6 +77,7 @@ Library
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time.Bel1990.R
+                   Music.Theory.Time.Notation
                    Music.Theory.Time.Seq
                    Music.Theory.Time_Signature
                    Music.Theory.Tuple
