@@ -44,7 +44,7 @@ tbl_24et =
 bounds_et_table :: Ord s => [(t,s)] -> s -> Maybe ((t,s),(t,s))
 bounds_et_table tbl =
     let f (_,p) = compare p
-    in find_bounds f (adj2 1 tbl)
+    in find_bounds True f tbl
 
 -- | 'bounds_et_table' of 'tbl_12et'.
 --

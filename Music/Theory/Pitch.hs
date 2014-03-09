@@ -147,6 +147,9 @@ alteration_lower_quarter_tone a =
 
 -- | Edit 'Alteration_T' by a quarter tone where possible, @-0.5@
 -- lowers, @0@ retains, @0.5@ raises.
+--
+-- > import Data.Ratio
+-- > alteration_edit_quarter_tone (-1 % 2) Flat == Just ThreeQuarterToneFlat
 alteration_edit_quarter_tone :: (Fractional n,Eq n) =>
                                 n -> Alteration_T -> Maybe Alteration_T
 alteration_edit_quarter_tone n a =
@@ -284,8 +287,10 @@ fmidi_to_pitch :: RealFrac n => Spelling Integer -> n -> Pitch
 fmidi_to_pitch sp m =
     let m' = round m
         (Pitch n a o) = midi_to_pitch sp m'
-        Just a' = alteration_edit_quarter_tone (m - fromIntegral m') a
-    in Pitch n a' o
+        q = m - fromIntegral m'
+    in case alteration_edit_quarter_tone q a of
+         Nothing -> error "fmidi_to_pitch"
+         Just a' -> Pitch n a' o
 
 -- | Raise 'Note_T' of 'Pitch', account for octave transposition.
 --

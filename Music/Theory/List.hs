@@ -239,18 +239,26 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+-- | Basis of 'find_bounds'.  There is an option to consider the last
+-- element specially, and if equal to the last span is given.
+find_bounds' :: Bool -> (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
+find_bounds' scl f l x =
+    let g (p,q) = f p x /= GT && f q x == GT
+        h (p,q) = f p x /= GT && f q x /= LT
+        h' = if scl then h else g
+    in case l of
+         [] -> Nothing
+         [e] -> if h' e then Just e else Nothing
+         e:l' -> if g e then Just e else find_bounds' scl f l' x
+
 -- | Find adjacent elements of list that bound element under given
 -- comparator.
 --
--- > let f = find_bounds compare (adj [1..5])
--- > in map f [1,3.5,5] == [Just (1,2),Just (3,4),Nothing]
-find_bounds :: (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
-find_bounds f l x =
-    case l of
-      (p,q):l' -> if f p x /= GT && f q x == GT
-                  then Just (p,q)
-                  else find_bounds f l' x
-      _ -> Nothing
+-- > let {f = find_bounds True compare [1..5]
+-- >     ;r = [Nothing,Just (1,2),Just (3,4),Just (4,5)]}
+-- > in map f [0,1,3.5,5] == r
+find_bounds :: Bool -> (t -> s -> Ordering) -> [t] -> s -> Maybe (t,t)
+find_bounds scl f l = find_bounds' scl f (adj2 1 l)
 
 -- | Variant of 'drop' from right of list.
 --
