@@ -13,6 +13,9 @@ import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
 
+-- | Sequence of elements with uniform duration.
+type Useq t a = (t,[a])
+
 -- | Duration sequence.  The duration is the /forward/ duration of the
 -- value, if it has other durations they must be encoded at /a/.
 type Dseq t a = [(t,a)]
@@ -179,6 +182,11 @@ coalesce_f dec_f jn_f z =
 coalesce_m :: Monoid t => (t -> t -> Bool) -> [t] -> [t]
 coalesce_m dec_f = coalesce_f dec_f mappend
 
+-- | Form of 'coalesce_f' where the decision predicate is on the
+-- /element/, and a join function sums the /times/.
+--
+-- > let r = [(1,'a'),(2,'b'),(3,'c'),(2,'d'),(1,'e')]
+-- > in seq_coalesce (==) const (useq_to_dseq (1,"abbcccdde")) == r
 seq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> [(t,a)] -> [(t,a)]
 seq_coalesce dec_f jn_f =
     let dec_f' = dec_f `on` snd
@@ -187,6 +195,19 @@ seq_coalesce dec_f jn_f =
 
 dseq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> Dseq t a -> Dseq t a
 dseq_coalesce = seq_coalesce
+
+-- | Given /equality/ predicate, simplify sequence by summing
+-- durations of adjacent /equal/ elements.  This is a special case of
+-- 'dseq_coalesce' where the /join/ function is 'const'.  The
+-- implementation is simpler and non-recursive.
+--
+-- > let {d = useq_to_dseq (1,"abbcccdde")
+-- >     ;r = dseq_coalesce (==) const d}
+-- > in dseq_coalesce' (==) d == r
+dseq_coalesce' :: Num t => (a -> a -> Bool) -> Dseq t a -> Dseq t a
+dseq_coalesce' eq =
+    let f l = let (t,e:_) = unzip l in (sum t,e)
+    in map f . groupBy (eq `on` snd)
 
 iseq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> Iseq t a -> Iseq t a
 iseq_coalesce = seq_coalesce
@@ -245,6 +266,9 @@ wseq_fill_dur l =
     in map f (T.adj2 1 l) ++ [last l]
 
 -- * Interop
+
+useq_to_dseq :: Useq t a -> Dseq t a
+useq_to_dseq (t,e) = zip (repeat t) e
 
 -- | The conversion requires a start time and a /nil/ value used as an
 -- /eof/ marker.
