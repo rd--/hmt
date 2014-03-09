@@ -271,16 +271,28 @@ useq_to_dseq :: Useq t a -> Dseq t a
 useq_to_dseq (t,e) = zip (repeat t) e
 
 -- | The conversion requires a start time and a /nil/ value used as an
--- /eof/ marker.
+-- /eof/ marker. Productive given indefinite input sequence.
 --
 -- > let r = zip [0,1,3,6,8,9] "abcde|"
 -- > in dseq_to_tseq 0 '|' (zip [1,2,3,2,1] "abcde") == r
+--
+-- > let {d = zip [1,2,3,2,1] "abcde"
+-- >     ;r = zip [0,1,3,6,8,9,10] "abcdeab"}
+-- > in take 7 (dseq_to_tseq 0 undefined (cycle d)) == r
 dseq_to_tseq :: Num t => t -> a -> Dseq t a -> Tseq t a
 dseq_to_tseq t0 nil sq =
     let (d,a) = unzip sq
         t = T.dx_d t0 d
         a' = a ++ [nil]
     in zip t a'
+
+-- | Variant where the /nil/ is take as the last element of the
+-- sequence.
+--
+-- > let r = zip [0,1,3,6,8,9] "abcdee"
+-- > in dseq_to_tseq_last 0 (zip [1,2,3,2,1] "abcde") == r
+dseq_to_tseq_last :: Num t => t -> Dseq t a -> Tseq t a
+dseq_to_tseq_last t0 sq = dseq_to_tseq t0 (snd (last sq)) sq
 
 -- | The conversion requires a start time and does not consult the
 -- /logical/ duration.
