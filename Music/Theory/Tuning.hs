@@ -594,9 +594,21 @@ harmonic_series_cps n = [n,n * 2 ..]
 
 -- | /n/ elements of 'harmonic_series_cps'.
 --
--- > harmonic_series_cps_n 14 55 == [55,110,165,220,275,330,385,440,495,550,605,660,715,770]
+-- > let r = [55,110,165,220,275,330,385,440,495,550,605,660,715,770,825,880,935]
+-- > in harmonic_series_cps_n 17 55 == r
 harmonic_series_cps_n :: (Num a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_n n = take n . harmonic_series_cps
+
+-- | Sub-harmonic series on /n/.
+subharmonic_series_cps :: (Fractional t,Enum t) => t -> [t]
+subharmonic_series_cps n = map (* n) (map recip [1..])
+
+-- | /n/ elements of 'harmonic_series_cps'.
+--
+-- > let r = [1760,880,587,440,352,293,251,220,196,176,160,147,135,126,117,110,104]
+-- > in map round (subharmonic_series_cps_n 17 1760) == r
+subharmonic_series_cps_n :: (Fractional t,Enum t) => Int -> t -> [t]
+subharmonic_series_cps_n n = take n . subharmonic_series_cps
 
 -- | /n/th partial of /f1/, ie. one indexed.
 --
