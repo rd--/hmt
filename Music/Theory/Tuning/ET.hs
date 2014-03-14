@@ -181,15 +181,23 @@ nearest_72et_tone = nearest_et_table_tone tbl_72et
 
 -- * Detune
 
--- | 'Pitch' with 12-ET tuning deviation given in 'Cents'.
+-- | 'Pitch' with 12-ET/24-ET tuning deviation given in 'Cents'.
 type Pitch_Detune = (Pitch,Cents)
 
--- | Given /f0/ and ratio derive 'Pitch_Detune'.
-ratio_to_pitch_detune :: OctPC -> Rational -> Pitch_Detune
-ratio_to_pitch_detune f0 r =
+-- | Given /near/ function, /f0/ and ratio derive 'Pitch_Detune'.
+ratio_to_pitch_detune :: (Double -> HS_R Pitch) -> OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune near_f f0 r =
     let f = octpc_to_cps f0 * realToFrac r
-        (_,p,_,_,c) = nearest_12et_tone f
+        (_,p,_,_,c) = near_f f
     in (p,c)
+
+-- | 'ratio_to_pitch_detune' of 'nearest_12et_tone'
+ratio_to_pitch_detune_12et :: OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune_12et = ratio_to_pitch_detune nearest_12et_tone
+
+-- | 'ratio_to_pitch_detune' of 'nearest_24et_tone'
+ratio_to_pitch_detune_24et :: OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune_24et = ratio_to_pitch_detune nearest_24et_tone
 
 -- | Markdown pretty-printer for 'Pitch_Detune'.
 pitch_detune_md :: Pitch_Detune -> String
