@@ -191,6 +191,10 @@ ratio_to_pitch_detune near_f f0 r =
         (_,p,_,_,c) = near_f f
     in (p,c)
 
+-- > pitch_detune_to_cps (octpc_to_pitch pc_spell_ks (4,10),-100) == 440
+pitch_detune_to_cps :: Floating n => Pitch_Detune -> n
+pitch_detune_to_cps (p,d) = cps_shift_cents (pitch_to_cps p) (realToFrac d)
+
 -- | 'ratio_to_pitch_detune' of 'nearest_12et_tone'
 ratio_to_pitch_detune_12et :: OctPC -> Rational -> Pitch_Detune
 ratio_to_pitch_detune_12et = ratio_to_pitch_detune nearest_12et_tone
