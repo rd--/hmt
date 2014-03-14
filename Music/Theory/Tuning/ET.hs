@@ -184,6 +184,22 @@ nearest_72et_tone = nearest_et_table_tone tbl_72et
 -- | 'Pitch' with 12-ET/24-ET tuning deviation given in 'Cents'.
 type Pitch_Detune = (Pitch,Cents)
 
+-- | Exract 'Pitch_Detune' from 'HS_R'.
+hsr_to_pitch_detune :: HS_R Pitch -> Pitch_Detune
+hsr_to_pitch_detune (_,p,_,_,c) = (p,c)
+
+-- | Nearest 12-ET 'Pitch_Detune' to indicated frequency (hz).
+--
+-- > nearest_pitch_detune_12et 452.8929841231365
+nearest_pitch_detune_12et :: Double -> Pitch_Detune
+nearest_pitch_detune_12et = hsr_to_pitch_detune . nearest_12et_tone
+
+-- | Nearest 24-ET 'Pitch_Detune' to indicated frequency (hz).
+--
+-- > nearest_pitch_detune_24et 452.8929841231365
+nearest_pitch_detune_24et :: Double -> Pitch_Detune
+nearest_pitch_detune_24et = hsr_to_pitch_detune . nearest_24et_tone
+
 -- | Given /near/ function, /f0/ and ratio derive 'Pitch_Detune'.
 ratio_to_pitch_detune :: (Double -> HS_R Pitch) -> OctPC -> Rational -> Pitch_Detune
 ratio_to_pitch_detune near_f f0 r =
@@ -191,7 +207,9 @@ ratio_to_pitch_detune near_f f0 r =
         (_,p,_,_,c) = near_f f
     in (p,c)
 
--- > pitch_detune_to_cps (octpc_to_pitch pc_spell_ks (4,10),-100) == 440
+-- | Frequency (hz) of 'Pitch_Detune'.
+--
+-- > pitch_detune_to_cps (octpc_to_pitch pc_spell_ks (4,9),50)
 pitch_detune_to_cps :: Floating n => Pitch_Detune -> n
 pitch_detune_to_cps (p,d) = cps_shift_cents (pitch_to_cps p) (realToFrac d)
 
