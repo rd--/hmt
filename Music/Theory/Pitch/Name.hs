@@ -80,6 +80,42 @@ gisis2 = Pitch G DoubleSharp 2
 aisis2 = Pitch A DoubleSharp 2
 bisis2 = Pitch B DoubleSharp 2
 
+ceseh2,deseh2,eeseh2,feseh2,geseh2,aeseh2,beseh2 :: Pitch
+ceseh2 = Pitch C ThreeQuarterToneFlat 2
+deseh2 = Pitch D ThreeQuarterToneFlat 2
+eeseh2 = Pitch E ThreeQuarterToneFlat 2
+feseh2 = Pitch F ThreeQuarterToneFlat 2
+geseh2 = Pitch G ThreeQuarterToneFlat 2
+aeseh2 = Pitch A ThreeQuarterToneFlat 2
+beseh2 = Pitch B ThreeQuarterToneFlat 2
+
+ceh2,deh2,eeh2,feh2,geh2,aeh2,beh2 :: Pitch
+ceh2 = Pitch C QuarterToneFlat 2
+deh2 = Pitch D QuarterToneFlat 2
+eeh2 = Pitch E QuarterToneFlat 2
+feh2 = Pitch F QuarterToneFlat 2
+geh2 = Pitch G QuarterToneFlat 2
+aeh2 = Pitch A QuarterToneFlat 2
+beh2 = Pitch B QuarterToneFlat 2
+
+cih2,dih2,eih2,fih2,gih2,aih2,bih2 :: Pitch
+cih2 = Pitch C QuarterToneSharp 2
+dih2 = Pitch D QuarterToneSharp 2
+eih2 = Pitch E QuarterToneSharp 2
+fih2 = Pitch F QuarterToneSharp 2
+gih2 = Pitch G QuarterToneSharp 2
+aih2 = Pitch A QuarterToneSharp 2
+bih2 = Pitch B QuarterToneSharp 2
+
+cisih2,disih2,eisih2,fisih2,gisih2,aisih2,bisih2 :: Pitch
+cisih2 = Pitch C ThreeQuarterToneSharp 2
+disih2 = Pitch D ThreeQuarterToneSharp 2
+eisih2 = Pitch E ThreeQuarterToneSharp 2
+fisih2 = Pitch F ThreeQuarterToneSharp 2
+gisih2 = Pitch G ThreeQuarterToneSharp 2
+aisih2 = Pitch A ThreeQuarterToneSharp 2
+bisih2 = Pitch B ThreeQuarterToneSharp 2
+
 c3,d3,e3,f3,g3,a3,b3 :: Pitch
 c3 = Pitch C Natural 3
 d3 = Pitch D Natural 3
