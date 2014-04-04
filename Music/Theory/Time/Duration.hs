@@ -117,6 +117,12 @@ hours_to_duration n =
         (s,ms) = s_sms ((m - (r . floor) m) * 60)
     in Duration (floor h) (floor m) s ms
 
+minutes_to_duration :: RealFrac a => a -> Duration
+minutes_to_duration n = hours_to_duration (n / 60)
+
+seconds_to_duration :: RealFrac a => a -> Duration
+seconds_to_duration n = minutes_to_duration (n / 60)
+
 nil_duration :: Duration
 nil_duration = Duration 0 0 0 0
 
