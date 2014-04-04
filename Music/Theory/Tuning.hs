@@ -52,7 +52,7 @@ approximate_ratios =
     either (map approximate_ratio) (map cents_to_ratio) .
     ratios_or_cents
 
--- | 'Maybe' exact ratios reconstructued from possibly inexact 'Cents'
+-- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.
 --
 -- > let r = [1,17/16,9/8,13/11,5/4,4/3,7/5,3/2,11/7,5/3,16/9,15/8]
@@ -691,15 +691,19 @@ cents_interval_class n =
     let n' = n `mod` 1200
     in if n' > 600 then 1200 - n' else n'
 
--- | Given brackets, print cents difference.  Always include the sign,
--- elide @0@.
+-- | Always include the sign, elide @0@.
+cents_diff_pp :: (Num a, Ord a, Show a) => a -> String
+cents_diff_pp n =
+    case compare n 0 of
+      LT -> show n
+      EQ -> ""
+      GT -> '+' : show n
+
+-- | Given brackets, print cents difference.
 cents_diff_br :: (Num a, Ord a, Show a) => (String,String) -> a -> String
-cents_diff_br br n =
-    let f = bracket_l br
-    in case compare n 0 of
-         LT -> f (show n)
-         EQ -> ""
-         GT -> f ('+' : show n)
+cents_diff_br br =
+    let f s = if null s then s else bracket_l br s
+    in f . cents_diff_pp
 
 -- | 'cents_diff_br' with parentheses.
 --

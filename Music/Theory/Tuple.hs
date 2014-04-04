@@ -194,6 +194,26 @@ t5_infix f (i,j,k,l,m) = (((i `f` j) `f` k) `f` l) `f` m
 t5_join :: T5 [a] -> [a]
 t5_join = t5_infix (++)
 
+-- * P6 (6 product)
+
+p6_fst :: (a,b,c,d,e,f) -> a
+p6_fst (a,_,_,_,_,_) = a
+
+p6_snd :: (a,b,c,d,e,f) -> b
+p6_snd (_,b,_,_,_,_) = b
+
+p6_third :: (a,b,c,d,e,f) -> c
+p6_third (_,_,c,_,_,_) = c
+
+p6_fourth :: (a,b,c,d,e,f) -> d
+p6_fourth (_,_,_,d,_,_) = d
+
+p6_fifth :: (a,b,c,d,e,f) -> e
+p6_fifth (_,_,_,_,e,_) = e
+
+p6_sixth :: (a,b,c,d,e,f) -> f
+p6_sixth (_,_,_,_,_,f) = f
+
 -- * T6 (6-tuple, regular)
 
 type T6 a = (a,a,a,a,a,a)
