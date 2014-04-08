@@ -26,6 +26,14 @@ dynamic_mark_midi m =
     let r = zip [0..] (0 : reverse [127, 127-11 .. 0])
     in lookup (fromEnum m) r
 
+-- | Map midi velocity (0-127) to dynamic mark.
+--
+-- > histogram (mapMaybe midi_dynamic_mark [0 .. 127])
+midi_dynamic_mark :: (Ord n,Eq n,Num n,Enum n) => n -> Maybe Dynamic_Mark_T
+midi_dynamic_mark m =
+    let r = zip (0 : [12,24 .. 132]) [0..]
+    in fmap (toEnum . snd) (find ((>= m) . fst) r)
+
 -- | Translate /fixed/ 'Dynamic_Mark_T's to /db/ amplitude over given
 -- /range/.
 --
