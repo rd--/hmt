@@ -3,6 +3,7 @@ module Music.Theory.Array.CSV where
 import Data.Array               {- array -}
 import Data.Char                {- base -}
 import Data.Function            {- base -}
+import Data.List                {- base -}
 import Data.String              {- base -}
 
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
@@ -34,6 +35,10 @@ type Column_Range = (Column_Ref,Column_Ref)
 
 -- | @1@-indexed row reference.
 type Row_Ref = Int
+
+-- | Zero index of 'Row_Ref'.
+row_index :: Row_Ref -> Int
+row_index r = r - 1
 
 -- | Inclusive range of row references.
 type Row_Range = (Row_Ref,Row_Ref)
@@ -179,7 +184,7 @@ cell_ref_pp (Column_Ref c,r) = c ++ show r
 -- > cell_index ("CC",348) == (80,347)
 -- > Data.Ix.index (("AA",1),("ZZ",999)) ("CC",348) == 54293
 cell_index :: Cell_Ref -> (Int,Int)
-cell_index (c,r) = (column_index c,r - 1)
+cell_index (c,r) = (column_index c,row_index r)
 
 -- | Type specialised 'Data.Ix.range', cells are in column-order.
 --
@@ -236,10 +241,22 @@ table_write f fn tbl = do
 table_lookup :: Table a -> (Int,Int) -> a
 table_lookup t (r,c) = (t !! r) !! c
 
+-- | Row data.
+table_row :: Table a -> Row_Ref -> [a]
+table_row t r = t !! row_index r
+
+-- | Column data.
+table_column :: Table a -> Column_Ref -> [a]
+table_column t c = transpose t !! column_index c
+
+-- | Lookup value across columns.
+table_column_lookup :: Eq a => Table a -> (Column_Ref,Column_Ref) -> a -> Maybe a
+table_column_lookup t (c1,c2) e = lookup e (zip (table_column t c1) (table_column t c2))
+
 -- | Table cell lookup.
 table_cell :: Table a -> Cell_Ref -> a
 table_cell t (c,r) =
-    let (r',c') = (r - 1,column_index c)
+    let (r',c') = (row_index r,column_index c)
     in table_lookup t (r',c')
 
 -- | @0@-indexed (row,column) cell lookup over column range.
@@ -251,7 +268,7 @@ table_lookup_row_segment t (r,(c0,c1)) =
 -- | Range of cells from row.
 table_row_segment :: Table a -> (Row_Ref,Column_Range) -> [a]
 table_row_segment t (r,c) =
-    let (r',c') = (r - 1,column_indices c)
+    let (r',c') = (row_index r,column_indices c)
     in table_lookup_row_segment t (r',c')
 
 -- * Array
