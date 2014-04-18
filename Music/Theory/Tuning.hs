@@ -182,9 +182,20 @@ pythagorean_r =
 
 -- | Pythagorean tuning.
 --
+-- > divisions pythagorean == 12
 -- > cents_i pythagorean == [0,90,204,294,408,498,612,702,792,906,996,1110]
 pythagorean :: Tuning
 pythagorean = Tuning (Left pythagorean_r) 2
+
+zarlino_r :: [Rational]
+zarlino_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3,16/9,9/5,15/8]
+
+-- | Gioseffo Zarlino, 1588, see <http://www.kylegann.com/tuning.html>.
+--
+-- > divisions zarlino == 16
+-- > cents_i zarlino == [0,71,182,204,294,316,386,498,569,590,702,773,884,996,1018,1088]
+zarlino :: Tuning
+zarlino = Tuning (Left zarlino_r) 2
 
 -- | Approximate ratios for 'werckmeister_iii'.
 --
@@ -336,7 +347,7 @@ five_limit_tuning_r =
     [1,16/15
     ,9/8,6/5
     ,5/4
-    ,4/3,45/32
+    ,4/3,45/32 {- 64/45 -}
     ,3/2,8/5
     ,5/3,16/9 {- 9/5 -}
     ,15/8]
@@ -460,7 +471,7 @@ la_monte_young_r =
     ,63/32]
 
 -- | La Monte Young's \"The Well-Tuned Piano\", see
--- <http://www.kylegann.com/tuning.html>.
+-- <http://www.kylegann.com/wtp.html>.
 --
 -- > cents_i la_monte_young == [0,177,204,240,471,444,675,702,738,969,942,1173]
 la_monte_young :: Tuning
@@ -485,6 +496,44 @@ ben_johnston_r =
 ben_johnston :: Tuning
 ben_johnston = Tuning (Left ben_johnston_r) 2
 
+-- > let r = [0,112,204,316,386,498,610,702,814,884,996,1088]
+-- > in map (round . ratio_to_cents) riley_albion_r == r
+riley_albion_r :: [Rational]
+riley_albion_r = [1/1,16/15,9/8,6/5,5/4,4/3,64/45,3/2,8/5,5/3,16/9,15/8]
+
+-- | Riley's five-limit tuning as used in _The Harp of New Albion_,
+-- see <http://www.ex-tempore.org/Volx1/hudson/hudson.htm>.
+--
+-- > cents_i riley_albion == [0,112,204,316,386,498,610,702,814,884,996,1088]
+riley_albion :: Tuning
+riley_albion = Tuning (Left riley_albion_r) 2
+
+gann_arcana_xvi_r :: [Rational]
+gann_arcana_xvi_r =
+    [1/1,21/20,16/15,9/8,7/6,6/5,11/9,5/4,21/16,4/3,27/20,7/5
+    ,22/15,3/2,55/36,8/5,44/27,5/3,42/25,7/4,9/5,11/6,15/8,88/45]
+
+-- | Kyle Gann, _Arcana XVI_, see <http://www.kylegann.com/Arcana.html>.
+--
+-- > let r = [0,84,112,204,267,316,347,386,471,498,520,583,663,702,734,814,845,884,898,969,1018,1049,1088,1161]
+-- > in cents_i gann_arcana_xvi == r
+gann_arcana_xvi :: Tuning
+gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) 2
+
+gann_superparticular_r :: [Rational]
+gann_superparticular_r = [1/1,11/10,10/9,9/8,8/7,7/6,6/5,5/4,9/7,4/3,11/8,7/5,10/7,3/2,11/7,14/9,8/5,5/3,12/7,7/4,16/9,9/5]
+
+-- | Kyle Gann, _Superparticular_, see <http://www.kylegann.com/Super.html>.
+--
+-- > divisions gann_superparticular == 22
+--
+-- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702,782,765,814,884,933,969,996,1018]
+-- > in cents_i gann_superparticular == r
+gann_superparticular :: Tuning
+gann_superparticular = Tuning (Left gann_superparticular_r) 2
+
+-- > length lou_harrison_16_r == 16
+--
 -- > let c = [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
 -- > in map (round . ratio_to_cents) lou_harrison_16_r == c
 lou_harrison_16_r :: [Rational]
@@ -653,6 +702,9 @@ harmonic_series_cps_derived k f1 =
 -- | Harmonic series to /n/th harmonic (folded).
 --
 -- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
+--
+-- > let r = [0,105,204,386,551,702,841,969,1088]
+-- > in map (round . ratio_to_cents) (harmonic_series_folded 17) == r
 harmonic_series_folded :: Integer -> [Rational]
 harmonic_series_folded n =
     nub (sort (map fold_ratio_to_octave [1 .. n%1]))
@@ -666,6 +718,7 @@ harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded
 -- | @12@-tone tuning of first @21@ elements of the harmonic series.
 --
 -- > cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
+-- > divisions harmonic_series_folded_21 == 11
 harmonic_series_folded_21 :: Tuning
 harmonic_series_folded_21 = Tuning (Left (harmonic_series_folded 21)) 2
 
