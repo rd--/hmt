@@ -4,6 +4,26 @@ module Music.Theory.Math where
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+-- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
+integral_and_fractional_parts :: (Integral i, RealFrac t) => t -> (i,t)
+integral_and_fractional_parts n =
+    if n >= 0
+    then let n' = floor n in (n',n - fromIntegral n')
+    else let n' = ceiling n in (n',n - fromIntegral n')
+
+-- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
+--
+-- > import Sound.SC3.Plot {- hsc3-plot -}
+-- > plotTable1 (map fractional_part [-2.0,-1.99 .. 2.0])
+fractional_part :: RealFrac a => a -> a
+fractional_part = snd . integral_and_fractional_parts
+
+-- | <http://reference.wolfram.com/mathematica/ref/SawtoothWave.html>
+--
+-- > plotTable1 (map sawtooth_wave [-2.0,-1.99 .. 2.0])
+sawtooth_wave :: RealFrac a => a -> a
+sawtooth_wave n = n - fromIntegral (floor n)
+
 -- | Pretty printer for 'Rational' that elides denominators of @1@.
 --
 -- > map rational_pp [1,3/2,2] == ["1","3/2","2"]

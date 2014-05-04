@@ -7,6 +7,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import Music.Theory.List {- hmt -}
+import Music.Theory.Math {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
@@ -405,6 +406,21 @@ cps_to_midi = round . cps_to_fmidi
 -- > cps_to_fmidi (fmidi_to_cps 60.25) == 60.25
 cps_to_fmidi :: Floating a => a -> a
 cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
+
+-- | Midi note number with cents detune.
+type Midi_Detune = (Int,Double)
+
+-- | Frequency (in hertz) to 'Midi_Detune'.
+--
+-- > map (fmap round . cps_to_midi_detune) [440.00,508.35] == [(69,0),(71,50)]
+cps_to_midi_detune :: Double -> Midi_Detune
+cps_to_midi_detune f =
+    let (n,c) = integral_and_fractional_parts (cps_to_fmidi f)
+    in (n,c * 100)
+
+-- | Inverse of 'cps_to_midi_detune'.
+midi_detune_to_cps :: Midi_Detune -> Double
+midi_detune_to_cps (m,c) = fmidi_to_cps (fromIntegral m + (c / 100))
 
 -- | 'midi_to_cps' of 'octpc_to_midi'.
 --

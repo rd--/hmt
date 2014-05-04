@@ -52,6 +52,15 @@ approximate_ratios =
     either (map approximate_ratio) (map cents_to_ratio) .
     ratios_or_cents
 
+-- | Cyclic form, taking into consideration 'octave_ratio'.
+approximate_ratios_cyclic :: Tuning -> [Approximate_Ratio]
+approximate_ratios_cyclic t =
+    let r = approximate_ratios t
+        m = realToFrac (octave_ratio t)
+        g = iterate (* m) 1
+        f n = map (* n) r
+    in concatMap f g
+
 -- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.
 --
@@ -733,6 +742,12 @@ cents_et12_diff n =
     let m = n `mod` 100
     in if m > 50 then m - 100 else m
 
+-- | Fractional form of 'cents_et12_diff'.
+fcents_et12_diff :: Real n => n -> n
+fcents_et12_diff n =
+    let m = n `mod'` 100
+    in if m > 50 then m - 100 else m
+
 -- | The class of cents intervals has range @(0,600)@.
 --
 -- > map cents_interval_class [50,1150,1250] == [50,50,50]
@@ -742,6 +757,12 @@ cents_et12_diff n =
 cents_interval_class :: Integral a => a -> a
 cents_interval_class n =
     let n' = n `mod` 1200
+    in if n' > 600 then 1200 - n' else n'
+
+-- | Fractional form of 'cents_interval_class'.
+fcents_interval_class :: Real a => a -> a
+fcents_interval_class n =
+    let n' = n `mod'` 1200
     in if n' > 600 then 1200 - n' else n'
 
 -- | Always include the sign, elide @0@.
