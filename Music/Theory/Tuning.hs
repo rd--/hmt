@@ -1,6 +1,7 @@
 -- | Tuning theory
 module Music.Theory.Tuning where
 
+import Data.Fixed {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 

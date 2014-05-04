@@ -2,6 +2,7 @@
 module Music.Theory.Pitch where
 
 import Data.Char {- base -}
+import Data.Fixed {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
