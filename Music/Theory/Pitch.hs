@@ -3,6 +3,7 @@ module Music.Theory.Pitch where
 
 import Data.Char {- base -}
 import Data.Function {- base -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import Music.Theory.List {- hmt -}
@@ -88,6 +89,10 @@ alteration_to_diff a =
       Sharp -> Just 1
       DoubleSharp -> Just 2
       _ -> Nothing
+
+-- | Is 'Alteration_T' 12-ET.
+alteration_is_12et :: Alteration_T -> Bool
+alteration_is_12et = isJust . alteration_to_diff
 
 -- | Transform 'Alteration_T' to semitone alteration.
 --
@@ -185,6 +190,10 @@ pitch_clear_quarter_tone p =
 -- > pitch_to_octpc (Pitch F Sharp 4) == (4,6)
 pitch_to_octpc :: Integral i => Pitch -> Octave_PitchClass i
 pitch_to_octpc = midi_to_octpc . pitch_to_midi
+
+-- | Is 'Pitch' 12-ET.
+pitch_is_12et :: Pitch -> Bool
+pitch_is_12et = alteration_is_12et . alteration
 
 -- | 'Pitch' to midi note number notation.
 --
@@ -291,6 +300,33 @@ fmidi_to_pitch sp m =
     in case alteration_edit_quarter_tone q a of
          Nothing -> error "fmidi_to_pitch"
          Just a' -> Pitch n a' o
+
+-- | Composition of 'pitch_to_fmidi' and then 'fmidi_to_pitch'.
+--
+-- > import Music.Theory.Pitch.Name as T
+-- > import Music.Theory.Pitch.Spelling as T
+--
+-- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
+pitch_tranpose :: RealFrac n => Spelling Integer -> n -> Pitch -> Pitch
+pitch_tranpose sp n p =
+    let m = pitch_to_fmidi p
+    in fmidi_to_pitch sp (m + n)
+
+-- | Set ocatve of /p2/ so that it nearest to /p1/.
+--
+-- > import Music.Theory.Pitch.Name as T
+--
+-- > let {r = ["B1","C2","C#2"];f = pitch_in_octave_nearest T.cis2}
+-- > in map (pitch_pp_iso . f) [T.b4,T.c4,T.cis4] == r
+pitch_in_octave_nearest :: Pitch -> Pitch -> Pitch
+pitch_in_octave_nearest p1 p2 =
+    let o1 = octave p1
+        p2' = map (\n -> p2 {octave = n}) [o1 - 1,o1,o1 + 1]
+        m1 = pitch_to_fmidi p1
+        m2 = map (pitch_to_fmidi) p2'
+        d = map (abs . (m1 -)) m2
+        z = sortBy (compare `on` snd) (zip p2' d)
+    in fst (head z)
 
 -- | Raise 'Note_T' of 'Pitch', account for octave transposition.
 --

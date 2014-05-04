@@ -5,10 +5,13 @@ import Data.Function {- base -}
 import Data.List as L {- base -}
 import qualified Data.List.Ordered as L {- data-ordlist -}
 import qualified Data.Map as M {- containers -}
+import Data.Maybe {- base -}
 import Data.Monoid {- base -}
+import Data.Ratio {- base -}
 import Safe {- safe -}
 
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
@@ -114,6 +117,10 @@ seq_tmap f = map (\(p,q) -> (f p,q))
 
 seq_map :: (b -> c) -> [(a,b)] -> [(a,c)]
 seq_map f = map (\(p,q) -> (p,f q))
+
+-- | Map /t/ and /e/ simultaneously.
+seq_bimap :: (t -> t') -> (e -> e') -> [(t,e)] -> [(t',e')]
+seq_bimap f g = map (\(p,q) -> (f p,g q))
 
 seq_tfilter :: (t -> Bool) -> [(t,a)] -> [(t,a)]
 seq_tfilter f = filter (f . fst)
@@ -265,6 +272,59 @@ wseq_fill_dur l =
     let f (((t1,_),e),((t2,_),_)) = ((t1,t2-t1),e)
     in map f (T.adj2 1 l) ++ [last l]
 
+-- * Dseq
+
+dseq_lcm :: Dseq Rational e -> Integer
+dseq_lcm = foldl1 lcm . map (denominator . fst)
+
+-- | Scale by lcm so that all durations are integral.
+dseq_set_whole :: [Dseq Rational e] -> [Dseq Integer e]
+dseq_set_whole sq =
+    let m = maximum (map dseq_lcm sq)
+        t_f n = T.rational_whole_err (n * fromIntegral m)
+    in map (dseq_tmap t_f) sq
+
+-- * Wseq
+
+-- | Edit durations to ensure that notes don't overlap.  If the same
+-- note is played simultaneously delete shorter note.  If a note
+-- extends into a later note shorten duration (apply /d_fn/ to iot).
+wseq_remove_overlaps :: (Eq e,Ord t,Num t) =>
+                        (e -> e -> Bool) -> (t -> t) ->
+                        Wseq t e -> Wseq t e
+wseq_remove_overlaps eq_fn d_fn =
+    let go sq =
+            case sq of
+              [] -> []
+              ((t,d),a):sq' ->
+                  case find (eq_fn a . snd) sq' of
+                      Nothing -> ((t,d),a) : go sq'
+                      Just ((t',d'),a') ->
+                          if t == t'
+                          then if d <= d'
+                               then -- delete LHS
+                                   go sq'
+                               else -- delete RHS
+                                   ((t,d),a) :
+                                   go (delete ((t',d'),a') sq')
+                          else if t' < t + d
+                               then ((t,d_fn (t' - t)),a) : go sq'
+                               else ((t,d),a) : go sq'
+    in go
+
+wseq_map_maybe :: (a -> Maybe b) -> Wseq t a -> Wseq t b
+wseq_map_maybe f =
+    let g (t,e) = maybe Nothing (\e' -> Just (t,e')) (f e)
+    in mapMaybe g
+
+-- | Unjoin elements (assign equal time stamps to all elements).
+seq_unjoin :: [(t,[e])] -> [(t,e)]
+seq_unjoin = let f (t,e) = zip (repeat t) e in concatMap f
+
+-- | Type specialised.
+wseq_unjoin :: Wseq t [e] -> Wseq t e
+wseq_unjoin = seq_unjoin
+
 -- * Interop
 
 useq_to_dseq :: Useq t a -> Dseq t a
@@ -394,6 +454,9 @@ pseq_tmap = seq_tmap
 
 tseq_tmap :: (t -> t') -> Dseq t a -> Dseq t' a
 tseq_tmap = seq_tmap
+
+tseq_bimap :: (t -> t') -> (e -> e') -> Tseq t e -> Tseq t' e'
+tseq_bimap = seq_bimap
 
 wseq_tmap :: ((t,t) -> (t',t')) -> Wseq t a -> Wseq t' a
 wseq_tmap = seq_tmap

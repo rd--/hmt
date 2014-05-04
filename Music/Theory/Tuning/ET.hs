@@ -221,6 +221,11 @@ ratio_to_pitch_detune_12et = ratio_to_pitch_detune nearest_12et_tone
 ratio_to_pitch_detune_24et :: OctPC -> Rational -> Pitch_Detune
 ratio_to_pitch_detune_24et = ratio_to_pitch_detune nearest_24et_tone
 
+pitch_detune_in_octave_nearest  :: Pitch -> Pitch_Detune -> Pitch_Detune
+pitch_detune_in_octave_nearest p1 (p2,d2) =
+    let p2' = pitch_in_octave_nearest p1 p2
+    in (p2',d2)
+
 -- | Markdown pretty-printer for 'Pitch_Detune'.
 pitch_detune_md :: Pitch_Detune -> String
 pitch_detune_md (p,c) =
