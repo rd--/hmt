@@ -356,3 +356,10 @@ all_eq = (== 1) . length . nub
 -- > in sort_group_on fst (zip "13123" "abcde") == r
 sort_group_on :: Ord b => (a -> b) -> [a] -> [[a]]
 sort_group_on f = groupBy ((==) `on` f) . sortBy (compare `on` f)
+
+-- | Maybe cons element onto list.
+--
+-- > Nothing `mcons` "something" == "something"
+-- > Just 's' `mcons` "omething" == "something"
+mcons :: Maybe a -> [a] -> [a]
+mcons e l = maybe l (:l) e

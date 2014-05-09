@@ -2,13 +2,12 @@
 module Music.Theory.Pitch where
 
 import Data.Char {- base -}
-import Data.Fixed {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import Music.Theory.List {- hmt -}
-import Music.Theory.Math {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Integer
@@ -62,7 +61,7 @@ pitch'_pp (Pitch' n (_,a) o) = show n ++ a ++ show o
 
 -- | 'Pitch'' printed without octave.
 pitch'_class_pp :: Pitch' -> String
-pitch'_class_pp = dropWhileRight isDigit . pitch'_pp
+pitch'_class_pp = T.dropWhileRight isDigit . pitch'_pp
 
 -- | Transform 'Note_T' to pitch-class number.
 --
@@ -314,7 +313,7 @@ pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch sp (m + n)
 
--- | Set ocatve of /p2/ so that it nearest to /p1/.
+-- | Set octave of /p2/ so that it nearest to /p1/.
 --
 -- > import Music.Theory.Pitch.Name as T
 --
@@ -416,7 +415,7 @@ type Midi_Detune = (Int,Double)
 -- > map (fmap round . cps_to_midi_detune) [440.00,508.35] == [(69,0),(71,50)]
 cps_to_midi_detune :: Double -> Midi_Detune
 cps_to_midi_detune f =
-    let (n,c) = integral_and_fractional_parts (cps_to_fmidi f)
+    let (n,c) = T.integral_and_fractional_parts (cps_to_fmidi f)
     in (n,c * 100)
 
 -- | Inverse of 'cps_to_midi_detune'.
@@ -542,7 +541,7 @@ pitch_pp (Pitch n a o) =
 
 -- | 'Pitch' printed without octave.
 pitch_class_pp :: Pitch -> String
-pitch_class_pp = dropWhileRight isDigit . pitch_pp
+pitch_class_pp = T.dropWhileRight isDigit . pitch_pp
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
 --

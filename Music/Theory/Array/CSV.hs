@@ -1,3 +1,4 @@
+-- | Square matrix array data, CSV, column & row indexing.
 module Music.Theory.Array.CSV where
 
 import Data.Array               {- array -}
@@ -7,6 +8,8 @@ import Data.List                {- base -}
 import Data.String              {- base -}
 
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
+
+import Music.Theory.List {- hmt -}
 
 -- * Indexing
 
@@ -215,27 +218,52 @@ cell_range_row_order ((c1,r1),(c2,r2)) =
 
 -- * TABLE
 
--- | Two-dimensional grid of /a/ in row-order.
+type CSV_Has_Header = Bool
+
+type CSV_Delimiter = Char
+
+type CSV_Allow_Linebreaks = Bool
+
+-- | CSV options.
+type CSV_Opt = (CSV_Has_Header,CSV_Delimiter,CSV_Allow_Linebreaks)
+
+-- | Default CSV options, no header, comma delimiter, no linebreaks.
+def_csv_opt :: CSV_Opt
+def_csv_opt = (False,',',False)
+
+-- | Plain list representation of a table.
 type Table a = [[a]]
 
+-- | Two-dimensional grid of /a/ in row-order.
+type CSV_Table a = (Maybe [String],Table a)
+
 -- | Read 'Table' from @CSV@ file.
-table_read :: (String -> a) -> FilePath -> IO (Table a)
-table_read f fn = do
+csv_table_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (CSV_Table a)
+csv_table_read (hdr,delim,brk) f fn = do
   s <- readFile fn
-  let t = C.csvTable (C.parseCSV s)
+  let t = C.csvTable (C.parseDSV brk delim s)
       p = C.fromCSVTable t
-  return (map (map f) p)
+      (h,d) = if hdr then (Just (head p),tail p) else (Nothing,p)
+  return (h,map (map f) d)
+
+-- | Read 'Table' only with 'def_csv_opt'.
+csv_table_read' :: (String -> a) -> FilePath -> IO (Table a)
+csv_table_read' f = fmap snd . csv_table_read def_csv_opt f
 
 -- | Read and process @CSV@ 'Table'.
-table_with :: (String -> a) -> FilePath -> (Table a -> b) -> IO b
-table_with f fn g = fmap g (table_read f fn)
+csv_table_with :: CSV_Opt -> (String -> a) -> FilePath -> (CSV_Table a -> b) -> IO b
+csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
 
 -- | Write 'Table' to @CSV@ file.
-table_write :: (a -> String) -> FilePath -> [[a]] -> IO ()
-table_write f fn tbl = do
-  let (_,t) = C.toCSVTable (map (map f) tbl)
+csv_table_write :: (a -> String) -> FilePath -> CSV_Table a -> IO ()
+csv_table_write f fn (hdr,tbl) = do
+  let (_,t) = C.toCSVTable (mcons hdr (map (map f) tbl))
       s = C.ppCSVTable t
   writeFile fn s
+
+-- | Write 'Table' only (no header).
+csv_table_write' :: (a -> String) -> FilePath -> Table a -> IO ()
+csv_table_write' f fn tbl = csv_table_write f fn (Nothing,tbl)
 
 -- | @0@-indexed (row,column) cell lookup.
 table_lookup :: Table a -> (Int,Int) -> a
@@ -251,7 +279,9 @@ table_column t c = transpose t !! column_index c
 
 -- | Lookup value across columns.
 table_column_lookup :: Eq a => Table a -> (Column_Ref,Column_Ref) -> a -> Maybe a
-table_column_lookup t (c1,c2) e = lookup e (zip (table_column t c1) (table_column t c2))
+table_column_lookup t (c1,c2) e =
+    let a = zip (table_column t c1) (table_column t c2)
+    in lookup e a
 
 -- | Table cell lookup.
 table_cell :: Table a -> Cell_Ref -> a
@@ -290,6 +320,6 @@ table_to_array t =
         asc = zip (cell_range_row_order bnd) (concat t)
     in array bnd asc
 
--- | 'table_to_array' of 'table_read'.
-array_read :: (String -> a) -> FilePath -> IO (Array Cell_Ref a)
-array_read f fn = fmap table_to_array (table_read f fn)
+-- | 'table_to_array' of 'csv_table_read'.
+csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (Array Cell_Ref a)
+csv_array_read opt f fn = fmap (table_to_array . snd) (csv_table_read opt f fn)
