@@ -95,10 +95,13 @@ wseq_dur = uncurry subtract . wseq_tspan
 -- * Window
 
 -- | Keep only elements in the indicated temporal window.
+--
+-- > let r = [((5,1),'e'),((6,1),'f'),((7,1),'g'),((8,1),'h')]
+-- > in wseq_twindow (5,9) (zip (zip [1..10] (repeat 1)) ['a'..]) == r
 wseq_twindow :: (Num t, Ord t) => (t,t) -> Wseq t a -> Wseq t a
 wseq_twindow (w0,w1) =
-    let f (st,du) = st >= w0 && w1 <= (st + du)
-    in wseq_tfilter (not . f)
+    let f (st,du) = w0 <= st && (st + du) <= w1
+    in wseq_tfilter f
 
 -- * Append
 
