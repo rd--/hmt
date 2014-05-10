@@ -5,7 +5,7 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import Music.Theory.List
+import qualified Music.Theory.List as T
 
 -- | Enumeration of dynamic mark symbols.
 data Dynamic_Mark_T = Niente
@@ -46,6 +46,17 @@ dynamic_mark_db r m =
         k = r / fromIntegral n
         f i = negate r + (fromIntegral i * k)
     in fmap f (elemIndex m u)
+
+-- | <http://www.csounds.com/manual/html/ampmidid.html>
+--
+-- > import Sound.SC3.Plot
+-- > plotTable [map (ampmidid 20) [0 .. 127],map (ampmidid 60) [0 .. 127]]
+ampmidid :: Floating a => a -> a -> a
+ampmidid db v =
+    let r = 10 ** (db / 20)
+        b = 127 / (126 * sqrt r) - 1 / 126
+        m = (1 - b) / 127
+    in (m * v + b) ** 2
 
 -- | Enumeration of hairpin indicators.
 data Hairpin_T = Crescendo | Diminuendo | End_Hairpin
@@ -88,7 +99,7 @@ dynamic_sequence d =
                                        then (j,e) : rec False p'
                                        else (j,k) : rec False p'
                             Just _ -> (j,k) : rec True p'
-    in rec False (zip (indicate_repetitions d) h)
+    in rec False (zip (T.indicate_repetitions d) h)
 
 -- | Delete redundant (unaltered) dynamic marks.
 --
@@ -116,7 +127,7 @@ dynamic_sequence_sets =
     let f l = case l of
                 Nothing:_ -> map (const Nothing) l
                 _ -> map Just (dynamic_sequence (catMaybes l))
-    in concatMap f . group_just . delete_redundant_marks
+    in concatMap f . T.group_just . delete_redundant_marks
 
 -- | Apply 'Hairpin_T' and 'Dynamic_Mark_T' functions in that order as
 -- required by 'Dynamic_Node'.

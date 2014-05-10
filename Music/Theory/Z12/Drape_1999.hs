@@ -2,16 +2,17 @@
 -- See <http://slavepianos.org/rd/?t=pct>.
 module Music.Theory.Z12.Drape_1999 where
 
-import Data.Function
-import Data.List
-import Data.Maybe
-import Music.Theory.List
-import qualified Music.Theory.Set.List as S
+import Data.Function {- base -}
+import Data.List {- base -}
+import Data.Maybe {- base -}
+
+import qualified Music.Theory.List as T
+import qualified Music.Theory.Set.List as T
 import Music.Theory.Z12
-import Music.Theory.Z12.Forte_1973
-import Music.Theory.Z12.Morris_1987
-import qualified Music.Theory.Z12.TTO as T
-import qualified Music.Theory.Z12.SRO as S
+import qualified Music.Theory.Z12.Forte_1973 as T
+import qualified Music.Theory.Z12.Morris_1987 as T
+import qualified Music.Theory.Z12.TTO as TTO
+import qualified Music.Theory.Z12.SRO as SRO
 
 -- | Cardinality filter
 --
@@ -29,11 +30,11 @@ cgg l =
       x:xs -> [ y:z | y <- x, z <- cgg xs ]
       _ -> [[]]
 
--- | Combinations generator, ie. synonym for 'S.powerset'.
+-- | Combinations generator, ie. synonym for 'T.powerset'.
 --
 -- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
-cg = S.powerset
+cg = T.powerset
 
 -- | Powerset filtered by cardinality.
 --
@@ -49,7 +50,7 @@ cg_r n = cf [n] . cg
 
 -- | Cyclic interval segment.
 ciseg :: [Z12] -> [Z12]
-ciseg = int . cyc
+ciseg = T.int . cyc
 
 -- | Synonynm for 'complement'.
 --
@@ -67,8 +68,10 @@ cmpl = complement
 --
 -- > cyc [0,5,6] == [0,5,6,0]
 cyc :: [a] -> [a]
-cyc [] = []
-cyc (x:xs) = (x:xs) ++ [x]
+cyc l =
+    case l of
+      [] -> []
+      x:xs -> (x:xs) ++ [x]
 
 -- | Diatonic set name. 'd' for diatonic set, 'm' for melodic minor
 -- set, 'o' for octotonic set.
@@ -83,7 +86,7 @@ d_nm x =
 -- | Diatonic implications.
 dim :: [Z12] -> [(Z12,[Z12])]
 dim p =
-    let g (i,q) = is_subset p (T.tn i q)
+    let g (i,q) = T.is_subset p (TTO.tn i q)
         f = filter g . zip [0..11] . repeat
         d = [0,2,4,5,7,9,11]
         m = [0,2,3,5,7,9,11]
@@ -128,16 +131,16 @@ dis =
 -- >>> echo 01234 | doi 2 7-35 | sort -u
 -- 13568AB
 --
--- > doi 2 (sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
+-- > doi 2 (T.sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
 doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
-    let f j = [T.tn j p,T.tni j p]
+    let f j = [TTO.tn j p,TTO.tni j p]
         xs = concatMap f [0..11]
-    in S.set (filter (\x -> length (x `intersect` q) == n) xs)
+    in T.set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
 fn :: [Z12] -> String
-fn = sc_name
+fn = T.sc_name
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
 has_ess :: [Z12] -> [Z12] -> Bool
@@ -155,7 +158,7 @@ has_ess (p:ps) (q:qs) = if p == q
 --
 -- > ess [2,3,10] [0,1,6,4,3,2,5] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: [Z12] -> [Z12] -> [[Z12]]
-ess p = filter (`has_ess` p) . S.rtmi_related
+ess p = filter (`has_ess` p) . SRO.rtmi_related
 
 -- | Can the set-class q (under prime form algorithm pf) be
 --   drawn from the pcset p.
@@ -166,7 +169,7 @@ has_sc_pf pf p q =
 
 -- | Can the set-class q be drawn from the pcset p.
 has_sc :: [Z12] -> [Z12] -> Bool
-has_sc = has_sc_pf forte_prime
+has_sc = has_sc_pf T.forte_prime
 
 -- | Interval cycle filter.
 --
@@ -206,11 +209,11 @@ ici_c (x:xs) = map (x:) (ici xs)
 --
 -- > icseg [0,1,3,2,6,5,11,4,9,7,10,8] == [1,2,1,4,1,6,5,5,2,3,2]
 icseg :: [Z12] -> [Z12]
-icseg = map ic . iseg
+icseg = map T.ic . iseg
 
 -- | Interval segment (INT).
 iseg :: [Z12] -> [Z12]
-iseg = int
+iseg = T.int
 
 -- | Imbrications.
 imb :: (Integral n) => [n] -> [a] -> [[a]]
@@ -226,12 +229,12 @@ imb cs p =
 -- 3-2
 -- 3-11
 --
--- > issb (sc "3-7") (sc "6-32") == ["3-2","3-7","3-11"]
+-- > issb (T.sc "3-7") (T.sc "6-32") == ["3-2","3-7","3-11"]
 issb :: [Z12] -> [Z12] -> [String]
 issb p q =
     let k = length q - length p
-        f = any id . map (\x -> forte_prime (p ++ x) == q) . T.ti_related
-    in map sc_name (filter f (cf [k] scs))
+        f = any id . map (\x -> T.forte_prime (p ++ x) == q) . TTO.ti_related
+    in map T.sc_name (filter f (cf [k] T.scs))
 
 -- | Matrix search.
 --
@@ -239,9 +242,9 @@ issb p q =
 -- 6421B9
 -- B97642
 --
--- > S.set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
+-- > T.set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 mxs :: [Z12] -> [Z12] -> [[Z12]]
-mxs p q = filter (q `isInfixOf`) (S.rti_related p)
+mxs p q = filter (q `isInfixOf`) (SRO.rti_related p)
 
 -- | Normalize.
 --
@@ -250,7 +253,7 @@ mxs p q = filter (q `isInfixOf`) (S.rti_related p)
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
 nrm :: (Ord a) => [a] -> [a]
-nrm = S.set
+nrm = T.set
 
 -- | Normalize, retain duplicate elements.
 nrm_r :: (Ord a) => [a] -> [a]
@@ -267,8 +270,8 @@ nrm_r = sort
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
-    let f q = S.set (map (q `genericIndex`) i)
-    in filter (\q -> f q == f p) (S.rti_related p)
+    let f q = T.set (map (q `genericIndex`) i)
+    in filter (\q -> f q == f p) (SRO.rti_related p)
 
 -- | Relate sets.
 --
@@ -278,11 +281,11 @@ pci p i =
 -- > import Music.Theory.Z12.Morris_1987.Parse
 -- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
 -- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
-rs :: [Z12] -> [Z12] -> [(SRO, [Z12])]
+rs :: [Z12] -> [Z12] -> [(T.SRO, [Z12])]
 rs x y =
-    let xs = map (\o -> (o, o `sro` x)) sro_TnMI
-        q = S.set y
-    in filter (\(_,p) -> S.set p == q) xs
+    let xs = map (\o -> (o, o `T.sro` x)) T.sro_TnMI
+        q = T.set y
+    in filter (\(_,p) -> T.set p == q) xs
 
 -- | Relate segments.
 --
@@ -306,27 +309,27 @@ rs x y =
 --
 -- > rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
 --
-rsg :: [Z12] -> [Z12] -> [SRO]
-rsg x y = map fst (filter (\(_,x') -> x' == y) (sros x))
+rsg :: [Z12] -> [Z12] -> [T.SRO]
+rsg x y = map fst (filter (\(_,x') -> x' == y) (T.sros x))
 
 -- | Subsets.
 sb :: [[Z12]] -> [[Z12]]
 sb xs =
     let f p = all id (map (`has_sc` p) xs)
-    in filter f scs
+    in filter f T.scs
 
 -- | Super set-class.
 --
 -- >>> spsc 4-11 4-12
 -- 5-26[02458]
 --
--- > spsc [sc "4-11", sc "4-12"] == ["5-26"]
+-- > spsc [T.sc "4-11",T.sc "4-12"] == ["5-26"]
 --
 -- >>> spsc 3-11 3-8
 -- 4-27[0258]
 -- 4-Z29[0137]
 --
--- > spsc [sc "3-11", sc "3-8"] == ["4-27","4-Z29"]
+-- > spsc [T.sc "3-11",T.sc "3-8"] == ["4-27","4-Z29"]
 --
 -- >>> spsc `fl 3`
 -- 6-Z17[012478]
@@ -336,4 +339,4 @@ spsc :: [[Z12]] -> [String]
 spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length
-    in (map sc_name . head . groupBy g . filter f) scs
+    in (map T.sc_name . head . groupBy g . filter f) T.scs

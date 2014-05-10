@@ -4,7 +4,8 @@ module Music.Theory.Block_Design.Johnson_2007 where
 
 import Control.Arrow {- base -}
 import Data.List {- base -}
-import qualified Music.Theory.List as L
+
+import qualified Music.Theory.List as T
 
 -- * Designs
 
@@ -22,8 +23,8 @@ b_7_3_1 :: (Ord i,Num i) => ([[i]], [[i]])
 b_7_3_1 =
     let c = c_7_3_1
         f i (j1,j2) = sort [i,j1,j2]
-    in (zipWith f (L.rotate_left 3 c) (L.adj2_cyclic 1 c)
-       ,zipWith f c (L.adj2_cyclic 1 (L.rotate_left 2 c)))
+    in (zipWith f (T.rotate_left 3 c) (T.adj2_cyclic 1 c)
+       ,zipWith f c (T.adj2_cyclic 1 (T.rotate_left 2 c)))
 
 d_7_3_1 :: (Enum n,Ord n,Num n) => (Design n,Design n)
 d_7_3_1 = let d = Design [1..7] in (d *** d) b_7_3_1
@@ -41,12 +42,12 @@ p_9_3_1 = [[1,8,9],[2,3,5],[4,6,7],[1,4,5],[2,6,8],[3,7,9],[1,2,7],[3,4,8],[5,6,
 b_13_4_1 :: (Enum i,Num i,Ord i) => ([[i]], [[i]])
 b_13_4_1 =
     let c = [1..13]
-        c' = L.rotate_left 7 c
-        d = L.interleave_rotations 9 3 c
-        e = L.interleave_rotations 3 10 c
+        c' = T.rotate_left 7 c
+        d = T.interleave_rotations 9 3 c
+        e = T.interleave_rotations 3 10 c
         f (i1,i2) (j1,j2) = sort [i1,i2,j1,j2]
-    in (zipWith f (L.adj2 1 c) (L.adj2 2 d)
-       ,zipWith f (L.adj2 1 c') (L.adj2 2 e))
+    in (zipWith f (T.adj2 1 c) (T.adj2 2 d)
+       ,zipWith f (T.adj2 1 c') (T.adj2 2 e))
 
 d_13_4_1 :: (Enum n,Ord n,Num n) => (Design n,Design n)
 d_13_4_1 = let d = Design [1..13] in (d *** d) b_13_4_1

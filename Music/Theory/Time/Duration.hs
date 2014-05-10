@@ -146,4 +146,3 @@ duration_diff p q =
          LT -> negate_duration (g (q' - p'))
          EQ -> nil_duration
          GT -> g (p' - q')
-

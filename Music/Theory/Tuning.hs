@@ -77,8 +77,8 @@ reconstructed_ratios epsilon =
 --
 -- > let r = [0,498,702,1200]
 -- > in map (round . fratio_to_cents) [1,4/3,3/2,2] == r
-fratio_to_cents :: Floating n => n -> n
-fratio_to_cents = (1200 *) . logBase 2
+fratio_to_cents :: (Real r,Floating n) => r -> n
+fratio_to_cents = (1200 *) . logBase 2 . realToFrac
 
 -- | Type specialised 'fratio_to_cents'.
 approximate_ratio_to_cents :: Approximate_Ratio -> Cents
@@ -115,7 +115,7 @@ cps_shift_cents f = (* f) . cents_to_ratio
 --
 -- > let abs_dif i j = abs (i - j)
 -- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
-cps_difference_cents :: Floating a => a -> a -> a
+cps_difference_cents :: (Real r,Fractional r,Floating n) => r -> r -> n
 cps_difference_cents p q = fratio_to_cents (q / p)
 
 -- * Commas

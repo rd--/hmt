@@ -1,15 +1,15 @@
 -- | Square matrix array data, CSV, column & row indexing.
 module Music.Theory.Array.CSV where
 
-import Data.Array               {- array -}
-import Data.Char                {- base -}
-import Data.Function            {- base -}
-import Data.List                {- base -}
-import Data.String              {- base -}
+import Data.Array {- array -}
+import Data.Char {- base -}
+import Data.Function {- base -}
+import Data.List {- base -}
+import Data.String {- base -}
 
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 
-import Music.Theory.List {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 
 -- * Indexing
 
@@ -257,7 +257,7 @@ csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
 -- | Write 'Table' to @CSV@ file.
 csv_table_write :: (a -> String) -> FilePath -> CSV_Table a -> IO ()
 csv_table_write f fn (hdr,tbl) = do
-  let (_,t) = C.toCSVTable (mcons hdr (map (map f) tbl))
+  let (_,t) = C.toCSVTable (T.mcons hdr (map (map f) tbl))
       s = C.ppCSVTable t
   writeFile fn s
 

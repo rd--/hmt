@@ -4,6 +4,9 @@ module Music.Theory.Math where
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+-- | Real (alias for 'Double').
+type R = Double
+
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
 integral_and_fractional_parts :: (Integral i, RealFrac t) => t -> (i,t)
 integral_and_fractional_parts n =

@@ -3,10 +3,11 @@
 -- \"Towards a Philosophy of Music\", /Formalized Music/ pp. 219 -- 221
 module Music.Theory.Xenakis.S4 where
 
-import Data.List
-import Data.Maybe
-import qualified Data.Permute as P
-import Music.Theory.Permutations
+import Data.List {- base -}
+import Data.Maybe {- base -}
+import qualified Data.Permute as P {- permutation -}
+
+import qualified Music.Theory.Permutations as T
 
 -- * S4 notation
 
@@ -119,8 +120,8 @@ type Rel = (Bool,P.Permute)
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
     if complementary p q
-    then (True,permutation (complement p) q)
-    else (False,permutation p q)
+    then (True,T.permutation (complement p) q)
+    else (False,T.permutation p q)
 
 -- | 'Rel' from 'Label' /p/ to /q/.
 --
@@ -144,7 +145,7 @@ relations_l p = zipWith relate_l p (tail p)
 -- > apply_relation (False,P.listPermute 4 [0,3,1,2]) [1,4,2,3] == [1,3,4,2]
 apply_relation :: Rel -> Half_Seq -> Half_Seq
 apply_relation (c,p) i =
-    let j = apply_permutation p i
+    let j = T.apply_permutation p i
     in if c then complement j else j
 
 -- | Apply sequence of 'Rel' to initial 'Half_Seq'.

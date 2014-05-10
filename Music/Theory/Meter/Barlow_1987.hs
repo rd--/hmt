@@ -7,6 +7,8 @@ import Data.List
 import Data.Numbers.Primes {- primes -}
 --import Debug.Trace
 
+import Music.Theory.Math (R)
+
 traceShow :: a -> b -> b
 traceShow _ x = x
 
@@ -38,9 +40,6 @@ mod' a b =
     in if r < 0 || r >= b
        then error (show ("mod'",a,b,r))
        else r
-
--- | Alias for 'Double' (quieten compiler).
-type R = Double
 
 -- | Specialised variant of 'fromIntegral'.
 to_r :: (Integral n,Show n) => n -> R

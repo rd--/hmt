@@ -1,9 +1,10 @@
 -- | Permutation functions.
 module Music.Theory.Permutations where
 
-import qualified Data.Permute as P
+import qualified Data.Permute as P {- permutation -}
+import Numeric (showHex) {- base -}
+
 import qualified Music.Theory.List as L
-import Numeric (showHex)
 
 -- | Factorial function.
 --

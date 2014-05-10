@@ -44,6 +44,7 @@ lift_unary_Z12 f (Z12 a) = Z12 (f a `mod` 12)
 lift_binary_Z12 :: (Int -> Int -> Int) -> Z12 -> Z12 -> Z12
 lift_binary_Z12 f (Z12 a) (Z12 b) = Z12 (mod (a `f` b) 12)
 
+-- | Raise an error if the internal 'Z12' value is negative.
 check_negative :: (Int -> Int) -> Z12 -> Z12
 check_negative f (Z12 n) =
     if n < 0

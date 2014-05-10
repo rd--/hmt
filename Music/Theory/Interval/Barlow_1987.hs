@@ -3,11 +3,13 @@
 -- Translated by Henning Lohner.
 module Music.Theory.Interval.Barlow_1987 where
 
-import Data.List
-import Data.Maybe
+import Data.List {- base -}
+import Data.Maybe {- base -}
 import Data.Numbers.Primes {- primes -}
-import Data.Ratio
-import Text.Printf
+import Data.Ratio {- base -}
+import Text.Printf {- base -}
+
+import Music.Theory.Tuning
 
 -- | Barlow's /indigestibility/ function for prime numbers.
 --
@@ -113,12 +115,6 @@ harmonicity pv = recip . disharmonicity pv
 harmonicity_r :: (Integral a,Fractional b) => (a -> b) -> Ratio a -> b
 harmonicity_r pv = harmonicity pv . from_rational
 
--- | Interval ratio to cents.
---
--- > map cents [16%15,16%9] == [111.73128526977776,996.0899982692251]
-cents :: (Real a,Floating b) => a -> b
-cents x = 1200 * logBase 2 (realToFrac x)
-
 -- | 'uncurry' ('%').
 to_rational :: Integral a => (a,a) -> Ratio a
 to_rational = uncurry (%)
@@ -140,7 +136,7 @@ table_2 z =
         r = nub (sort (filter g [p % q | p <- [1..81],q <- [1..81]]))
         h = map (harmonicity_r barlow) r
         f = (> z) . snd
-        k (i,j) = (cents i,rational_prime_factors_t 6 (from_rational i),i,j)
+        k (i,j) = (fratio_to_cents i,rational_prime_factors_t 6 (from_rational i),i,j)
     in map k (filter f (zip r h))
 
 -- | Pretty printer for 'Table_2_Row' values.

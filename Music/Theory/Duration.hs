@@ -1,10 +1,10 @@
 -- | Common music notation duration model.
 module Music.Theory.Duration where
 
-import Control.Monad
-import Data.List
-import Data.Maybe
-import Data.Ratio
+import Control.Monad {- base -}
+import Data.List {- base -}
+import Data.Maybe {- base -}
+import Data.Ratio {- base -}
 
 -- | Common music notation durational model
 data Duration = Duration {division :: Integer -- ^ division of whole note

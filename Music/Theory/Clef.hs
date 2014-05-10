@@ -9,9 +9,9 @@ data Clef_T = Bass | Tenor | Alto | Treble | Percussion
               deriving (Eq,Ord,Show)
 
 -- | Clef with octave offset.
-data Integral i => Clef i = Clef {clef_t :: Clef_T
-                                 ,clef_octave :: i}
-                            deriving (Eq,Ord,Show)
+data Clef i = Clef {clef_t :: Clef_T
+                   ,clef_octave :: i}
+              deriving (Eq,Ord,Show)
 
 -- | Give clef range as a 'Pitch' pair indicating the notes below and
 -- above the staff.
