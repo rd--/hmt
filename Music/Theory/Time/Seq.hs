@@ -2,14 +2,15 @@
 module Music.Theory.Time.Seq where
 
 import Data.Function {- base -}
-import Data.List as L {- base -}
-import qualified Data.List.Ordered as L {- data-ordlist -}
+import Data.List {- base -}
+import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Monoid {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
 
+import Music.Theory.Function {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
@@ -104,11 +105,16 @@ pseq_append = (++)
 
 -- * Merge
 
+-- | Merge comparing only on time.
 tseq_merge :: Ord t => Tseq t a -> Tseq t a -> Tseq t a
-tseq_merge = L.mergeBy (compare `on` fst)
+tseq_merge = O.mergeBy (compare `on` fst)
+
+-- | Merge, where times are equal compare values.
+tseq_merge_by :: Ord t => T.Compare_F a -> Tseq t a -> Tseq t a -> Tseq t a
+tseq_merge_by cmp = T.merge_by_two_stage fst cmp snd
 
 wseq_merge :: Ord t => Wseq t a -> Wseq t a -> Wseq t a
-wseq_merge = L.mergeBy (compare `on` (fst . fst))
+wseq_merge = O.mergeBy (compare `on` (fst . fst))
 
 -- * Map, Filter, Find
 
@@ -317,6 +323,10 @@ wseq_map_maybe f =
     let g (t,e) = maybe Nothing (\e' -> Just (t,e')) (f e)
     in mapMaybe g
 
+-- | Variant of 'catMaybes'.
+wseq_cat_maybes :: Wseq t (Maybe a) -> Wseq t a
+wseq_cat_maybes = wseq_map_maybe id
+
 -- | Unjoin elements (assign equal time stamps to all elements).
 seq_unjoin :: [(t,[e])] -> [(t,e)]
 seq_unjoin = let f (t,e) = zip (repeat t) e in concatMap f
@@ -324,6 +334,68 @@ seq_unjoin = let f (t,e) = zip (repeat t) e in concatMap f
 -- | Type specialised.
 wseq_unjoin :: Wseq t [e] -> Wseq t e
 wseq_unjoin = seq_unjoin
+
+-- * On/Off
+
+-- | Container for values that have /on/ and /off/ modes.
+data On_Off a = On a | Off a deriving (Eq,Show)
+
+-- | Structural comparison at 'On_Off', 'On' compares less than 'Off'.
+cmp_on_off :: On_Off a -> On_Off b -> Ordering
+cmp_on_off p q =
+    case (p,q) of
+      (On _,Off _) -> LT
+      (On _,On _) -> EQ
+      (Off _,Off _) -> EQ
+      (Off _,On _) -> GT
+
+-- | Translate container types.
+either_to_on_off :: Either a a -> On_Off a
+either_to_on_off p =
+    case p of
+      Left a -> On a
+      Right a -> Off a
+
+-- | Translate container types.
+on_off_to_either :: On_Off a -> Either a a
+on_off_to_either p =
+    case p of
+      On a -> Left a
+      Off a -> Right a
+
+-- | Convert 'Wseq' to 'Tseq' transforming elements to 'On' and 'Off'
+-- parts.  When merging, /off/ elements precede /on/ elements at equal
+-- times.
+--
+-- > let {sq = [((0,5),'a'),((2,2),'b')]
+-- >     ;r = [(0,On 'a'),(2,On 'b'),(4,Off 'b'),(5,Off 'a')]}
+-- > in wseq_on_off sq == r
+--
+-- > let {sq = [((0,1),'a'),((1,1),'b'),((2,1),'c')]
+-- >     ;r = [(0,On 'a'),(1,Off 'a')
+-- >          ,(1,On 'b'),(2,Off 'b')
+-- >          ,(2,On 'c'),(3,Off 'c')]}
+-- > in wseq_on_off sq == r
+wseq_on_off :: (Num t, Ord t) => Wseq t a -> Tseq t (On_Off a)
+wseq_on_off sq =
+    let f ((t,d),a) = [(t,On a),(t + d,Off a)]
+        g l =
+            case l of
+              [] -> []
+              e:l' -> tseq_merge_by (T.ordering_invert .: cmp_on_off) e (g l')
+    in g (map f sq)
+
+-- | 'on_off_to_either' of 'wseq_on_off'.
+wseq_on_off_either :: (Num t, Ord t) => Wseq t a -> Tseq t (Either a a)
+wseq_on_off_either = tseq_map on_off_to_either . wseq_on_off
+
+-- | Variant that applies /on/ and /off/ functions to nodes.
+--
+-- > let {sq = [((0,5),'a'),((2,2),'b')]
+-- >     ;r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]}
+-- > in wseq_on_off_f Data.Char.toUpper id sq == r
+wseq_on_off_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
+wseq_on_off_f f g = tseq_map (either f g) . wseq_on_off_either
 
 -- * Interop
 

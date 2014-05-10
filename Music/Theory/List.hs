@@ -3,7 +3,7 @@ module Music.Theory.List where
 
 import Data.Function {- base -}
 import Data.List {- base -}
-import qualified Data.List.Ordered as L {- data-ordlist -}
+import qualified Data.List.Ordered as O {- data-ordlist -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
@@ -325,27 +325,6 @@ adjacent_groupBy f p =
 group_just :: [Maybe a] -> [[Maybe a]]
 group_just = groupBy ((==) `on` isJust)
 
--- | Given a comparison function, merge two ascending lists.
---
--- > mergeBy compare [1,3,5] [2,4] == [1..5]
-merge_by :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
-merge_by = L.mergeBy
-
--- | 'mergeBy' 'compare'.
-merge :: Ord a => [a] -> [a] -> [a]
-merge = L.merge
-
--- | Merge list of sorted lists given comparison function.  Note that
--- this is not equal to 'L.mergeAll'.
-merge_set_by :: (a -> a -> Ordering) -> [[a]] -> [a]
-merge_set_by f = foldr (merge_by f) []
-
--- | 'merge_set_by' of 'compare'.
---
--- > merge_set [[1,3,5,7,9],[2,4,6,8],[10]] == [1..10]
-merge_set :: Ord a => [[a]] -> [a]
-merge_set = merge_set_by compare
-
 -- | Predicate to determine if all elements of the list are '=='.
 all_eq :: Eq n => [n] -> Bool
 all_eq = (== 1) . length . nub
@@ -363,3 +342,66 @@ sort_group_on f = groupBy ((==) `on` f) . sortBy (compare `on` f)
 -- > Just 's' `mcons` "omething" == "something"
 mcons :: Maybe a -> [a] -> [a]
 mcons e l = maybe l (:l) e
+
+-- * Ordering
+
+-- | Comparison function type.
+type Compare_F a = a -> a -> Ordering
+
+-- | If /f/ compares 'EQ', defer to /g/.
+two_stage_compare :: Compare_F a -> Compare_F a -> Compare_F a
+two_stage_compare f g p q =
+    case f p q of
+      EQ -> g p q
+      r -> r
+
+-- | Invert 'Ordering'.
+ordering_invert :: Ordering -> Ordering
+ordering_invert o =
+    case o of
+      LT -> GT
+      EQ -> EQ
+      GT -> LT
+
+-- | Sort sequence /a/ based on ordering of sequence /b/.
+--
+-- > sort_to "abc" [1,3,2] == "acb"
+-- > sort_to "adbce" [1,4,2,3,5] == "abcde"
+sort_to :: Ord i => [e] -> [i] -> [e]
+sort_to e = map fst . sortBy (compare `on` snd) . zip e
+
+-- | 'flip' of 'sort_to'.
+--
+-- > sort_on [1,4,2,3,5] "adbce" == "abcde"
+sort_on :: Ord i => [i] -> [e] -> [e]
+sort_on = flip sort_to
+
+-- | 'sortBy' of 'two_stage_compare'.
+sort_by_two_stage :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]
+sort_by_two_stage f g = sortBy (two_stage_compare (compare `on` f) (compare `on` g))
+
+-- | Given a comparison function, merge two ascending lists.
+--
+-- > mergeBy compare [1,3,5] [2,4] == [1..5]
+merge_by :: Compare_F a -> [a] -> [a] -> [a]
+merge_by = O.mergeBy
+
+-- | 'O.mergeBy' of 'two_stage_compare'.
+merge_by_two_stage :: Ord b => (a -> b) -> Compare_F c -> (a -> c) -> [a] -> [a] -> [a]
+merge_by_two_stage f cmp g = O.mergeBy (two_stage_compare (compare `on` f) (cmp `on` g))
+
+-- | 'mergeBy' 'compare'.
+merge :: Ord a => [a] -> [a] -> [a]
+merge = O.merge
+
+-- | Merge list of sorted lists given comparison function.  Note that
+-- this is not equal to 'O.mergeAll'.
+merge_set_by :: (a -> a -> Ordering) -> [[a]] -> [a]
+merge_set_by f = foldr (merge_by f) []
+
+-- | 'merge_set_by' of 'compare'.
+--
+-- > merge_set [[1,3,5,7,9],[2,4,6,8],[10]] == [1..10]
+merge_set :: Ord a => [[a]] -> [a]
+merge_set = merge_set_by compare
+
