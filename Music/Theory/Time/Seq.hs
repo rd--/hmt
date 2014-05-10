@@ -92,6 +92,14 @@ tseq_dur = uncurry subtract . tseq_tspan
 wseq_dur :: Num t => Wseq t a -> t
 wseq_dur = uncurry subtract . wseq_tspan
 
+-- * Window
+
+-- | Keep only elements in the indicated temporal window.
+wseq_twindow :: (Num t, Ord t) => (t,t) -> Wseq t a -> Wseq t a
+wseq_twindow (w0,w1) =
+    let f (st,du) = st >= w0 && w1 <= (st + du)
+    in wseq_tfilter (not . f)
+
 -- * Append
 
 dseq_append :: Dseq t a -> Dseq t a -> Dseq t a
@@ -396,6 +404,27 @@ wseq_on_off_either = tseq_map on_off_to_either . wseq_on_off
 -- > in wseq_on_off_f Data.Char.toUpper id sq == r
 wseq_on_off_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
 wseq_on_off_f f g = tseq_map (either f g) . wseq_on_off_either
+
+-- | Inverse of 'wseq_on_off' given a predicate function for locating
+-- the /off/ node of an /on/ node.
+--
+-- > let {sq = [(0,On 'a'),(2,On 'b'),(4,Off 'b'),(5,Off 'a')]
+-- >     ;r = [((0,5),'a'),((2,2),'b')]}
+-- > in tseq_on_off_to_wseq (==) sq == r
+tseq_on_off_to_wseq :: Num t => (a -> a -> Bool) -> Tseq t (On_Off a) -> Wseq t a
+tseq_on_off_to_wseq cmp =
+    let cmp' x e =
+            case e of
+              Off x' -> cmp x x'
+              _ -> False
+        f e r = case seq_find (cmp' e) r of
+                        Nothing -> error "tseq_on_off_to_wseq: no matching off?"
+                        Just (t,_) -> t
+        go sq = case sq of
+                  [] -> []
+                  (_,Off _) : sq' -> go sq'
+                  (t,On e) : sq' -> let t' = f e sq' in ((t,t' - t),e) : go sq'
+    in go
 
 -- * Interop
 
