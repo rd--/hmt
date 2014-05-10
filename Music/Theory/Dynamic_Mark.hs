@@ -58,6 +58,18 @@ ampmidid db v =
         m = (1 - b) / 127
     in (m * v + b) ** 2
 
+-- | JMcC (SC3) equation.
+--
+-- > plotTable1 (map amp_db [0,0.005 .. 1])
+amp_db :: Floating a => a -> a
+amp_db a = logBase 10 a * 20
+
+-- | JMcC (SC3) equation.
+--
+-- > plotTable1 (map db_amp [-60,-59 .. 0])
+db_amp :: Floating a => a -> a
+db_amp a = 10 ** (a * 0.05)
+
 -- | Enumeration of hairpin indicators.
 data Hairpin_T = Crescendo | Diminuendo | End_Hairpin
                  deriving (Eq,Ord,Enum,Bounded,Show)
