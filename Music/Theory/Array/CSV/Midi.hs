@@ -29,7 +29,7 @@ midi_tseq_read =
     let mk_node (st,md,mnn,amp) = if md
                                   then (st,T.On (mnn,amp))
                                   else (st,T.Off (mnn,0))
-    in fmap (map mk_node) . T.csv_read_midi_note_data (True,False)
+    in fmap (map mk_node) . csv_read_midi_note_data (True,False)
 
 -- | Translate from 'Tseq' form to 'Wseq' form.
 midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (n,n)) -> T.Wseq t (n,n)
