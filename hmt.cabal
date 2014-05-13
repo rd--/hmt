@@ -36,6 +36,7 @@ Library
                    utf8-string
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Array.CSV
+                   Music.Theory.Array.CSV.Midi
                    Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
