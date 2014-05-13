@@ -323,22 +323,3 @@ table_to_array t =
 -- | 'table_to_array' of 'csv_table_read'.
 csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (Array Cell_Ref a)
 csv_array_read opt f fn = fmap (table_to_array . snd) (csv_table_read opt f fn)
-
--- * Models
-
--- | Midi note data, header is @time,on/off,note,velocity@.
--- Requires on/off translation values.
-csv_read_midi_note_data :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,m,n,n)]
-csv_read_midi_note_data (m_on,m_off) =
-    let read_md x = case x of
-                      "on" -> m_on
-                      "off" -> m_off
-                      _ -> error "csv_read_midi_note_data: on/off?"
-        f m =
-            case m of
-              [st,md,mnn,amp] -> (read st,read_md md,read mnn,read amp)
-              _ -> error "csv_read_midi_note_data: entry?"
-        g (hdr,dat) = case hdr of
-                        Just ["time","on/off","note","velocity"] -> dat
-                        _ -> error "csv_read_midi_note_data: header?"
-    in fmap (map f . g) . csv_table_read (True,',',False) id
