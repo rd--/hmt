@@ -84,13 +84,18 @@ Library
                    Music.Theory.Time_Signature
                    Music.Theory.Tuple
                    Music.Theory.Tuning
+                   Music.Theory.Tuning.Alves
                    Music.Theory.Tuning.Alves_1997
                    Music.Theory.Tuning.ET
+                   Music.Theory.Tuning.Gann
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1990
+                   Music.Theory.Tuning.Riley
                    Music.Theory.Tuning.Scala
+                   Music.Theory.Tuning.Syntonic
+                   Music.Theory.Tuning.Werckmeister
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z
