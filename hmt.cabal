@@ -91,6 +91,7 @@ Library
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984
+                   Music.Theory.Tuning.Polansky_1985c
                    Music.Theory.Tuning.Polansky_1990
                    Music.Theory.Tuning.Riley
                    Music.Theory.Tuning.Scala
