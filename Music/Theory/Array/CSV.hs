@@ -218,28 +218,36 @@ cell_range_row_order ((c1,r1),(c2,r2)) =
 
 -- * TABLE
 
+-- | When reading a CSV file is the first row a header?
 type CSV_Has_Header = Bool
 
 type CSV_Delimiter = Char
 
 type CSV_Allow_Linebreaks = Bool
 
+-- | When writing a CSV file should the delimiters be aligned,
+-- ie. should columns be padded with spaces, and if so at which side
+-- of the data?
+data CSV_Align_Columns = CSV_No_Align | CSV_Align_Left | CSV_Align_Right
+
 -- | CSV options.
-type CSV_Opt = (CSV_Has_Header,CSV_Delimiter,CSV_Allow_Linebreaks)
+type CSV_Opt = (CSV_Has_Header,CSV_Delimiter,CSV_Allow_Linebreaks,CSV_Align_Columns)
 
--- | Default CSV options, no header, comma delimiter, no linebreaks.
+-- | Default CSV options, no header, comma delimiter, no linebreaks, no alignment.
 def_csv_opt :: CSV_Opt
-def_csv_opt = (False,',',False)
+def_csv_opt = (False,',',False,CSV_No_Align)
 
--- | Plain list representation of a table.
+-- | Plain list representation of a two-dimensional table of /a/ in
+-- row-order.  Tables are regular, ie. all rows have equal numbers of
+-- columns.
 type Table a = [[a]]
 
--- | Two-dimensional grid of /a/ in row-order.
+-- | CSV table, ie. a table with perhaps a header.
 type CSV_Table a = (Maybe [String],Table a)
 
 -- | Read 'Table' from @CSV@ file.
 csv_table_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (CSV_Table a)
-csv_table_read (hdr,delim,brk) f fn = do
+csv_table_read (hdr,delim,brk,_) f fn = do
   s <- readFile fn
   let t = C.csvTable (C.parseDSV brk delim s)
       p = C.fromCSVTable t
@@ -254,16 +262,29 @@ csv_table_read' f = fmap snd . csv_table_read def_csv_opt f
 csv_table_with :: CSV_Opt -> (String -> a) -> FilePath -> (CSV_Table a -> b) -> IO b
 csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
 
+-- > csv_table_align CSV_No_Align [["a","row","and"],["then","another","one"]]
+csv_table_align :: CSV_Align_Columns -> Table String -> Table String
+csv_table_align align tbl =
+    let c = transpose tbl
+        n = map (maximum . map length) c
+        ext k s = let pd = replicate (k - length s) ' '
+                  in case align of
+                       CSV_No_Align -> s
+                       CSV_Align_Left -> pd ++ s
+                       CSV_Align_Right -> s ++ pd
+    in transpose (zipWith (map . ext) n c)
+
 -- | Write 'Table' to @CSV@ file.
-csv_table_write :: (a -> String) -> FilePath -> CSV_Table a -> IO ()
-csv_table_write f fn (hdr,tbl) = do
-  let (_,t) = C.toCSVTable (T.mcons hdr (map (map f) tbl))
-      s = C.ppCSVTable t
+csv_table_write :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
+csv_table_write f (_,delim,brk,align) fn (hdr,tbl) = do
+  let tbl' = csv_table_align align (map (map f) tbl)
+      (_,t) = C.toCSVTable (T.mcons hdr tbl')
+      s = C.ppDSVTable brk delim t
   writeFile fn s
 
 -- | Write 'Table' only (no header).
-csv_table_write' :: (a -> String) -> FilePath -> Table a -> IO ()
-csv_table_write' f fn tbl = csv_table_write f fn (Nothing,tbl)
+csv_table_write' :: (a -> String) -> CSV_Opt -> FilePath -> Table a -> IO ()
+csv_table_write' f opt fn tbl = csv_table_write f opt fn (Nothing,tbl)
 
 -- | @0@-indexed (row,column) cell lookup.
 table_lookup :: Table a -> (Int,Int) -> a

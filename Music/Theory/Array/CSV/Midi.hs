@@ -25,7 +25,7 @@ csv_midi_note_data_read (m_on,m_off) =
         g (hdr,dat) = case hdr of
                         Just hdr' -> if hdr' == csv_midi_note_data_hdr then dat else err "header?"
                         Nothing -> err "no header?"
-    in fmap (map f . g) . T.csv_table_read (True,',',False) id
+    in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
 
 -- | 'Tseq' form of 'csv_read_midi_note_data'.
 midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n)))
@@ -48,4 +48,4 @@ csv_midi_note_data_write (m_on,m_off) nm =
                                     else error "csv_midi_note_data_write"
         un_node (st,md,mnn,amp) = [show st,show_md md,show mnn,show amp]
         with_hdr dat = (Just csv_midi_note_data_hdr,dat)
-    in T.csv_table_write id nm . with_hdr . map un_node
+    in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
