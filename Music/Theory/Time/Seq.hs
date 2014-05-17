@@ -148,6 +148,38 @@ seq_filter f = filter (f . snd)
 seq_find :: (a -> Bool) -> [(t,a)] -> Maybe (t,a)
 seq_find f = let f' (_,a) = f a in find f'
 
+-- * Maybe
+
+-- | 'mapMaybe' variant.
+seq_map_maybe :: (p -> Maybe q) -> [(t,p)] -> [(t,q)]
+seq_map_maybe f =
+    let g (t,e) = maybe Nothing (\e' -> Just (t,e')) (f e)
+    in mapMaybe g
+
+-- | Variant of 'catMaybes'.
+seq_cat_maybes :: [(t,Maybe q)] -> [(t,q)]
+seq_cat_maybes = seq_map_maybe id
+
+-- | If value is unchanged, according to /f/, replace with 'Nothing'.
+--
+-- > let r = [(1,'s'),(2,'t'),(4,'r'),(6,'i'),(7,'n'),(9,'g')]
+-- > in seq_cat_maybes (seq_changed_by (==) (zip [1..] "sttrrinng")) == r
+seq_changed_by :: (a -> a -> Bool) -> [(t,a)] -> [(t,Maybe a)]
+seq_changed_by f l =
+    let recur z sq =
+            case sq of
+              [] -> []
+              (t,e):sq' -> if f e z
+                           then (t,Nothing) : recur z sq'
+                           else (t,Just e) : recur e sq'
+    in case l of
+         [] -> []
+         (t,e) : l' -> (t,Just e) : recur e l'
+
+-- | 'seq_changed_by' '=='.
+seq_changed :: Eq a => [(t,a)] -> [(t,Maybe a)]
+seq_changed = seq_changed_by (==)
+
 -- * Specialised temporal maps.
 
 -- | Apply /f/ at time points of 'Wseq'.
@@ -328,15 +360,6 @@ wseq_remove_overlaps eq_fn d_fn =
                                then ((t,d_fn (t' - t)),a) : go sq'
                                else ((t,d),a) : go sq'
     in go
-
-wseq_map_maybe :: (a -> Maybe b) -> Wseq t a -> Wseq t b
-wseq_map_maybe f =
-    let g (t,e) = maybe Nothing (\e' -> Just (t,e')) (f e)
-    in mapMaybe g
-
--- | Variant of 'catMaybes'.
-wseq_cat_maybes :: Wseq t (Maybe a) -> Wseq t a
-wseq_cat_maybes = wseq_map_maybe id
 
 -- | Unjoin elements (assign equal time stamps to all elements).
 seq_unjoin :: [(t,[e])] -> [(t,e)]
@@ -608,3 +631,11 @@ tseq_filter = seq_filter
 
 wseq_filter :: (a -> Bool) -> Wseq t a -> Wseq t a
 wseq_filter = seq_filter
+
+-- * Type specialised maybe
+
+wseq_map_maybe :: (a -> Maybe b) -> Wseq t a -> Wseq t b
+wseq_map_maybe = seq_map_maybe
+
+wseq_cat_maybes :: Wseq t (Maybe a) -> Wseq t a
+wseq_cat_maybes = seq_cat_maybes
