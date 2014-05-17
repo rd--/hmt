@@ -333,6 +333,24 @@ dseq_set_whole sq =
         t_f n = T.rational_whole_err (n * fromIntegral m)
     in map (dseq_tmap t_f) sq
 
+-- * Tseq
+
+-- | Given a a default value, a 'Tseq' /sq/ and a list of time-points
+-- /t/, generate a Tseq that is a union of the timepoints at /sq/ and
+-- /t/ where times in /t/ not at /sq/ are given the /current/ value,
+-- or /def/ if there is no value.
+--
+-- > tseq_latch 'a' [(2,'b'),(4,'c')] [1..5] == zip [1..5] "abbcc"
+tseq_latch :: Ord t => a -> Tseq t a -> [t] -> Tseq t a
+tseq_latch def sq t =
+    case (sq,t) of
+      ([],_) -> zip t (repeat def)
+      (_,[]) -> []
+      ((sq_t,sq_e):sq',t0:t') -> case compare sq_t t0 of
+                                   LT -> (sq_t,sq_e) : tseq_latch sq_e sq' t
+                                   EQ -> (sq_t,sq_e) : tseq_latch sq_e sq' t'
+                                   GT -> (t0,def) : tseq_latch def sq t'
+
 -- * Wseq
 
 -- | Edit durations to ensure that notes don't overlap.  If the same
