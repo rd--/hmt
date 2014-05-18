@@ -53,6 +53,7 @@ Library
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Either
                    Music.Theory.Function
+                   Music.Theory.Instrument.Choir
                    Music.Theory.Interval
                    Music.Theory.Interval.Barlow_1987
                    Music.Theory.Interval.Name

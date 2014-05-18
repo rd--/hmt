@@ -1,0 +1,143 @@
+module Music.Theory.Instrument.Choir where
+
+import Data.List.Split {- split -}
+import Data.Maybe {- base -}
+
+import qualified Music.Theory.Clef as T {- hmt -}
+import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Pitch.Name as T {- hmt -}
+
+-- | Voice types.
+data Voice = Bass | Tenor | Alto | Soprano
+           deriving (Eq,Ord,Enum,Bounded,Show)
+
+-- | Single character abbreviation for 'Voice'.
+voice_abbrev :: Voice -> Char
+voice_abbrev = head . show
+
+-- | Standard 'Clef' for 'Voice'.
+voice_clef :: Integral i => Voice -> T.Clef i
+voice_clef v =
+    case v of
+      Bass -> T.Clef T.Bass 0
+      Tenor -> T.Clef T.Treble (-1)
+      Alto -> T.Clef T.Treble 0
+      Soprano -> T.Clef T.Treble 0
+
+-- | Table giving ranges for 'Voice's.
+type Voice_Rng_Tbl = [(Voice,(T.Pitch,T.Pitch))]
+
+-- | More or less standard choir ranges, /inclusive/.
+voice_rng_tbl_std :: Voice_Rng_Tbl
+voice_rng_tbl_std =
+    [(Bass,(T.d2,T.c4))
+    ,(Tenor,(T.c3,T.a4))
+    ,(Alto,(T.f3,T.f5))
+    ,(Soprano,(T.c4,T.a5))]
+
+-- | More conservative ranges, /inclusive/.
+voice_rng_tbl_safe :: Voice_Rng_Tbl
+voice_rng_tbl_safe =
+    [(Bass,(T.g2,T.c4))
+    ,(Tenor,(T.c3,T.f4))
+    ,(Alto,(T.g3,T.c5))
+    ,(Soprano,(T.c4,T.f5))]
+
+-- | Erroring variant.
+lookup_err :: Eq a => a -> [(a,b)] -> b
+lookup_err e = fromMaybe (error "lookup_err") . lookup e
+
+-- | Lookup voice range table.
+voice_rng :: Voice_Rng_Tbl -> Voice -> (T.Pitch,T.Pitch)
+voice_rng tbl v = lookup_err v tbl
+
+-- | Lookup 'voice_rng_tbl_std'.
+voice_rng_std :: Voice -> (T.Pitch,T.Pitch)
+voice_rng_std = voice_rng voice_rng_tbl_std
+
+-- | Lookup 'voice_rng_tbl_safe'.
+voice_rng_safe :: Voice -> (T.Pitch,T.Pitch)
+voice_rng_safe = voice_rng voice_rng_tbl_safe
+
+-- | Is /p/ '>=' /l/ and '<=' /r/.
+in_range_inclusive :: Ord a => a -> (a,a) -> Bool
+in_range_inclusive p (l,r) = p >= l && p <= r
+
+-- | Is /p/ in range for /v/, (/std/ & /safe/).
+--
+-- > map (in_voice_rng T.c4) [Bass .. Soprano]
+in_voice_rng :: T.Pitch -> Voice -> (Bool,Bool)
+in_voice_rng p v =
+    (in_range_inclusive p (voice_rng_std v)
+    ,in_range_inclusive p (voice_rng_safe v))
+
+-- | Given /tbl/ list 'Voice's that can sing 'T.Pitch'.
+possible_voices :: Voice_Rng_Tbl -> T.Pitch -> [Voice]
+possible_voices tbl p =
+    let f = in_range_inclusive p . voice_rng tbl
+    in filter f [Bass .. Soprano]
+
+-- | /std/ variant.
+possible_voices_std :: T.Pitch -> [Voice]
+possible_voices_std = possible_voices voice_rng_tbl_std
+
+-- | /safe/ variant.
+possible_voices_safe :: T.Pitch -> [Voice]
+possible_voices_safe = possible_voices voice_rng_tbl_safe
+
+-- | Enumeration of SATB voices.
+satb :: [Voice]
+satb = [Soprano,Alto,Tenor,Bass]
+
+-- | Names of 'satb'.
+satb_name :: [String]
+satb_name = map show satb
+
+-- | 'voice_abbrev' of 'satb' as 'String's.
+satb_abbrev :: [String]
+satb_abbrev = map (return . voice_abbrev) satb
+
+-- | Voice & part number.
+type Part = (Voice,Int)
+
+-- | /k/ part choir, ordered by voice.
+ch_satb_seq :: Int -> [Part]
+ch_satb_seq k = [(vc,n) | vc <- satb, n <- [1..k]]
+
+-- | 'ch_satb_seq' grouped in parts.
+--
+-- > map (map part_nm) (ch_parts 8)
+ch_parts :: Int -> [[Part]]
+ch_parts k = chunksOf k (ch_satb_seq k)
+
+-- | Abreviated name for part.
+--
+-- > part_nm (Soprano,1) == "S1"
+part_nm :: Part -> String
+part_nm (v,n) = voice_abbrev v : show n
+
+-- | /k/ SATB choirs, grouped by choir.
+--
+-- > k_ch_groups 2
+k_ch_groups :: Int -> [[Part]]
+k_ch_groups k =
+    let f n = map (\p -> (p,n)) satb
+    in map f [1 .. k]
+
+-- | 'concat' of 'k_ch_groups'.
+k_ch_groups' :: Int -> [Part]
+k_ch_groups' = concat . k_ch_groups
+
+-- | Two /k/ part SATB choirs in score order.
+--
+-- > map part_nm (concat (dbl_ch_parts 8))
+dbl_ch_parts :: Int -> [[Part]]
+dbl_ch_parts k =
+    let v = satb
+        f p = map (\n -> (p,n))
+        g = zipWith f v . replicate 4
+    in concatMap g (chunksOf (k `div` 2) [1 .. k])
+
+-- | 'voice_clef' for 'Part's.
+mk_clef_seq :: [Part] -> [T.Clef Int]
+mk_clef_seq = map (voice_clef . fst)
