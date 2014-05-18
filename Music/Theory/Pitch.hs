@@ -279,6 +279,14 @@ octpc_to_fmidi = fromIntegral . octpc_to_midi
 midi_to_octpc :: Integral i => i -> Octave_PitchClass i
 midi_to_octpc n = (n - 12) `divMod` 12
 
+-- | Enumerate range, inclusive.
+--
+-- > octpc_range ((3,8),(4,1)) == [(3,8),(3,9),(3,10),(3,11),(4,0),(4,1)]
+octpc_range :: (OctPC,OctPC) -> [OctPC]
+octpc_range (l,r) =
+    let (l',r') = (octpc_to_midi l,octpc_to_midi r)
+    in map midi_to_octpc [l' .. r']
+
 -- | Midi note number to 'Pitch'.
 --
 -- > let r = ["C4","E♭4","F♯4"]
