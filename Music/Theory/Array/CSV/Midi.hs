@@ -39,6 +39,10 @@ midi_tseq_read =
 midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (n,n)) -> T.Wseq t (n,n)
 midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq ((==) `on` fst)
 
+-- | Off-velocity is zero.
+midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t (n,n) -> T.Tseq t (T.On_Off (n,n))
+midi_wseq_to_midi_tseq = T.wseq_on_off
+
 -- | Writer.
 csv_midi_note_data_write :: (Eq m,Show t,Real t,Show n,Real n) => (m,m) -> FilePath -> [(t,m,n,n)] -> IO ()
 csv_midi_note_data_write (m_on,m_off) nm =
@@ -49,3 +53,12 @@ csv_midi_note_data_write (m_on,m_off) nm =
         un_node (st,md,mnn,amp) = [show st,show_md md,show mnn,show amp]
         with_hdr dat = (Just csv_midi_note_data_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
+
+-- | 'Tseq' form of 'csv_midi_note_data_write'.
+midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n)) -> IO ()
+midi_tseq_write nm sq =
+    let f (t,e) = case e of
+                    T.On (n,v) -> (t,True,n,v)
+                    T.Off (n,v) -> (t,False,n,v)
+        sq' = map f sq
+    in csv_midi_note_data_write (True,False) nm sq'
