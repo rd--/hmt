@@ -124,8 +124,80 @@ tseq_merge = O.mergeBy (compare `on` fst)
 tseq_merge_by :: Ord t => T.Compare_F a -> Tseq t a -> Tseq t a -> Tseq t a
 tseq_merge_by cmp = T.merge_by_two_stage fst cmp snd
 
+-- | Merge, where times are equal apply /f/ to form a single value.
+tseq_merge_resolve :: Ord t => (a -> a -> a) -> Tseq t a -> Tseq t a -> Tseq t a
+tseq_merge_resolve f =
+    let recur p q =
+            case (p,q) of
+              ([],_) -> q
+              (_,[]) -> p
+              ((pt,pe):p',(qt,qe):q') -> case compare pt qt of
+                                           LT -> (pt,pe) : recur p' q
+                                           EQ -> (pt,f pe qe) : recur p' q'
+                                           GT -> (qt,qe) : recur p q'
+    in recur
+
 wseq_merge :: Ord t => Wseq t a -> Wseq t a -> Wseq t a
 wseq_merge = O.mergeBy (compare `on` (fst . fst))
+
+-- * Lookup
+
+tseq_lookup_window_by :: (t -> t -> Ordering) -> Tseq t e -> t -> (Maybe (t,e),Maybe (t,e))
+tseq_lookup_window_by cmp =
+    let recur l sq t =
+            case sq of
+              [] -> (l,Nothing)
+              (t',e):sq' -> case cmp t t' of
+                              LT -> (l,Just (t',e))
+                              _ -> case sq' of
+                                     [] -> (Just (t',e),Nothing)
+                                     (t'',e'):_ -> case cmp t t'' of
+                                                     LT -> (Just (t',e),Just (t'',e'))
+                                                     _ -> recur (Just (t',e)) sq' t
+    in recur Nothing
+
+tseq_lookup_active_by :: (t -> t -> Ordering) -> Tseq t e -> t -> Maybe e
+tseq_lookup_active_by cmp sq = fmap snd . fst . tseq_lookup_window_by cmp sq
+
+tseq_lookup_active :: Ord t => Tseq t e -> t -> Maybe e
+tseq_lookup_active = tseq_lookup_active_by compare
+
+tseq_lookup_active_by_def :: e -> (t -> t -> Ordering) -> Tseq t e -> t -> e
+tseq_lookup_active_by_def def cmp sq = fromMaybe def . tseq_lookup_active_by cmp sq
+
+tseq_lookup_active_def :: Ord t => e -> Tseq t e -> t -> e
+tseq_lookup_active_def def = tseq_lookup_active_by_def def compare
+
+-- * Lseq
+
+data Interpolation_T = None | Linear
+                     deriving (Eq,Enum,Show)
+
+-- | Variant of 'Tseq' where nodes have an 'Intepolation_T' value.
+type Lseq t a = Tseq (t,Interpolation_T) a
+
+-- | Linear interpolation.
+lerp :: (Fractional t,Real t,Fractional e) => (t,e) -> (t,e) -> t -> e
+lerp (t0,e0) (t1,e1) t =
+    let n = t1 - t0
+        m = t - t0
+        l = m / n
+    in realToFrac l * (e1 - e0) + e0
+
+-- | Temporal map.
+lseq_tmap :: (t -> t') -> Lseq t a -> Lseq t' a
+lseq_tmap f = let g ((t,i),e) = ((f t,i),e) in map g
+
+lseq_lookup :: (Fractional t,Real t,Fractional e) => (t -> t -> Ordering) -> Lseq t e -> t -> Maybe e
+lseq_lookup cmp sq t =
+    case tseq_lookup_window_by (cmp `on` fst) sq (t,undefined) of
+      (Nothing,_) -> Nothing
+      (Just ((_,None),e),_) -> Just e
+      (Just ((t0,Linear),e0),Just ((t1,_),e1)) -> Just (lerp (t0,e0) (t1,e1) t)
+      _ -> Nothing
+
+lseq_lookup_err :: (Fractional t,Real t,Fractional e) => (t -> t -> Ordering) -> Lseq t e -> t -> e
+lseq_lookup_err cmp sq = fromMaybe (error "lseq_lookup") . lseq_lookup cmp sq
 
 -- * Map, Filter, Find
 
