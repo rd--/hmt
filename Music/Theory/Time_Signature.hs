@@ -1,10 +1,12 @@
 -- | Time Signatures.
 module Music.Theory.Time_Signature where
 
-import Data.Ratio
+import Data.Ratio {- base -}
+
 import Music.Theory.Duration
 import Music.Theory.Duration.Name
 import Music.Theory.Duration.RQ
+import Music.Theory.Math
 
 -- | A Time Signature is a /(numerator,denominator)/ pair.
 type Time_Signature = (Integer,Integer)
@@ -142,3 +144,47 @@ cts_pulse_to_rq cts p =
 -- > in map (cts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
 cts_pulse_to_rqw :: Composite_Time_Signature -> Int -> (RQ,RQ)
 cts_pulse_to_rqw cts p = (cts_pulse_to_rq cts p,cts_divisions cts !! (p - 1))
+
+-- * Rational Time Signatures
+
+-- | A rational time signature is a 'Composite_Time_Signature' where
+-- the parts are 'Rational'.
+type Rational_Time_Signature = [(Rational,Rational)]
+
+-- | The 'sum' of teh RQ of the elements.
+--
+-- > rts_rq [(3,4),(1,8)] == 3 + 1/2
+-- > rts_rq [(3/2,4),(1/2,8)] == 3/2 + 1/4
+rts_rq :: Rational_Time_Signature -> RQ
+rts_rq =
+    let f (n,d) = (4 * n) / d
+    in sum . map f
+
+-- | 'concat' of the /divisions/ of the elements.
+--
+-- > rts_divisions [(3,4),(1,8)] == [1,1,1,1/2]
+-- > rts_divisions [(3/2,4),(1/2,8)] == [1,1/2,1/4]
+rts_divisions :: Rational_Time_Signature -> [RQ]
+rts_divisions =
+    let f (n,d) = let (ni,nf) = integral_and_fractional_parts n
+                      rq = recip (d / 4)
+                      ip = replicate ni rq
+                  in if nf == 0 then ip else ip ++ [nf * rq]
+    in concatMap f
+
+-- | Pulses are 1-indexed, RQ locations are 0-indexed.
+--
+-- > map (rts_pulse_to_rq [(2,4),(1,8),(1,4)]) [1 .. 4] == [0,1,2,2 + 1/2]
+-- > map (rts_pulse_to_rq [(3/2,4),(1/2,8),(1/4,4)]) [1 .. 4] == [0,1,3/2,7/4]
+rts_pulse_to_rq :: Rational_Time_Signature -> Int -> RQ
+rts_pulse_to_rq rts p =
+    let dv = rts_divisions rts
+    in sum (take (p - 1) dv)
+
+-- | Variant that gives the /window/ of the pulse (ie. the start
+-- location and the duration).
+--
+-- > let r = [(0,1),(1,1),(2,1/2),(2 + 1/2,1)]
+-- > in map (rts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
+rts_pulse_to_rqw :: Rational_Time_Signature -> Int -> (RQ,RQ)
+rts_pulse_to_rqw ts p = (rts_pulse_to_rq ts p,rts_divisions ts !! (p - 1))

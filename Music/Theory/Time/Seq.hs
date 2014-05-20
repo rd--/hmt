@@ -188,6 +188,9 @@ lerp (t0,e0) (t1,e1) t =
 lseq_tmap :: (t -> t') -> Lseq t a -> Lseq t' a
 lseq_tmap f = let g ((t,i),e) = ((f t,i),e) in map g
 
+-- | This can give 'Nothing' if /t/ precedes the 'Lseq' or if /t/ is
+-- after the final element of 'Lseq' and that element has an
+-- interpolation type other than 'None'.
 lseq_lookup :: (Fractional t,Real t,Fractional e) => (t -> t -> Ordering) -> Lseq t e -> t -> Maybe e
 lseq_lookup cmp sq t =
     case tseq_lookup_window_by (cmp `on` fst) sq (t,undefined) of
@@ -196,6 +199,7 @@ lseq_lookup cmp sq t =
       (Just ((t0,Linear),e0),Just ((t1,_),e1)) -> Just (lerp (t0,e0) (t1,e1) t)
       _ -> Nothing
 
+-- | 'error'ing variant.
 lseq_lookup_err :: (Fractional t,Real t,Fractional e) => (t -> t -> Ordering) -> Lseq t e -> t -> e
 lseq_lookup_err cmp sq = fromMaybe (error "lseq_lookup") . lseq_lookup cmp sq
 
