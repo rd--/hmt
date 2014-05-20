@@ -1,6 +1,6 @@
 -- | Parser for the Scala scale file format.  See
 -- <http://www.huygens-fokker.org/scala/scl_format.html> for details.
--- This module succesfully parses all 4115 scales in v.77 of the scale
+-- This module succesfully parses all 4496 scales in v.81 of the scale
 -- library.
 module Music.Theory.Tuning.Scala where
 
@@ -149,7 +149,7 @@ parse s =
 
 -- | Load @.scl@ file.
 --
--- > s <- load "/home/rohan/opt/scala/scl/xenakis_chrom.scl"
+-- > s <- load "/home/rohan/data/scala/81/scl/xenakis_chrom.scl"
 -- > scale_pitch_representations s == (6,1)
 -- > scale_ratios 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53,2]
 load :: (Read i, Integral i) => FilePath -> IO (Scale i)
@@ -167,12 +167,12 @@ dir_subset ext dir = do
 
 -- | Load all @.scl@ files at /dir/.
 --
--- > db <- load_dir "/home/rohan/opt/scala/scl"
--- > length db == 4115
--- > length (filter ((== 0) . scale_degree) db) == 1
--- > length (filter (== Just (Right 2)) (map scale_octave db)) == 3562
+-- > db <- load_dir "/home/rohan/data/scala/81/scl"
+-- > length db == 4496
+-- > length (filter ((== 0) . scale_degree) db) == 0
+-- > length (filter (== Just (Right 2)) (map scale_octave db)) == 3855
 --
--- > let r = [0,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
+-- > let r = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
 -- >         ,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44
 -- >         ,45,46,47,48,49,50,51,53,54,55,56,57,58,59,60,61,62,63,64
 -- >         ,65,66,67,68,69,70,71,72,74,75,77,78,79,80,81,84,87,88
