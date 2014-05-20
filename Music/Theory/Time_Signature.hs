@@ -109,3 +109,36 @@ ts_sum t =
         j = sum (map fst t')
     in (j,i)
 
+-- * Composite Time Signatures
+
+-- | A composite time signature is a sequence of 'Time_Signature's.
+type Composite_Time_Signature = [Time_Signature]
+
+-- | The 'RQ' is the 'sum' of 'ts_rq' of the elements.
+--
+-- > cts_rq [(3,4),(1,8)] == 3 + 1/2
+cts_rq :: Composite_Time_Signature -> RQ
+cts_rq = sum . map ts_rq
+
+-- | The divisions are the 'concat' of the 'ts_divisions' of the
+-- elements.
+--
+-- > cts_divisions [(3,4),(1,8)] == [1,1,1,1/2]
+cts_divisions :: Composite_Time_Signature -> [RQ]
+cts_divisions = concatMap ts_divisions
+
+-- | Pulses are 1-indexed, RQ locations are 0-indexed.
+--
+-- > map (cts_pulse_to_rq [(2,4),(1,8),(1,4)]) [1 .. 4] == [0,1,2,2 + 1/2]
+cts_pulse_to_rq :: Composite_Time_Signature -> Int -> RQ
+cts_pulse_to_rq cts p =
+    let dv = cts_divisions cts
+    in sum (take (p - 1) dv)
+
+-- | Variant that gives the /window/ of the pulse (ie. the start
+-- location and the duration).
+--
+-- > let r = [(0,1),(1,1),(2,1/2),(2 + 1/2,1)]
+-- > in map (cts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
+cts_pulse_to_rqw :: Composite_Time_Signature -> Int -> (RQ,RQ)
+cts_pulse_to_rqw cts p = (cts_pulse_to_rq cts p,cts_divisions cts !! (p - 1))
