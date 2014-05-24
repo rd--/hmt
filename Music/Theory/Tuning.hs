@@ -7,6 +7,7 @@ import Data.Ratio {- base -}
 
 import Music.Theory.Either {- hmt -}
 import Music.Theory.List {- hmt -}
+import Music.Theory.Pitch {- hmt -}
 
 -- * Types
 
@@ -343,6 +344,41 @@ cents_diff_md = cents_diff_br ("^","^")
 -- | 'cents_diff_br' with HTML superscript (@<sup>@).
 cents_diff_html :: (Num a, Ord a, Show a) => a -> String
 cents_diff_html = cents_diff_br ("<SUP>","</SUP>")
+
+-- * Midi
+
+-- | (/n/ -> /dt/).  Function from midi note number /n/ to
+-- 'Midi_Detune' /dt/.  The incoming note number is the key pressed,
+-- which may be distant from the note sounded.
+type Midi_Tuning_F = Int -> Midi_Detune
+
+-- | (t,c,k) where t=tuning (must have 12 divisions of octave),
+-- c=cents deviation (ie. constant detune offset), k=midi offset
+-- (ie. value to be added to incoming midi note number).
+type D12_Midi_Tuning = (Tuning,Double,Int)
+
+-- | 'Midi_Tuning_F' for 'D12_Midi_Tuning'.
+--
+-- > import Music.Theory.Tuning.Gann
+-- > let f = d12_midi_tuning_f (la_monte_young,-74.7,-3)
+-- > octpc_to_midi (-1,11) == 11
+-- > map (round . midi_detune_to_cps . f) [62,63,69] == [293,298,440]
+d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
+d12_midi_tuning_f (t,c_diff,k) n =
+    let (_,pc) = midi_to_octpc (n + k)
+        dt = zipWith (-) (cents t) [0,100 .. 1200]
+    in (n,(dt !! pc) + c_diff)
+
+-- | (t,f0,k) where t=tuning, f0=fundamental frequency, k=midi note
+-- number for f0, n=gamut
+type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
+
+-- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.
+cps_midi_tuning_f :: CPS_Midi_Tuning -> Midi_Tuning_F
+cps_midi_tuning_f (t,f0,k,g) n =
+    let r = approximate_ratios_cyclic t
+        m = take g (map (cps_to_midi_detune . (* f0)) r)
+    in m !! (n - k)
 
 -- Local Variables:
 -- truncate-lines:t
