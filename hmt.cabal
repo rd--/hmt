@@ -59,7 +59,6 @@ Library
                    Music.Theory.Interval.Barlow_1987
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
-                   Music.Theory.Pitch.Spelling.Cluster
                    Music.Theory.Key
                    Music.Theory.List
                    Music.Theory.Math
@@ -72,7 +71,9 @@ Library
                    Music.Theory.Permutations.Morris_1984
                    Music.Theory.Pitch
                    Music.Theory.Pitch.Name
+                   Music.Theory.Pitch.Note
                    Music.Theory.Pitch.Spelling
+                   Music.Theory.Pitch.Spelling.Cluster
                    Music.Theory.Set.List
                    Music.Theory.Set.Set
                    Music.Theory.Tempo_Marking

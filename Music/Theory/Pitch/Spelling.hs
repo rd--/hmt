@@ -1,7 +1,7 @@
 -- | Spelling rules for common music notation.
 module Music.Theory.Pitch.Spelling where
 
-import Music.Theory.Pitch
+import Music.Theory.Pitch.Note (Note_T(..),Alteration_T(..),Spelling)
 
 -- | Variant of 'Spelling' for incomplete functions.
 type Spelling_M i = i -> Maybe (Note_T, Alteration_T)

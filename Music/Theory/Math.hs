@@ -14,18 +14,22 @@ integral_and_fractional_parts n =
     then let n' = floor n in (n',n - fromIntegral n')
     else let n' = ceiling n in (n',n - fromIntegral n')
 
+-- | Type specialised.
+integer_and_fractional_parts :: RealFrac t => t -> (Integer,t)
+integer_and_fractional_parts = integral_and_fractional_parts
+
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
 --
 -- > import Sound.SC3.Plot {- hsc3-plot -}
 -- > plotTable1 (map fractional_part [-2.0,-1.99 .. 2.0])
 fractional_part :: RealFrac a => a -> a
-fractional_part = snd . integral_and_fractional_parts
+fractional_part = snd . integer_and_fractional_parts
 
 -- | <http://reference.wolfram.com/mathematica/ref/SawtoothWave.html>
 --
 -- > plotTable1 (map sawtooth_wave [-2.0,-1.99 .. 2.0])
 sawtooth_wave :: RealFrac a => a -> a
-sawtooth_wave n = n - fromIntegral (floor n)
+sawtooth_wave n = n - fromInteger (floor n)
 
 -- | Pretty printer for 'Rational' that elides denominators of @1@.
 --

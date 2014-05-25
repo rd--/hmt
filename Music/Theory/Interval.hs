@@ -5,6 +5,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import Music.Theory.Pitch
+import Music.Theory.Pitch.Note
 
 -- | Interval type or degree.
 data Interval_T = Unison | Second | Third | Fourth

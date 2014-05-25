@@ -8,6 +8,7 @@ import Text.Printf {- base -}
 
 import Music.Theory.List {- hmt -}
 import Music.Theory.Pitch {- hmt -}
+import Music.Theory.Pitch.Note {- hmt -}
 import Music.Theory.Pitch.Spelling {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 

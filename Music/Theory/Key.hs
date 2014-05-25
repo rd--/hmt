@@ -5,6 +5,7 @@ import Data.List {- base -}
 
 import Music.Theory.Pitch
 import Music.Theory.Pitch.Name
+import Music.Theory.Pitch.Note
 import Music.Theory.Interval
 
 -- | Enumeration of common music notation modes.

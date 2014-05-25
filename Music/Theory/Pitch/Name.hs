@@ -5,6 +5,7 @@
 module Music.Theory.Pitch.Name where
 
 import Music.Theory.Pitch
+import Music.Theory.Pitch.Note
 
 a0,b0 :: Pitch
 a0 = Pitch A Natural 0

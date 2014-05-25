@@ -42,6 +42,10 @@ cents = either (map ratio_to_cents) id . ratios_or_cents
 cents_i :: Integral i => Tuning -> [i]
 cents_i = map round . cents
 
+-- | Variant of 'cents' that includes octave at right.
+cents_octave :: Tuning -> [Cents]
+cents_octave t = cents t ++ [ratio_to_cents (octave_ratio t)]
+
 -- | Convert from interval in cents to frequency ratio.
 --
 -- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]

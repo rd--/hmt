@@ -35,7 +35,7 @@ md_table_join (nm,c) (hdr,tbl) =
 md_number_rows :: MD_Table String -> MD_Table String
 md_number_rows (hdr,tbl) =
     let hdr' = fmap ("#" :) hdr
-        tbl' = map (\(i,r) -> show i : r) (zip [1..] tbl)
+        tbl' = map (\(i,r) -> show i : r) (zip [1::Int ..] tbl)
     in (hdr',tbl')
 
 -- | Markdown table, perhaps with header.  Table is in row order.
