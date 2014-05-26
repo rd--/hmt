@@ -3,6 +3,7 @@ module Music.Theory.Math where
 
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import Numeric {- base -}
 
 -- | Real (alias for 'Double').
 type R = Double
@@ -69,3 +70,18 @@ rational_whole r = if denominator r == 1 then Just (numerator r) else Nothing
 -- | Erroring variant.
 rational_whole_err :: Integral a => Ratio a -> a
 rational_whole_err = fromMaybe (error "rational_whole") . rational_whole
+
+-- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
+-- to exponential notation very readily.
+--
+-- > [show 0.01,realfloat_pp 2 0.01] == ["1.0e-2","0.01"]
+realfloat_pp :: RealFloat a => Int -> a -> String
+realfloat_pp k n = showFFloat (Just k) n ""
+
+-- | Type specialised 'realfloat_pp'.
+float_pp :: Int -> Float -> String
+float_pp = realfloat_pp
+
+-- | Type specialised 'realfloat_pp'.
+double_pp :: Int -> Double -> String
+double_pp = realfloat_pp
