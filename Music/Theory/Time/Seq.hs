@@ -665,6 +665,21 @@ wseq_to_dseq empty sq =
          ((st,_),_):_ -> if st > 0 then (st,empty) : r else r
          [] -> error "wseq_to_dseq"
 
+-- * Measures
+
+-- | Given a list of 'Dseq' (measures) convert to a list of 'Tseq' and
+-- the end time of the overall sequence.
+--
+-- > let r = [[(0,'a'),(1,'b'),(3,'c')],[(4,'d'),(7,'e'),(9,'f')]]
+-- > in dseql_to_tseql 0 [zip [1,2,1] "abc",zip [3,2,1] "def"] == (10,r)
+dseql_to_tseql :: Num t => t -> [Dseq t a] -> (t,[Tseq t a])
+dseql_to_tseql =
+    let f z dv =
+            let (tm,el) = unzip dv
+                (z',r) = T.dx_d' z tm
+            in (z',zip r el)
+    in mapAccumL f
+
 -- * Type specialised map
 
 dseq_tmap :: (t -> t') -> Dseq t a -> Dseq t' a
