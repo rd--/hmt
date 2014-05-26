@@ -197,6 +197,16 @@ with_key h = zip (repeat h)
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d = scanl (+)
 
+-- | Variant that takes initial value and separates final value.
+--
+-- > dx_d' 5 [1,2,3] == (11,[5,6,8])
+-- > dx_d' 0 [1,1,1] == (3,[0,1,2])
+dx_d' :: Num t => t -> [t] -> (t,[t])
+dx_d' n l =
+    case reverse (scanl (+) n l) of
+      e:r -> (e,reverse r)
+      _ -> error "dx_d'"
+
 -- | Integrate, ie. pitch class segment to interval sequence.
 --
 -- > d_dx [5,6,8,11] == [1,2,3]
