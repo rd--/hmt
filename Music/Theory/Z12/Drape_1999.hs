@@ -334,7 +334,7 @@ sb xs =
 -- >>> spsc `fl 3`
 -- 6-Z17[012478]
 --
--- > spsc (cf [3] scs) == ["6-Z17"]
+-- > spsc (cf [3] T.scs) == ["6-Z17"]
 spsc :: [[Z12]] -> [String]
 spsc xs =
     let f y = all (y `has_sc`) xs

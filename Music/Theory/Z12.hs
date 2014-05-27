@@ -7,7 +7,32 @@ import Data.List {- base -}
 --
 -- > map signum [-1,0::Z12,1] == [1,0,1]
 -- > map abs [-1,0::Z12,1] == [11,0,1]
-newtype Z12 = Z12 Int deriving (Eq,Ord,Enum,Bounded,Integral,Real)
+newtype Z12 = Z12 Int deriving (Eq,Ord,Integral,Real)
+
+-- | Cyclic 'Enum' instance for Z12.
+--
+-- > pred (0::Z12) == 11
+-- > succ (11::Z12) == 0
+-- > [9::Z12 .. 3] == [9,10,11,0,1,2,3]
+-- > [9::Z12,11 .. 3] == [9,11,1,3]
+instance Enum Z12 where
+    pred = subtract 1
+    succ = (+) 1
+    toEnum = fromIntegral
+    fromEnum = fromIntegral
+    enumFromThenTo n m o =
+        let m' = m + (m - n)
+        in if m' == o then [n,m,o] else n : enumFromThenTo m m' o
+    enumFromTo n m =
+        let n' = succ n
+        in if n' == m then [n,m] else n : enumFromTo n' m
+
+-- | 'Bounded' instance for Z12.
+--
+-- > [minBound::Z12 .. maxBound] == [0::Z12 .. 11]
+instance Bounded Z12 where
+    minBound = Z12 0
+    maxBound = Z12 11
 
 -- | The Z12 modulo (ie. @12@) as a 'Z12' value.  This is required
 -- when lifting generalised @Z@ functions to 'Z12'.  It is /not/ the

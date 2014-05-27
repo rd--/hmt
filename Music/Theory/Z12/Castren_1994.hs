@@ -13,6 +13,7 @@ import qualified Music.Theory.Z12.TTO as T
 
 -- | Is /p/ symmetrical under inversion.
 --
+-- > import Music.Theory.Z12.Forte_1973
 -- > map inv_sym (scs_n 2) == [True,True,True,True,True,True]
 -- > map (fromEnum.inv_sym) (scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
 inv_sym :: [Z12] -> Bool
