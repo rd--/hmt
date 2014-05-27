@@ -4,6 +4,7 @@ module Music.Theory.Tuning where
 import Data.Fixed {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
+import Safe {- safe -}
 
 import Music.Theory.Either {- hmt -}
 import Music.Theory.List {- hmt -}
@@ -228,7 +229,7 @@ subharmonic_series_cps_n n = take n . subharmonic_series_cps
 --
 -- > map (partial 55) [1,5,3] == [55,275,165]
 partial :: (Num a, Enum a) => a -> Int -> a
-partial f1 k = harmonic_series_cps f1 !! (k - 1)
+partial f1 k = harmonic_series_cps f1 `at` (k - 1)
 
 -- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
 --
@@ -371,7 +372,7 @@ d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
     let (_,pc) = midi_to_octpc (n + k)
         dt = zipWith (-) (cents t) [0,100 .. 1200]
-    in (n,(dt !! pc) + c_diff)
+    in (n,(dt `at` pc) + c_diff)
 
 -- | (t,f0,k) where t=tuning, f0=fundamental frequency, k=midi note
 -- number for f0, n=gamut
@@ -382,7 +383,7 @@ cps_midi_tuning_f :: CPS_Midi_Tuning -> Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
     let r = approximate_ratios_cyclic t
         m = take g (map (cps_to_midi_detune . (* f0)) r)
-    in m !! (n - k)
+    in m `at` (n - k)
 
 -- Local Variables:
 -- truncate-lines:t
