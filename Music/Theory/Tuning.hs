@@ -3,12 +3,13 @@ module Music.Theory.Tuning where
 
 import Data.Fixed {- base -}
 import Data.List {- base -}
+import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
 
-import Music.Theory.Either {- hmt -}
-import Music.Theory.List {- hmt -}
-import Music.Theory.Pitch {- hmt -}
+import qualified Music.Theory.Either as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Pitch as T {- hmt -}
 
 -- * Types
 
@@ -33,7 +34,11 @@ divisions = either length length . ratios_or_cents
 
 -- | 'Maybe' exact ratios of 'Tuning'.
 ratios :: Tuning -> Maybe [Rational]
-ratios = fromLeft . ratios_or_cents
+ratios = T.fromLeft . ratios_or_cents
+
+-- | 'error'ing variant.
+ratios_err :: Tuning -> [Rational]
+ratios_err = fromMaybe (error "ratios") . ratios
 
 -- | Possibly inexact 'Cents' of tuning.
 cents :: Tuning -> [Cents]
@@ -76,7 +81,7 @@ approximate_ratios_cyclic t =
 reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
 reconstructed_ratios epsilon =
     fmap (map (reconstructed_ratio epsilon)) .
-    fromRight .
+    T.fromRight .
     ratios_or_cents
 
 -- | Convert from a 'Floating' ratio to /cents/.
@@ -333,7 +338,7 @@ cents_diff_pp n =
 -- | Given brackets, print cents difference.
 cents_diff_br :: (Num a, Ord a, Show a) => (String,String) -> a -> String
 cents_diff_br br =
-    let f s = if null s then s else bracket_l br s
+    let f s = if null s then s else T.bracket_l br s
     in f . cents_diff_pp
 
 -- | 'cents_diff_br' with parentheses.
@@ -355,12 +360,12 @@ cents_diff_html = cents_diff_br ("<SUP>","</SUP>")
 -- | (/n/ -> /dt/).  Function from midi note number /n/ to
 -- 'Midi_Detune' /dt/.  The incoming note number is the key pressed,
 -- which may be distant from the note sounded.
-type Midi_Tuning_F = Int -> Midi_Detune
+type Midi_Tuning_F = Int -> T.Midi_Detune
 
 -- | (t,c,k) where t=tuning (must have 12 divisions of octave),
 -- c=cents deviation (ie. constant detune offset), k=midi offset
 -- (ie. value to be added to incoming midi note number).
-type D12_Midi_Tuning = (Tuning,Double,Int)
+type D12_Midi_Tuning = (Tuning,Cents,Int)
 
 -- | 'Midi_Tuning_F' for 'D12_Midi_Tuning'.
 --
@@ -370,7 +375,7 @@ type D12_Midi_Tuning = (Tuning,Double,Int)
 -- > map (round . midi_detune_to_cps . f) [62,63,69] == [293,298,440]
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
-    let (_,pc) = midi_to_octpc (n + k)
+    let (_,pc) = T.midi_to_octpc (n + k)
         dt = zipWith (-) (cents t) [0,100 .. 1200]
     in (n,(dt `at` pc) + c_diff)
 
@@ -382,7 +387,7 @@ type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 cps_midi_tuning_f :: CPS_Midi_Tuning -> Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
     let r = approximate_ratios_cyclic t
-        m = take g (map (cps_to_midi_detune . (* f0)) r)
+        m = take g (map (T.cps_to_midi_detune . (* f0)) r)
     in m `at` (n - k)
 
 -- Local Variables:

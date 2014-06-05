@@ -415,3 +415,8 @@ merge_set_by f = foldr (merge_by f) []
 merge_set :: Ord a => [[a]] -> [a]
 merge_set = merge_set_by compare
 
+-- * Bimap
+
+-- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
+bimap1 :: (t -> u) -> (t,t) -> (u,u)
+bimap1 f (p,q) = (f p,f q)

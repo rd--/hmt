@@ -429,6 +429,10 @@ tseq_latch def sq t =
 
 -- * Wseq
 
+-- | Transform 'Wseq' to 'Tseq' by discaring durations.
+wseq_discard_dur :: Wseq t a -> Tseq t a
+wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
+
 -- | Edit durations to ensure that notes don't overlap.  If the same
 -- note is played simultaneously delete shorter note.  If a note
 -- extends into a later note shorten duration (apply /d_fn/ to iot).
