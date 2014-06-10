@@ -85,3 +85,14 @@ float_pp = realfloat_pp
 -- | Type specialised 'realfloat_pp'.
 double_pp :: Int -> Double -> String
 double_pp = realfloat_pp
+
+-- | Show /only/ positive and negative values, always with sign.
+--
+-- > map num_diff_str [-2,-1,0,1,2] == ["-2","-1","","+1","+2"]
+-- > map show [-2,-1,0,1,2] == ["-2","-1","0","1","2"]
+num_diff_str :: (Num a, Ord a, Show a) => a -> String
+num_diff_str n =
+    case compare n 0 of
+      LT -> '-' : show (abs n)
+      EQ -> ""
+      GT -> '+' : show n
