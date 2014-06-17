@@ -655,6 +655,9 @@ dseq_to_wseq t0 sq =
 --
 -- > let w = wseq_zip [0,1] [2,2] "ab"
 -- > in wseq_to_dseq '-' w == zip [1,2] "ab"
+--
+-- > let w = wseq_zip [0,0,0] [2,2,2] "abc"
+-- > in wseq_to_dseq '-' w == zip [0,0,2] "abc"
 wseq_to_dseq :: (Num t,Ord t) => a -> Wseq t a -> Dseq t a
 wseq_to_dseq empty sq =
     let f (((st0,d),e),((st1,_),_)) =
