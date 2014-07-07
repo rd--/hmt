@@ -3,7 +3,7 @@ module Music.Theory.Unicode where
 
 type Unicode_Table = [(Int,String)]
 
--- > putStrLn (map (toEnum . fromIntegral . fst) (concat unicode))
+-- > putStrLn (map (toEnum . fst) (concat unicode))
 unicode :: [Unicode_Table]
 unicode = [accidentals,notes,rests,clefs]
 

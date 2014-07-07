@@ -151,7 +151,7 @@ cts_pulse_to_rqw cts p = (cts_pulse_to_rq cts p,cts_divisions cts !! (p - 1))
 -- the parts are 'Rational'.
 type Rational_Time_Signature = [(Rational,Rational)]
 
--- | The 'sum' of teh RQ of the elements.
+-- | The 'sum' of the RQ of the elements.
 --
 -- > rts_rq [(3,4),(1,8)] == 3 + 1/2
 -- > rts_rq [(3/2,4),(1/2,8)] == 3/2 + 1/4
@@ -171,6 +171,11 @@ rts_divisions =
                       ip = replicate ni rq
                   in if nf == 0 then ip else ip ++ [nf * rq]
     in concatMap f
+
+-- > rts_derive [1,1,1,1/2]
+-- > rts_derive [1,1/2,1/4]
+rts_derive :: [RQ] -> Rational_Time_Signature
+rts_derive = let f rq = (rq,4) in map f
 
 -- | Pulses are 1-indexed, RQ locations are 0-indexed.
 --
