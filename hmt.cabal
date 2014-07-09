@@ -108,6 +108,7 @@ Library
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z
                    Music.Theory.Z.Forte_1973
+                   Music.Theory.Z.Read_1978
                    Music.Theory.Z.SRO
                    Music.Theory.Z12
                    Music.Theory.Z12.Castren_1994
