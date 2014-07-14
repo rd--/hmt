@@ -124,18 +124,21 @@ tseq_merge = O.mergeBy (compare `on` fst)
 tseq_merge_by :: Ord t => T.Compare_F a -> Tseq t a -> Tseq t a -> Tseq t a
 tseq_merge_by cmp = T.merge_by_two_stage fst cmp snd
 
--- | Merge, where times are equal apply /f/ to form a single value.
+{- | Merge, where times are equal apply /f/ to form a single value.
+
+> let {p = zip [1,3,5] "abc"
+>     ;q = zip [1,2,3] "ABC"
+>     ;left_r = [(1,'a'),(2,'B'),(3,'b'),(5,'c')]
+>     ;right_r = [(1,'A'),(2,'B'),(3,'C'),(5,'c')]}
+> in tseq_merge_resolve (\x _ -> x) p q == left_r &&
+>    tseq_merge_resolve (\_ x -> x) p q == right_r
+
+-}
 tseq_merge_resolve :: Ord t => (a -> a -> a) -> Tseq t a -> Tseq t a -> Tseq t a
 tseq_merge_resolve f =
-    let recur p q =
-            case (p,q) of
-              ([],_) -> q
-              (_,[]) -> p
-              ((pt,pe):p',(qt,qe):q') -> case compare pt qt of
-                                           LT -> (pt,pe) : recur p' q
-                                           EQ -> (pt,f pe qe) : recur p' q'
-                                           GT -> (qt,qe) : recur p q'
-    in recur
+    let cmp = compare `on` fst
+        g (t,p) (_,q) = (t,f p q)
+    in T.merge_by_resolve g cmp
 
 wseq_merge :: Ord t => Wseq t a -> Wseq t a -> Wseq t a
 wseq_merge = O.mergeBy (compare `on` (fst . fst))

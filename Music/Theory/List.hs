@@ -415,6 +415,31 @@ merge_set_by f = foldr (merge_by f) []
 merge_set :: Ord a => [[a]] -> [a]
 merge_set = merge_set_by compare
 
+{-| 'merge_by' variant that joins (resolves) equal elements.
+
+> let {left p _ = p
+>     ;right _ q = q
+>     ;cmp = compare `on` fst
+>     ;p = zip [1,3,5] "abc"
+>     ;q = zip [1,2,3] "ABC"
+>     ;left_r = [(1,'a'),(2,'B'),(3,'b'),(5,'c')]
+>     ;right_r = [(1,'A'),(2,'B'),(3,'C'),(5,'c')]}
+> in merge_by_resolve left cmp p q == left_r &&
+>    merge_by_resolve right cmp p q == right_r
+
+-}
+merge_by_resolve :: (a -> a -> a) -> Compare_F a -> [a] -> [a] -> [a]
+merge_by_resolve jn cmp =
+    let recur p q =
+            case (p,q) of
+              ([],_) -> q
+              (_,[]) -> p
+              (l:p',r:q') -> case cmp l r of
+                               LT -> l : recur p' q
+                               EQ -> jn l r : recur p' q'
+                               GT -> r : recur p q'
+    in recur
+
 -- * Bimap
 
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
