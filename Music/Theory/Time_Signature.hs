@@ -160,17 +160,17 @@ rts_rq =
     let f (n,d) = (4 * n) / d
     in sum . map f
 
--- | 'concat' of the /divisions/ of the elements.
+-- | The /divisions/ of the elements.
 --
 -- > rts_divisions [(3,4),(1,8)] == [1,1,1,1/2]
 -- > rts_divisions [(3/2,4),(1/2,8)] == [1,1/2,1/4]
-rts_divisions :: Rational_Time_Signature -> [RQ]
+rts_divisions :: Rational_Time_Signature -> [[RQ]]
 rts_divisions =
     let f (n,d) = let (ni,nf) = integral_and_fractional_parts n
                       rq = recip (d / 4)
                       ip = replicate ni rq
                   in if nf == 0 then ip else ip ++ [nf * rq]
-    in concatMap f
+    in map f
 
 -- > rts_derive [1,1,1,1/2]
 -- > rts_derive [1,1/2,1/4]
@@ -183,7 +183,7 @@ rts_derive = let f rq = (rq,4) in map f
 -- > map (rts_pulse_to_rq [(3/2,4),(1/2,8),(1/4,4)]) [1 .. 4] == [0,1,3/2,7/4]
 rts_pulse_to_rq :: Rational_Time_Signature -> Int -> RQ
 rts_pulse_to_rq rts p =
-    let dv = rts_divisions rts
+    let dv = concat (rts_divisions rts)
     in sum (take (p - 1) dv)
 
 -- | Variant that gives the /window/ of the pulse (ie. the start
@@ -192,4 +192,4 @@ rts_pulse_to_rq rts p =
 -- > let r = [(0,1),(1,1),(2,1/2),(2 + 1/2,1)]
 -- > in map (rts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
 rts_pulse_to_rqw :: Rational_Time_Signature -> Int -> (RQ,RQ)
-rts_pulse_to_rqw ts p = (rts_pulse_to_rq ts p,rts_divisions ts !! (p - 1))
+rts_pulse_to_rqw ts p = (rts_pulse_to_rq ts p,concat (rts_divisions ts) !! (p - 1))

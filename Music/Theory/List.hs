@@ -197,7 +197,8 @@ with_key h = zip (repeat h)
 dx_d :: (Num a) => a -> [a] -> [a]
 dx_d = scanl (+)
 
--- | Variant that takes initial value and separates final value.
+-- | Variant that takes initial value and separates final value.  This
+-- is an appropriate function for 'mapAccumL'.
 --
 -- > dx_d' 5 [1,2,3] == (11,[5,6,8])
 -- > dx_d' 0 [1,1,1] == (3,[0,1,2])
@@ -319,6 +320,11 @@ indicate_repetitions =
                 e:l' -> Just e : map (const Nothing) l'
     in concatMap f . group
 
+-- | 'Data.List.groupBy' does not make adjacent comparisons, it
+-- compares each new element to the start of the group.  This function
+-- is the adjacent variant.
+--
+-- > groupBy (<) [1,2,3,2,4,1,5,9] == [[1,2,3,2,4],[1,5,9]]
 -- > adjacent_groupBy (<) [1,2,3,2,4,1,5,9] == [[1,2,3],[2,4],[1,5,9]]
 adjacent_groupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 adjacent_groupBy f p =
@@ -331,7 +337,10 @@ adjacent_groupBy f p =
                    then (x:r0) : r'
                    else [x] : r
 
--- > group_just [Just 1,Nothing,Nothing,Just 4,Just 5]
+-- | 'groupBy' on /structure/ of 'Maybe', ie. all 'Just' compare equal.
+--
+-- > let r = [[Just 1],[Nothing,Nothing],[Just 4,Just 5]]
+-- > in group_just [Just 1,Nothing,Nothing,Just 4,Just 5] == r
 group_just :: [Maybe a] -> [[Maybe a]]
 group_just = groupBy ((==) `on` isJust)
 

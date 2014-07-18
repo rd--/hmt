@@ -138,7 +138,7 @@ alteration_72et_monzo n =
 -- > let {f = pitch'_pp . fst . pitch_72et
 -- >     ;r = "Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"}
 -- > in unwords (map f (zip (repeat 70) [0..9])) == r
-pitch_72et :: (Integer,Integer) -> (Pitch',Double)
+pitch_72et :: (Int,Int) -> (Pitch',Double)
 pitch_72et (x,n) =
     let p = midi_to_pitch pc_spell_ks x
         t = note p
@@ -150,7 +150,7 @@ pitch_72et (x,n) =
                     _ -> error "pitch_72et: alteration?"
         a' = alteration_72et_monzo n'
         x' = fromIntegral x + (fromIntegral n / 6)
-        r = (Pitch' t' (n' % 12,a') (octave p),fmidi_to_cps x')
+        r = (Pitch' t' (fromIntegral n' % 12,a') (octave p),fmidi_to_cps x')
         r' = if n > 3
              then pitch_72et (x + 1,n - 6)
              else if n < (-3)

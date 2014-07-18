@@ -11,10 +11,10 @@ import Music.Theory.Pitch.Note {- hmt -}
 import Music.Theory.Pitch.Spelling {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
-type PitchClass = Integer
+type PitchClass = Int
 
--- | Octaves are 'Integer's, the octave of middle C is @4@.
-type Octave = Integer
+-- | Octaves are integers, the octave of middle C is @4@.
+type Octave = Int
 
 -- | 'Octave' and 'PitchClass' duple.
 type Octave_PitchClass i = (i,i)
@@ -76,7 +76,7 @@ pitch_to_midi (Pitch n a o) =
 pitch_to_fmidi :: Fractional n => Pitch -> n
 pitch_to_fmidi (Pitch n a o) =
     let a' = alteration_to_fdiff a
-        o' = fromInteger o
+        o' = fromIntegral o
         n' = fromInteger (note_to_pc n)
     in 12 + o' * 12 + n' + a'
 
@@ -162,7 +162,7 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 67.5) == "A𝄭4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
-fmidi_to_pitch :: RealFrac n => Spelling Integer -> n -> Pitch
+fmidi_to_pitch :: RealFrac n => Spelling Int -> n -> Pitch
 fmidi_to_pitch sp m =
     let m' = round m
         (Pitch n a o) = midi_to_pitch sp m'
@@ -177,7 +177,7 @@ fmidi_to_pitch sp m =
 -- > import Music.Theory.Pitch.Spelling as T
 --
 -- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
-pitch_tranpose :: RealFrac n => Spelling Integer -> n -> Pitch -> Pitch
+pitch_tranpose :: RealFrac n => Spelling Int -> n -> Pitch -> Pitch
 pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch sp (m + n)
@@ -232,7 +232,7 @@ pitch_rewrite_threequarter_alteration (Pitch n a o) =
 -- | Apply function to 'octave' of 'PitchClass'.
 --
 -- > pitch_edit_octave (+ 1) (Pitch A Natural 4) == Pitch A Natural 5
-pitch_edit_octave :: (Integer -> Integer) -> Pitch -> Pitch
+pitch_edit_octave :: (Octave -> Octave) -> Pitch -> Pitch
 pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
 
 -- * Frequency (CPS)

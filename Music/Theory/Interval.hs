@@ -78,7 +78,7 @@ interval_q i n = lookup i interval_q_tbl >>= lookup n
 --
 -- > interval_q_reverse Third Minor == Just 3
 -- > interval_q_reverse Unison Diminished == Just 11
-interval_q_reverse :: Interval_T -> Interval_Q -> Maybe Integer
+interval_q_reverse :: Interval_T -> Interval_Q -> Maybe Int
 interval_q_reverse ty qu =
     case lookup ty interval_q_tbl of
       Nothing -> Nothing
@@ -88,7 +88,7 @@ interval_q_reverse ty qu =
 --
 -- > interval_semitones (interval (Pitch C Sharp 4) (Pitch E Sharp 5)) == 16
 -- > interval_semitones (interval (Pitch C Natural 4) (Pitch D Sharp 3)) == -9
-interval_semitones :: Interval -> Integer
+interval_semitones :: Interval -> Int
 interval_semitones (Interval ty qu dir oct) =
     case interval_q_reverse ty qu of
       Just n -> let o = 12 * oct

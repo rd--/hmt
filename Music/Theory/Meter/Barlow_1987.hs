@@ -172,7 +172,7 @@ thinning_table_pp s =
 -- > relative_to_length [0..5] == [0.0,0.2,0.4,0.6,0.8,1.0]
 relative_to_length :: (Real a, Fractional b) => [a] -> [b]
 relative_to_length x =
-    let n = genericLength x - (1::Integer)
+    let n = length x - 1
     in map ((/ fromIntegral n) . realToFrac) x
 
 -- | Variant of 'indispensibilities' that scales value to lie in

@@ -4,10 +4,10 @@ import qualified Data.List.Split as S {- split -}
 import Text.Printf {- base -}
 
 -- | Duration stored as /hours/, /minutes/, /seconds/ and /milliseconds/.
-data Duration = Duration {hours :: Integer
-                         ,minutes :: Integer
-                         ,seconds :: Integer
-                         ,milliseconds :: Integer}
+data Duration = Duration {hours :: Int
+                         ,minutes :: Int
+                         ,seconds :: Int
+                         ,milliseconds :: Int}
                 deriving (Eq)
 
 -- | Convert fractional /seconds/ to integral /(seconds,milliseconds)/.
@@ -26,9 +26,9 @@ sms_s :: (Integral i) => (i,i) -> Double
 sms_s (s,ms) = fromIntegral s + fromIntegral ms / 1000
 
 -- | 'Read' function for 'Duration' tuple.
-read_duration_tuple :: String -> (Integer,Integer,Integer,Integer)
+read_duration_tuple :: String -> (Int,Int,Int,Int)
 read_duration_tuple x =
-    let f :: (Integer,Integer,Double) -> (Integer,Integer,Integer,Integer)
+    let f :: (Int,Int,Double) -> (Int,Int,Int,Int)
         f (h,m,s) = let (s',ms) = s_sms s in (h,m,s',ms)
     in case S.splitOneOf ":" x of
         [h,m,s] -> f (read h,read m,read s)
@@ -87,11 +87,11 @@ normalise_duration =
 -- | Extract 'Duration' tuple applying filter function at each element
 --
 -- > duration_tuple id (Duration 1 35 5 250) == (1,35,5,250)
-duration_to_tuple :: (Integer -> a) -> Duration -> (a,a,a,a)
+duration_to_tuple :: (Int -> a) -> Duration -> (a,a,a,a)
 duration_to_tuple f (Duration h m s ms) = (f h,f m,f s,f ms)
 
 -- | Inverse of 'duration_to_tuple'.
-tuple_to_duration :: (a -> Integer) -> (a,a,a,a) -> Duration
+tuple_to_duration :: (a -> Int) -> (a,a,a,a) -> Duration
 tuple_to_duration f (h,m,s,ms) = Duration (f h) (f m) (f s) (f ms)
 
 -- > duration_to_hours (read "01:35:05.250") == 1.5847916666666668
@@ -111,7 +111,7 @@ duration_to_seconds = (* 60) . duration_to_minutes
 -- > hours_to_duration 1.5847916 == Duration 1 35 5 250
 hours_to_duration :: RealFrac a => a -> Duration
 hours_to_duration n =
-    let r = fromIntegral :: RealFrac a => Integer -> a
+    let r = fromIntegral :: RealFrac a => Int -> a
         h = (r . floor) n
         m = (n - h) * 60
         (s,ms) = s_sms ((m - (r . floor) m) * 60)
