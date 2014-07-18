@@ -25,7 +25,10 @@ mdv_to_mrq = snd . mapAccumL T.dx_d' 0
 
 -- | Lookup function for ('Measure','Pulse') indexed structure.
 mp_lookup_err :: [[a]] -> (Measure,Pulse) -> a
-mp_lookup_err sq (m,p) = (sq !! (m - 1)) !! (p - 1)
+mp_lookup_err sq (m,p) =
+    if m < 1 || p < 1
+    then error (show ("mp_lookup_err: one indexed?",m,p))
+    else (sq !! (m - 1)) !! (p - 1)
 
 -- | Comparison for ('Measure','Pulse') indices.
 mp_compare :: (Measure,Pulse) -> (Measure,Pulse) -> Ordering
@@ -47,12 +50,12 @@ ct_ext1 n sq =
       _ -> error "ct_ext1"
 
 -- | 'T.rts_divisions' of 'ct_ext1'.
-ct_dv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [(Measure,[T.RQ])]
+ct_dv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [(Measure,[[T.RQ]])]
 ct_dv_seq n ts = map (fmap T.rts_divisions) (ct_ext1 n ts)
 
 -- | 'ct_dv_seq' without measures numbers.
 ct_mdv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.RQ]]
-ct_mdv_seq n = map snd . ct_dv_seq n
+ct_mdv_seq n = map (concat . snd) . ct_dv_seq n
 
 -- | 'mdv_to_mrq' of 'ct_mdv_seq'.
 ct_rq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.RQ]]
@@ -66,6 +69,8 @@ ct_m_to_rq sq = map (\(m,c) -> (ct_mp_lookup sq (m,1),c))
 
 -- | Latch rehearsal mark sequence, only indicating marks.  Initial mark is @.@.
 --
+-- > ct_mark_seq 2 [] == [(1,Just '.'),(2,Nothing)]
+--
 -- > let r = [(1,Just '.'),(3,Just 'A'),(8,Just 'B')]
 -- > in filter (isJust . snd) (ct_mark_seq 10 [(3,'A'),(8,'B')]) == r
 ct_mark_seq :: Int -> T.Tseq Measure Char -> T.Tseq Measure (Maybe Char)
@@ -73,12 +78,15 @@ ct_mark_seq n mk = T.seq_changed (ct_ext n '.' mk)
 
 -- | Indicate measures prior to marks.
 --
+-- > ct_pre_mark [] == []
+-- > ct_pre_mark [(1,'A')] == []
 -- > ct_pre_mark [(3,'A'),(8,'B')] == [(2,Just ()),(7,Just ())]
 ct_pre_mark :: [(Measure,a)] -> [(Measure,Maybe ())]
-ct_pre_mark = map (\(m,_) -> (m - 1,Just ()))
+ct_pre_mark = mapMaybe (\(m,_) -> if m <= 1 then Nothing else Just (m - 1,Just ()))
 
 -- | Contiguous pre-mark sequence.
 --
+-- > ct_pre_mark_seq 1 [(1,'A')] == [(1,Nothing)]
 -- > ct_pre_mark_seq 10 [(3,'A'),(8,'B')]
 ct_pre_mark_seq :: Measure -> T.Tseq Measure Char -> T.Tseq Measure (Maybe ())
 ct_pre_mark_seq n mk =
@@ -114,18 +122,19 @@ delay1 l =
       [] -> error "delay1: []"
       e:_ -> e : l
 
-ct_measure:: T.Lseq T.RQ T.RQ -> ([T.RQ],Maybe Char,Maybe (),[T.RQ]) -> [(Rational,CT_Node)]
+ct_measure:: T.Lseq T.RQ T.RQ -> ([T.RQ],Maybe Char,Maybe (),[[T.RQ]]) -> [(Rational,CT_Node)]
 ct_measure sq (mrq,mk,pr,dv) =
-    let f (p,rq,du,du') =
+    let dv' = concatMap (zip [1..]) dv
+        f (p,rq,(g,du)) =
             let nm = if p == 1
                      then case mk of
                             Nothing -> CT_Start du
                             Just _ -> CT_Mark du
                      else if pr == Just ()
                           then CT_Pre du
-                          else if du == du' then CT_Normal du else CT_Edge du
+                          else if g == 1 then CT_Edge du else CT_Normal du
             in (du * (60 / ct_tempo_at sq rq),nm)
-    in map f (zip4 [1..] mrq dv (delay1 dv))
+    in map f (zip3 [1..] mrq dv')
 
 -- | Click track definition.
 data CT = CT {ct_len :: Int
@@ -133,6 +142,7 @@ data CT = CT {ct_len :: Int
              ,ct_mark :: [(Measure,Char)]
              ,ct_tempo :: T.Lseq (Measure,Pulse) T.RQ
              ,ct_count :: (T.RQ,Int)}
+          deriving Show
 
 -- | Initial tempo, if given.
 ct_tempo0 :: CT -> Maybe T.RQ
@@ -145,15 +155,21 @@ ct_tempo0 ct =
 ct_tempo0_err :: CT -> T.RQ
 ct_tempo0_err = fromMaybe (error "ct_tempo0") . ct_tempo0
 
+-- > import Music.Theory.Duration.CT
+-- > import Music.Theory.Time.Seq
+-- > let ct = CT 2 [(1,[(3,8),(2,4)])] [(1,'a')] [(((1,0),T.None),60)] undefined
+-- > ct_measures ct
 ct_measures :: CT -> [T.Dseq Rational CT_Node]
 ct_measures (CT n ts mk tm _) =
-    let f sq = let (m,v) = unzip sq
-               in if m == [1 .. n] then v else error "ct_dseq"
+    let f msg sq = let (m,v) = unzip sq
+                   in if m == [1 .. n]
+                      then v
+                      else error (show ("ct_measures",msg,sq,m,v,n))
         msr = zip4
-              (f (zip [1..] (ct_rq n ts)))
-              (f (ct_mark_seq n mk))
-              (f (ct_pre_mark_seq n mk))
-              (f (ct_dv_seq n ts))
+              (f "ts" (zip [1..] (ct_rq n ts)))
+              (f "mk" (ct_mark_seq n mk))
+              (f "pre-mk" (ct_pre_mark_seq n mk))
+              (f "dv" (ct_dv_seq n ts))
     in map (ct_measure (ct_tempo_lseq_rq (ct_mdv_seq n ts) tm)) msr
 
 ct_dseq' :: CT -> T.Dseq Rational CT_Node
