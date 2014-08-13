@@ -2,30 +2,52 @@
 module Music.Theory.Array.CSV.Midi where
 
 import Data.Function {- base -}
+import Data.Maybe {- base -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
+-- | Variant of 'reads' requiring exact match.
+reads_exact :: Read a => String -> Maybe a
+reads_exact s =
+    case reads s of
+      [(r,"")] -> Just r
+      _ -> Nothing
+
+-- | Variant of 'reads_exact' that errors on failure.
+reads_err :: Read a => String -> a
+reads_err str = fromMaybe (error ("could not read: " ++ str)) (reads_exact str)
+
+-- | The required header field.
 csv_midi_note_data_hdr :: [String]
 csv_midi_note_data_hdr = ["time","on/off","note","velocity"]
 
 -- | Midi note data, header is @time,on/off,note,velocity@.
--- Requires on/off translation values.
-csv_midi_note_data_read :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,m,n,n)]
-csv_midi_note_data_read (m_on,m_off) =
+-- Translation values for on/off are consulted.
+--
+-- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
+-- > csv_midi_note_data_read' ("ON","OFF") fn :: IO [(Double,Either String String,Double,Double)]
+csv_midi_note_data_read' :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,Either m String,n,n)]
+csv_midi_note_data_read' (m_on,m_off) =
     let err x = error ("csv_midi_note_data_read: " ++ x)
         read_md x = case x of
-                      "on" -> m_on
-                      "off" -> m_off
-                      _ -> err "on/off?"
+                      "on" -> Left m_on
+                      "off" -> Left m_off
+                      _ -> Right x
         f m =
             case m of
-              [st,md,mnn,amp] -> (read st,read_md md,read mnn,read amp)
+              [st,md,mnn,amp] -> (reads_err st,read_md md,reads_err mnn,reads_err amp)
               _ -> err "entry?"
         g (hdr,dat) = case hdr of
                         Just hdr' -> if hdr' == csv_midi_note_data_hdr then dat else err "header?"
                         Nothing -> err "no header?"
     in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
+
+-- | Variant of 'csv_midi_note_data_read'' that errors on non on/off data.
+csv_midi_note_data_read :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,m,n,n)]
+csv_midi_note_data_read m =
+    let f (t,p,q,r) = (t,either id (error "not on/off") p,q,r)
+    in fmap (map f) . csv_midi_note_data_read' m
 
 -- | 'Tseq' form of 'csv_read_midi_note_data'.
 midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n)))
