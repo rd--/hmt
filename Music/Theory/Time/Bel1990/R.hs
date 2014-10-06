@@ -1,4 +1,4 @@
-{- | /Bel(R)/, a simplified form of the /Bel/ notation described in:
+{- | /Bel(R)/ is a simplified form of the /Bel/ notation described in:
 
 - Bernard Bel.
   \"Time and musical structures\".
@@ -8,9 +8,7 @@
 
 - Bernard Bel.
   \"Two algorithms for the instantiation of structures of musical objects\".
-  Centre National de la Recherche Scientifique,
-  1992.
-  /GRTC 458/
+  Centre National de la Recherche Scientifique, 1992. /GRTC 458/
   (<http://www.lpl.univ-aix.fr/~belbernard/music/2algorithms.pdf>)
 
 For patterns without tempo indications, the two notations should give
