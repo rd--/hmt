@@ -50,14 +50,30 @@ family n s =
         f_k = takeWhile (/= k) (tail (iterate (operation n) k))
     in map (decode_set n) (k : f_k)
 
--- | The set of all 'family' of modulo /n/.
---
--- > universe 4 == [[[0,1,2],[0,3],[0,1,3],[0,2,3]]
--- >               ,[[0,1,2,3],[0],[0,1],[0,2]]]
---
--- > length (universe 12) == 128
---
--- > fmap (is_rotation (family 12 [0,1,3])) (find ([0,1,3] `elem`) (universe 12)) == Just True
+{- | The set of all 'family' of modulo /n/.
+
+> universe 4 == [[[0,1,2],[0,3],[0,1,3],[0,2,3]]
+>               ,[[0,1,2,3],[0],[0,1],[0,2]]]
+
+> let u = universe 12
+> (length u,length (concat u)) == (128,2048)
+
+> import Music.Theory.Diagram.Sequencer as D
+> import Text.Printf
+
+> let gen (u,i) =
+>    let {n = fromIntegral (length u)
+>        ;opt = (["unset xtics","unset ytics"],((n * 6,12 * 6),(0,n),(0,12)))
+>        ;t = map (\z -> (z,1.0)) [0.0 ..]
+>        ;w = concatMap (\(y,z) -> map (\x -> (y,(x,127))) z) (zip t u)}
+>    in D.sequencer_plot_midi opt "/tmp" (printf "h%03d" i) w
+
+> mapM_ gen (zip (universe 12) [0..])
+
+> import qualified Data.List as L
+> fmap (is_rotation (family 12 [0,1,3])) (L.find ([0,1,3] `elem`) (universe 12)) == Just True
+
+-}
 universe :: Int -> [[Set]]
 universe n =
     let rec u p =
