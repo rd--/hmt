@@ -61,14 +61,18 @@ family n s =
 > import Music.Theory.Diagram.Sequencer as D
 > import Text.Printf
 
-> let gen (u,i) =
+> let gen dir x (u,i) =
 >    let {n = fromIntegral (length u)
->        ;opt = (["unset xtics","unset ytics"],((n * 6,12 * 6),(0,n),(0,12)))
+>        ;opt = (["unset xtics","unset ytics"],((n * x,12 * 6),(0,n),(0,12)))
 >        ;t = map (\z -> (z,1.0)) [0.0 ..]
 >        ;w = concatMap (\(y,z) -> map (\x -> (y,(x,127))) z) (zip t u)}
->    in D.sequencer_plot_midi opt "/tmp" (printf "h%03d" i) w
+>    in D.sequencer_plot_midi' dir opt "/tmp" (printf "h%03d" i) w
 
-> mapM_ gen (zip (universe 12) [0..])
+> mapM_ (gen D.Horizontal 6) (zip (universe 12) [0..])
+
+> import Data.List.Split {- split -}
+
+> mapM_ (gen D.Vertical 3) (zip (map concat (chunksOf 16 (universe 12))) [0..])
 
 > import qualified Data.List as L
 > fmap (is_rotation (family 12 [0,1,3])) (L.find ([0,1,3] `elem`) (universe 12)) == Just True
