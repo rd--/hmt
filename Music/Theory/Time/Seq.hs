@@ -145,6 +145,7 @@ wseq_merge = O.mergeBy (compare `on` (fst . fst))
 
 -- * Lookup
 
+-- | Locate nodes to the left and right of indicated time.
 tseq_lookup_window_by :: (t -> t -> Ordering) -> Tseq t e -> t -> (Maybe (t,e),Maybe (t,e))
 tseq_lookup_window_by cmp =
     let recur l sq t =
@@ -574,8 +575,8 @@ dseq_to_tseq t0 nil sq =
         a' = a ++ [nil]
     in zip t a'
 
--- | Variant where the /nil/ is take as the last element of the
--- sequence.
+-- | Variant where the /nil/ value is taken from the last element of
+-- the sequence.
 --
 -- > let r = zip [0,1,3,6,8,9] "abcdee"
 -- > in dseq_to_tseq_last 0 (zip [1,2,3,2,1] "abcde") == r

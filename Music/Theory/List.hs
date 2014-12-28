@@ -98,7 +98,7 @@ adj2_cyclic n = adj2 n . close
 -- > interleave [1..3] [4..6] == [1,4,2,5,3,6]
 -- > interleave ".+-" "abc" == ".a+b-c"
 -- > interleave [1..3] [] == []
-interleave :: [b] -> [b] -> [b]
+interleave :: [a] -> [a] -> [a]
 interleave p q =
     let u (i,j) = [i,j]
     in concatMap u (zip p q)
