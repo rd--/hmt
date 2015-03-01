@@ -278,6 +278,10 @@ cps_to_midi_detune f =
     let (n,c) = T.integral_and_fractional_parts (cps_to_fmidi f)
     in (n,c * 100)
 
+-- | In normal form the detune is in the range (-50,+50] instead of [0,100).
+midi_detune_normalise :: Midi_Detune -> Midi_Detune
+midi_detune_normalise (m,c) = if c <= 50 then (m,c) else (m + 1, negate (100 - c))
+
 -- | Inverse of 'cps_to_midi_detune'.
 midi_detune_to_cps :: Midi_Detune -> Double
 midi_detune_to_cps (m,c) = fmidi_to_cps (fromIntegral m + (c / 100))

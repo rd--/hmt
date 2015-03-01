@@ -185,7 +185,7 @@ nearest_72et_tone = nearest_et_table_tone tbl_72et
 -- | 'Pitch' with 12-ET/24-ET tuning deviation given in 'Cents'.
 type Pitch_Detune = (Pitch,Cents)
 
--- | Exract 'Pitch_Detune' from 'HS_R'.
+-- | Extract 'Pitch_Detune' from 'HS_R'.
 hsr_to_pitch_detune :: HS_R Pitch -> Pitch_Detune
 hsr_to_pitch_detune (_,p,_,_,c) = (p,c)
 
