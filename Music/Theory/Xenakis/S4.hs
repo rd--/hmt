@@ -54,7 +54,7 @@ lower x =
 -- | Application of 'Label' /p/ on /q/.
 --
 -- > l_on Q1 I == Q1
--- > l_on D A == G
+-- > l_on D Q12 == Q4
 -- > [l_on L L,l_on E D,l_on D E] == [L2,C,B]
 l_on :: Label -> Label -> Label
 l_on p q =
@@ -62,6 +62,32 @@ l_on p q =
         q' = seq_of q
         r = map (\i -> q' !! (i - 1)) p'
     in label_of r
+
+{- | Generalisation of Fibonnaci process, /f/ is the binary operator
+giving the next element, /p/ and /q/ are the initial elements.
+
+See discussion in: Carlos Agon, Moreno Andreatta, Gérard Assayag, and
+Stéphan Schaub. _Formal Aspects of Iannis Xenakis' "Symbolic Music": A
+Computer-Aided Exploration of Compositional Processes_. Journal of New
+Music Research, 33(2):145-159, 2004.
+
+Note that the article has an error, printing Q4 for Q11 in the sequence below.
+
+> let r = [D,Q12,Q4,E,Q8,Q2,E2,Q7,Q4,D2,Q3,Q11,L2,Q7,Q2,L,Q8,Q11]
+> in take 18 (fib_proc l_on D Q12) == r
+
+> import Music.Theory.List
+> let [a,b] = take 2 (segments 18 18 (fib_proc l_on D Q12)) in a == b
+
+The article also omits the 5 after 5,1 in the sequence below (and
+also prints 11 at the end of the sequence).
+
+> let r = [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1]
+> in take 23 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
+
+-}
+fib_proc :: (a -> a -> a) -> a -> a -> [a]
+fib_proc f p q = let r = f p q in p : fib_proc f q r
 
 -- | 'Seq' of 'Label', inverse of 'label_of'.
 --

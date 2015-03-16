@@ -14,6 +14,7 @@ data Sieve = Empty -- ^ 'Empty' 'Sieve'
            | L (I,I) -- ^ Primitive 'Sieve' of /modulo/ and /index/
            | Union Sieve Sieve -- ^ 'Union' of two 'Sieve's
            | Intersection Sieve Sieve -- ^ 'Intersection' of two 'Sieve's
+           | Complement Sieve -- ^ 'Complement' of a 'Sieve'
              deriving (Eq,Show)
 
 -- | The 'Union' of a list of 'Sieve's, ie. 'foldl1' 'Union'.
@@ -32,6 +33,10 @@ intersection = foldl1 Intersection
 (∩) :: Sieve -> Sieve -> Sieve
 (∩) = Intersection
 
+-- | Synonym for 'Complement'.
+c :: Sieve -> Sieve
+c = Complement
+
 -- | Variant of 'L', ie. 'curry' 'L'.
 --
 -- > l 15 19 == L (15,19)
@@ -49,6 +54,7 @@ infixl 5 ⋄
 -- | In a /normal/ 'Sieve' /m/ is '>' /i/.
 --
 -- > normalise (L (15,19)) == L (15,4)
+-- > normalise (L (11,13)) == L (11,2)
 normalise :: Sieve -> Sieve
 normalise s =
     case s of
@@ -56,10 +62,12 @@ normalise s =
       L (m,i) -> L (m,i `mod` m)
       Union s0 s1 -> Union (normalise s0) (normalise s1)
       Intersection s0 s1 -> Intersection (normalise s0) (normalise s1)
+      Complement s' -> Complement (normalise s')
 
 -- | Predicate to test if a 'Sieve' is /normal/.
 --
 -- > is_normal (L (15,4)) == True
+-- > is_normal (L (11,13)) == False
 is_normal :: Sieve -> Bool
 is_normal s = s == normalise s
 
@@ -74,6 +82,18 @@ element s n =
       L (m,i) -> n `mod` m == i `mod` m && n >= i
       Union s0 s1 -> element s0 n || element s1 n
       Intersection s0 s1 -> element s0 n && element s1 n
+      Complement s' -> not (element s' n)
+
+-- > take 9 (i_complement [1,3..]) == [0,2..16]
+i_complement :: [I] -> [I]
+i_complement =
+    let f x s = case s of
+                [] -> [x ..]
+                e:s' -> case compare x e of
+                          LT -> x : f (x + 1) s
+                          EQ -> f (x + 1) s'
+                          GT -> error "i_complement"
+    in f 0
 
 -- | Construct the sequence defined by a 'Sieve'.  Note that building
 -- a sieve that contains an intersection clause that has no elements
@@ -93,6 +113,7 @@ build s =
          L (m,i) -> [i, i+m ..]
          Union s0 s1 -> u_f (merge (build s0) (build s1))
          Intersection s0 s1 -> i_f (merge (build s0) (build s1))
+         Complement s' -> i_complement (build s')
 
 {- | Variant of 'build' that gives the first /n/ places of the
   'reduce' of 'Sieve'.
@@ -123,6 +144,24 @@ build s =
 
 > let r = [0,2,3,4,6,7,9,11,12,15,17,18,21,22,24,25,27,30,32]
 > in buildn 19 (5⋄2 ∪ 3⋄0 ∪ 7⋄4) == r
+
+Agon et. al. p.155
+
+> let {a = c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9)
+>     ;b = 11⋄2
+>     ;c' = c (11⋄4 ∪ 11⋄8)
+>     ;d = 13⋄9
+>     ;e = 13⋄0 ∪ 13⋄1 ∪ 13⋄6
+>     ;f = (a ∩ b) ∪ (c' ∩ d) ∪ e}
+> in buildn 13 f == [0,1,2,6,9,13,14,19,22,24,26,27,32]
+
+> differentiate [0,1,2,6,9,13,14,19,22,24,26,27,32] == [1,1,4,3,4,1,5,3,2,2,1,5]
+
+> import Music.Theory.Pitch
+
+> let {n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
+>     ;r = "C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E"}
+> in unwords (map (pitch_class_pp . pc24et_to_pitch . (`mod` 24)) n) == r
 
 -}
 buildn :: Int -> Sieve -> [I]
@@ -202,3 +241,4 @@ reduce s =
          Intersection s1 Empty -> s1
          Intersection (L p) (L q) -> maybe Empty L (reduce_intersection p q)
          Intersection s1 s2 -> f Intersection s1 s2
+         Complement s' -> Complement (reduce s')
