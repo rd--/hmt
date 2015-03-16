@@ -8,7 +8,7 @@ import Data.List {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import Music.Theory.Pitch.Note {- hmt -}
-import Music.Theory.Pitch.Spelling {- hmt -}
+import qualified Music.Theory.Pitch.Spelling as T {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Int
@@ -344,15 +344,20 @@ pitch_pp (Pitch n a o) =
     in show n ++ a' ++ show o
 
 -- | 'Pitch' printed without octave.
+--
+-- > pitch_class_pp (Pitch C ThreeQuarterToneSharp 0) == "C𝄰"
 pitch_class_pp :: Pitch -> String
-pitch_class_pp = T.dropWhileRight isDigit . pitch_pp
+pitch_class_pp =
+    let f c = isDigit c || c == '-' -- negative octave values...
+    in T.dropWhileRight f . pitch_pp
 
 -- | Sequential list of /n/ pitch class names starting from /k/.
 --
+-- > unwords (pitch_class_names_12et 0 12) == "C C♯ D E♭ E F F♯ G A♭ A B♭ B"
 -- > pitch_class_names_12et 11 2 == ["B","C"]
 pitch_class_names_12et :: Integral n => n -> n -> [String]
 pitch_class_names_12et k n =
-    let f = pitch_class_pp . midi_to_pitch pc_spell_ks
+    let f = pitch_class_pp . midi_to_pitch T.pc_spell_ks
     in map f [60 + k .. 60 + k + n - 1]
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
@@ -387,3 +392,25 @@ pitch_pp_tonh (Pitch n a o) =
          (A,Flat) -> "As" ++ o'
          (E,Flat) -> "Es" ++ o'
          _ -> show n ++ alteration_tonh a ++ o'
+
+-- * 24ET
+
+{-  The 24ET pitch-class universe, with /sharp/ spellings, in octave '4'.
+
+> length pc24et_univ == 24
+
+> let r = "C C𝄲 C♯ C𝄰 D D𝄲 D♯ D𝄰 E E𝄲 F F𝄲 F♯ F𝄰 G G𝄲 G♯ G𝄰 A A𝄲 A♯ A𝄰 B B𝄲"
+> in unwords (map pitch_class_pp pc24et_univ) == r
+
+-}
+pc24et_univ :: [Pitch]
+pc24et_univ =
+    let a = [Natural,QuarterToneSharp,Sharp,ThreeQuarterToneSharp]
+        f (n,k) = map (\i -> Pitch n (a !! i) 4) [0 .. k - 1]
+    in concatMap f (zip [C,D,E,F,G,A,B] [4,4,2,4,4,4,2])
+
+-- | 'genericIndex' into 'pc24et_univ'.
+--
+-- > pitch_class_pp (pc24et_to_pitch 13) == "F𝄰"
+pc24et_to_pitch :: Integral i => i -> Pitch
+pc24et_to_pitch = genericIndex pc24et_univ
