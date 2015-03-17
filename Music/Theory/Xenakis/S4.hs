@@ -79,11 +79,20 @@ Note that the article has an error, printing Q4 for Q11 in the sequence below.
 > import Music.Theory.List
 > let [a,b] = take 2 (segments 18 18 (fib_proc l_on D Q12)) in a == b
 
-The article also omits the 5 after 5,1 in the sequence below (and
-also prints 11 at the end of the sequence).
+The prime numbers that are not factors of 18 are {1,5,7,11,13,17}.
+They form a closed group under modulo 18 multiplication.
 
-> let r = [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1]
-> in take 23 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
+> let {n = [5,7,11,13,17]
+>     ;r = [(5,7,17),(5,11,1),(5,13,11),(5,17,13)
+>          ,(7,11,5),(7,13,1),(7,17,11)
+>          ,(11,13,17),(11,17,7)
+>          ,(13,17,5)]}
+> in [(p,q,(p * q) `mod` 18) | p <- n, q <- n, p < q] == r
+
+The article also omits the 5 after 5,1 in the sequence below.
+
+> let r = [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1,11]
+> in take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
 
 -}
 fib_proc :: (a -> a -> a) -> a -> a -> [a]
