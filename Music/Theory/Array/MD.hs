@@ -102,10 +102,15 @@ c 3 1 2
 md_matrix :: a -> [a] -> [[a]] -> MD_Table a
 md_matrix nil nm t = md_table_join (Nothing,[nil] : map return nm) (Nothing,nm : t)
 
--- | Variant for 'String' tables where /nil/ is the empty string and
+-- | Variant that takes a 'show' function and a /header decoration/ function.
+md_matrix_opt :: (a -> String) -> (String -> String) -> [a] -> [[a]] -> MD_Table String
+md_matrix_opt show_f hd_f nm t =
+    let t' = map (map show_f) t
+        nm' = map (hd_f . show_f) nm
+    in md_matrix "" nm' t'
+
+-- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
 -- the header cells are in bold.
 md_matrix_bold :: [String] -> [[String]] -> MD_Table String
-md_matrix_bold nm t =
-    let bold x = "__" ++ x ++ "__"
-        nm' = map bold nm
-    in md_matrix "" nm' t
+md_matrix_bold = let bold x = "__" ++ x ++ "__" in md_matrix_opt show bold
+

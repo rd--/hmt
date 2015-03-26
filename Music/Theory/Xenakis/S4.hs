@@ -73,8 +73,13 @@ Music Research, 33(2):145-159, 2004.
 
 Note that the article has an error, printing Q4 for Q11 in the sequence below.
 
-> let r = [D,Q12,Q4,E,Q8,Q2,E2,Q7,Q4,D2,Q3,Q11,L2,Q7,Q2,L,Q8,Q11]
+> let r = [D,Q12,Q4, E,Q8,Q2, E2,Q7,Q4, D2,Q3,Q11, L2,Q7,Q2, L,Q8,Q11]
 > in take 18 (fib_proc l_on D Q12) == r
+
+Beginning E then G2 no Q nodes are visited.
+
+> let r = [E,G2,L2,C,G,D,E,B,D2,L,G,C,L2,E2,D2,B]
+> in take 16 (fib_proc l_on E G2) == r
 
 > import Music.Theory.List
 > let [a,b] = take 2 (segments 18 18 (fib_proc l_on D Q12)) in a == b
@@ -238,6 +243,11 @@ viii_6_l =
 -- >                                 ,[A,I,C,B]
 -- >                                 ,[B,C,I,A]
 -- >                                 ,[C,B,A,I]]
+--
+-- > import Music.Theory.Array.MD
+--
+-- > let t = md_matrix_opt show (\x -> "_" ++ x ++ "_") (head viii_7) viii_7
+-- > putStrLn $ unlines $ md_table' t
 viii_7 :: [[Label]]
 viii_7 =
     let o = [I,A,B,C
