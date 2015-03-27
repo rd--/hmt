@@ -37,6 +37,16 @@ intersection = foldl1 Intersection
 c :: Sieve -> Sieve
 c = Complement
 
+-- | Pretty-print sieve.  Fully parenthesised.
+sieve_pp :: Sieve -> String
+sieve_pp s =
+    case s of
+      Empty -> "∅"
+      L (p,q) -> concat [show p,".",show q]
+      Union p q -> concat ["(",sieve_pp p," ∪ ",sieve_pp q,")"]
+      Intersection p q -> concat ["(",sieve_pp p," ∩ ",sieve_pp q,")"]
+      Complement p -> concat ["(∁ ",sieve_pp p,")"]
+
 -- | Variant of 'L', ie. 'curry' 'L'.
 --
 -- > l 15 19 == L (15,19)
@@ -274,6 +284,8 @@ reduce_intersection (m1,i1) (m2,i2) =
 --
 -- > let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
 -- > in reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
+--
+-- > putStrLn $ sieve_pp (reduce s)
 --
 -- > let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
 -- > in reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
