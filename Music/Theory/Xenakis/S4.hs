@@ -49,7 +49,7 @@ lower x =
     case sort x of
       [1,2,3,4] -> x
       [5,6,7,8] -> complement x
-      _ -> error "lower"
+      _ -> error (show ("lower",x))
 
 -- | Application of 'Label' /p/ on /q/.
 --
@@ -73,13 +73,15 @@ Music Research, 33(2):145-159, 2004.
 
 Note that the article has an error, printing Q4 for Q11 in the sequence below.
 
+> import qualified Music.Theory.List as T
+
 > let r = [D,Q12,Q4, E,Q8,Q2, E2,Q7,Q4, D2,Q3,Q11, L2,Q7,Q2, L,Q8,Q11]
-> in take 18 (fib_proc l_on D Q12) == r
+> in (take 18 (fib_proc l_on D Q12) == r,T.duplicates r == [Q2,Q4,Q7,Q8,Q11])
 
 Beginning E then G2 no Q nodes are visited.
 
 > let r = [E,G2,L2,C,G,D,E,B,D2,L,G,C,L2,E2,D2,B]
-> in take 16 (fib_proc l_on E G2) == r
+> in (take 16 (fib_proc l_on E G2) == r,T.duplicates r == [B,C,D2,E,G,L2])
 
 > import Music.Theory.List
 > let [a,b] = take 2 (segments 18 18 (fib_proc l_on D Q12)) in a == b
@@ -226,16 +228,29 @@ faces =
 
 -- * Figures
 
--- | Fig. VIII-6. Hexahedral (Octahedral) Group (p. 220)
+-- | Label sequence of Fig. VIII-6. Hexahedral (Octahedral) Group (p. 220)
 --
--- > length viii_6_l == 24
--- > take 7 viii_6_l == [L2,L,A,Q1,Q7,Q3,Q9]
-viii_6_l :: [Label]
-viii_6_l =
+-- > let r = [I,A,B,C,D,D2,E,E2,G,G2,L,L2,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12]
+-- > in viii_6_lseq == r
+viii_6_lseq :: [Label]
+viii_6_lseq =
     [L2,L,A,Q1,Q7,Q3,Q9
     ,G2,G,C,Q8,Q5,Q10,Q2
     ,E,E2,B,Q4,Q11,Q12,Q6
     ,D,D2,I]
+
+-- | Label sequence of Fig. VIII-7 (p.221)
+--
+-- > let r = [I,A,B,C,D,D2,E,E2,G,G2,L,L2,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12]
+-- > in viii_7_lseq == r
+viii_7_lseq :: [Label]
+viii_7_lseq =
+    [I,A,B,C
+    ,D,D2,E,E2
+    ,G,G2,L,L2
+    ,Q1,Q2,Q3,Q4
+    ,Q5,Q6,Q7,Q8
+    ,Q9,Q10,Q11,Q12]
 
 -- | Fig. VIII-7 (p.221)
 --
@@ -249,24 +264,20 @@ viii_6_l =
 -- > let t = md_matrix_opt show (\x -> "_" ++ x ++ "_") (head viii_7) viii_7
 -- > putStrLn $ unlines $ md_table' t
 viii_7 :: [[Label]]
-viii_7 =
-    let o = [I,A,B,C
-            ,D,D2,E,E2
-            ,G,G2,L,L2
-            ,Q1,Q2,Q3,Q4
-            ,Q5,Q6,Q7,Q8
-            ,Q9,Q10,Q11,Q12]
-    in map (\i -> map (`l_on` i) o) o
+viii_7 = map (\i -> map (`l_on` i) viii_7_lseq) viii_7_lseq
 
--- | Fig. VIII-6/b 'Labels' (p.221)
+-- | Label sequence of Fig. VIII-6/b (p.221)
 --
 -- > length viii_6b_l == length viii_6_l
 -- > take 8 viii_6b_l == [I,A,B,C,D2,D,E2,E]
-viii_6b_l :: [Label]
-viii_6b_l =
-    [I,A,B,C,D2,D,E2,E
-    ,G2,G,L2,L,Q7,Q2,Q3,Q11
-    ,Q8,Q6,Q1,Q5,Q9,Q10,Q4,Q12]
+viii_6b_lseq :: [Label]
+viii_6b_lseq =
+    [I,A,B,C
+    ,D2,D,E2,E
+    ,G2,G,L2,L
+    ,Q7,Q2,Q3,Q11
+    ,Q8,Q6,Q1,Q5
+    ,Q9,Q10,Q4,Q12]
 
 -- | Fig. VIII-6/b 'Half_Seq'.
 --
@@ -303,7 +314,7 @@ viii_6b_p' =
 
 -- | Variant of 'viii_6b' with 'Half_Seq'.
 viii_6b' :: [(Label,Half_Seq)]
-viii_6b' = zip viii_6b_l viii_6b_p'
+viii_6b' = zip viii_6b_lseq viii_6b_p'
 
 -- | Fig. VIII-6/b.
 --
@@ -311,19 +322,19 @@ viii_6b' = zip viii_6b_l viii_6b_p'
 -- >                              ,(G2,[3,2,4,1,7,6,8,5])
 -- >                              ,(Q8,[6,8,5,7,2,4,1,3])]
 viii_6b :: [(Label,Seq)]
-viii_6b = zip viii_6b_l (map full_seq viii_6b_p')
+viii_6b = zip viii_6b_lseq (map full_seq viii_6b_p')
 
 -- | The sequence of 'Rel' to give 'viii_6_l' from 'L2'.
 --
 -- > apply_relations_l viii_6_relations L2 == viii_6_l
 -- > length (nub viii_6_relations) == 14
 viii_6_relations :: [Rel]
-viii_6_relations = relations (map half_seq_of viii_6_l)
+viii_6_relations = relations (map half_seq_of viii_6_lseq)
 
 -- | The sequence of 'Rel' to give 'viii_6b_l' from 'I'.
 --
 -- > apply_relations_l viii_6b_relations I == viii_6b_l
 -- > length (nub viii_6b_relations) == 10
 viii_6b_relations :: [Rel]
-viii_6b_relations = relations (map half_seq_of viii_6b_l)
+viii_6b_relations = relations (map half_seq_of viii_6b_lseq)
 
