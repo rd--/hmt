@@ -130,6 +130,12 @@ histogram x =
         n = map genericLength g
     in zip (map head g) n
 
+-- | Elements that appear more than once in the input.
+--
+-- > map duplicates ["duplicates","redundant"] == ["","dn"]
+duplicates :: (Ord a,Integral i) => [a] -> [a]
+duplicates = map fst . filter (\(_,n) -> n > 1) . histogram
+
 -- | List segments of length /i/ at distance /j/.
 --
 -- > segments 2 1 [1..5] == [[1,2],[2,3],[3,4],[4,5]]
