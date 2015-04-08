@@ -335,21 +335,32 @@ parse_iso_pitch = parse_iso_pitch_oct (error "parse_iso_pitch: no octave")
 -- * Pretty printers
 
 -- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
+-- Option selects if 'Natural's are printed.
+--
+-- > pitch_pp' True (Pitch E Natural 4) == "E♮4"
+pitch_pp' :: Bool -> Pitch -> String
+pitch_pp' show_nat (Pitch n a o) =
+    let a' = if a == Natural && not show_nat then "" else [alteration_symbol a]
+    in show n ++ a' ++ show o
+
+-- | 'pitch_pp'' 'False'.
 --
 -- > pitch_pp (Pitch E Flat 4) == "E♭4"
 -- > pitch_pp (Pitch F QuarterToneSharp 3) == "F𝄲3"
 pitch_pp :: Pitch -> String
-pitch_pp (Pitch n a o) =
-    let a' = if a == Natural then "" else [alteration_symbol a]
-    in show n ++ a' ++ show o
+pitch_pp = pitch_pp' False
 
 -- | 'Pitch' printed without octave.
+pitch_class_pp' :: Bool -> Pitch -> String
+pitch_class_pp' opt =
+    let f c = isDigit c || c == '-' -- negative octave values...
+    in T.dropWhileRight f . pitch_pp' opt
+
+-- | 'pitch_class_pp'' 'False'.
 --
 -- > pitch_class_pp (Pitch C ThreeQuarterToneSharp 0) == "C𝄰"
 pitch_class_pp :: Pitch -> String
-pitch_class_pp =
-    let f c = isDigit c || c == '-' -- negative octave values...
-    in T.dropWhileRight f . pitch_pp
+pitch_class_pp = pitch_class_pp' False
 
 -- | Sequential list of /n/ pitch class names starting from /k/.
 --
