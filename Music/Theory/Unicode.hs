@@ -1,12 +1,14 @@
 -- | <http://www.unicode.org/charts/PDF/U1D100.pdf>
 module Music.Theory.Unicode where
 
-type Unicode_Table = [(Int,String)]
+type Unicode_Point = (Int,String)
+type Unicode_Table = [Unicode_Point]
 
 -- > putStrLn (map (toEnum . fst) (concat unicode))
 unicode :: [Unicode_Table]
 unicode = [accidentals,notes,rests,clefs]
 
+-- > putStrLn $ map (toEnum . fst) accidentals
 accidentals :: Unicode_Table
 accidentals =
     [(0x1D12A,"MUSICAL SYMBOL DOUBLE SHARP")
@@ -20,6 +22,7 @@ accidentals =
     ,(0x1D132,"MUSICAL SYMBOL QUARTER TONE SHARP")
     ,(0x1D133,"MUSICAL SYMBOL QUARTER TONE FLAT")]
 
+-- > putStrLn $ map (toEnum . fst) notes
 notes :: Unicode_Table
 notes =
     [(0x1D15C,"MUSICAL SYMBOL BREVE")
@@ -32,6 +35,7 @@ notes =
     ,(0x1D163,"MUSICAL SYMBOL SIXTY-FOURTH NOTE")
     ,(0x1D164,"MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH NOTE")]
 
+-- > putStrLn $ map (toEnum . fst) rests
 rests :: Unicode_Table
 rests =
     [(0x1D13B,"MUSICAL SYMBOL WHOLE REST")
@@ -43,6 +47,7 @@ rests =
     ,(0x1D141,"MUSICAL SYMBOL SIXTY-FOURTH REST")
     ,(0x1D142,"MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH REST")]
 
+-- > putStrLn $ map (toEnum . fst) clefs
 clefs :: Unicode_Table
 clefs =
     [(0x1D11E,"MUSICAL SYMBOL G CLEF")
@@ -54,3 +59,7 @@ clefs =
     ,(0x1D124,"MUSICAL SYMBOL F CLEF OTTAVA BASSA")
     ,(0x1D125,"MUSICAL SYMBOL DRUM CLEF-1")
     ,(0x1D126,"MUSICAL SYMBOL DRUM CLEF-2")]
+
+-- > putStrLn (map toEnum [0x1D15F,0x1D16D])
+augmentation_dot :: Unicode_Point
+augmentation_dot = (0x1D16D, "MUSICAL SYMBOL COMBINING AUGMENTATION DOT")
