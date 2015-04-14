@@ -109,7 +109,7 @@ contour_matrix = matrix_f compare
 data Contour_Half_Matrix =
     Contour_Half_Matrix {contour_half_matrix_n :: Int
                         ,contour_half_matrix_m :: Matrix Ordering}
-    deriving (Eq)
+    deriving (Eq,Ord)
 
 -- | Half 'Matrix' of contour given comparison function /f/.
 --

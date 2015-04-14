@@ -24,6 +24,7 @@ cf ns = filter (\p -> genericLength p `elem` ns)
 -- values for slot.
 --
 -- > cgg [[0,1],[5,7],[3]] == [[0,5,3],[0,7,3],[1,5,3],[1,7,3]]
+-- > let n = "01" in cgg [n,n,n] == ["000","001","010","011","100","101","110","111"]
 cgg :: [[a]] -> [[a]]
 cgg l =
     case l of
