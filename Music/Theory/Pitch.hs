@@ -4,6 +4,7 @@ module Music.Theory.Pitch where
 import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
+import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
@@ -126,7 +127,7 @@ octpc_trs n (o,pc) =
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
--- > octpc_to_midi (4,9) == 69
+-- > map octpc_to_midi [(0,0),(4,9),(9,0)] == [12,69,120]
 octpc_to_midi :: Integral i => Octave_PitchClass i -> i
 octpc_to_midi (o,pc) = 60 + ((fromIntegral o - 4) * 12) + pc
 
@@ -157,19 +158,25 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 
 -- | Fractional midi note number to 'Pitch'.
 --
+-- > fmidi_to_pitch' pc_spell_ks 69.25 == Nothing
+fmidi_to_pitch' :: RealFrac n => Spelling Int -> n -> Maybe Pitch
+fmidi_to_pitch' sp m =
+    let m' = round m
+        (Pitch n a o) = midi_to_pitch sp m'
+        q = m - fromIntegral m'
+    in case alteration_edit_quarter_tone q a of
+         Nothing -> Nothing
+         Just a' -> Just (Pitch n a' o)
+
+-- | Fractional midi note number to 'Pitch'.
+--
 -- > import Music.Theory.Pitch.Spelling
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 65.5) == "F𝄲4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 67.5) == "A𝄭4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
-fmidi_to_pitch :: RealFrac n => Spelling Int -> n -> Pitch
-fmidi_to_pitch sp m =
-    let m' = round m
-        (Pitch n a o) = midi_to_pitch sp m'
-        q = m - fromIntegral m'
-    in case alteration_edit_quarter_tone q a of
-         Nothing -> error "fmidi_to_pitch"
-         Just a' -> Pitch n a' o
+fmidi_to_pitch :: (Show n,RealFrac n) => Spelling Int -> n -> Pitch
+fmidi_to_pitch sp m = fromMaybe (error (show ("fmidi_to_pitch",m))) (fmidi_to_pitch' sp m)
 
 -- | Composition of 'pitch_to_fmidi' and then 'fmidi_to_pitch'.
 --
@@ -177,7 +184,7 @@ fmidi_to_pitch sp m =
 -- > import Music.Theory.Pitch.Spelling as T
 --
 -- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
-pitch_tranpose :: RealFrac n => Spelling Int -> n -> Pitch -> Pitch
+pitch_tranpose :: (RealFrac n,Show n) => Spelling Int -> n -> Pitch -> Pitch
 pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch sp (m + n)
