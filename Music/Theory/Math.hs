@@ -96,3 +96,14 @@ num_diff_str n =
       LT -> '-' : show (abs n)
       EQ -> ""
       GT -> '+' : show n
+
+-- | 'fromInteger' . 'floor'.
+floor' :: (RealFrac a, Num b) => a -> b
+floor' = fromInteger . floor
+
+-- | Round /b/ to nearest multiple of /a/.
+--
+-- > map (round_to 0.25) [0,0.1 .. 1] == [0.0,0.0,0.25,0.25,0.5,0.5,0.5,0.75,0.75,1.0,1.0]
+-- > map (round_to 25) [0,10 .. 100] == [0,0,25,25,50,50,50,75,75,100,100]
+round_to :: (RealFrac n, Ord n) => n -> n -> n
+round_to a b = if a == 0 then b else floor' ((b / a) + 0.5) * a

@@ -267,6 +267,18 @@ cps_to_midi = round . cps_to_fmidi
 cps_to_fmidi :: Floating a => a -> a
 cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 
+-- | 'midi_to_cps' of 'octpc_to_midi'.
+--
+-- > octpc_to_cps (4,9) == 440
+octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
+octpc_to_cps = midi_to_cps . octpc_to_midi
+
+-- | 'midi_to_octpc' of 'cps_to_midi'.
+cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
+cps_to_octpc = midi_to_octpc . cps_to_midi
+
+-- * MIDI detune
+
 -- | Midi note number with cents detune.
 type Midi_Detune = (Int,Double)
 
@@ -286,15 +298,16 @@ midi_detune_normalise (m,c) = if c <= 50 then (m,c) else (m + 1, negate (100 - c
 midi_detune_to_cps :: Midi_Detune -> Double
 midi_detune_to_cps (m,c) = fmidi_to_cps (fromIntegral m + (c / 100))
 
--- | 'midi_to_cps' of 'octpc_to_midi'.
+-- | 'Midi_Detune' to 'Pitch', detune must be precisely at a notateable Pitch.
 --
--- > octpc_to_cps (4,9) == 440
-octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
-octpc_to_cps = midi_to_cps . octpc_to_midi
+-- > let p = Pitch {note = C, alteration = QuarterToneSharp, octave = 4}
+-- > in midi_detune_to_pitch T.pc_spell_ks (midi_detune_nearest_24et (60,35)) == p
+midi_detune_to_pitch :: Spelling Int -> Midi_Detune -> Pitch
+midi_detune_to_pitch sp = fmidi_to_pitch sp . cps_to_fmidi . midi_detune_to_cps
 
--- | 'midi_to_octpc' of 'cps_to_midi'.
-cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
-cps_to_octpc = midi_to_octpc . cps_to_midi
+-- | Round /detune/ value to nearest multiple of @50@.
+midi_detune_nearest_24et :: Midi_Detune -> Midi_Detune
+midi_detune_nearest_24et (m,dt) = (m,T.round_to 50 dt)
 
 -- * Parsers
 

@@ -6,7 +6,6 @@ import Data.List {- base -}
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
-import Data.Monoid {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
 
