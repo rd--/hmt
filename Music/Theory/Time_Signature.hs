@@ -37,6 +37,7 @@ ts_whole_note t =
       (1,1) -> [whole_note]
       (2,2) -> [whole_note]
       (4,4) -> [whole_note]
+      (8,8) -> [whole_note]
       (5,4) -> [whole_note,quarter_note]
       (3,2) -> [dotted_whole_note]
       (6,4) -> [dotted_whole_note]

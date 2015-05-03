@@ -6,10 +6,22 @@ import Text.Printf {- base -}
 type FSEC = Double
 
 -- | Minutes, seconds as @(min,sec)@
+type MinSec n = (n,n)
+
+-- | Type specialised.
 type MINSEC = (Int,Int)
 
 -- | Minutes, seconds, centi-seconds as @(min,sec,csec)@
+type MinCsec n = (n,n,n)
+
+-- | Type specialised.
 type MINCSEC = (Int,Int,Int)
+
+minsec_sec :: Num n => MinSec n -> n
+minsec_sec (m,s) = m * 60 + s
+
+mincsec_fsec :: Real n => MinCsec n -> FSEC
+mincsec_fsec (m,s,cs) = realToFrac m * 60 + realToFrac s + (realToFrac cs / 100)
 
 -- | Fractional seconds to @(min,sec)@.
 --

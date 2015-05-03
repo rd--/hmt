@@ -166,9 +166,12 @@ ess p = filter (`has_ess` p) . SRO.rtmi_related
 has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
 has_sc_pf pf p q =
     let n = length q
-    in q `elem` map pf (cf [n] (cg p))
+    in pf q `elem` map pf (cf [n] (cg p))
 
 -- | Can the set-class q be drawn from the pcset p.
+--
+-- > let d = [0,2,4,5,7,9,11] in has_sc d (complement d) == True
+-- > has_sc [] [] == True
 has_sc :: [Z12] -> [Z12] -> Bool
 has_sc = has_sc_pf T.forte_prime
 
