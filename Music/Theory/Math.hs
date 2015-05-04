@@ -107,3 +107,17 @@ floor' = fromInteger . floor
 -- > map (round_to 25) [0,10 .. 100] == [0,0,25,25,50,50,50,75,75,100,100]
 round_to :: (RealFrac n, Ord n) => n -> n -> n
 round_to a b = if a == 0 then b else floor' ((b / a) + 0.5) * a
+
+-- * One-indexed
+
+-- | One-indexed 'mod' function.
+--
+-- > map (`oi_mod` 5) [1..10] == [1,2,3,4,5,1,2,3,4,5]
+oi_mod :: Integral a => a -> a -> a
+oi_mod n m = ((n - 1) `mod` m) + 1
+
+-- | One-indexed 'divMod' function.
+--
+-- > map (`oi_divMod` 5) [1,3 .. 9] == [(0,1),(0,3),(0,5),(1,2),(1,4)]
+oi_divMod :: Integral t => t -> t -> (t, t)
+oi_divMod n m = let (i,j) = (n - 1) `divMod` m in (i,j + 1)
