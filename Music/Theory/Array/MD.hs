@@ -88,29 +88,29 @@ md_table_p3 hdr (p,q,r) = md_table hdr [map show p,map show q,map show r]
 {- | Matrix form, ie. header in both first row and first column, in
 each case displaced by one location which is empty.
 
-> let t = md_matrix "" (map return "abc") (map (map show) [[1,2,3],[2,3,1],[3,1,2]])
+> let h = (map return "abc",map return "efgh")
+> let t = md_matrix "" h (map (map show) [[1,2,3,4],[2,3,4,1],[3,4,1,2]])
 
 >>> putStrLn $ unlines $ md_table' t
-- - - -
-  a b c
-a 1 2 3
-b 2 3 1
-c 3 1 2
-- - - -
+ - - - - -
+  e f g h
+a 1 2 3 4
+b 2 3 4 1
+c 3 4 1 2
+- - - - -
 
 -}
-md_matrix :: a -> [a] -> [[a]] -> MD_Table a
-md_matrix nil nm t = md_table_join (Nothing,[nil] : map return nm) (Nothing,nm : t)
+md_matrix :: a -> ([a],[a]) -> [[a]] -> MD_Table a
+md_matrix nil (r,c) t = md_table_join (Nothing,[nil] : map return r) (Nothing,c : t)
 
 -- | Variant that takes a 'show' function and a /header decoration/ function.
-md_matrix_opt :: (a -> String) -> (String -> String) -> [a] -> [[a]] -> MD_Table String
+md_matrix_opt :: (a -> String) -> (String -> String) -> ([a],[a]) -> [[a]] -> MD_Table String
 md_matrix_opt show_f hd_f nm t =
     let t' = map (map show_f) t
-        nm' = map (hd_f . show_f) nm
+        nm' = T.bimap1 (map (hd_f . show_f)) nm
     in md_matrix "" nm' t'
 
 -- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
 -- the header cells are in bold.
-md_matrix_bold :: [String] -> [[String]] -> MD_Table String
+md_matrix_bold :: ([String],[String]) -> [[String]] -> MD_Table String
 md_matrix_bold = let bold x = "__" ++ x ++ "__" in md_matrix_opt show bold
-
