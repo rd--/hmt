@@ -552,3 +552,21 @@ ic = Z.ic z12_modulo
 -- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
 icv :: Integral i => [Z12] -> [i]
 icv = Z.icv z12_modulo
+
+-- | Type specialise...
+icv' :: [Z12] -> [Int]
+icv' = icv
+
+-- * Z-relation
+
+-- | Locate /Z/ relation of set class.
+--
+-- > fmap sc_name (z_relation_of (sc "7-Z12")) == Just "7-Z36"
+z_relation_of :: [Z12] -> Maybe [Z12]
+z_relation_of x =
+    let n = length x
+        f y = x /= y && icv' x == icv' y
+    in case filter f (scs_n n) of
+         [] -> Nothing
+         [r] -> Just r
+         _ -> error "z_relation_of"
