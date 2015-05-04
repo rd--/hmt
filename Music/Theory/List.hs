@@ -133,8 +133,8 @@ histogram x =
 -- | Elements that appear more than once in the input.
 --
 -- > map duplicates ["duplicates","redundant"] == ["","dn"]
-duplicates :: (Ord a,Integral i) => [a] -> [a]
-duplicates = map fst . filter (\(_,n) -> n > 1) . histogram
+duplicates :: Ord a => [a] -> [a]
+duplicates = map fst . filter (\(_,n) -> n > (1::Integer)) . histogram
 
 -- | List segments of length /i/ at distance /j/.
 --
@@ -460,3 +460,17 @@ merge_by_resolve jn cmp =
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
 bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)
+
+-- * Ord
+
+-- | 'minimum' and 'maximum' in one pass.
+--
+-- > minmax "minimumandmaximum" == ('a','x')
+minmax :: Ord t => [t] -> (t,t)
+minmax inp =
+    let go (l,r) xs = case xs of
+                        [] -> (l,r)
+                        x:xs' -> go (min x l,max x r) xs'
+    in case inp of
+         [] -> error "minmax"
+         x:xs -> go (x,x) xs

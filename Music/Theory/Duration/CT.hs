@@ -134,7 +134,7 @@ ct_measure sq (mrq,mk,pr,dv) =
                           then CT_Pre du
                           else if g == 1 then CT_Edge du else CT_Normal du
             in (du * (60 / ct_tempo_at sq rq),nm)
-    in map f (zip3 [1..] mrq dv')
+    in map f (zip3 [1::Int ..] mrq dv')
 
 -- | Click track definition.
 data CT = CT {ct_len :: Int

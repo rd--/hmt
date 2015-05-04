@@ -17,7 +17,6 @@
 -- 5. Ascribe values to notated durations, see 'ascribe'.
 module Music.Theory.Duration.Sequence.Notate where
 
-import Control.Applicative {- base -}
 import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.List.Split {- split -}
