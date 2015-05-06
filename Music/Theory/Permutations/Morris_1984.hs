@@ -99,6 +99,14 @@ gen_swaps k =
                             else Left n : rec (m + 1) l'
     in rec 1
 
+-- | Given two sequences, derive the one-indexed "hold" list.
+--
+-- > derive_holds ("12345","13254") == [1]
+derive_holds :: (Eq a,Enum n,Num n) => ([a],[a]) -> [n]
+derive_holds (p,q) =
+    let f n (i,j) = if i == j then Just n else Nothing
+    in catMaybes (zipWith f [1..] (zip p q))
+
 -- | Two-tuple to two element list.
 pair_to_list :: (t,t) -> [t]
 pair_to_list (p,q) = [p,q]
