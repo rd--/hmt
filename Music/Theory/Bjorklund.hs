@@ -3,9 +3,11 @@
 -- /Journal of Computational Geometry: Theory and Applications/
 -- Volume 42, Issue 5, July, 2009
 -- (<http://dx.doi.org/10.1016/j.comgeo.2008.04.005>)
-module Music.Theory.Bjorklund (bjorklund,xdot,iseq,iseq_str) where
+module Music.Theory.Bjorklund where
 
 import Data.List.Split {- split -}
+
+import qualified Music.Theory.List as T
 
 type STEP a = ((Int,Int),([[a]],[[a]]))
 
@@ -26,63 +28,58 @@ bjorklund' (n,x) =
        then (n,x)
        else bjorklund' (if i > j then left (n,x) else right (n,x))
 
--- | Bjorklund's algorithm to construct a binary sequence of /n/ bits
--- with /k/ ones such that the /k/ ones are distributed as evenly as
--- possible among the (/n/ - /k/) zeroes.
---
--- > bjorklund (5,9) == [True,False,True,False,True,False,True,False,True]
--- > xdot (bjorklund (5,9)) == "x.x.x.x.x"
---
--- > let es = [(2,3),(2,5)
--- >          ,(3,4),(3,5),(3,8)
--- >          ,(4,7),(4,9),(4,12),(4,15)
--- >          ,(5,6),(5,7),(5,8),(5,9),(5,11),(5,12),(5,13),(5,16)
--- >          ,(6,7),(6,13)
--- >          ,(7,8),(7,9),(7,10),(7,12),(7,15),(7,16),(7,17),(7,18)
--- >          ,(8,17),(8,19)
--- >          ,(9,14),(9,16),(9,22),(9,23)
--- >          ,(11,12),(11,24)
--- >          ,(13,24)
--- >          ,(15,34)]
--- > in map (\e -> let e' = bjorklund e in (e,xdot e',iseq_str e')) es
---
--- > [((2,3),"xx.","(12)")
--- > ,((2,5),"x.x..","(23)")
--- > ,((3,4),"xxx.","(112)")
--- > ,((3,5),"x.x.x","(221)")
--- > ,((3,8),"x..x..x.","(332)")
--- > ,((4,7),"x.x.x.x","(2221)")
--- > ,((4,9),"x.x.x.x..","(2223)")
--- > ,((4,12),"x..x..x..x..","(3333)")
--- > ,((4,15),"x...x...x...x..","(4443)")
--- > ,((5,6),"xxxxx.","(11112)")
--- > ,((5,7),"x.xx.xx","(21211)")
--- > ,((5,8),"x.xx.xx.","(21212)")
--- > ,((5,9),"x.x.x.x.x","(22221)")
--- > ,((5,11),"x.x.x.x.x..","(22223)")
--- > ,((5,12),"x..x.x..x.x.","(32322)")
--- > ,((5,13),"x..x.x..x.x..","(32323)")
--- > ,((5,16),"x..x..x..x..x...","(33334)")
--- > ,((6,7),"xxxxxx.","(111112)")
--- > ,((6,13),"x.x.x.x.x.x..","(222223)")
--- > ,((7,8),"xxxxxxx.","(1111112)")
--- > ,((7,9),"x.xxx.xxx","(2112111)")
--- > ,((7,10),"x.xx.xx.xx","(2121211)")
--- > ,((7,12),"x.xx.x.xx.x.","(2122122)")
--- > ,((7,15),"x.x.x.x.x.x.x..","(2222223)")
--- > ,((7,16),"x..x.x.x..x.x.x.","(3223222)")
--- > ,((7,17),"x..x.x..x.x..x.x.","(3232322)")
--- > ,((7,18),"x..x.x..x.x..x.x..","(3232323)")
--- > ,((8,17),"x.x.x.x.x.x.x.x..","(22222223)")
--- > ,((8,19),"x..x.x.x..x.x.x..x.","(32232232)")
--- > ,((9,14),"x.xx.xx.xx.xx.","(212121212)")
--- > ,((9,16),"x.xx.x.x.xx.x.x.","(212221222)")
--- > ,((9,22),"x..x.x..x.x..x.x..x.x.","(323232322)")
--- > ,((9,23),"x..x.x..x.x..x.x..x.x..","(323232323)")
--- > ,((11,12),"xxxxxxxxxxx.","(11111111112)")
--- > ,((11,24),"x..x.x.x.x.x..x.x.x.x.x.","(32222322222)")
--- > ,((13,24),"x.xx.x.x.x.x.xx.x.x.x.x.","(2122222122222)")
--- > ,((15,34),"x..x.x.x.x..x.x.x.x..x.x.x.x..x.x.","(322232223222322)")]
+{- | Bjorklund's algorithm to construct a binary sequence of /n/ bits
+with /k/ ones such that the /k/ ones are distributed as evenly as
+possible among the (/n/ - /k/) zeroes.
+
+> bjorklund (5,9) == [True,False,True,False,True,False,True,False,True]
+> map xdot (bjorklund (5,9)) == "x.x.x.x.x"
+
+> let {es = [(2,[3,5]),(3,[4,5,8]),(4,[7,9,12,15]),(5,[6,7,8,9,11,12,13,16])
+>           ,(6,[7,13]),(7,[8,9,10,12,15,16,17,18]),(8,[17,19])
+>           ,(9,[14,16,22,23]),(11,[12,24]),(13,[24]),(15,[34])]
+>     ;es' = concatMap (\(i,j) -> map ((,) i) j) es}
+> in mapM_ (putStrLn . euler_pp') es'
+
+> > E(2,3) [××·] (12)
+> > E(2,5) [×·×··] (23)
+> > E(3,4) [×××·] (112)
+> > E(3,5) [×·×·×] (221)
+> > E(3,8) [×··×··×·] (332)
+> > E(4,7) [×·×·×·×] (2221)
+> > E(4,9) [×·×·×·×··] (2223)
+> > E(4,12) [×··×··×··×··] (3333)
+> > E(4,15) [×···×···×···×··] (4443)
+> > E(5,6) [×××××·] (11112)
+> > E(5,7) [×·××·××] (21211)
+> > E(5,8) [×·××·××·] (21212)
+> > E(5,9) [×·×·×·×·×] (22221)
+> > E(5,11) [×·×·×·×·×··] (22223)
+> > E(5,12) [×··×·×··×·×·] (32322)
+> > E(5,13) [×··×·×··×·×··] (32323)
+> > E(5,16) [×··×··×··×··×···] (33334)
+> > E(6,7) [××××××·] (111112)
+> > E(6,13) [×·×·×·×·×·×··] (222223)
+> > E(7,8) [×××××××·] (1111112)
+> > E(7,9) [×·×××·×××] (2112111)
+> > E(7,10) [×·××·××·××] (2121211)
+> > E(7,12) [×·××·×·××·×·] (2122122)
+> > E(7,15) [×·×·×·×·×·×·×··] (2222223)
+> > E(7,16) [×··×·×·×··×·×·×·] (3223222)
+> > E(7,17) [×··×·×··×·×··×·×·] (3232322)
+> > E(7,18) [×··×·×··×·×··×·×··] (3232323)
+> > E(8,17) [×·×·×·×·×·×·×·×··] (22222223)
+> > E(8,19) [×··×·×·×··×·×·×··×·] (32232232)
+> > E(9,14) [×·××·××·××·××·] (212121212)
+> > E(9,16) [×·××·×·×·××·×·×·] (212221222)
+> > E(9,22) [×··×·×··×·×··×·×··×·×·] (323232322)
+> > E(9,23) [×··×·×··×·×··×·×··×·×··] (323232323)
+> > E(11,12) [×××××××××××·] (11111111112)
+> > E(11,24) [×··×·×·×·×·×··×·×·×·×·×·] (32222322222)
+> > E(13,24) [×·××·×·×·×·×·××·×·×·×·×·] (2122222122222)
+> > E(15,34) [×··×·×·×·×··×·×·×·×··×·×·×·×··×·×·] (322232223222322)
+
+-}
 bjorklund :: (Int,Int) -> [Bool]
 bjorklund (i,j') =
     let j = j' - i
@@ -91,11 +88,42 @@ bjorklund (i,j') =
         (_,(x',y')) = bjorklund' ((i,j),(x,y))
     in concat x' ++ concat y'
 
+-- | 'T.rotate_right' of 'bjorklund'.
+--
+-- > map xdot' (bjorklund_r 2 (5,16)) == "··×··×··×··×··×·"
+bjorklund_r :: Int -> (Int, Int) -> [Bool]
+bjorklund_r n = T.rotate_right n . bjorklund
+
+-- | Pretty printer, generalise.
+euler_pp_f :: (Bool -> Char) -> (Int,Int) -> String
+euler_pp_f f e =
+    let r = bjorklund e
+    in concat ["E",show e," [",map f r,"] ",iseq_str r]
+
+-- | Unicode form, ie. @×·@.
+--
+-- > euler_pp' (7,12) == "E(7,12) [×·××·×·××·×·] (2122122)"
+euler_pp' :: (Int, Int) -> String
+euler_pp' = euler_pp_f xdot'
+
+-- | ASCII form, ie. @x.@.
+--
+-- > euler_pp (7,12) == "E(7,12) [x.xx.x.xx.x.] (2122122)"
+euler_pp :: (Int, Int) -> String
+euler_pp = euler_pp_f xdot
+
 -- | /xdot/ notation for pattern.
 --
--- > xdot (bjorklund (5,9)) == "x.x.x.x.x"
-xdot :: [Bool] -> String
-xdot = map (\x -> if x then 'x' else '.')
+-- > map xdot (bjorklund (5,9)) == "x.x.x.x.x"
+xdot :: Bool -> Char
+xdot x = if x then 'x' else '.'
+
+-- | Unicode variant.
+--
+-- > map xdot' (bjorklund (5,12)) == "×··×·×··×·×·"
+-- > map xdot' (bjorklund (5,16)) == "×··×··×··×··×···"
+xdot' :: Bool -> Char
+xdot' x = if x then '×' else '·'
 
 -- | The 'iseq' of a pattern is the distance between 'True' values.
 --
