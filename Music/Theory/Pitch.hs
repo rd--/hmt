@@ -244,21 +244,33 @@ pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
 
 -- * Frequency (CPS)
 
--- | /Midi/ note number to cycles per second.
+-- | /Midi/ note number to cycles per second, given frequency of ISO A4.
+midi_to_cps_f0 :: (Integral i,Floating f) => f -> i -> f
+midi_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . fromIntegral
+
+-- | 'midi_to_cps_f0' 440.
 --
 -- > map midi_to_cps [60,69] == [261.6255653005986,440.0]
 midi_to_cps :: (Integral i,Floating f) => i -> f
-midi_to_cps = fmidi_to_cps . fromIntegral
+midi_to_cps = midi_to_cps_f0 440
 
--- | Fractional /midi/ note number to cycles per second.
+-- | Fractional /midi/ note number to cycles per second, given frequency of ISO A4.
+fmidi_to_cps_f0 :: Floating a => a -> a -> a
+fmidi_to_cps_f0 f0 i = f0 * (2 ** ((i - 69) * (1 / 12)))
+
+-- | 'fmidi_to_cps_f0' 440.
 --
 -- > map fmidi_to_cps [69,69.1] == [440.0,442.5488940698553]
 fmidi_to_cps :: Floating a => a -> a
-fmidi_to_cps i = 440 * (2 ** ((i - 69) * (1 / 12)))
+fmidi_to_cps = fmidi_to_cps_f0 440
 
--- | 'fmidi_to_cps' of 'pitch_to_fmidi'.
+-- | 'fmidi_to_cps' of 'pitch_to_fmidi', given frequency of ISO A4.
+pitch_to_cps_f0 :: Floating n => n -> Pitch -> n
+pitch_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . pitch_to_fmidi
+
+-- | 'pitch_to_cps_f0' 440.
 pitch_to_cps :: Floating n => Pitch -> n
-pitch_to_cps = fmidi_to_cps . pitch_to_fmidi
+pitch_to_cps = pitch_to_cps_f0 440
 
 -- | Frequency (cycles per second) to /midi/ note number, ie. 'round'
 -- of 'cps_to_fmidi'.
@@ -274,11 +286,15 @@ cps_to_midi = round . cps_to_fmidi
 cps_to_fmidi :: Floating a => a -> a
 cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 
--- | 'midi_to_cps' of 'octpc_to_midi'.
+-- | 'midi_to_cps_f0' of 'octpc_to_midi', given frequency of ISO A4.
+octpc_to_cps_f0 :: (Integral i,Floating n) => n -> Octave_PitchClass i -> n
+octpc_to_cps_f0 f0 = midi_to_cps_f0 f0 . octpc_to_midi
+
+-- | 'octpc_to_cps_f0' 440.
 --
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
-octpc_to_cps = midi_to_cps . octpc_to_midi
+octpc_to_cps = octpc_to_cps_f0 440
 
 -- | 'midi_to_octpc' of 'cps_to_midi'.
 cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
@@ -301,9 +317,15 @@ cps_to_midi_detune f =
 midi_detune_normalise :: Midi_Detune -> Midi_Detune
 midi_detune_normalise (m,c) = if c <= 50 then (m,c) else (m + 1, negate (100 - c))
 
+-- | Inverse of 'cps_to_midi_detune', given frequency of ISO A4.
+midi_detune_to_cps_f0 :: Double -> Midi_Detune -> Double
+midi_detune_to_cps_f0 f0 (m,c) = fmidi_to_cps_f0 f0 (fromIntegral m + (c / 100))
+
 -- | Inverse of 'cps_to_midi_detune'.
+--
+-- > map midi_detune_to_cps [(69,0),(68,100)] == [440,440]
 midi_detune_to_cps :: Midi_Detune -> Double
-midi_detune_to_cps (m,c) = fmidi_to_cps (fromIntegral m + (c / 100))
+midi_detune_to_cps = midi_detune_to_cps_f0 440
 
 -- | 'Midi_Detune' to 'Pitch', detune must be precisely at a notateable Pitch.
 --

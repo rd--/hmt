@@ -13,30 +13,43 @@ import Music.Theory.Pitch.Spelling {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 
 -- | 'octpc_to_pitch' and 'octpc_to_cps'.
+octpc_to_pitch_cps_f0 :: (Floating n) => n -> OctPC -> (Pitch,n)
+octpc_to_pitch_cps_f0 f0 x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps_f0 f0 x)
+
+-- | 'octpc_to_pitch' and 'octpc_to_cps'.
 octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
-octpc_to_pitch_cps x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps x)
+octpc_to_pitch_cps = octpc_to_pitch_cps_f0 440
 
 -- | 12-tone equal temperament table equating 'Pitch' and frequency
--- over range of human hearing, where @A4@ = @440@hz.
+-- over range of human hearing, where @A4@ has given frequency.
+--
+-- > tbl_12et_f0 415
+tbl_12et_f0 :: Double -> [(Pitch,Double)]
+tbl_12et_f0 f0 =
+    let z = [(o,pc) | o <- [0..10], pc <- [0..11]]
+    in map (octpc_to_pitch_cps_f0 f0) z
+
+-- | 'tbl_12et_f0' @440@hz.
 --
 -- > length tbl_12et == 132
--- > let min_max l = (minimum l,maximum l)
--- > min_max (map (round . snd) tbl_12et) == (16,31609)
+-- > minmax (map (round . snd) tbl_12et) == (16,31609)
 tbl_12et :: [(Pitch,Double)]
-tbl_12et =
-    let z = [(o,pc) | o <- [0..10], pc <- [0..11]]
-    in map octpc_to_pitch_cps z
+tbl_12et = tbl_12et_f0 440
 
--- | 24-tone equal temperament variant of 'tbl_12et'.
---
--- > length tbl_24et == 264
--- > min_max (map (round . snd) tbl_24et) == (16,32535)
-tbl_24et :: [(Pitch,Double)]
-tbl_24et =
+-- | 24-tone equal temperament variant of 'tbl_12et_f0'.
+tbl_24et_f0 :: Double -> [(Pitch,Double)]
+tbl_24et_f0 f0 =
     let f x = let p = fmidi_to_pitch pc_spell_ks x
                   p' = pitch_rewrite_threequarter_alteration p
-              in (p',fmidi_to_cps x)
+              in (p',fmidi_to_cps_f0 f0 x)
     in map f [12,12.5 .. 143.5]
+
+-- | 'tbl_24et_f0' @440@.
+--
+-- > length tbl_24et == 264
+-- > minmax (map (round . snd) tbl_24et) == (16,32535)
+tbl_24et :: [(Pitch,Double)]
+tbl_24et = tbl_24et_f0 440
 
 -- | Given an @ET@ table (or like) find bounds of frequency.
 --
@@ -223,26 +236,20 @@ ratio_to_pitch_detune_24et :: OctPC -> Rational -> Pitch_Detune
 ratio_to_pitch_detune_24et = ratio_to_pitch_detune nearest_24et_tone
 
 pitch_detune_in_octave_nearest  :: Pitch -> Pitch_Detune -> Pitch_Detune
-pitch_detune_in_octave_nearest p1 (p2,d2) =
-    let p2' = pitch_in_octave_nearest p1 p2
-    in (p2',d2)
+pitch_detune_in_octave_nearest p1 (p2,d2) = (pitch_in_octave_nearest p1 p2,d2)
 
 -- | Markdown pretty-printer for 'Pitch_Detune'.
 pitch_detune_md :: Pitch_Detune -> String
-pitch_detune_md (p,c) =
-    pitch_pp p ++ cents_diff_md (round c :: Integer)
+pitch_detune_md (p,c) = pitch_pp p ++ cents_diff_md (round c :: Integer)
 
 -- | HTML pretty-printer for 'Pitch_Detune'.
 pitch_detune_html :: Pitch_Detune -> String
-pitch_detune_html (p,c) =
-    pitch_pp p ++ cents_diff_html (round c :: Integer)
+pitch_detune_html (p,c) = pitch_pp p ++ cents_diff_html (round c :: Integer)
 
 -- | No-octave variant of 'pitch_detune_md'.
 pitch_class_detune_md :: Pitch_Detune -> String
-pitch_class_detune_md (p,c) =
-    pitch_class_pp p ++ cents_diff_md (round c :: Integer)
+pitch_class_detune_md (p,c) = pitch_class_pp p ++ cents_diff_md (round c :: Integer)
 
 -- | No-octave variant of 'pitch_detune_html'.
 pitch_class_detune_html :: Pitch_Detune -> String
-pitch_class_detune_html (p,c) =
-    pitch_class_pp p ++ cents_diff_html (round c :: Integer)
+pitch_class_detune_html (p,c) = pitch_class_pp p ++ cents_diff_html (round c :: Integer)
