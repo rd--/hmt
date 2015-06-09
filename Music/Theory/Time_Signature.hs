@@ -1,6 +1,7 @@
 -- | Time Signatures.
 module Music.Theory.Time_Signature where
 
+import Data.Function {- base -}
 import Data.Ratio {- base -}
 
 import Music.Theory.Duration
@@ -59,6 +60,10 @@ ts_whole_note_rq = sum . map duration_to_rq . ts_whole_note
 -- > map ts_rq [(3,4),(5,8)] == [3,5/2]
 ts_rq :: Time_Signature -> RQ
 ts_rq (n,d) = (4 * n) % d
+
+-- | 'compare' 'on' 'ts_rq'.
+ts_compare :: Time_Signature -> Time_Signature -> Ordering
+ts_compare = compare `on` ts_rq
 
 -- | 'Time_Signature' derived from whole note duration in 'RQ' form.
 --
