@@ -92,7 +92,7 @@ each case displaced by one location which is empty.
 > let t = md_matrix "" h (map (map show) [[1,2,3,4],[2,3,4,1],[3,4,1,2]])
 
 >>> putStrLn $ unlines $ md_table' t
- - - - - -
+- - - - -
   e f g h
 a 1 2 3 4
 b 2 3 4 1
@@ -112,5 +112,5 @@ md_matrix_opt show_f hd_f nm t =
 
 -- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
 -- the header cells are in bold.
-md_matrix_bold :: ([String],[String]) -> [[String]] -> MD_Table String
+md_matrix_bold :: Show a => ([a],[a]) -> [[a]] -> MD_Table String
 md_matrix_bold = let bold x = "__" ++ x ++ "__" in md_matrix_opt show bold
