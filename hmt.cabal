@@ -105,6 +105,7 @@ Library
                    Music.Theory.Tuning.Syntonic
                    Music.Theory.Tuning.Werckmeister
                    Music.Theory.Unicode
+                   Music.Theory.Wyschnegradsky
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z
