@@ -198,3 +198,52 @@ u3_ch_seq_to_vec =
     d_dx .
     map u3_ch_ix .
     filter (not . isSpace)
+
+-- * DU9
+
+
+-- > let c' = map length du9_circ in (sum c',c') == (72,[5,6,7,2,3,4,4,3,2,7,7,4,4,3,2,2,3,4])
+--
+-- let f x = pitch_class_pp (octpc_to_pitch pc_spell_ks (4,x))
+du9_circ :: Num n => [[n]]
+du9_circ =
+    [[6,5,4,3,2]
+     ,[3,2,1,0,11,10]
+     ,[11,10,9,8,7,6,5]
+     ,[6,5]
+     ,[6,5,4]
+     ,[5,4,3,2]
+     ,[3,2,1,0]
+     ,[1,0,11]
+     ,[0,11]
+     ,[0,1,2,3,4,5,6]
+     ,[5,6,7,8,9,10,9]
+     ,[10,11,0,1]
+     ,[0,1,2,3]
+     ,[2,3,4]
+     ,[3,4]
+     ,[3,4]
+     ,[3,4,5]
+     ,[4,5,6,7]]
+
+-- > length du9_rad == 18
+du9_rad :: Num n => [n]
+du9_rad = [0,10,8,6,4,2,0,10,8,6,4,2,0,10,8,6,4,2]
+
+-- > map length du9_ix == replicate 72 18
+du9_ix :: Integral n => [[n]]
+du9_ix = map (\n -> map (add_m 12 n) du9_rad) (concat du9_circ)
+
+du9_clr_hex :: [String]
+du9_clr_hex =
+    let c = ["#e96d61","#e6572b"
+            ,"#e07122","#e39e36"
+            ,"#e8b623","#e5c928"
+            ,"#c2ba3d","#a2a367"
+            ,"#537a77","#203342"
+            ,"#84525e","#bc6460"]
+        n = interleave [6,4,2,0,10,8] [5,3,1,11,9,7]
+    in map snd (sort (zip n c))
+
+du9_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
+du9_clr_rgb = map (clr_normalise 255 . parse_hex_clr) du9_clr_hex
