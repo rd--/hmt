@@ -204,29 +204,33 @@ u3_ch_seq_to_vec =
 
 -- > let c' = map length du9_circ in (sum c',c') == (72,[5,6,7,2,3,4,4,3,2,7,7,4,4,3,2,2,3,4])
 --
--- let f x = pitch_class_pp (octpc_to_pitch pc_spell_ks (4,x))
+-- > import Music.Theory.Pitch
+-- > import Music.Theory.Pitch.Spelling
+-- > let f x = pitch_class_pp (octpc_to_pitch pc_spell_ks (4,x))
+-- > putStrLn $ intercalate " | " $ map (unwords . map f) du9_circ
 du9_circ :: Num n => [[n]]
 du9_circ =
     [[6,5,4,3,2]
-     ,[3,2,1,0,11,10]
-     ,[11,10,9,8,7,6,5]
-     ,[6,5]
-     ,[6,5,4]
-     ,[5,4,3,2]
-     ,[3,2,1,0]
-     ,[1,0,11]
-     ,[0,11]
-     ,[0,1,2,3,4,5,6]
-     ,[5,6,7,8,9,10,9]
-     ,[10,11,0,1]
-     ,[0,1,2,3]
-     ,[2,3,4]
-     ,[3,4]
-     ,[3,4]
-     ,[3,4,5]
-     ,[4,5,6,7]]
+    ,[3,2,1,0,11,10]
+    ,[11,10,9,8,7,6,5]
+    ,[6,5]
+    ,[6,5,4]
+    ,[5,4,3,2]
+    ,[3,2,1,0]
+    ,[1,0,11]
+    ,[0,11]
+    ,[0,1,2,3,4,5,6]
+    ,[5,6,7,8,9,10,9]
+    ,[10,11,0,1]
+    ,[0,1,2,3]
+    ,[2,3,4]
+    ,[3,4]
+    ,[3,4]
+    ,[3,4,5]
+    ,[4,5,6,7]]
 
 -- > length du9_rad == 18
+-- > putStrLn $ unwords $ map f du9_rad
 du9_rad :: Num n => [n]
 du9_rad = [0,10,8,6,4,2,0,10,8,6,4,2,0,10,8,6,4,2]
 
