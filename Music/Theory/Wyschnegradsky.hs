@@ -7,6 +7,8 @@ import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
 import Music.Theory.List {- hmt -}
+import Music.Theory.Pitch {- hmt -}
+import Music.Theory.Pitch.Spelling {- hmt -}
 
 -- | In a modulo /m/ system, normalise step increments to be either -1
 -- or 1.  Non steps raise an error.
@@ -78,6 +80,12 @@ seq_group c_div r_div s =
     case s of
       Circumferential c -> chunksOf c_div c
       Radial r -> transpose (chunksOf r_div r)
+
+-- | Printer for pitch-class segments.
+iw_pc_pp :: Integral n => String -> [[n]] -> IO ()
+iw_pc_pp sep =
+    let f = pitch_class_pp' False . octpc_to_pitch pc_spell_ks . (,) 4
+    in putStrLn . intercalate sep . map (unwords . map f)
 
 -- * U3
 
@@ -205,10 +213,7 @@ u3_ch_seq_to_vec =
 --
 -- > let c' = map length dc9_circ in (sum c',c') == (72,[5,6,7,2,3,4,4,3,2,7,7,4,4,3,2,2,3,4])
 --
--- > import Music.Theory.Pitch
--- > import Music.Theory.Pitch.Spelling
--- > let f x = pitch_class_pp (octpc_to_pitch pc_spell_ks (4,x))
--- > putStrLn $ intercalate " | " $ map (unwords . map f) dc9_circ
+-- > iw_pc_pp " | " dc9_circ
 dc9_circ :: Num n => [[n]]
 dc9_circ =
     [[6,5,4,3,2]
@@ -258,3 +263,63 @@ dc9_clr_hex =
 -- | RGB form of colours.
 dc9_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
 dc9_clr_rgb = map (clr_normalise 255 . parse_hex_clr) dc9_clr_hex
+
+-- * U11
+
+-- > 18 * 4 == 72
+-- > let c' = map length u11_circ in (sum c',length c',c')
+--
+-- > iw_pc_pp "\n- " u11_circ
+u11_circ :: Num n => [[n]]
+u11_circ =
+    [[7,8,9,10,11,0,1,2,3]
+    ,[10,11,0,1,2,3,4,5,6]
+    ,[0,1,2,3,4,5]
+    ,[0,1,2]
+    ,[10,11]
+    ,[6,7]
+    ,[2]
+    ,[9]
+    ,[4]
+    ,[11]
+    ,[6,7]
+    ,[2]
+    ,[9]
+    ,[2]
+    ,[11]
+    ,[6,7]
+    ,[2,3]
+    ,[10,11,0]
+    ,[7,8,9,10,11,0]
+    ,[7,8,9,10,11,0,1,2,3]
+    ,[10,11,0,1,2,3,4,5,6]]
+
+-- > iw_pc_pp "|" [u11_gen_seq 7 18 [5]]
+u11_gen_seq :: Integral i => i -> Int -> [i] -> [i]
+u11_gen_seq z n = map (`mod` 12) . take n . dx_d z . cycle
+
+u11_seq_rule :: Integral i => Maybe Int -> [i]
+u11_seq_rule n = u11_gen_seq 0 18 (maybe [-1] (\x -> replicate x (-1) ++ [5]) n)
+
+-- > ull_rad_text == "012588---------885210"
+ull_rad_text :: [Char]
+ull_rad_text =
+    let x = "012588----"
+        y = "-"
+    in x ++ y ++ reverse x
+
+-- > iw_pc_pp "\n- " u11_rad
+u11_rad :: Integral n => [[n]]
+u11_rad =
+    let f c = if c == '-' then Nothing else Just (read [c])
+    in map (u11_seq_rule . f) ull_rad_text
+
+u11_clr_hex :: [String]
+u11_clr_hex =
+    let c = ["#dbb56a","#ffb05c","#ea7c3f","#f93829","#ee6054","#d18d9c"
+            ,"#a94c79","#215272","#628b7d","#9dbc90","#ecdfaa","#fbeaa5"]
+        n = reverse ([4..11] ++ [0..3])
+    in map snd (sort (zip n c))
+
+u11_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
+u11_clr_rgb = map (clr_normalise 256 . parse_hex_clr) u11_clr_hex
