@@ -1,13 +1,14 @@
 -- | Common music notation note and alteration values.
 module Music.Theory.Pitch.Note where
 
+import Data.Char {- base -}
 import Data.Maybe {- base -}
 
 -- * Note
 
 -- | Enumeration of common music notation note names (@C@ to @B@).
 data Note_T = C | D | E | F | G | A | B
-              deriving (Eq,Enum,Bounded,Ord,Show)
+              deriving (Eq,Enum,Bounded,Ord,Read,Show)
 
 -- | Transform 'Note_T' to pitch-class number.
 --
@@ -31,6 +32,14 @@ note_t_transpose x n =
     let x' = fromEnum x
         n' = fromEnum (maxBound::Note_T) + 1
     in toEnum ((x' + n) `mod` n')
+
+-- | Parser from 'Char', case insensitive flag.
+--
+-- > mapMaybe (parse_note True) "CDEFGab" == [C,D,E,F,G,A,B]
+parse_note :: Bool -> Char -> Maybe Note_T
+parse_note ci c =
+    let tbl = zip "CDEFGAB" [C,D,E,F,G,A,B]
+    in lookup (if ci then toUpper c else c) tbl
 
 -- * Alteration
 
@@ -164,7 +173,7 @@ alteration_symbol a =    case a of
       ThreeQuarterToneSharp -> '𝄰'
       DoubleSharp -> '𝄪'
 
--- | The @ISO@ ASCII spellings for alterations.  Naturals as written
+-- | The @ISO@ ASCII spellings for alterations.  Naturals are written
 -- as the empty string.
 --
 -- > mapMaybe alteration_iso_m [Flat .. Sharp] == ["b","","#"]

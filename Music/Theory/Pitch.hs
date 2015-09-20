@@ -340,6 +340,18 @@ midi_detune_nearest_24et (m,dt) = (m,T.round_to 50 dt)
 
 -- * Parsers
 
+-- | Parse possible octave from single integer.
+--
+-- > map (parse_octave 2) ["","4","x","11"]
+parse_octave :: Num a => a -> String -> Maybe a
+parse_octave def_o o =
+    case o of
+      [] -> Just def_o
+      [n] -> if isDigit n
+             then Just (fromIntegral (digitToInt n))
+             else Nothing
+      _ -> Nothing
+
 -- | Slight generalisation of ISO pitch representation.  Allows octave
 -- to be elided, pitch names to be lower case, and double sharps
 -- written as @##@.
@@ -350,17 +362,9 @@ midi_detune_nearest_24et (m,dt) = (m,T.round_to 50 dt)
 -- > in mapMaybe (parse_iso_pitch_oct 4) ["C","Ab5","f##6",""] == r
 parse_iso_pitch_oct :: Octave -> String -> Maybe Pitch
 parse_iso_pitch_oct def_o s =
-    let nte n = let tb = zip "cdefgab" [C,D,E,F,G,A,B]
-                in lookup (toLower n) tb
-        oct o = case o of
-                  [] -> Just def_o
-                  [n] -> if isDigit n
-                         then Just (fromIntegral (digitToInt n))
-                         else Nothing
-                  _ -> Nothing
-        mk n a o = case nte n of
+    let mk n a o = case parse_note True n of
                    Nothing -> Nothing
-                   Just n' -> fmap (Pitch n' a) (oct o)
+                   Just n' -> fmap (Pitch n' a) (parse_octave def_o o)
     in case s of
          [] -> Nothing
          n:'b':'b':o -> mk n DoubleFlat o

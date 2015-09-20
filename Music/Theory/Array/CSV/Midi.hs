@@ -1,4 +1,6 @@
 -- | Functions for reading midi note data from CSV files.
+-- This is /not/ a generic text midi notation.
+-- The defined commands are @on@ and @off@, but others may be present.
 module Music.Theory.Array.CSV.Midi where
 
 import Data.Function {- base -}
@@ -8,6 +10,8 @@ import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
 -- | Variant of 'reads' requiring exact match.
+--
+-- > map reads_exact ["1.5","2,5"] == [Just 1.5,Nothing]
 reads_exact :: Read a => String -> Maybe a
 reads_exact s =
     case reads s of
@@ -18,44 +22,48 @@ reads_exact s =
 reads_err :: Read a => String -> a
 reads_err str = fromMaybe (error ("could not read: " ++ str)) (reads_exact str)
 
--- | The required header field.
-csv_midi_note_data_hdr :: [String]
-csv_midi_note_data_hdr = ["time","on/off","note","velocity"]
+-- | The required header field, header is @time,on/off,note,velocity,channel@.
+csv_midi_hdr :: [String]
+csv_midi_hdr = ["time","on/off","note","velocity","channel"]
 
--- | Midi note data, header is @time,on/off,note,velocity@.
--- Translation values for on/off are consulted.
+-- | Midi note data.  Translation values for on/off are consulted.
 --
 -- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
--- > csv_midi_note_data_read' ("ON","OFF") fn :: IO [(Double,Either String String,Double,Double)]
-csv_midi_note_data_read' :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,Either m String,n,n)]
-csv_midi_note_data_read' (m_on,m_off) =
-    let err x = error ("csv_midi_note_data_read: " ++ x)
-        read_md x = case x of
-                      "on" -> Left m_on
-                      "off" -> Left m_off
-                      _ -> Right x
+-- > m <- csv_midi_read fn :: IO [(Double,Bool,Double,Double,Int)]
+-- > length m == 17655
+csv_midi_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [(t,String,n,n,Int)]
+csv_midi_read =
+    let err x = error ("csv_midi_read: " ++ x)
         f m =
             case m of
-              [st,md,mnn,amp] -> (reads_err st,read_md md,reads_err mnn,reads_err amp)
+              [st,md,mnn,amp,ch] -> (reads_err st
+                                    ,md
+                                    ,reads_err mnn
+                                    ,reads_err amp
+                                    ,reads_err ch)
               _ -> err "entry?"
         g (hdr,dat) = case hdr of
-                        Just hdr' -> if hdr' == csv_midi_note_data_hdr then dat else err "header?"
+                        Just hdr' -> if hdr' == csv_midi_hdr then dat else err "header?"
                         Nothing -> err "no header?"
     in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
 
--- | Variant of 'csv_midi_note_data_read'' that errors on non on/off data.
-csv_midi_note_data_read :: (Read t,Real t,Read n,Real n) => (m,m) -> FilePath -> IO [(t,m,n,n)]
-csv_midi_note_data_read m =
-    let f (t,p,q,r) = (t,either id (error "not on/off") p,q,r)
-    in fmap (map f) . csv_midi_note_data_read' m
+-- | Writer.
+csv_midi_write :: (Show t,Real t,Show n,Real n) => FilePath -> [(t,String,n,n,Int)] -> IO ()
+csv_midi_write nm =
+    let un_node (st,md,mnn,amp,ch) = [show st,md,show mnn,show amp,show ch]
+        with_hdr dat = (Just csv_midi_hdr,dat)
+    in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
--- | 'Tseq' form of 'csv_read_midi_note_data'.
+-- * Seq forms
+
+-- | 'Tseq' form of 'csv_midi_read', channel information is discarded.
 midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n)))
 midi_tseq_read =
-    let mk_node (st,md,mnn,amp) = if md
-                                  then (st,T.On (mnn,amp))
-                                  else (st,T.Off (mnn,0))
-    in fmap (map mk_node) . csv_midi_note_data_read (True,False)
+    let mk_node (st,md,mnn,amp,_) = case md of
+                                      "on" -> Just (st,T.On (mnn,amp))
+                                      "off" -> Just (st,T.Off (mnn,0))
+                                      _ -> Nothing
+    in fmap (mapMaybe mk_node) . csv_midi_read
 
 -- | Translate from 'Tseq' form to 'Wseq' form.
 midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (n,n)) -> T.Wseq t (n,n)
@@ -65,22 +73,11 @@ midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq ((==) `on` fst)
 midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t (n,n) -> T.Tseq t (T.On_Off (n,n))
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
--- | Writer.
-csv_midi_note_data_write :: (Eq m,Show t,Real t,Show n,Real n) => (m,m) -> FilePath -> [(t,m,n,n)] -> IO ()
-csv_midi_note_data_write (m_on,m_off) nm =
-    let show_md md = if md == m_on
-                     then "on" else if md == m_off
-                                    then "off"
-                                    else error "csv_midi_note_data_write"
-        un_node (st,md,mnn,amp) = [show st,show_md md,show mnn,show amp]
-        with_hdr dat = (Just csv_midi_note_data_hdr,dat)
-    in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
-
--- | 'Tseq' form of 'csv_midi_note_data_write'.
+-- | 'Tseq' form of 'csv_midi_write'.
 midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n)) -> IO ()
 midi_tseq_write nm sq =
     let f (t,e) = case e of
-                    T.On (n,v) -> (t,True,n,v)
-                    T.Off (n,v) -> (t,False,n,v)
+                    T.On (n,v) -> (t,"on",n,v,0)
+                    T.Off (n,v) -> (t,"off",n,v,0)
         sq' = map f sq
-    in csv_midi_note_data_write (True,False) nm sq'
+    in csv_midi_write nm sq'
