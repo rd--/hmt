@@ -1,5 +1,6 @@
 module Music.Theory.Time.Notation where
 
+import Data.List.Split {- split -}
 import Text.Printf {- base -}
 
 -- | Fractional seconds.
@@ -34,6 +35,13 @@ fsec_to_minsec tm = round tm `divMod` 60
 -- > map (minsec_pp . fsec_to_minsec) [59,61] == ["00:59","01:01"]
 minsec_pp :: MINSEC -> String
 minsec_pp (m,s) = printf "%02d:%02d" m s
+
+-- * 'MinSec' parser.
+minsec_parse :: (Num n,Read n) => String -> MinSec n
+minsec_parse x =
+    case splitOn ":" x of
+      [m,s] -> (read m,read s)
+      _ -> error "parse_minsec"
 
 -- | Fractional seconds to @(min,sec,csec)@.
 --
