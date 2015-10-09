@@ -83,10 +83,10 @@ pitch_to_fmidi (Pitch n a o) =
 
 -- | Extract 'PitchClass' of 'Pitch'
 --
--- > pitch_to_pc (Pitch A Natural 4) == 9
--- > pitch_to_pc (Pitch F Sharp 4) == 6
+-- > map pitch_to_pc [Pitch A Natural 4,Pitch F Sharp 4] == [9,6]
+-- > map pitch_to_pc [Pitch C Flat 4,Pitch B Sharp 5] == [11,0]
 pitch_to_pc :: Pitch -> PitchClass
-pitch_to_pc (Pitch n a _) = note_to_pc n + alteration_to_diff_err a
+pitch_to_pc (Pitch n a _) = (note_to_pc n + alteration_to_diff_err a) `mod` 12
 
 -- | 'Pitch' comparison, implemented via 'pitch_to_fmidi'.
 --
