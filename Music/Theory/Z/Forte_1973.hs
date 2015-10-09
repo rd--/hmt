@@ -335,12 +335,28 @@ sc_table =
     ,("11-1",[0,1,2,3,4,5,6,7,8,9,10])
     ,("12-1",[0,1,2,3,4,5,6,7,8,9,10,11])]
 
+utf8_non_breaking_hypen :: Char
+utf8_non_breaking_hypen = '‑'
+
+-- | UTF-8 (non-breaking hyphen) variant.
+sc_table_utf8 :: Num n => [(SC_Name,[n])]
+sc_table_utf8 =
+    let f = map (\c -> if c == '-' then utf8_non_breaking_hypen else c)
+    in map (\(nm,pc) -> (f nm,pc)) sc_table
+
+sc_name' :: Integral n => [(SC_Name,[n])] -> [n] -> SC_Name
+sc_name' tbl p =
+    let n = find (\(_,q) -> forte_prime 12 p == q) tbl
+    in fst (fromMaybe (error "sc_name") n)
+
 -- | Lookup a set-class name.  The input set is subject to
 -- 'forte_prime' before lookup.
 --
 -- > sc_name [0,2,3,6,7] == "5-Z18"
 -- > sc_name [0,1,4,6,7,8] == "6-Z17"
 sc_name :: Integral n => [n] -> SC_Name
-sc_name p =
-    let n = find (\(_,q) -> forte_prime 12 p == q) sc_table
-    in fst (fromMaybe (error "sc_name") n)
+sc_name = sc_name' sc_table
+
+-- | UTF-8 (non-breaking hyphen) variant.
+sc_name_utf8 :: Integral n => [n] -> SC_Name
+sc_name_utf8 = sc_name' sc_table_utf8
