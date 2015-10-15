@@ -245,7 +245,7 @@ type Table a = [[a]]
 -- | CSV table, ie. a table with perhaps a header.
 type CSV_Table a = (Maybe [String],Table a)
 
--- | Read 'Table' from @CSV@ file.
+-- | Read 'CSV_Table' from @CSV@ file.
 csv_table_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (CSV_Table a)
 csv_table_read (hdr,delim,brk,_) f fn = do
   s <- readFile fn
@@ -258,10 +258,12 @@ csv_table_read (hdr,delim,brk,_) f fn = do
 csv_table_read' :: (String -> a) -> FilePath -> IO (Table a)
 csv_table_read' f = fmap snd . csv_table_read def_csv_opt f
 
--- | Read and process @CSV@ 'Table'.
+-- | Read and process @CSV@ 'CSV_Table'.
 csv_table_with :: CSV_Opt -> (String -> a) -> FilePath -> (CSV_Table a -> b) -> IO b
 csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
 
+-- | Align table according to 'CSV_Align_Columns'.
+--
 -- > csv_table_align CSV_No_Align [["a","row","and"],["then","another","one"]]
 csv_table_align :: CSV_Align_Columns -> Table String -> Table String
 csv_table_align align tbl =
@@ -274,13 +276,16 @@ csv_table_align align tbl =
                        CSV_Align_Right -> s ++ pd
     in transpose (zipWith (map . ext) n c)
 
--- | Write 'Table' to @CSV@ file.
+-- | Pretty-print 'CSV_Table'.
+csv_table_pp :: (a -> String) -> CSV_Opt -> CSV_Table a -> String
+csv_table_pp f (_,delim,brk,align) (hdr,tbl) =
+  let tbl' = csv_table_align align (T.mcons hdr (map (map f) tbl))
+      (_,t) = C.toCSVTable tbl'
+  in C.ppDSVTable brk delim t
+
+-- | 'writeFile' of 'csv_table_pp'.
 csv_table_write :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
-csv_table_write f (_,delim,brk,align) fn (hdr,tbl) = do
-  let tbl' = csv_table_align align (map (map f) tbl)
-      (_,t) = C.toCSVTable (T.mcons hdr tbl')
-      s = C.ppDSVTable brk delim t
-  writeFile fn s
+csv_table_write f opt fn csv = writeFile fn (csv_table_pp f opt csv)
 
 -- | Write 'Table' only (no header).
 csv_table_write' :: (a -> String) -> CSV_Opt -> FilePath -> Table a -> IO ()

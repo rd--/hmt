@@ -32,9 +32,9 @@ type Iseq t a = [(t,a)]
 -- /sounding/ and /forward/ durations.
 type Pseq t a = [((t,t,t),a)]
 
--- | Time-point sequence.  To express holes /a/ must have a /empty/
+-- | Time-point sequence.  To express holes /a/ must have an /empty/
 -- value.  To indicate the duration of the final value /a/ must have
--- an /nil/ (end of sequence) value.
+-- a /nil/ (end of sequence) value.
 type Tseq t a = [(t,a)]
 
 -- | Window sequence.  The temporal field is (/time/,/duration/).
