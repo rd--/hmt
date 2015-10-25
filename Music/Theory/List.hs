@@ -455,6 +455,41 @@ merge_by_resolve jn cmp =
                                GT -> r : recur p q'
     in recur
 
+-- | First non-ascending pair of elements.
+find_non_ascending :: (a -> a -> Ordering) -> [a] -> Maybe (a,a)
+find_non_ascending cmp xs =
+    case xs of
+      p:q:xs' -> if cmp p q == GT then Just (p,q) else find_non_ascending cmp (q:xs')
+      _ -> Nothing
+
+-- | 'isNothing' of 'find_non_ascending'.
+is_ascending :: (a -> a -> Ordering) -> [a] -> Bool
+is_ascending cmp = isNothing . find_non_ascending cmp
+
+-- | A 'zipWith' variant that always consumes an element from the left
+-- hand side (lhs), but only consumes an element from the right hand
+-- side (rhs) if the zip function is 'Right' and not if 'Left'.
+-- There's also a secondary function to continue if the rhs ends
+-- before the lhs.
+zip_with_perhaps_rhs :: (a -> b -> Either c c) -> (a -> c) -> [a] -> [b] -> [c]
+zip_with_perhaps_rhs f g lhs rhs =
+    case (lhs,rhs) of
+      ([],_) -> []
+      (_,[]) -> map g lhs
+      (p:lhs',q:rhs') -> case f p q of
+                           Left r -> r : zip_with_perhaps_rhs f g lhs' rhs
+                           Right r -> r : zip_with_perhaps_rhs f g lhs' rhs'
+
+-- | Fill gaps in a sorted association list.
+--
+-- > let r = [(1,'a'),(2,'x'),(3,'x'),(4,'x'),(5,'b'),(6,'x'),(7,'c'),(8,'x'),(9,'x')]
+-- > in fill_gaps 'x' (1,9) (zip [1,5,7] "abc")
+fill_gaps_ascending :: (Enum n, Ord n) => t -> (n,n) -> [(n,t)] -> [(n,t)]
+fill_gaps_ascending def_e (l,r) =
+    let f i (j,e) = if j > i then Left (i,def_e) else Right (j,e)
+        g i = (i,def_e)
+    in zip_with_perhaps_rhs f g [l .. r]
+
 -- * Bimap
 
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.

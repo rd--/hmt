@@ -65,10 +65,11 @@ csv_mnd_write nm =
 -- | 'Tseq' form of 'csv_mnd_read', channel information is discarded.
 midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n)))
 midi_tseq_read =
-    let mk_node (st,md,mnn,amp,_) = case md of
-                                      "on" -> Just (st,T.On (mnn,amp))
-                                      "off" -> Just (st,T.Off (mnn,0))
-                                      _ -> Nothing
+    let mk_node (st,md,mnn,amp,_) =
+            case md of
+              "on" -> Just (st,T.On (mnn,amp))
+              "off" -> Just (st,T.Off (mnn,0))
+              _ -> Nothing
     in fmap (mapMaybe mk_node) . csv_mnd_read
 
 -- | Translate from 'Tseq' form to 'Wseq' form.
@@ -84,6 +85,6 @@ midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_O
 midi_tseq_write nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
-                    T.Off (n,v,c) -> (t,"off",n,v,c)
+                    T.Off (n,v,c) -> (t,"off",n,0,c)
         sq' = map f sq
     in csv_mnd_write nm sq'

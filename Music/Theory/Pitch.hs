@@ -305,13 +305,17 @@ cps_to_octpc = midi_to_octpc . cps_to_midi
 -- | Midi note number with cents detune.
 type Midi_Detune = (Int,Double)
 
+-- | Fractional midi note number to 'Midi_Detune'.
+fmidi_to_midi_detune :: Double -> Midi_Detune
+fmidi_to_midi_detune mnn =
+    let (n,c) = T.integral_and_fractional_parts mnn
+    in (n,c * 100)
+
 -- | Frequency (in hertz) to 'Midi_Detune'.
 --
 -- > map (fmap round . cps_to_midi_detune) [440.00,508.35] == [(69,0),(71,50)]
 cps_to_midi_detune :: Double -> Midi_Detune
-cps_to_midi_detune f =
-    let (n,c) = T.integral_and_fractional_parts (cps_to_fmidi f)
-    in (n,c * 100)
+cps_to_midi_detune = fmidi_to_midi_detune . cps_to_fmidi
 
 -- | In normal form the detune is in the range (-50,+50] instead of [0,100).
 midi_detune_normalise :: Midi_Detune -> Midi_Detune

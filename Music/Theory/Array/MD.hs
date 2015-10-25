@@ -110,7 +110,11 @@ md_matrix_opt show_f hd_f nm t =
         nm' = T.bimap1 (map (hd_f . show_f)) nm
     in md_matrix "" nm' t'
 
+-- | MD embolden function.
+md_embolden :: String -> String
+md_embolden x = "__" ++ x ++ "__"
+
 -- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
 -- the header cells are in bold.
 md_matrix_bold :: Show a => ([a],[a]) -> [[a]] -> MD_Table String
-md_matrix_bold = let bold x = "__" ++ x ++ "__" in md_matrix_opt show bold
+md_matrix_bold = md_matrix_opt show md_embolden
