@@ -1,13 +1,13 @@
 module Music.Theory.Array where
 
-import Data.Array {- array -}
+import qualified Data.Array as A {- array -}
 
-import Music.Theory.List {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 
 -- * List Array
 
 larray_bounds :: Ord i => [(i,e)] -> (i,i)
-larray_bounds = minmax . map fst
+larray_bounds = T.minmax . map fst
 
-larray :: Ix i => [(i,e)] -> Array i e
-larray a = array (larray_bounds a) a
+larray :: A.Ix i => [(i,e)] -> A.Array i e
+larray a = A.array (larray_bounds a) a
