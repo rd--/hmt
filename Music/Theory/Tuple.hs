@@ -6,8 +6,6 @@
 -- Heterogenous tuples (products) are prefixed @p2_@ etc.
 module Music.Theory.Tuple where
 
-import Data.Monoid {- base -}
-
 -- * P2 (2 product)
 
 p2_swap :: (s,t) -> (t,s)

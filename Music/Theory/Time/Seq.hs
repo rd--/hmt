@@ -98,7 +98,7 @@ wseq_dur = uncurry subtract . wseq_tspan
 wseq_until :: Ord t => t -> Wseq t a -> Wseq t a
 wseq_until tm = takeWhile (\((t0,_),_) -> t0 <= tm)
 
--- | Keep only elements that are contained within the indicated
+-- | Keep only elements that are entirely contained within the indicated
 -- temporal window, which is inclusive at the left & at the right
 -- edge, ie. [t0,t1].  Halts processing at end of window.
 --
@@ -124,6 +124,20 @@ wseq_at sq tm =
     let sel ((t0,t1),_) = t0 <= tm && tm < (t0 + t1)
         end ((t0,_),_) = t0 <= tm
     in filter sel (takeWhile end sq)
+
+-- | Select nodes that are active within the indicated window, comparison is
+-- inclusive at left and exclusive at right.  Halts processing at end
+-- of window.
+--
+-- > let sq = [((0,2),'a'),((0,4),'b'),((2,4),'c')]
+-- > in wseq_at_window sq (1,3) == sq
+--
+-- > wseq_at_window (zip (zip [1..] (repeat 1)) ['a'..]) (3,4) == [((3,1),'c'),((4,1),'d')]
+wseq_at_window :: (Num t, Ord t) => Wseq t a -> (t,t) -> Wseq t a
+wseq_at_window sq (w0,w1) =
+    let f (t0,t1) t = t0 <= t && t < t1
+        g (st,du) = let w = (st,st + du) in f w w0 || f w w1
+    in wseq_tfilter g (wseq_until w1 sq)
 
 -- * Append
 
