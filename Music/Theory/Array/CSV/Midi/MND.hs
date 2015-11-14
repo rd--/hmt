@@ -85,6 +85,6 @@ midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_O
 midi_tseq_write nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
-                    T.Off (n,v,c) -> (t,"off",n,0,c)
+                    T.Off (n,_,c) -> (t,"off",n,0,c)
         sq' = map f sq
     in csv_mnd_write nm sq'
