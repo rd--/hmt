@@ -172,6 +172,13 @@ adj_intersect n = map intersect_l . segments 2 n
 cycles :: Int -> [a] -> [[a]]
 cycles n = transpose . chunksOf n
 
+-- | Variant of 'filter' that has a predicate to halt processing,
+-- ie. 'filter' of 'takeWhile'.
+--
+-- > filter_halt (even . fst) ((< 5) . snd) (zip [1..] [0..])
+filter_halt :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
+filter_halt sel end = filter sel . takeWhile end
+
 -- * Association lists
 
 -- | Given accesors for /key/ and /value/ collate input.
@@ -502,14 +509,6 @@ fill_gaps_ascending def_e (l,r) =
         g i = (i,def_e)
     in zip_with_perhaps_rhs f g [l .. r]
 
--- * Bimap
-
--- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
-bimap1 :: (t -> u) -> (t,t) -> (u,u)
-bimap1 f (p,q) = (f p,f q)
-
--- * Ord
-
 -- | 'minimum' and 'maximum' in one pass.
 --
 -- > minmax "minimumandmaximum" == ('a','x')
@@ -521,3 +520,8 @@ minmax inp =
     in case inp of
          [] -> error "minmax"
          x:xs -> go (x,x) xs
+-- * Bimap
+
+-- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
+bimap1 :: (t -> u) -> (t,t) -> (u,u)
+bimap1 f (p,q) = (f p,f q)

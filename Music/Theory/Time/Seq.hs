@@ -93,14 +93,37 @@ wseq_dur = uncurry subtract . wseq_tspan
 
 -- * Window
 
--- | Keep only elements in the indicated temporal window.
+-- | Prefix of sequence where the start time precedes or is at the
+-- indicate time.
+wseq_until :: Ord t => t -> Wseq t a -> Wseq t a
+wseq_until tm = takeWhile (\((t0,_),_) -> t0 <= tm)
+
+-- | Keep only elements that are contained within the indicated
+-- temporal window, which is inclusive at the left & at the right
+-- edge, ie. [t0,t1].  Halts processing at end of window.
 --
 -- > let r = [((5,1),'e'),((6,1),'f'),((7,1),'g'),((8,1),'h')]
--- > in wseq_twindow (5,9) (zip (zip [1..10] (repeat 1)) ['a'..]) == r
+-- > in wseq_twindow (5,9) (zip (zip [1..] (repeat 1)) ['a'..]) == r
+--
+-- > wseq_twindow (1,2) [((1,1),'a'),((1,2),'b')] == [((1,1),'a')]
 wseq_twindow :: (Num t, Ord t) => (t,t) -> Wseq t a -> Wseq t a
 wseq_twindow (w0,w1) =
     let f (st,du) = w0 <= st && (st + du) <= w1
-    in wseq_tfilter f
+    in wseq_tfilter f . wseq_until w1
+
+-- | Select nodes that are active at indicated time, comparison is
+-- inclusive at left and exclusive at right.  Halts processing at end
+-- of window.
+--
+-- > let sq = [((1,1),'a'),((1,2),'b')]
+-- > in (wseq_at 1 sq,wseq_at 2 sq) == (sq,[((1,2),'b')])
+--
+-- > wseq_at 3 (zip (zip [1..] (repeat 1)) ['a'..]) == [((3,1),'c')]
+wseq_at :: (Num t,Ord t) => t -> Wseq t a -> Wseq t a
+wseq_at tm =
+    let sel ((t0,t1),_) = t0 <= tm && tm < (t0 + t1)
+        end ((t0,_),_) = t0 <= tm
+    in filter sel . takeWhile end
 
 -- * Append
 
