@@ -78,6 +78,7 @@ Library
                    Music.Theory.Pitch.Note
                    Music.Theory.Pitch.Spelling
                    Music.Theory.Pitch.Spelling.Cluster
+                   Music.Theory.Read
                    Music.Theory.Set.List
                    Music.Theory.Set.Set
                    Music.Theory.Tempo_Marking
