@@ -55,6 +55,7 @@ Library
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Either
+                   Music.Theory.Enum
                    Music.Theory.Function
                    Music.Theory.Instrument.Choir
                    Music.Theory.Interval

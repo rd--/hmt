@@ -380,6 +380,18 @@ two_stage_compare f g p q =
       EQ -> g p q
       r -> r
 
+-- | Sequence of comparison functions, continue comparing until not EQ.
+--
+-- > compare (1,0) (0,1) == GT
+-- > n_stage_compare [compare `on` snd,compare `on` fst] (1,0) (0,1) == LT
+n_stage_compare :: [Compare_F a] -> Compare_F a
+n_stage_compare l p q =
+    case l of
+      [] -> EQ
+      f:l' -> case f p q of
+                EQ -> n_stage_compare l' p q
+                r -> r
+
 -- | Invert 'Ordering'.
 ordering_invert :: Ordering -> Ordering
 ordering_invert o =
