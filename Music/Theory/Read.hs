@@ -28,3 +28,7 @@ read_maybe_double = read_maybe
 -- > map (read_def 0) ["2","2:","2\n"] == [2,0,2]
 read_def :: Read a => a -> String -> a
 read_def x s = maybe x id (read_maybe s)
+
+-- | Variant of 'read_maybe' that errors on 'Nothing'.
+read_err :: Read a => String -> a
+read_err = maybe (error "read_err") id . read_maybe
