@@ -116,14 +116,14 @@ wseq_twindow (w0,w1) =
 -- of window.
 --
 -- > let sq = [((1,1),'a'),((1,2),'b')]
--- > in (wseq_at 1 sq,wseq_at 2 sq) == (sq,[((1,2),'b')])
+-- > in map (wseq_at sq) [1,2] == [sq,[((1,2),'b')]]
 --
--- > wseq_at 3 (zip (zip [1..] (repeat 1)) ['a'..]) == [((3,1),'c')]
-wseq_at :: (Num t,Ord t) => t -> Wseq t a -> Wseq t a
-wseq_at tm =
+-- > wseq_at (zip (zip [1..] (repeat 1)) ['a'..]) 3 == [((3,1),'c')]
+wseq_at :: (Num t,Ord t) => Wseq t a -> t -> Wseq t a
+wseq_at sq tm =
     let sel ((t0,t1),_) = t0 <= tm && tm < (t0 + t1)
         end ((t0,_),_) = t0 <= tm
-    in filter sel . takeWhile end
+    in filter sel (takeWhile end sq)
 
 -- * Append
 
