@@ -65,6 +65,7 @@ Library
                    Music.Theory.Key
                    Music.Theory.List
                    Music.Theory.Math
+                   Music.Theory.Math.Convert
                    Music.Theory.Maybe
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
