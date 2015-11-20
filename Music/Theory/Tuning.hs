@@ -197,6 +197,10 @@ equal_temperament_53 = equal_temperament (53::Int)
 equal_temperament_72 :: Tuning
 equal_temperament_72 = equal_temperament (72::Int)
 
+-- | 96-tone equal temperament.
+equal_temperament_96 :: Tuning
+equal_temperament_96 = equal_temperament (96::Int)
+
 -- * Harmonic series
 
 -- | Raise or lower the frequency /q/ by octaves until it is in the

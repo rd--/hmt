@@ -3,8 +3,9 @@
 -- University of Missouri, 1929.  p.22
 module Music.Theory.Tuning.Meyer_1929 where
 
-import Data.List
-import Data.Ratio
+import Data.List {- base -}
+import Data.Ratio {- base -}
+
 import qualified Music.Theory.Tuning as T
 
 -- | Odd numbers to /n/.

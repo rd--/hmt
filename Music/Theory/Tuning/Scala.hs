@@ -1,16 +1,19 @@
 -- | Parser for the Scala scale file format.  See
 -- <http://www.huygens-fokker.org/scala/scl_format.html> for details.
--- This module succesfully parses all 4496 scales in v.81 of the scale
+-- This module succesfully parses all 4557 scales in v.83 of the scale
 -- library.
 module Music.Theory.Tuning.Scala where
 
 import qualified Codec.Binary.UTF8.String as U {- utf8-string -}
+import Control.Monad {- base -}
 import qualified Data.ByteString as B {- bytestring -}
-import Data.List
-import Data.Ratio
-import qualified Music.Theory.Tuning as T
+import Data.List {- base -}
+import Data.Ratio {- base -}
 import System.Directory {- directory -}
+import System.Environment {- base -}
 import System.FilePath {- filepath -}
+
+import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- | A @.scl@ pitch is either in 'Cents' or is a 'Ratio'.
 type Pitch i = Either T.Cents (Ratio i)
@@ -147,47 +150,77 @@ parse s =
       t:n:p -> (t,read n,map pitch_ln p)
       _ -> error "parse"
 
--- | Load @.scl@ file.
+get_scl_dir :: IO String
+get_scl_dir = getEnv "SCALA_SCL_DIR"
+
+-- | Lookup the @SCALA_SCL_DIR@ environment variable, which must exist, and derive the filepath.
+-- It is an error if the name has a file extension.
 --
--- > s <- load "/home/rohan/data/scala/81/scl/xenakis_chrom.scl"
+-- > derive_scl_filename "young-lm_piano"
+derive_scl_filename :: FilePath -> IO FilePath
+derive_scl_filename nm = do
+  dir <- get_scl_dir
+  when (null dir) (error "derive_scl_filename: SCALA_SCL_DIR: nil")
+  when (hasExtension nm) (error "derive_scl_filename: name has extension")
+  return (dir </> nm <.> "scl")
+
+-- | If the name is an absolute file path and has a @.scl@ extension,
+-- then return it, else run 'derive_scl_filename'.
+--
+-- > resolve_scl_name "young-lm_piano"
+-- > resolve_scl_name "/home/rohan/data/scala/83/scl/young-lm_piano.scl"
+resolve_scl_name :: String -> IO FilePath
+resolve_scl_name nm =
+    if isAbsolute nm && takeExtension nm == ".scl"
+    then return nm
+    else derive_scl_filename nm
+
+-- | Load @.scl@ file, runs 'resolve_scl'.
+--
+-- > s <- load "xenakis_chrom"
 -- > scale_pitch_representations s == (6,1)
 -- > scale_ratios 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53,2]
 load :: (Read i, Integral i) => FilePath -> IO (Scale i)
-load fn = do
+load nm = do
+  fn <- resolve_scl_name nm
   b <- B.readFile fn
   let s = U.decode (B.unpack b)
   return (parse s)
 
 -- | Subset of files in /dir/ with an extension in /ext/.
+--
+-- > dir <- get_scl_dir
+-- > nm <- dir_subset [".scl"] dir
+-- > length nm == 4557
 dir_subset :: [String] -> FilePath -> IO [FilePath]
 dir_subset ext dir = do
   let f nm = takeExtension nm `elem` ext
   c <- getDirectoryContents dir
   return (map (dir </>) (sort (filter f c)))
 
--- | Load all @.scl@ files at /dir/.
---
--- > db <- load_dir "/home/rohan/data/scala/81/scl"
--- > length db == 4496
--- > length (filter ((== 0) . scale_degree) db) == 0
--- > length (filter (== Just (Right 2)) (map scale_octave db)) == 3855
---
--- > let r = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24
--- >         ,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44
--- >         ,45,46,47,48,49,50,51,53,54,55,56,57,58,59,60,61,62,63,64
--- >         ,65,66,67,68,69,70,71,72,74,75,77,78,79,80,81,84,87,88
--- >         ,90,91,92,95,96,99,100,101,105,110,112,117,118,130,140,171
--- >         ,180,271,311,342,366,441,612]
--- > in nub (sort (map scale_degree db)) == r
---
--- > let r = ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
--- >         ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
--- >         ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
--- > in filter (isInfixOf "Xenakis") (map scale_description db) == r
---
--- > length (filter (not . perfect_octave) db) == 544
---
--- > mapM_ (putStrLn.scale_description) (filter (not . perfect_octave) db)
+{- | Load all @.scl@ files at /dir/.
+
+> dir <- get_scl_dir
+> dir == "/home/rohan/data/scala/83/scl"
+> db <- load_dir dir
+> length db == 4557
+> length (filter ((== 0) . scale_degree) db) == 0
+> length (filter (== Just (Right 2)) (map scale_octave db)) == 3911
+
+> import qualified Music.Theory.List as T
+> import Sound.SC3.Plot
+> plot_p2_stp [T.histogram (map scale_degree db)]
+
+> let r = ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
+>         ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
+>         ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
+> in filter (isInfixOf "Xenakis") (map scale_description db) == r
+
+> length (filter (not . perfect_octave) db) == 641
+
+> mapM_ (putStrLn.scale_description) (filter (not . perfect_octave) db)
+
+-}
 load_dir :: (Read i, Integral i) => FilePath -> IO [Scale i]
 load_dir d = dir_subset [".scl"] d >>= mapM load
 

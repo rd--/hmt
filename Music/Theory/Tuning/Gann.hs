@@ -26,7 +26,7 @@ pietro_aaron_1523_c =
 pietro_aaron_1523 :: Tuning
 pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
 
--- | Andreas Werckmeister (1645-1706), <http://www.kylegann.com/histune.html>.
+-- | Cents for 'werckmeister_iii'.
 werckmeister_iii_c :: [Cents]
 werckmeister_iii_c =
     [0,90.225
@@ -36,6 +36,10 @@ werckmeister_iii_c =
     ,696.09,792.18
     ,888.27,996.09
     ,1092.18]
+
+-- | Andreas Werckmeister (1645-1706), <http://www.kylegann.com/histune.html>.
+werckmeister_iii :: Tuning
+werckmeister_iii = Tuning (Right werckmeister_iii_c) 2
 
 -- | Cents for 'thomas_young_1799'.
 --
@@ -58,15 +62,15 @@ thomas_young_1799 :: Tuning
 thomas_young_1799 = Tuning (Right thomas_young_1799_c) 2
 
 -- | Ratios for 'zarlino'.
-zarlino_r :: [Rational]
-zarlino_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3,16/9,9/5,15/8]
+zarlino_1588_r :: [Rational]
+zarlino_1588_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3,16/9,9/5,15/8]
 
 -- | Gioseffo Zarlino, 1588, see <http://www.kylegann.com/tuning.html>.
 --
 -- > divisions zarlino == 16
 -- > cents_i zarlino == [0,71,182,204,294,316,386,498,569,590,702,773,884,996,1018,1088]
-zarlino :: Tuning
-zarlino = Tuning (Left zarlino_r) 2
+zarlino_1588 :: Tuning
+zarlino_1588 = Tuning (Left zarlino_1588_r) 2
 
 -- * 20th Century
 
@@ -74,8 +78,8 @@ zarlino = Tuning (Left zarlino_r) 2
 --
 -- > let c = [0,177,204,240,471,444,675,702,738,969,942,1173]
 -- > in map (round . ratio_to_cents) la_monte_young_r == c
-la_monte_young_r :: [Rational]
-la_monte_young_r =
+la_monte_young_wtp_r :: [Rational]
+la_monte_young_wtp_r =
     [1,567/512
     ,9/8,147/128
     ,21/16
@@ -88,15 +92,15 @@ la_monte_young_r =
 -- <http://www.kylegann.com/wtp.html>.
 --
 -- > cents_i la_monte_young == [0,177,204,240,471,444,675,702,738,969,942,1173]
-la_monte_young :: Tuning
-la_monte_young = Tuning (Left la_monte_young_r) 2
+la_monte_young_wtp :: Tuning
+la_monte_young_wtp = Tuning (Left la_monte_young_wtp_r) 2
 
 -- | Ratios for 'ben_johnston'.
 --
 -- > let c = [0,105,204,298,386,471,551,702,841,906,969,1088]
 -- > in map (round . ratio_to_cents) ben_johnston_r == c
-ben_johnston_r :: [Rational]
-ben_johnston_r =
+ben_johnston_mtp_1977_r :: [Rational]
+ben_johnston_mtp_1977_r =
     [1,17/16
     ,9/8,19/16
     ,5/4
@@ -109,8 +113,8 @@ ben_johnston_r =
 -- <http://www.kylegann.com/tuning.html>
 --
 -- > cents_i ben_johnston == [0,105,204,298,386,471,551,702,841,906,969,1088]
-ben_johnston :: Tuning
-ben_johnston = Tuning (Left ben_johnston_r) 2
+ben_johnston_mtp_1977 :: Tuning
+ben_johnston_mtp_1977 = Tuning (Left ben_johnston_mtp_1977_r) 2
 
 -- * Gann
 

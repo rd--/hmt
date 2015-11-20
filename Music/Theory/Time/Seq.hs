@@ -632,7 +632,8 @@ pseq_to_wseq t0 sq =
     in wseq_zip t d a
 
 -- | The last element of 'Tseq' is required to be an /eof/ marker that
--- has no duration and is not represented in the 'Dseq'.
+-- has no duration and is not represented in the 'Dseq'.  A 'nil'
+-- value is required in case the 'Tseq' does not begin at @0@.
 --
 -- > let r = zip [1,2,3,2,1] "abcde"
 -- > in tseq_to_dseq undefined (zip [0,1,3,6,8,9] "abcde|") == r

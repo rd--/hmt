@@ -32,7 +32,7 @@ alves_pelog_bem = Tuning (Left alves_pelog_bem_r) 2
 alves_pelog_barang_r :: [Rational]
 alves_pelog_barang_r = [1,5/4,21/16,105/64,7/4]
 
--- | HMC /pelog 2,3,4,6,7/ tuning.
+-- | HMC /pelog barang/ tuning.
 --
 -- > cents_i alves_pelog_barang == [0,386,471,857,969]
 alves_pelog_barang :: Tuning
@@ -43,7 +43,7 @@ alves_pelog_barang = Tuning (Left alves_pelog_barang_r) 2
 alves_pelog_23467_r :: [Rational]
 alves_pelog_23467_r = [1,5/4,21/16,3/2,7/4]
 
--- | HMC /pelog barang/ tuning.
+-- | HMC /pelog 2,3,4,6,7/ tuning.
 --
 -- > cents_i alves_pelog_23467 == [0,386,471,702,969]
 alves_pelog_23467 :: Tuning
