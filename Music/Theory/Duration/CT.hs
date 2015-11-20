@@ -124,7 +124,7 @@ delay1 l =
 
 ct_measure:: T.Lseq T.RQ T.RQ -> ([T.RQ],Maybe Char,Maybe (),[[T.RQ]]) -> [(Rational,CT_Node)]
 ct_measure sq (mrq,mk,pr,dv) =
-    let dv' = concatMap (zip [1..]) dv
+    let dv' = concatMap (zip [1::Int ..]) dv
         f (p,rq,(g,du)) =
             let nm = if p == 1
                      then case mk of

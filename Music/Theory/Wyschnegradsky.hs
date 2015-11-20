@@ -57,12 +57,16 @@ add_m n p q = (p + q) `mod` n
 -- | Parse hex colour string, as standard in HTML5.
 --
 -- > parse_hex_clr "#e14630" == (225,70,48)
-parse_hex_clr :: (Read n,Num n) => [Char] -> (n,n,n)
+parse_hex_clr :: (Read n,Num n) => String -> (n,n,n)
 parse_hex_clr clr =
     let f p q = read ("0x" ++ [p,q])
     in case clr of
          ['#',p,q,r,s,t,u] -> (f p q,f r s,f t u)
          _ -> error "parse_hex"
+
+-- | Type specialised.
+parse_hex_clr_int :: String -> (Int,Int,Int)
+parse_hex_clr_int = parse_hex_clr
 
 -- | Normalise colour by dividing each component by /m/.
 --
@@ -178,7 +182,7 @@ u3_clr_hex = words "#e14630 #e06e30 #e2c48e #498b43 #2a5a64 #cb7b74"
 
 -- | RGB form of 'u3_clr_hex'.
 u3_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
-u3_clr_rgb = map (clr_normalise 256 . parse_hex_clr) u3_clr_hex
+u3_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u3_clr_hex
 
 -- | Notated radial color sequence, transcribed from drawing.
 --
@@ -257,12 +261,12 @@ dc9_clr_hex =
             ,"#c2ba3d","#a2a367"
             ,"#537a77","#203342"
             ,"#84525e","#bc6460"]
-        n = interleave [6,4,2,0,10,8] [5,3,1,11,9,7]
+        n = interleave [6,4,2,0,10,8] [5,3,1,11,9,7] :: [Int]
     in map snd (sort (zip n c))
 
 -- | RGB form of colours.
 dc9_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
-dc9_clr_rgb = map (clr_normalise 255 . parse_hex_clr) dc9_clr_hex
+dc9_clr_rgb = map (clr_normalise 255 . parse_hex_clr_int) dc9_clr_hex
 
 -- * U11
 
@@ -318,8 +322,8 @@ u11_clr_hex :: [String]
 u11_clr_hex =
     let c = ["#dbb56a","#ffb05c","#ea7c3f","#f93829","#ee6054","#d18d9c"
             ,"#a94c79","#215272","#628b7d","#9dbc90","#ecdfaa","#fbeaa5"]
-        n = reverse ([4..11] ++ [0..3])
+        n = reverse ([4..11] ++ [0..3]) :: [Int]
     in map snd (sort (zip n c))
 
 u11_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
-u11_clr_rgb = map (clr_normalise 256 . parse_hex_clr) u11_clr_hex
+u11_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u11_clr_hex

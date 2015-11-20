@@ -18,7 +18,7 @@ predicate_all p x = all id (map ($ x) p)
 predicate_or :: (t -> Bool) -> (t -> Bool) -> t -> Bool
 predicate_or f g x = f x || g x
 
--- | 'any' of predicates.
+-- | 'any' of predicates, ie. logical /or/ of list of predicates.
 --
 -- > let r = [True,False,True,False,True,True]
 -- > in map (predicate_any [(== 0),(== 5),even]) [0..5] == r
