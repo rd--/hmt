@@ -100,8 +100,8 @@ approximate_ratio :: Rational -> Approximate_Ratio
 approximate_ratio = fromRational
 
 -- | 'approximate_ratio_to_cents' '.' 'approximate_ratio'.
-ratio_to_cents :: Rational -> Cents
-ratio_to_cents = approximate_ratio_to_cents . approximate_ratio
+ratio_to_cents :: Integral i => Ratio i -> Cents
+ratio_to_cents = approximate_ratio_to_cents . realToFrac
 
 -- | Construct an exact 'Rational' that approximates 'Cents' to within
 -- /epsilon/.

@@ -13,6 +13,9 @@ alves_slendro_r = [1,8/7,4/3,14/9,16/9]
 -- | HMC /slendro/ tuning.
 --
 -- > cents_i alves_slendro == [0,231,498,765,996]
+--
+-- > scl <- scl_load "slendro_alves"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i alves_slendro
 alves_slendro :: Tuning
 alves_slendro = Tuning (Left alves_slendro_r) 2
 
@@ -24,6 +27,9 @@ alves_pelog_bem_r = [1,8/7,6/5,3/2,8/5]
 -- | HMC /pelog bem/ tuning.
 --
 -- > cents_i alves_pelog_bem == [0,231,316,702,814]
+--
+-- > scl <- scl_load "pelog_alves"
+-- > cents_i (scale_tuning 0.01 scl) == [0,231,316,471,702,814,969]
 alves_pelog_bem :: Tuning
 alves_pelog_bem = Tuning (Left alves_pelog_bem_r) 2
 

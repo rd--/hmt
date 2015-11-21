@@ -21,7 +21,7 @@ read_def x s = maybe x id (read_maybe s)
 
 -- | Variant of 'read_maybe' that errors on 'Nothing'.
 read_err :: Read a => String -> a
-read_err = maybe (error "read_err") id . read_maybe
+read_err s = maybe (error ("read_err: " ++ s)) id (read_maybe s)
 
 -- * Plain type specialisations
 

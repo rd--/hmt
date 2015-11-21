@@ -5,13 +5,19 @@
 module Music.Theory.Tuning.Scala where
 
 import Control.Monad {- base -}
+import Data.Either {- base -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
 import qualified Music.Theory.Directory as T {- hmt -}
+import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
@@ -60,29 +66,34 @@ scale_octave (_,_,_,s) =
 perfect_octave :: Integral i => Scale i -> Bool
 perfect_octave s = scale_octave s `elem` [Just (Right 2),Just (Left 1200)]
 
--- | A pair giving the number of 'Cents' and number of 'Ratio' pitches
--- at 'Scale'.
-scale_pitch_representations :: Integral t => Scale i -> (t,t)
-scale_pitch_representations s =
+-- | A pair giving the number of 'Cents' and number of 'Ratio' pitches.
+pitch_representations :: Integral t => [Pitch i] -> (t,t)
+pitch_representations =
     let f (l,r) p = case p of
                       Left _ -> (l + 1,r)
                       Right _ -> (l,r + 1)
-    in foldl f (0,0) (scale_pitches s)
+    in foldl f (0,0)
 
 -- | If scale is uniform, give type.
-scale_type :: Scale i -> Maybe Pitch_Type
-scale_type s =
-    case scale_pitch_representations s :: (Int,Int) of
+uniform_pitch_type :: [Pitch i] -> Maybe Pitch_Type
+uniform_pitch_type p =
+    case pitch_representations p :: (Int,Int) of
       (0,_) -> Just Pitch_Ratio
       (_,0) -> Just Pitch_Cents
       _ -> Nothing
 
+-- | The predominant type of the pitches for 'Scale'.
+pitch_type_predominant :: [Pitch i] -> Pitch_Type
+pitch_type_predominant p =
+    let (c,r) = pitch_representations p :: (Int,Int)
+    in if c >= r then Pitch_Cents else Pitch_Ratio
+
 -- | Are all pitches of the same type.
 is_scale_uniform :: Scale i -> Bool
-is_scale_uniform = isJust . scale_type
+is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
 
--- | Pitch as 'T.Cents', conversion by 'T.to_cents_r' if necessary.
-pitch_cents :: Pitch Integer -> T.Cents
+-- | Pitch as 'T.Cents', conversion by 'T.ratio_to_cents' if necessary.
+pitch_cents :: Integral i => Pitch i -> T.Cents
 pitch_cents p =
     case p of
       Left c -> c
@@ -99,20 +110,41 @@ pitch_ratio epsilon p =
 -- | Make scale pitches uniform, conforming to the most promininent
 -- pitch type.
 scale_uniform :: Epsilon -> Scale Integer -> Scale Integer
-scale_uniform epsilon s =
-    let (nm,d,n,p) = s
-        (c,r) = scale_pitch_representations s :: (Int,Int)
-    in if c >= r
-       then (nm,d,n,map (Left . pitch_cents) p)
-       else (nm,d,n,map (Right . pitch_ratio epsilon) p)
+scale_uniform epsilon (nm,d,n,p) =
+    case pitch_type_predominant p of
+      Pitch_Cents -> (nm,d,n,map (Left . pitch_cents) p)
+      Pitch_Ratio -> (nm,d,n,map (Right . pitch_ratio epsilon) p)
 
 -- | Scale as list of 'T.Cents' (ie. 'pitch_cents') with @0@ prefix.
-scale_cents :: Scale Integer -> [T.Cents]
+scale_cents :: Integral i => Scale i -> [T.Cents]
 scale_cents s = 0 : map pitch_cents (scale_pitches s)
+
+-- | 'map' 'round' of 'scale_cents'.
+scale_cents_i :: Integral i => Scale i -> [i]
+scale_cents_i = map round . scale_cents
 
 -- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix.
 scale_ratios :: Epsilon -> Scale Integer -> [Rational]
 scale_ratios epsilon s = 1 : map (pitch_ratio epsilon) (scale_pitches s)
+
+-- | Require that 'Scale' be uniformlay of 'Ratio's.
+scale_ratios_req :: Integral i => Scale i -> [Ratio i]
+scale_ratios_req =
+    let err = error "scale_ratios_req"
+    in (1 :) . map (fromMaybe err . T.fromRight) . scale_pitches
+
+-- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
+-- rational, 'T.Tuning' is rational, else 'T.Tuning' is in 'T.Cents'.
+-- 'Epsilon' is used to recover the 'Rational' octave if required.
+scale_tuning :: Epsilon -> Scale Integer -> T.Tuning
+scale_tuning epsilon (_,_,_,p) =
+    case partitionEithers p of
+      ([],r) -> let (r',o) = T.separate_last r
+                in T.Tuning (Left (1 : r')) o
+      _ -> let (c,o) = T.separate_last p
+               c' = 0 : map pitch_cents c
+               o' = either (T.reconstructed_ratio epsilon) id o
+           in T.Tuning (Right c') o'
 
 -- * Parser
 
@@ -142,16 +174,22 @@ delete_trailing_point s =
       '.':s' -> reverse s'
       _ -> s
 
+-- | Large ratios may include commas for thousand separators.
+--
+-- > read_ratio "327,680" "177,147" == 327680 / 177147
+read_ratio :: (Integral i,Read i) => String -> String -> Ratio i
+read_ratio n d = let f = T.read_err . filter (not . (== ',')) in f n % f d
+
 -- | Pitches are either cents (with decimal point) or ratios (with @/@).
 --
 -- > map parse_pitch ["700.0","3/2","2"] == [Left 700,Right (3/2),Right 2]
 parse_pitch :: (Read i,Integral i) => String -> Pitch i
 parse_pitch p =
     if '.' `elem` p
-    then Left (read (delete_trailing_point p))
+    then Left (T.read_err (delete_trailing_point p))
     else case break (== '/') p of
-             (n,'/':d) -> Right (read n % read d)
-             _ -> Right (read p % 1)
+             (n,'/':d) -> Right (read_ratio n d)
+             _ -> Right (T.read_err p % 1)
 
 -- | Pitch lines may contain commentary.
 parse_pitch_ln :: (Read i, Integral i) => String -> Pitch i
@@ -164,7 +202,7 @@ parse_pitch_ln x =
 parse_scl :: (Read i, Integral i) => String -> String -> Scale i
 parse_scl nm s =
     case filter_comments (lines (T.filter_cr s)) of
-      t:n:p -> (nm,T.delete_trailing_whitespace t,read n,map parse_pitch_ln p)
+      t:n:p -> (nm,T.delete_trailing_whitespace t,T.read_err n,map parse_pitch_ln p)
       _ -> error "parse"
 
 -- * IO
@@ -200,7 +238,7 @@ scl_resolve_name nm =
 -- > s <- scl_load "xenakis_chrom"
 -- > scale_pitch_representations s == (6,1)
 -- > scale_ratios 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53,2]
-scl_load :: (Read i, Integral i) => FilePath -> IO (Scale i)
+scl_load :: (Read i, Integral i) => String -> IO (Scale i)
 scl_load nm = do
   fn <- scl_resolve_name nm
   s <- T.read_file_iso_8859_1 fn
@@ -248,8 +286,13 @@ scl_load_db = do
 
 scale_stat :: (Integral i,Show i) => Scale i -> [String]
 scale_stat s =
-    ["scale-name        : " ++ scale_name s
-    ,"scale-description : " ++ scale_description s
-    ,"scale-degree      : " ++ show (scale_degree s)
-    ,"scale-type        : " ++ maybe "non-uniform" show (scale_type s)
-    ,"perfect-octave    : " ++ show (perfect_octave s)]
+    let ty = uniform_pitch_type (scale_pitches s)
+    in ["scale-name        : " ++ scale_name s
+       ,"scale-description : " ++ scale_description s
+       ,"scale-degree      : " ++ show (scale_degree s)
+       ,"scale-type        : " ++ maybe "non-uniform" show ty
+       ,"perfect-octave    : " ++ show (perfect_octave s)
+       ,"scale-cents-i     : " ++ show (scale_cents_i s)
+       ,if ty == Just Pitch_Ratio
+        then "scale-ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req s))
+        else ""]

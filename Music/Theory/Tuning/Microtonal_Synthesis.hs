@@ -102,6 +102,9 @@ kirnberger_iii_ar =
 -- | <http://www.microtonal-synthesis.com/scale_kirnberger.html>.
 --
 -- > cents_i kirnberger_iii == [0,90,193,294,386,498,590,697,792,890,996,1088]
+--
+-- > scl <- scl_load "kirnberger"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i kirnberger_iii
 kirnberger_iii :: Tuning
 kirnberger_iii = Tuning (Right (map approximate_ratio_to_cents kirnberger_iii_ar)) 2
 
@@ -121,13 +124,16 @@ vallotti_c =
 -- <http://www.microtonal-synthesis.com/scale_vallotti_young.html>.
 --
 -- > cents_i vallotti == [0,94,196,298,392,502,592,698,796,894,1000,1090]
+--
+-- > scl <- scl_load "vallotti"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i vallotti
 vallotti :: Tuning
 vallotti = Tuning (Right vallotti_c) 2
 
 -- > let c = [0,128,139,359,454,563,637,746,841,911,1072,1183]
--- > in map (round . ratio_to_cents) mayumi_reinhard == c
-mayumi_reinhard_r :: [Rational]
-mayumi_reinhard_r =
+-- > in map (round . ratio_to_cents) mayumi_tsuda == c
+mayumi_tsuda_r :: [Rational]
+mayumi_tsuda_r =
     [1,14/13
     ,13/12,16/13
     ,13/10
@@ -136,12 +142,15 @@ mayumi_reinhard_r =
     ,22/13,13/7
     ,208/105]
 
--- | Mayumi Reinhard 13-limit Just Intonation scale,
+-- | Mayumi Tsuda 13-limit Just Intonation scale,
 -- <http://www.microtonal-synthesis.com/scale_reinhard.html>.
 --
--- > cents_i mayumi_reinhard == [0,128,139,359,454,563,637,746,841,911,1072,1183]
-mayumi_reinhard :: Tuning
-mayumi_reinhard = Tuning (Left mayumi_reinhard_r) 2
+-- > cents_i mayumi_tsuda == [0,128,139,359,454,563,637,746,841,911,1072,1183]
+--
+-- > scl <- scl_load "tsuda13"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i mayumi_tsuda
+mayumi_tsuda :: Tuning
+mayumi_tsuda = Tuning (Left mayumi_tsuda_r) 2
 
 -- | Ratios for 'lou_harrison_16'.
 --
@@ -165,6 +174,10 @@ lou_harrison_16_r =
 --
 -- > let r = [0,112,182,231,267,316,386,498,603,702,814,884,933,969,1018,1088]
 -- > in cents_i lou_harrison_16 == r
+--
+-- > import Music.Theory.Tuning.Scala
+-- > scl <- scl_load "harrison_16"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i lou_harrison_16
 lou_harrison_16 :: Tuning
 lou_harrison_16 = Tuning (Left lou_harrison_16_r) 2
 
@@ -187,6 +200,9 @@ partch_43_r =
 -- >                      ,471,498,520,551,583,617,649
 -- >                      ,680,702,729,765,782,814,853,884,906,933
 -- >                      ,969,996,1018,1035,1049,1088,1116,1147,1178]
+--
+-- > scl <- scl_load "partch_43"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i partch_43
 partch_43 :: Tuning
 partch_43 = Tuning (Left partch_43_r) 2
 
@@ -201,5 +217,8 @@ ben_johnston_25_r =
 
 -- | Ben Johnston 25 note just enharmonic scale, see
 -- <http://www.microtonal-synthesis.com/scale_johnston_25.html>
+--
+-- > scl <- scl_load "johnston_25"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i ben_johnston_25
 ben_johnston_25 :: Tuning
 ben_johnston_25 = Tuning (Left ben_johnston_25_r) 2
