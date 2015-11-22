@@ -6,6 +6,10 @@ import Music.Theory.Tuning.Alves
 import Music.Theory.Tuning.Alves_1997
 import Music.Theory.Tuning.Gann
 import Music.Theory.Tuning.Microtonal_Synthesis
+import Music.Theory.Tuning.Polansky_1978
+import Music.Theory.Tuning.Polansky_1985c
+import Music.Theory.Tuning.Riley
+import Music.Theory.Tuning.Werckmeister
 
 type Named_Tuning = (String,String,String,String,Tuning,String)
 
@@ -21,8 +25,15 @@ tuning_db =
     ,("Johnston","Ben","25-tone","",ben_johnston_25,"johnston_25")
     ,("Kirnberger","Johann Philipp","III","",kirnberger_iii,"kirnberger")
     ,("Partch","Harry","43-tone","",partch_43,"partch_43")
+    ,("Polansky","Larry","Piano Study #5","1985",ps5_jpr,"polansky_ps")
+    ,("Polansky","Larry","Psaltery","1978",psaltery_o,"")
+    ,("Riley","Terry","Harp of New Albion","",riley_albion,"riley_albion")
     ,("Tsuda","Mayumi","13-limit","",mayumi_tsuda,"tsuda13")
     ,("Vallotti","","","1754",vallotti,"vallotti")
+    ,("Werckmeister","Andreas","Werckmeister III","",werckmeister_iii,"werck3")
+    ,("Werckmeister","Andreas","Werckmeister IV","",werckmeister_iv,"werck4")
+    ,("Werckmeister","Andreas","Werckmeister V","",werckmeister_v,"werck5")
+    ,("Werckmeister","Andreas","Werckmeister VI","",werckmeister_vi,"werck6")
     ,("Young","La Monte","The Well-Tuned Piano","",la_monte_young_wtp,"young-lm_piano")
     ,("Young","Thomas","","1799",thomas_young_1799,"young2")
     ,("Zarlino","Gioseffo","","1588",zarlino_1588,"zarlino2")

@@ -5,6 +5,21 @@ import System.Environment {- base -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 
+db_stat :: IO ()
+db_stat = do
+  db <- T.scl_load_db :: IO [T.Scale Integer]
+  let po = filter (== Just (Right 2)) (map T.scale_octave db)
+      uf = filter T.is_scale_uniform db
+      r = ["# entries        : " ++ show (length db)
+          ,"# perfect-octave : " ++ show (length po)
+          ,"# scale-uniform  : " ++ show (length uf)]
+  putStrLn (unlines r)
+
+env :: IO ()
+env = do
+  dir <- T.scl_get_dir
+  putStrLn ("SCALA_SCL_DIR = " ++ if null dir then "NOT SET" else dir)
+
 -- > search True ["xenakis"]
 -- > search True ["lamonte","young"]
 search :: Bool -> [String] -> IO ()
@@ -28,7 +43,9 @@ stat_by_name nm = do
 
 help :: [String]
 help =
-    ["search ci|cs text:string..."
+    ["db-stat"
+    ,"env"
+    ,"search ci|cs text:string..."
     ,"stat all"
     ,"stat scale-name:string|file-path"]
 
@@ -36,8 +53,9 @@ main :: IO ()
 main = do
   a <- getArgs
   case a of
+    ["db-stat"] -> db_stat
+    ["env"] -> env
     "search":ci:txt -> search (ci == "ci") txt
     ["stat","all"] -> stat_all
     ["stat",nm] -> stat_by_name nm
     _ -> putStrLn (unlines help)
-

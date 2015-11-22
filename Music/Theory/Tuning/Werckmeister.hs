@@ -27,6 +27,10 @@ werckmeister_iii_ar_c = map approximate_ratio_to_cents werckmeister_iii_ar
 -- | Werckmeister III, Andreas Werckmeister (1645-1706)
 --
 -- > cents_i werckmeister_iii == [0,90,192,294,390,498,588,696,792,888,996,1092]
+--
+-- > import Music.Theory.Tuning.Scala
+-- > scl <- scl_load "werck3"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_iii
 werckmeister_iii :: Tuning
 werckmeister_iii = Tuning (Right werckmeister_iii_ar_c) 2
 
@@ -53,6 +57,9 @@ werckmeister_iv_c = map approximate_ratio_to_cents werckmeister_iv_ar
 -- | Werckmeister IV, Andreas Werckmeister (1645-1706)
 --
 -- > cents_i werckmeister_iv == [0,82,196,294,392,498,588,694,784,890,1004,1086]
+--
+-- > scl <- scl_load "werck4"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_iv
 werckmeister_iv :: Tuning
 werckmeister_iv = Tuning (Right werckmeister_iv_c) 2
 
@@ -80,17 +87,20 @@ werckmeister_v_c = map approximate_ratio_to_cents werckmeister_v_ar
 -- | Werckmeister V, Andreas Werckmeister (1645-1706)
 --
 -- > cents_i werckmeister_v == [0,96,204,300,396,504,600,702,792,900,1002,1098]
+--
+-- > scl <- scl_load "werck5"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_v
 werckmeister_v :: Tuning
 werckmeister_v = Tuning (Right werckmeister_v_c) 2
 
--- | Ratios for 'werckmeister_vi'.
+-- | Ratios for 'werckmeister_vi', with supposed correction of 28/25 to 49/44.
 --
--- > let c = [0,91,196,298,395,498,595,698,793,893,1000,1097]
+-- > let c = [0,91,186,298,395,498,595,698,793,893,1000,1097]
 -- > in map (round . ratio_to_cents) werckmeister_vi_r == c
 werckmeister_vi_r :: [Rational]
 werckmeister_vi_r =
     [1,98/93
-    ,28/25,196/165
+    ,49/44 {- 28/25 -},196/165
     ,49/39
     ,4/3,196/139
     ,196/131,49/31
@@ -99,7 +109,9 @@ werckmeister_vi_r =
 
 -- | Werckmeister VI, Andreas Werckmeister (1645-1706)
 --
--- > cents_i werckmeister_vi == [0,91,196,298,395,498,595,698,793,893,1000,1097]
+-- > cents_i werckmeister_vi == [0,91,186,298,395,498,595,698,793,893,1000,1097]
+--
+-- > scl <- scl_load "werck6"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_vi
 werckmeister_vi :: Tuning
 werckmeister_vi = Tuning (Left werckmeister_vi_r) 2
-

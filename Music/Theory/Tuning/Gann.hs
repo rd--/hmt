@@ -30,26 +30,6 @@ pietro_aaron_1523_c =
 pietro_aaron_1523 :: Tuning
 pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
 
--- | Cents for 'werckmeister_iii'.
-werckmeister_iii_c :: [Cents]
-werckmeister_iii_c =
-    [0,90.225
-    ,192.18,294.135
-    ,390.225
-    ,498.045,588.27
-    ,696.09,792.18
-    ,888.27,996.09
-    ,1092.18]
-
--- | Andreas Werckmeister (1645-1706), <http://www.kylegann.com/histune.html>.
---
--- > cents_i werckmeister_iii == [0,90,192,294,390,498,588,696,792,888,996,1092]
---
--- > scl <- scl_load "werck3"
--- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_iii
-werckmeister_iii :: Tuning
-werckmeister_iii = Tuning (Right werckmeister_iii_c) 2
-
 -- | Cents for 'thomas_young_1799'.
 --
 -- > let c = [0,94,196,298,392,500,592,698,796,894,1000,1092]

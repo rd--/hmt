@@ -1,9 +1,23 @@
 # scala
 
 ~~~~
-$ hmt-scala search ci la monte young
+$ hmt-scala env
+SCALA_SCL_DIR = /home/rohan/data/scala/83/scl
+$
+~~~~
+
+~~~~
+$ hmt-scala db-stat
+# entries        : 4557
+# perfect-octave : 3911
+# scale-uniform  : 2723
+$
+~~~~
+
+~~~~
+$ hmt-scala search ci la monte young | cut -c1-75
 scale-name        : young-lm_guitar
-scale-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.of Mersenne lute 1
+scale-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92,
 scale-degree      : 12
 scale-type        : Pitch_Ratio
 perfect-octave    : True
@@ -16,6 +30,6 @@ scale-degree      : 12
 scale-type        : Pitch_Ratio
 perfect-octave    : True
 scale-cents-i     : [0,177,204,240,444,471,675,702,738,942,969,1173,1200]
-scale-ratios      : 1,567/512,9/8,147/128,1323/1024,21/16,189/128,3/2,49/32,441/256,7/4,63/32,2
+scale-ratios      : 1,567/512,9/8,147/128,1323/1024,21/16,189/128,3/2,49/32
 $
 ~~~~

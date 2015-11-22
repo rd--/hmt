@@ -156,40 +156,27 @@ is_comment x =
       _ -> False
 
 -- | Remove to end of line @!@ comments.
+--
+-- > remove_eol_comments " 1 ! comment" == " 1 "
 remove_eol_comments :: String -> String
 remove_eol_comments = takeWhile (/= '!')
 
--- | Remove comments and null lines.
+-- | Remove comments and null lines and trailing comments.
 --
--- > filter_comments ["!a","b","","c"] == ["b","c"]
+-- > filter_comments ["!a","b","","c","d!e"] == ["b","c","d"]
 filter_comments :: [String] -> [String]
 filter_comments =
     map remove_eol_comments .
     filter (not . T.predicate_any [is_comment,null])
 
--- | Delete trailing @.@, 'read' fails for @700.@.
-delete_trailing_point :: String -> String
-delete_trailing_point s =
-    case reverse s of
-      '.':s' -> reverse s'
-      _ -> s
-
--- | Large ratios may include commas for thousand separators.
+-- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
 --
--- > read_ratio "327,680" "177,147" == 327680 / 177147
-read_ratio :: (Integral i,Read i) => String -> String -> Ratio i
-read_ratio n d = let f = T.read_err . filter (not . (== ',')) in f n % f d
-
--- | Pitches are either cents (with decimal point) or ratios (with @/@).
---
--- > map parse_pitch ["700.0","3/2","2"] == [Left 700,Right (3/2),Right 2]
+-- > map parse_pitch ["700.0","350.","3/2","2"] == [Left 700,Left 350,Right (3/2),Right 2]
 parse_pitch :: (Read i,Integral i) => String -> Pitch i
 parse_pitch p =
     if '.' `elem` p
-    then Left (T.read_err (delete_trailing_point p))
-    else case break (== '/') p of
-             (n,'/':d) -> Right (read_ratio n d)
-             _ -> Right (T.read_err p % 1)
+    then Left (T.read_fractional_allow_trailing_point_err p)
+    else Right (T.read_ratio_with_div_err p)
 
 -- | Pitch lines may contain commentary.
 parse_pitch_ln :: (Read i, Integral i) => String -> Pitch i
@@ -275,6 +262,8 @@ scl_load nm = do
 scl_load_dir :: (Read i, Integral i) => FilePath -> IO [Scale i]
 scl_load_dir d = T.dir_subset [".scl"] d >>= mapM scl_load
 
+-- | Load Scala data base at 'scl_get_dir'.
+--
 -- > db <- scl_load_db
 -- > mapM_ (putStrLn.unlines.scale_stat) (filter (not . perfect_octave) db)
 scl_load_db :: (Read i, Integral i) => IO [Scale i]

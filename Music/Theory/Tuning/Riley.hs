@@ -14,5 +14,9 @@ riley_albion_r = [1/1,16/15,9/8,6/5,5/4,4/3,64/45,3/2,8/5,5/3,16/9,15/8]
 -- see <http://www.ex-tempore.org/Volx1/hudson/hudson.htm>.
 --
 -- > cents_i riley_albion == [0,112,204,316,386,498,610,702,814,884,996,1088]
+--
+-- > import Music.Theory.Tuning.Scala
+-- > scl <- scl_load "riley_albion"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i riley_albion
 riley_albion :: Tuning
 riley_albion = Tuning (Left riley_albion_r) 2
