@@ -92,7 +92,7 @@ la_monte_young_wtp_r =
 --
 -- > import Data.List {- base -}
 -- > scl <- scl_load "young-lm_piano"
--- > cents_i (scale_tuning 0.01 scl) == sort (cents_i la_monte_young_wtp)
+-- > cents_i (scale_tuning 0.01 scl) == cents_i la_monte_young_wtp
 la_monte_young_wtp :: Tuning
 la_monte_young_wtp = Tuning (Left la_monte_young_wtp_r) 2
 
@@ -134,13 +134,20 @@ gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) 2
 
 -- | Ratios for 'gann_superparticular'.
 gann_superparticular_r :: [Rational]
-gann_superparticular_r = [1/1,11/10,10/9,9/8,8/7,7/6,6/5,5/4,9/7,4/3,11/8,7/5,10/7,3/2,11/7,14/9,8/5,5/3,12/7,7/4,16/9,9/5]
+gann_superparticular_r =
+    [1/1,11/10,10/9,9/8,8/7,7/6,6/5,5/4,9/7,4/3
+    ,11/8,7/5,10/7,3/2
+    ,11/7,14/9,8/5,5/3,12/7,7/4,16/9,9/5]
 
 -- | Kyle Gann, _Superparticular_, see <http://www.kylegann.com/Super.html>.
 --
 -- > divisions gann_superparticular == 22
 --
--- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702,782,765,814,884,933,969,996,1018]
+-- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702
+-- >         ,782,765,814,884,933,969,996,1018]
 -- > in cents_i gann_superparticular == r
+--
+-- > scl <- scl_load "gann_super"
+-- > cents_i (scale_tuning 0.01 scl) == cents_i gann_superparticular
 gann_superparticular :: Tuning
 gann_superparticular = Tuning (Left gann_superparticular_r) 2

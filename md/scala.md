@@ -15,7 +15,7 @@ $
 ~~~~
 
 ~~~~
-$ hmt-scala search ci la monte young | cut -c1-75
+$ hmt-scala search ci 75 la monte young
 scale-name        : young-lm_guitar
 scale-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92,
 scale-degree      : 12

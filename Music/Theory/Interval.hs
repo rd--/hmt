@@ -283,6 +283,10 @@ parse_interval i =
          q:n -> f q n
          _ -> Nothing
 
+-- | 'error' variant.
+parse_interval_err :: String -> Interval
+parse_interval_err = fromMaybe (error "parse_interval") . parse_interval
+
 -- | Pretty printer for intervals, inverse of 'parse_interval'.
 interval_pp :: Interval -> String
 interval_pp (Interval n q d o) =

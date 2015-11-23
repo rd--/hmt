@@ -4,25 +4,24 @@ module Music.Theory.Tuning.Microtonal_Synthesis where
 import Music.Theory.Tuning {- hmt -}
 
 -- | Ratios for 'pythagorean'.
---
--- > let c = [0,90,204,294,408,498,612,702,792,906,996,1110]
--- > in map (round . ratio_to_cents) pythagorean_r == c
-pythagorean_r :: [Rational]
-pythagorean_r =
-    [1,256/243 {- 2187/2048 -}
+pythagorean_12_r :: [Rational]
+pythagorean_12_r =
+    [1,2187/2048 {- 256/243 -}
     ,9/8,32/27
     ,81/64
     ,4/3,729/512
-    ,3/2,128/81 {- 6561/4096 -}
+    ,3/2,6561/4096 {- 128/81 -}
     ,27/16,16/9
     ,243/128]
 
 -- | Pythagorean tuning, <http://www.microtonal-synthesis.com/scale_pythagorean.html>.
 --
--- > divisions pythagorean == 12
--- > cents_i pythagorean == [0,90,204,294,408,498,612,702,792,906,996,1110]
-pythagorean :: Tuning
-pythagorean = Tuning (Left pythagorean_r) 2
+-- > cents_i pythagorean_12 == [0,114,204,294,408,498,612,702,816,906,996,1110]
+--
+-- > scl <- scl_load "pyth_12"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i pythagorean_12
+pythagorean_12 :: Tuning
+pythagorean_12 = Tuning (Left pythagorean_12_r) 2
 
 -- | Ratios for 'five_limit_tuning'.
 --
@@ -38,9 +37,12 @@ five_limit_tuning_r =
     ,5/3,16/9 {- 9/5 -}
     ,15/8]
 
--- | Five-limit tuning (five limit just intonation).
+-- | Five-limit tuning (five limit just intonation), Alexander Malcolm's Monochord (1721).
 --
 -- > cents_i five_limit_tuning == [0,112,204,316,386,498,590,702,814,884,996,1088]
+--
+-- > scl <- scl_load "malcolm"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i five_limit_tuning
 five_limit_tuning :: Tuning
 five_limit_tuning = Tuning (Left five_limit_tuning_r) 2
 
@@ -61,7 +63,11 @@ septimal_tritone_just_intonation_r =
 -- | Septimal tritone Just Intonation, see
 -- <http://www.microtonal-synthesis.com/scale_just_intonation.html>
 --
--- > cents_i septimal_tritone_just_intonation == [0,112,204,316,386,498,583,702,814,884,1018,1088]
+-- > let c = [0,112,204,316,386,498,583,702,814,884,1018,1088]
+-- > in cents_i septimal_tritone_just_intonation == c
+--
+-- > scl <- scl_load "ji_12"
+-- > cents_i (scale_tuning 0.1 scl) == cents_i septimal_tritone_just_intonation
 septimal_tritone_just_intonation :: Tuning
 septimal_tritone_just_intonation = Tuning (Left septimal_tritone_just_intonation_r) 2
 

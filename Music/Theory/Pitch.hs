@@ -382,6 +382,10 @@ parse_iso_pitch_oct def_o s =
 parse_iso_pitch :: String -> Maybe Pitch
 parse_iso_pitch = parse_iso_pitch_oct (error "parse_iso_pitch: no octave")
 
+-- | 'error' variant.
+parse_iso_pitch_err :: String -> Pitch
+parse_iso_pitch_err = fromMaybe (error "parse_iso_pitch") . parse_iso_pitch
+
 -- * Pretty printers
 
 -- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').

@@ -11,6 +11,7 @@ import Music.Theory.Tuning.Polansky_1985c
 import Music.Theory.Tuning.Riley
 import Music.Theory.Tuning.Werckmeister
 
+-- | (last-name,first-name,title,year,hmt/tuning,scala/name)
 type Named_Tuning = (String,String,String,String,Tuning,String)
 
 tuning_db :: [Named_Tuning]
@@ -19,11 +20,13 @@ tuning_db =
     ,("Alves","Bill","Slendro","",alves_slendro,"slendro_alves")
     ,("Alves","Bill","Pelog/Bem","",alves_pelog_bem,"")
     ,("Alves","Bill","Pelog/Barang","",alves_pelog_barang,"")
+    ,("Gann","Kyle","Superparticular","1992",gann_superparticular,"gann_super")
     ,("Harrison","Lou","Ditone","",harrison_ditone,"")
     ,("Harrison","Lou","16-tone","",lou_harrison_16,"harrison_16")
     ,("Johnston","Ben","MTP","1977",ben_johnston_mtp_1977,"")
     ,("Johnston","Ben","25-tone","",ben_johnston_25,"johnston_25")
     ,("Kirnberger","Johann Philipp","III","",kirnberger_iii,"kirnberger")
+    ,("Malcolm","Alexander","Monochord","1721",five_limit_tuning,"malcolm")
     ,("Partch","Harry","43-tone","",partch_43,"partch_43")
     ,("Polansky","Larry","Piano Study #5","1985",ps5_jpr,"polansky_ps")
     ,("Polansky","Larry","Psaltery","1978",psaltery_o,"")
@@ -37,10 +40,12 @@ tuning_db =
     ,("Young","La Monte","The Well-Tuned Piano","",la_monte_young_wtp,"young-lm_piano")
     ,("Young","Thomas","","1799",thomas_young_1799,"young2")
     ,("Zarlino","Gioseffo","","1588",zarlino_1588,"zarlino2")
+    ,("","","JI/12 7-limit","",septimal_tritone_just_intonation,"ji_12")
     ,("","","ET/12","",equal_temperament_12,"")
     ,("","","ET/19","",equal_temperament_19,"")
     ,("","","ET/31","",equal_temperament_31,"")
     ,("","","ET/53","",equal_temperament_53,"")
     ,("","","ET/72","",equal_temperament_72,"")
     ,("","","ET/96","",equal_temperament_96,"")
+    ,("","","Pythagorean/12","",pythagorean_12,"pyth_12")
     ]
