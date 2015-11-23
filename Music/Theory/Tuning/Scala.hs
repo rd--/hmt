@@ -30,7 +30,7 @@ data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq,Show)
 type Pitch i = Either T.Cents (Ratio i)
 
 -- | A scale has a name, a description, a degree, and a list of 'Pitch'es.
-type Scale i = (String,String,i,[Pitch i])
+type Scale i = (String,String,Int,[Pitch i])
 
 -- | A nearness value for deriving approximate rationals.
 type Epsilon = Double
@@ -47,7 +47,7 @@ scale_description :: Scale i -> String
 scale_description (_,d,_,_) = d
 
 -- | The degree of the scale (number of 'Pitch'es).
-scale_degree :: Scale i -> i
+scale_degree :: Scale i -> Int
 scale_degree (_,_,n,_) = n
 
 -- | The 'Pitch'es at 'Scale'.
