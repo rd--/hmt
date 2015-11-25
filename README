@@ -6,6 +6,10 @@ theory' and 'common music notation'.
 
 - [hmt-diagrams][hmt-diagrams]
 
+## cli
+
+[scala](?t=hmt&e=md/scala.md)
+
 [hs]: http://haskell.org/
 [hmt-diagrams]:  http://rd.slavepianos.org/?t=hmt-diagrams
 
