@@ -11,3 +11,13 @@ dir_subset ext dir = do
   let f nm = takeExtension nm `elem` ext
   c <- getDirectoryContents dir
   return (map (dir </>) (sort (filter f c)))
+
+-- | If path is not absolute, prepend current working directory.
+--
+-- > to_absolute_cwd "x"
+to_absolute_cwd :: FilePath -> IO FilePath
+to_absolute_cwd x =
+    if isAbsolute x
+    then return x
+    else fmap (</> x) getCurrentDirectory
+
