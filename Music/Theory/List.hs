@@ -5,6 +5,7 @@ import Data.Function {- base -}
 import Data.List {- base -}
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import Data.List.Split {- split -}
+import Data.List.Split.Internals {- split -}
 import Data.Maybe {- base -}
 
 -- | Bracket sequence with left and right values.
@@ -18,6 +19,20 @@ bracket (l,r) x = l : x ++ [r]
 -- > bracket_l ("<:",":>") "1,2,3" == "<:1,2,3:>"
 bracket_l :: ([a],[a]) -> [a] -> [a]
 bracket_l (l,r) s = l ++ s ++ r
+
+-- | 'Splitter' comparing single element.
+on_elem :: Eq a => a -> Splitter a
+on_elem e = defaultSplitter { delimiter = Delimiter [(==) e] }
+
+-- | Split at (before) the indicated element.
+--
+-- > split_at 'x' "axbcxdefx" == ["a","xbc","xdef","x"]
+-- > split_at 'x' "xa" == ["","xa"]
+--
+-- > map (flip split_at "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
+-- > map (flip break "abcde" . (==)) "ae_" == [("","abcde"),("abcd","e"),("abcde","")]
+split_at :: Eq a => a -> [a] -> [[a]]
+split_at = split . keepDelimsL . on_elem
 
 -- | Generic form of 'rotate_left'.
 genericRotate_left :: Integral i => i -> [a] -> [a]
