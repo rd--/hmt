@@ -212,6 +212,13 @@ filter_halt sel end = filter sel . takeWhile end
 
 -- * Association lists
 
+-- | Equivalent to 'groupBy' '==' 'on' /f/.
+--
+-- > let r = [[(1,'a'),(1,'b')],[(2,'c')],[(3,'d'),(3,'e')],[(4,'f')]]
+-- > in group_on fst (zip [1,1,2,3,3,4] "abcdef") == r
+group_on :: Eq x => (a -> x) -> [a] -> [[a]]
+group_on f = map (map snd) . groupBy ((==) `on` fst) . map (\x -> (f x,x))
+
 -- | Given accesors for /key/ and /value/ collate input.
 --
 -- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
