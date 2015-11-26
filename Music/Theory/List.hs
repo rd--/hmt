@@ -393,7 +393,7 @@ adjacent_groupBy f p =
 -- > let r = [[Just 1],[Nothing,Nothing],[Just 4,Just 5]]
 -- > in group_just [Just 1,Nothing,Nothing,Just 4,Just 5] == r
 group_just :: [Maybe a] -> [[Maybe a]]
-group_just = groupBy ((==) `on` isJust)
+group_just = group_on isJust
 
 -- | Predicate to determine if all elements of the list are '=='.
 all_eq :: Eq n => [n] -> Bool
@@ -467,6 +467,10 @@ sort_by_two_stage f g = sortBy (two_stage_compare (compare `on` f) (compare `on`
 -- > mergeBy compare [1,3,5] [2,4] == [1..5]
 merge_by :: Compare_F a -> [a] -> [a] -> [a]
 merge_by = O.mergeBy
+
+-- | 'merge_by' 'compare' 'on'.
+merge_on :: Ord x => (a -> x) -> [a] -> [a] -> [a]
+merge_on f = merge_by (compare `on` f)
 
 -- | 'O.mergeBy' of 'two_stage_compare'.
 merge_by_two_stage :: Ord b => (a -> b) -> Compare_F c -> (a -> c) -> [a] -> [a] -> [a]

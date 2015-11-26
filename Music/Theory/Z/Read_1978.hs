@@ -5,10 +5,10 @@ module Music.Theory.Z.Read_1978 where
 
 import Data.Bits {- base -}
 import Data.Char {- base -}
-import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Z.SRO as T {- hmt -}
 
 -- | Coding.
@@ -114,7 +114,7 @@ enumerate_half pr n =
         jn l = case l of
                  (x,y):l' -> (x,concat (y : map snd l'))
                  _ -> error ""
-        post_proc = map jn . groupBy ((==) `on` fst) . sortBy (compare `on` fst)
+        post_proc = map jn . T.group_on fst . sortOn fst
     in post_proc ((0,[a0]) : f 0 a0)
 
 -- * Alternate (reverse) form.

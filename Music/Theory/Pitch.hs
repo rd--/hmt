@@ -202,7 +202,7 @@ pitch_in_octave_nearest p1 p2 =
         m1 = pitch_to_fmidi p1 :: Double
         m2 = map (pitch_to_fmidi) p2'
         d = map (abs . (m1 -)) m2
-        z = sortBy (compare `on` snd) (zip p2' d)
+        z = sortOn snd (zip p2' d)
     in fst (head z)
 
 -- | Raise 'Note_T' of 'Pitch', account for octave transposition.

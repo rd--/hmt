@@ -313,7 +313,7 @@ wseq_tmap_dur f = let g (t,d) = (t,f d) in seq_tmap g
 seq_partition :: Ord v => (a -> v) -> [(t,a)] -> [(v,[(t,a)])]
 seq_partition voice sq =
     let assign m (t,a) = M.insertWith (++) (voice a) [(t,a)] m
-        from_map = sortBy (compare `on` fst) .
+        from_map = sortOn fst .
                    map (\(v,l) -> (v,reverse l)) .
                    M.toList
     in from_map (foldl assign M.empty sq)

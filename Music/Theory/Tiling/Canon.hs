@@ -1,10 +1,11 @@
 module Music.Theory.Tiling.Canon where
 
 import Control.Monad.Logic {- logict -}
-import Data.Function {- base -}
 import Data.List {- base -}
 import Data.List.Split {- split -}
 import Text.Printf {- base -}
+
+import Music.Theory.List {- hmt -}
 
 -- | Sequence.
 type S = [Int]
@@ -85,7 +86,7 @@ r_from_t t =
         n = maximum (concat t) + 1
         t3_1 (i,_,_) = i
         f z = let (s:_,m,o) = unzip3 z in (n,s,m,o)
-    in map f (groupBy ((==) `on` t3_1) e)
+    in map f (group_on t3_1 e)
 
 -- * Construction
 
