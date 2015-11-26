@@ -78,6 +78,22 @@ rotate_r = rotate . negate
 rotations :: [a] -> [[a]]
 rotations p = map (`rotate_left` p) [0 .. length p - 1]
 
+-- | Rotate list so that is starts at indicated element.
+--
+-- > rotate_starting_from 'c' "abcde" == Just "cdeab"
+-- > rotate_starting_from '_' "abc" == Nothing
+rotate_starting_from :: Eq a => a -> [a] -> Maybe [a]
+rotate_starting_from x l =
+    case break (== x) l of
+      (_,[]) -> Nothing
+      (lhs,rhs) -> Just (rhs ++ lhs)
+
+-- | Erroring variant.
+rotate_starting_from_err :: Eq a => a -> [a] -> [a]
+rotate_starting_from_err x =
+    fromMaybe (error "rotate_starting_from: non-element") .
+    rotate_starting_from x
+
 -- | Generic form of 'adj2'.
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
 genericAdj2 n l =
