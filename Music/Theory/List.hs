@@ -222,13 +222,13 @@ group_on f = map (map snd) . groupBy ((==) `on` fst) . map (\x -> (f x,x))
 -- | Given accesors for /key/ and /value/ collate input.
 --
 -- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
--- > in collate_on fst snd (zip "ABCBCD" "abcdef")
+-- > in collate_on fst snd (zip "ABCBCD" "abcdef") == r
 collate_on :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
 collate_on f g =
     let h l = case l of
                 [] -> error "collate_on"
                 l0:_ -> (f l0,map g l)
-    in map h . groupBy ((==) `on` f) . sortBy (compare `on` f)
+    in map h . group_on f . sortOn f
 
 -- | 'collate_on' of 'fst' and 'snd'.
 --
@@ -399,12 +399,12 @@ group_just = groupBy ((==) `on` isJust)
 all_eq :: Eq n => [n] -> Bool
 all_eq = (== 1) . length . nub
 
--- | 'groupBy' of 'sortBy'.
+-- | 'group_on' of 'sortOn'.
 --
 -- > let r = [[('1','a'),('1','c')],[('2','d')],[('3','b'),('3','e')]]
 -- > in sort_group_on fst (zip "13123" "abcde") == r
 sort_group_on :: Ord b => (a -> b) -> [a] -> [[a]]
-sort_group_on f = groupBy ((==) `on` f) . sortBy (compare `on` f)
+sort_group_on f = group_on f . sortOn f
 
 -- | Maybe cons element onto list.
 --
@@ -450,7 +450,7 @@ ordering_invert o =
 -- > sort_to "abc" [1,3,2] == "acb"
 -- > sort_to "adbce" [1,4,2,3,5] == "abcde"
 sort_to :: Ord i => [e] -> [i] -> [e]
-sort_to e = map fst . sortBy (compare `on` snd) . zip e
+sort_to e = map fst . sortOn snd . zip e
 
 -- | 'flip' of 'sort_to'.
 --
@@ -537,10 +537,10 @@ zip_with_perhaps_rhs f g lhs rhs =
                            Left r -> r : zip_with_perhaps_rhs f g lhs' rhs
                            Right r -> r : zip_with_perhaps_rhs f g lhs' rhs'
 
--- | Fill gaps in a sorted association list.
+-- | Fill gaps in a sorted association list, range is inclusive at both ends.
 --
 -- > let r = [(1,'a'),(2,'x'),(3,'x'),(4,'x'),(5,'b'),(6,'x'),(7,'c'),(8,'x'),(9,'x')]
--- > in fill_gaps 'x' (1,9) (zip [1,5,7] "abc")
+-- > in fill_gaps_ascending' 'x' (1,9) (zip [1,5,7] "abc") == r
 fill_gaps_ascending :: (Enum n, Ord n) => t -> (n,n) -> [(n,t)] -> [(n,t)]
 fill_gaps_ascending def_e (l,r) =
     let f i (j,e) = if j > i then Left (i,def_e) else Right (j,e)
