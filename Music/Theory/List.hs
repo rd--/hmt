@@ -547,6 +547,19 @@ fill_gaps_ascending def_e (l,r) =
         g i = (i,def_e)
     in zip_with_perhaps_rhs f g [l .. r]
 
+-- | Direct definition.
+fill_gaps_ascending' :: (Num n,Enum n, Ord n) => t -> (n,n) -> [(n,t)] -> [(n,t)]
+fill_gaps_ascending' def (l,r) =
+    let recur n x =
+            if n > r
+            then []
+            else case x of
+                   [] -> zip [n .. r] (repeat def)
+                   (m,e):x' -> if n < m
+                               then (n,def) : recur (n + 1) x
+                               else (m,e) : recur (n + 1) x'
+    in recur l
+
 -- | 'minimum' and 'maximum' in one pass.
 --
 -- > minmax "minimumandmaximum" == ('a','x')

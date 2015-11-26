@@ -75,5 +75,6 @@ mincsec_fsec (m,s,cs) = realToFrac m * 60 + realToFrac s + (realToFrac cs / 100)
 mincsec_pp :: MINCSEC -> String
 mincsec_pp (m,s,cs) = printf "%02d:%02d.%02d" m s cs
 
+-- | Given printer, pretty print time span.
 span_pp :: (t -> String) -> (t,t) -> String
 span_pp f (t1,t2) = concat [f t1," - ",f t2]
