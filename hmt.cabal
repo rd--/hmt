@@ -72,6 +72,7 @@ Library
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
+                   Music.Theory.Monad
                    Music.Theory.Permutations
                    Music.Theory.Permutations.List
                    Music.Theory.Permutations.Morris_1984
