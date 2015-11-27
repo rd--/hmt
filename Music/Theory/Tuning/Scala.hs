@@ -146,6 +146,15 @@ scale_tuning epsilon (_,_,_,p) =
                o' = either (T.reconstructed_ratio epsilon) id o
            in T.Tuning (Right c') o'
 
+-- | Convert 'T.Tuning' to 'Scale'.
+--
+-- > tuning_to_scale ("et12","12 tone equal temperament") (T.equal_temperament 12)
+tuning_to_scale :: (String,String) -> T.Tuning -> Scale Integer
+tuning_to_scale (nm,dsc) (T.Tuning p o) =
+    let n = either length length p
+        p' = either (map Right) (map Left) p ++ [Right o]
+    in (nm,dsc,n,p')
+
 -- * Parser
 
 -- | Comment lines begin with @!@.
@@ -195,8 +204,8 @@ parse_scl nm s =
 -- * IO
 
 -- | Read the environment variable @SCALA_SCL_DIR@.
-scl_get_dir :: IO String
-scl_get_dir = getEnv "SCALA_SCL_DIR"
+scl_get_dir :: IO [String]
+scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
 -- | Lookup the @SCALA_SCL_DIR@ environment variable, which must exist, and derive the filepath.
 -- It is an error if the name has a file extension.
@@ -207,7 +216,7 @@ scl_derive_filename nm = do
   dir <- scl_get_dir
   when (null dir) (error "scl_derive_filename: SCALA_SCL_DIR: nil")
   when (hasExtension nm) (error "scl_derive_filename: name has extension")
-  return (dir </> nm <.> "scl")
+  T.path_scan_err dir (nm <.> "scl")
 
 -- | If the name is an absolute file path and has a @.scl@ extension,
 -- then return it, else run 'scl_derive_filename'.
@@ -223,7 +232,7 @@ scl_resolve_name nm =
 -- | Load @.scl@ file, runs 'resolve_scl'.
 --
 -- > s <- scl_load "xenakis_chrom"
--- > scale_pitch_representations s == (6,1)
+-- > pitch_representations (scale_pitches s) == (6,1)
 -- > scale_ratios 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53,2]
 scl_load :: (Read i, Integral i) => String -> IO (Scale i)
 scl_load nm = do
@@ -234,8 +243,9 @@ scl_load nm = do
 {- | Load all @.scl@ files at /dir/.
 
 > dir <- scl_get_dir
-> dir == "/home/rohan/data/scala/83/scl"
-> db <- scl_load_dir dir
+> dir == ["/home/rohan/data/scala/83/scl","/home/rohan/sw/hmt/data/scl"]
+> let [scl_83_dir,ext_dir] = dir
+> db <- scl_load_dir scl_83_dir
 > length db == 4557
 > length (filter ((== 0) . scale_degree) db) == 0
 > length (filter (== Just (Right 2)) (map scale_octave db)) == 3911
@@ -269,7 +279,8 @@ scl_load_dir d = T.dir_subset [".scl"] d >>= mapM scl_load
 scl_load_db :: (Read i, Integral i) => IO [Scale i]
 scl_load_db = do
   dir <- scl_get_dir
-  scl_load_dir dir
+  r <- mapM scl_load_dir dir
+  return (concat r)
 
 -- * PP
 
@@ -285,3 +296,23 @@ scale_stat s =
        ,if ty == Just Pitch_Ratio
         then "scale-ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req s))
         else ""]
+
+-- | Pretty print 'Pitch' in @Scala@ format.
+pitch_pp :: (Integral i,Show i) => Pitch i -> String
+pitch_pp p =
+    case p of
+      Left c -> show c
+      Right r -> show (numerator r) ++ "/" ++ show (denominator r)
+
+-- | Pretty print 'Scale' in @Scala@ format.
+--
+-- > s <- scl_load "et19"
+-- > s <- scl_load "young-lm_piano"
+-- > putStr $ unlines $ scale_pp s
+scale_pp :: (Integral i,Show i) => Scale i -> [String]
+scale_pp (nm,dsc,k,p) =
+    ["! " ++ nm ++ ".scl"
+    ,"!"
+    ,dsc
+    ,show k
+    ,"!"] ++ map pitch_pp p

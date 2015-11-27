@@ -19,7 +19,7 @@ db_stat = do
 env :: IO ()
 env = do
   dir <- T.scl_get_dir
-  putStrLn ("SCALA_SCL_DIR = " ++ if null dir then "NOT SET" else dir)
+  putStrLn ("SCALA_SCL_DIR = " ++ if null dir then "NOT SET" else intercalate ":" dir)
 
 cut :: Maybe Int -> [a] -> [a]
 cut lm s = maybe s (\n -> take n s) lm
@@ -51,7 +51,9 @@ help =
     ,"env"
     ,"search ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
-    ,"stat scale lm|nil name:string|file-path"]
+    ,"stat scale lm|nil name:string|file-path"
+    ,""
+    ,"  lm:int = line character limit"]
 
 nil_or_read :: Read a => String -> Maybe a
 nil_or_read s = if s == "nil" then Nothing else Just (T.read_err s)
