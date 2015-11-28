@@ -16,7 +16,9 @@ path_scan p fn =
                 in doesFileExist nm >>= f
 
 path_scan_err :: [FilePath] -> FilePath -> IO FilePath
-path_scan_err p = fmap (fromMaybe (error ("path_scan: " ++ show p))) . path_scan p
+path_scan_err p x =
+    let err = (error ("path_scan: " ++ show p ++ ": " ++ x))
+    in fmap (fromMaybe err) (path_scan p x)
 
 -- | Subset of files in /dir/ with an extension in /ext/.
 dir_subset :: [String] -> FilePath -> IO [FilePath]
