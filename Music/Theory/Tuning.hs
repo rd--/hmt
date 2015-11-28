@@ -373,6 +373,9 @@ type D12_Midi_Tuning = (Tuning,Cents,Int)
 
 -- | 'Midi_Tuning_F' for 'D12_Midi_Tuning'.
 --
+-- > let f = d12_midi_tuning_f (equal_temperament 12,0,0)
+-- > map f [0..127] == zip [0..127] (repeat 0)
+--
 -- > import Music.Theory.Tuning.Gann
 -- > let f = d12_midi_tuning_f (la_monte_young,-74.7,-3)
 -- > octpc_to_midi (-1,11) == 11

@@ -32,6 +32,14 @@ type Pitch i = Either T.Cents (Ratio i)
 -- | A scale has a name, a description, a degree, and a list of 'Pitch'es.
 type Scale i = (String,String,Int,[Pitch i])
 
+-- | Ensure degree and number of pitches align.
+scale_verify :: Scale i -> Bool
+scale_verify (_,_,n,p) = n == length p
+
+-- | Raise error if scale doesn't verify, else 'id'.
+scale_verify_err :: Scale i -> Scale i
+scale_verify_err scl = if scale_verify scl then scl else error "invalid scale"
+
 -- | A nearness value for deriving approximate rationals.
 type Epsilon = Double
 
@@ -152,7 +160,7 @@ scale_tuning epsilon (_,_,_,p) =
 tuning_to_scale :: (String,String) -> T.Tuning -> Scale Integer
 tuning_to_scale (nm,dsc) (T.Tuning p o) =
     let n = either length length p
-        p' = either (map Right) (map Left) p ++ [Right o]
+        p' = either (map Right . tail) (map Left . tail) p ++ [Right o]
     in (nm,dsc,n,p')
 
 -- * Parser
@@ -198,7 +206,8 @@ parse_pitch_ln x =
 parse_scl :: (Read i, Integral i) => String -> String -> Scale i
 parse_scl nm s =
     case filter_comments (lines (T.filter_cr s)) of
-      t:n:p -> (nm,T.delete_trailing_whitespace t,T.read_err n,map parse_pitch_ln p)
+      t:n:p -> let scl = (nm,T.delete_trailing_whitespace t,T.read_err n,map parse_pitch_ln p)
+               in scale_verify_err scl
       _ -> error "parse"
 
 -- * IO
