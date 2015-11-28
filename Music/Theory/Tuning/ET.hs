@@ -6,7 +6,7 @@ import Data.List.Split {- split -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import Music.Theory.List {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 import Music.Theory.Pitch {- hmt -}
 import Music.Theory.Pitch.Note {- hmt -}
 import Music.Theory.Pitch.Spelling {- hmt -}
@@ -53,12 +53,12 @@ tbl_24et = tbl_24et_f0 440
 
 -- | Given an @ET@ table (or like) find bounds of frequency.
 --
--- > let r = Just (at_pair octpc_to_pitch_cps ((3,11),(4,0)))
+-- import qualified Music.Theory.Tuple as T
+--
+-- > let r = Just (T.t2_map octpc_to_pitch_cps ((3,11),(4,0)))
 -- > in bounds_et_table tbl_12et 256 == r
 bounds_et_table :: Ord s => [(t,s)] -> s -> Maybe ((t,s),(t,s))
-bounds_et_table tbl =
-    let f (_,p) = compare p
-    in find_bounds True f tbl
+bounds_et_table = T.find_bounds True (compare . snd)
 
 -- | 'bounds_et_table' of 'tbl_12et'.
 --

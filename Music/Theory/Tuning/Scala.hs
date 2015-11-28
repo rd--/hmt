@@ -219,7 +219,7 @@ scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 -- | Lookup the @SCALA_SCL_DIR@ environment variable, which must exist, and derive the filepath.
 -- It is an error if the name has a file extension.
 --
--- > scl_derive_filename "young-lm_piano"
+-- > mapM scl_derive_filename ["young-lm_piano","et12"]
 scl_derive_filename :: FilePath -> IO FilePath
 scl_derive_filename nm = do
   dir <- scl_get_dir
