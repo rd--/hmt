@@ -65,6 +65,7 @@ Library
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
                    Music.Theory.List
+                   Music.Theory.Map
                    Music.Theory.Math
                    Music.Theory.Math.Convert
                    Music.Theory.Maybe

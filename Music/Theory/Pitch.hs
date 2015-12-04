@@ -156,6 +156,10 @@ octpc_range (l,r) =
 midi_to_pitch :: Integral i => Spelling i -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 
+-- | 'midi_to_pitch' 'T.pc_spell_ks'.
+midi_to_pitch_ks :: Integral i => i -> Pitch
+midi_to_pitch_ks = midi_to_pitch T.pc_spell_ks
+
 -- | Fractional midi note number to 'Pitch'.
 --
 -- > fmidi_to_pitch' pc_spell_ks 69.25 == Nothing

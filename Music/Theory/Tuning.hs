@@ -10,6 +10,7 @@ import Safe {- safe -}
 
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Map as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
@@ -379,9 +380,9 @@ type D12_Midi_Tuning = (Tuning,Cents,Int)
 -- > map f [0..127] == zip [0..127] (repeat 0)
 --
 -- > import Music.Theory.Tuning.Gann
--- > let f = d12_midi_tuning_f (la_monte_young,-74.7,-3)
--- > octpc_to_midi (-1,11) == 11
--- > map (round . midi_detune_to_cps . f) [62,63,69] == [293,298,440]
+-- > let f = d12_midi_tuning_f (la_monte_young_wtp,-74.7,-3)
+-- > T.octpc_to_midi (-1,11) == 11
+-- > map (round . T.midi_detune_to_cps . f) [62,63,69] == [293,298,440]
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
     let (_,pc) = T.midi_to_octpc (n + k)
@@ -402,38 +403,33 @@ cps_midi_tuning_f (t,f0,k,g) n =
 -- * Midi tuning tables.
 
 -- | Midi-note-number -> CPS table.
-type MNN_CPS_TBL = [(Int,Double)]
+type MNN_CPS_Table = [(Int,Double)]
 
--- | Does not assume tuning is ascending (ie. sorts table).
-gen_cps_tuning_tbl :: Midi_Tuning_F -> MNN_CPS_TBL
+-- | Generates 'MNN_CPS_Table' given 'Midi_Tuning_F' with keys for all valid @MNN@.
+--
+-- > import Sound.SC3.Plot
+-- > plot_p2_ln [map (fmap round) (gen_cps_tuning_tbl f)]
+gen_cps_tuning_tbl :: Midi_Tuning_F -> MNN_CPS_Table
 gen_cps_tuning_tbl tn_f =
     let ix = [0..127]
-    in zip ix (map (T.midi_detune_to_cps . tn_f) ix)
+        cps = map (T.midi_detune_to_cps . tn_f) ix
+    in zip ix cps
 
--- * Derived (secondary) tuning lookup table.
+-- * Derived (secondary) tuning table lookup.
 
-cross_lookup_err :: (Eq a, Num t, Ord t) => [(a,t)] -> [t] -> a -> (a,t,t)
-cross_lookup_err t0 t1 n = let f = T.lookup_err n t0 in (n,f,T.find_nearest_err t1 f)
+-- | Given a 'MNN_CPS_Table' /t/, a list of @CPS@ /c/, and a @MNN@ /m/
+-- find the @CPS@ in /c/ that is nearest to the @CPS@ in /t/ for /m/.
+dtt_lookup_err :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (k,v,v)
+dtt_lookup_err t cps n = let f = T.lookup_err n t in (n,f,T.find_nearest_err cps f)
 
-gen_cross_lookup_tbl :: MNN_CPS_TBL -> MNN_CPS_TBL -> MNN_CPS_TBL
-gen_cross_lookup_tbl t0 t1 =
+-- | Given two tuning tables generate the @dtt@ table.
+gen_dtt_lookup_tbl :: MNN_CPS_Table -> MNN_CPS_Table -> MNN_CPS_Table
+gen_dtt_lookup_tbl t0 t1 =
     let ix = [0..127]
-    in zip ix (map (T.p3_third . cross_lookup_err t0 (map snd t1)) ix)
+        cps = sort (map (T.p3_third . dtt_lookup_err t0 (map snd t1)) ix)
+    in zip ix cps
 
-gen_cross_lookup_map :: MNN_CPS_TBL -> MNN_CPS_TBL -> M.Map Int Double
-gen_cross_lookup_map t0 = M.fromList . gen_cross_lookup_tbl t0
-
-map_lookup_err :: Ord k => k -> M.Map k c -> c
-map_lookup_err k = fromMaybe (error "M.lookup") . M.lookup k
-
-map_ix_err :: Ord k => M.Map k c -> k -> c
-map_ix_err = flip map_lookup_err
-
-gen_cross_lookup_f :: MNN_CPS_TBL -> MNN_CPS_TBL -> Midi_Tuning_F
-gen_cross_lookup_f t0 t1 =
-    let m = gen_cross_lookup_map t0 t1
-    in T.cps_to_midi_detune . map_ix_err m
-
--- Local Variables:
--- truncate-lines:t
--- End:
+gen_dtt_lookup_f :: MNN_CPS_Table -> MNN_CPS_Table -> Midi_Tuning_F
+gen_dtt_lookup_f t0 t1 =
+    let m = M.fromList (gen_dtt_lookup_tbl t0 t1)
+    in T.cps_to_midi_detune . T.map_ix_err m
