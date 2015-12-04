@@ -9,6 +9,7 @@ import Data.Either {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
@@ -144,8 +145,8 @@ scale_ratios_req =
 -- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
 -- rational, 'T.Tuning' is rational, else 'T.Tuning' is in 'T.Cents'.
 -- 'Epsilon' is used to recover the 'Rational' octave if required.
-scale_tuning :: Epsilon -> Scale Integer -> T.Tuning
-scale_tuning epsilon (_,_,_,p) =
+scale_to_tuning :: Epsilon -> Scale Integer -> T.Tuning
+scale_to_tuning epsilon (_,_,_,p) =
     case partitionEithers p of
       ([],r) -> let (r',o) = T.separate_last r
                 in T.Tuning (Left (1 : r')) o
@@ -212,7 +213,8 @@ parse_scl nm s =
 
 -- * IO
 
--- | Read the environment variable @SCALA_SCL_DIR@.
+-- | Read the environment variable @SCALA_SCL_DIR@, which is a
+-- sequence of directories used to locate scala files on.
 scl_get_dir :: IO [String]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
@@ -232,11 +234,13 @@ scl_derive_filename nm = do
 --
 -- > scl_resolve_name "young-lm_piano"
 -- > scl_resolve_name "/home/rohan/data/scala/83/scl/young-lm_piano.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/83/scl/unknown-tuning.scl"
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
-    if isAbsolute nm && takeExtension nm == ".scl"
-    then return nm
-    else scl_derive_filename nm
+    let ex_f x = if x then return nm else error "scl_resolve_name: file does not exist"
+    in if isAbsolute nm && takeExtension nm == ".scl"
+       then doesFileExist nm >>= ex_f
+       else scl_derive_filename nm
 
 -- | Load @.scl@ file, runs 'resolve_scl'.
 --
@@ -248,6 +252,10 @@ scl_load nm = do
   fn <- scl_resolve_name nm
   s <- T.read_file_iso_8859_1 fn
   return (parse_scl (takeBaseName nm) s)
+
+-- | 'scale_to_tuning' of 'scl_load'.
+scl_load_tuning :: Epsilon -> String -> IO T.Tuning
+scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 
 {- | Load all @.scl@ files at /dir/.
 

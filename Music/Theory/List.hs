@@ -301,17 +301,51 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+-- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
+-- right of the list, and it to the right whether equal or not.
+-- 'Right' values will be correct is the list is not ascending,
+-- however 'Left' values only make sense for ascending ranges.
+--
+-- > map (find_bounds' compare [(0,1),(1,2)]) [-1,0,1,2,3]
+find_bounds' :: (t -> s -> Ordering) -> [(t,t)] -> s -> Either ((t,t),Ordering) (t,t)
+find_bounds' f l x =
+    let g (p,q) = f p x /= GT && f q x == GT
+    in case l of
+         [] -> error "find_bounds': nil"
+         [(p,q)] -> if g (p,q) then Right (p,q) else Left ((p,q),f q x)
+         (p,q):l' -> if f p x == GT
+                     then Left ((p,q),GT)
+                     else if g (p,q) then Right (p,q) else find_bounds' f l' x
+
+decide_nearest' :: Ord o => (p -> o) -> (p,p) -> p
+decide_nearest' f (p,q) = if f p < f q then p else q
+
+-- | Decide if value is nearer the left or right value of a range.
+decide_nearest :: (Num o,Ord o) => o -> (o, o) -> o
+decide_nearest x = decide_nearest' (abs . (x -))
+
+-- | Find the number that is nearest the requested value in an
+-- ascending list of numbers.
+--
+-- > map (find_nearest_err [0,3.5,4,7]) [-1,1,3,5,7,9] == [0,0,3.5,4,7,7]
+find_nearest_err :: (Num n,Ord n) => [n] -> n -> n
+find_nearest_err l x =
+    case find_bounds' compare (adj2 1 l) x of
+      Left ((p,_),GT) -> p
+      Left ((_,q),_) -> q
+      Right (p,q) -> decide_nearest x (p,q)
+
+find_nearest :: (Num n,Ord n) => [n] -> n -> Maybe n
+find_nearest l x = if null l then Nothing else Just (find_nearest_err l x)
+
 -- | Basis of 'find_bounds'.  There is an option to consider the last
 -- element specially, and if equal to the last span is given.
-find_bounds' :: Bool -> (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
-find_bounds' scl f l x =
-    let g (p,q) = f p x /= GT && f q x == GT
-        h (p,q) = f p x /= GT && f q x /= LT
-        h' = if scl then h else g
-    in case l of
-         [] -> Nothing
-         [e] -> if h' e then Just e else Nothing
-         e:l' -> if g e then Just e else find_bounds' scl f l' x
+find_bounds_scl :: Bool -> (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
+find_bounds_scl scl f l x =
+    case find_bounds' f l x of
+         Right r -> Just r
+         Left (r,EQ) -> if scl then Just r else Nothing
+         _ -> Nothing
 
 -- | Find adjacent elements of list that bound element under given
 -- comparator.
@@ -320,7 +354,7 @@ find_bounds' scl f l x =
 -- >     ;r = [Nothing,Just (1,2),Just (3,4),Just (4,5)]}
 -- > in map f [0,1,3.5,5] == r
 find_bounds :: Bool -> (t -> s -> Ordering) -> [t] -> s -> Maybe (t,t)
-find_bounds scl f l = find_bounds' scl f (adj2 1 l)
+find_bounds scl f l = find_bounds_scl scl f (adj2 1 l)
 
 -- | Variant of 'drop' from right of list.
 --
@@ -580,3 +614,8 @@ minmax inp =
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
 bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)
+
+-- * Error variants
+
+lookup_err :: Eq a => a -> [(a,x)] -> x
+lookup_err n = fromMaybe (error "lookup") . lookup n

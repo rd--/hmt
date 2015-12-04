@@ -3,6 +3,7 @@ module Music.Theory.Tuning where
 
 import Data.Fixed {- base -}
 import Data.List {- base -}
+import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
@@ -10,6 +11,7 @@ import Safe {- safe -}
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
 
@@ -396,6 +398,41 @@ cps_midi_tuning_f (t,f0,k,g) n =
     let r = approximate_ratios_cyclic t
         m = take g (map (T.cps_to_midi_detune . (* f0)) r)
     in m `at` (n - k)
+
+-- * Midi tuning tables.
+
+-- | Midi-note-number -> CPS table.
+type MNN_CPS_TBL = [(Int,Double)]
+
+-- | Does not assume tuning is ascending (ie. sorts table).
+gen_cps_tuning_tbl :: Midi_Tuning_F -> MNN_CPS_TBL
+gen_cps_tuning_tbl tn_f =
+    let ix = [0..127]
+    in zip ix (map (T.midi_detune_to_cps . tn_f) ix)
+
+-- * Derived (secondary) tuning lookup table.
+
+cross_lookup_err :: (Eq a, Num t, Ord t) => [(a,t)] -> [t] -> a -> (a,t,t)
+cross_lookup_err t0 t1 n = let f = T.lookup_err n t0 in (n,f,T.find_nearest_err t1 f)
+
+gen_cross_lookup_tbl :: MNN_CPS_TBL -> MNN_CPS_TBL -> MNN_CPS_TBL
+gen_cross_lookup_tbl t0 t1 =
+    let ix = [0..127]
+    in zip ix (map (T.p3_third . cross_lookup_err t0 (map snd t1)) ix)
+
+gen_cross_lookup_map :: MNN_CPS_TBL -> MNN_CPS_TBL -> M.Map Int Double
+gen_cross_lookup_map t0 = M.fromList . gen_cross_lookup_tbl t0
+
+map_lookup_err :: Ord k => k -> M.Map k c -> c
+map_lookup_err k = fromMaybe (error "M.lookup") . M.lookup k
+
+map_ix_err :: Ord k => M.Map k c -> k -> c
+map_ix_err = flip map_lookup_err
+
+gen_cross_lookup_f :: MNN_CPS_TBL -> MNN_CPS_TBL -> Midi_Tuning_F
+gen_cross_lookup_f t0 t1 =
+    let m = gen_cross_lookup_map t0 t1
+    in T.cps_to_midi_detune . map_ix_err m
 
 -- Local Variables:
 -- truncate-lines:t

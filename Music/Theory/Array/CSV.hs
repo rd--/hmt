@@ -1,7 +1,7 @@
 -- | Regular matrix array data, CSV, column & row indexing.
 module Music.Theory.Array.CSV where
 
-import Data.Array {- array -}
+import qualified Data.Array as A {- array -}
 import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
@@ -27,7 +27,7 @@ instance Enum Column_Ref where
     fromEnum = column_index
     toEnum = column_ref
 
-instance Ix Column_Ref where
+instance A.Ix Column_Ref where
     range = column_range
     index = interior_column_index
     inRange = column_in_range
@@ -157,7 +157,7 @@ column_range_size = (+ 1) . negate . uncurry (-) . column_indices
 
 -- | Type specialised 'Data.Ix.range'.
 row_range :: Row_Range -> [Row_Ref]
-row_range = range
+row_range = A.range
 
 -- | The standard uppermost leftmost cell reference, @A1@.
 --
@@ -338,14 +338,14 @@ table_row_segment t (r,c) =
 -- > > (((A,1),(C,2))
 -- > > ,[(A,1),(A,2),(B,1),(B,2),(C,1),(C,2)]
 -- > > ,[0,2,1,4,3,5])
-table_to_array :: Table a -> Array Cell_Ref a
+table_to_array :: Table a -> A.Array Cell_Ref a
 table_to_array t =
     let nr = length t
         nc = length (t !! 0)
         bnd = (cell_ref_minima,(toEnum (nc - 1),nr))
         asc = zip (cell_range_row_order bnd) (concat t)
-    in array bnd asc
+    in A.array bnd asc
 
 -- | 'table_to_array' of 'csv_table_read'.
-csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (Array Cell_Ref a)
+csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (A.Array Cell_Ref a)
 csv_array_read opt f fn = fmap (table_to_array . snd) (csv_table_read opt f fn)
