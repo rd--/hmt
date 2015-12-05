@@ -2,8 +2,6 @@
 module Music.Theory.Tuning.Scala.Interval where
 
 import Data.List {- base -}
-import System.Environment {- base -}
-import System.FilePath {- filepath -}
 
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T
@@ -40,11 +38,8 @@ parse_intnam l =
 
 -- * IO
 
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22-pc64-linux"
 -- > intnam <- load_intnam
 load_intnam :: IO INTNAM
 load_intnam = do
-  d <- getEnv "SCALA_DIST_DIR"
-  s <- readFile (d </> "intnam.par")
-  let l = T.filter_comments (lines s)
-  return (parse_intnam l)
+  l <- T.load_dist_file "intnam.par"
+  return (parse_intnam (T.filter_comments l))

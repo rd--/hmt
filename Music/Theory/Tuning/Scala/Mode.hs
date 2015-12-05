@@ -4,8 +4,6 @@ module Music.Theory.Tuning.Scala.Mode where
 import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import System.Environment {- base -}
-import System.FilePath {- filepath -}
 
 import qualified Music.Theory.Function as T
 import qualified Music.Theory.List as T
@@ -87,12 +85,9 @@ parse_modenam l =
 
 -- * IO
 
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22-pc64-linux"
 -- > mn <- load_modenam
 -- > let (n,x,m) = mn
 load_modenam :: IO MODENAM
 load_modenam = do
-  d <- getEnv "SCALA_DIST_DIR"
-  s <- readFile (d </> "modenam.par")
-  let l = T.filter_comments (join_long_lines (lines s))
-  return (parse_modenam l)
+  l <- T.load_dist_file "modenam.par"
+  return (parse_modenam (T.filter_comments (join_long_lines l)))
