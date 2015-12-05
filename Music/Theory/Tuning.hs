@@ -387,7 +387,9 @@ d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
     let (_,pc) = T.midi_to_octpc (n + k)
         dt = zipWith (-) (cents t) [0,100 .. 1200]
-    in (n,(dt `at` pc) + c_diff)
+    in if divisions t /= 12
+       then error "d12_midi_tuning_f: not d12"
+       else (n,(dt `at` pc) + c_diff)
 
 -- | (t,f0,k) where t=tuning, f0=fundamental frequency, k=midi note
 -- number for f0, n=gamut

@@ -267,6 +267,7 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 > length (filter ((== 0) . scale_degree) db) == 0
 > length (filter (== Just (Right 2)) (map scale_octave db)) == 3911
 > length (filter is_scale_uniform db) == 2723
+> length (filter (not . T.is_ascending . scale_cents) db) == 121
 
 > import qualified Music.Theory.List as T
 > import Sound.SC3.Plot

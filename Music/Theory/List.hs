@@ -558,8 +558,12 @@ find_non_ascending cmp xs =
       _ -> Nothing
 
 -- | 'isNothing' of 'find_non_ascending'.
-is_ascending :: (a -> a -> Ordering) -> [a] -> Bool
-is_ascending cmp = isNothing . find_non_ascending cmp
+is_ascending_by :: (a -> a -> Ordering) -> [a] -> Bool
+is_ascending_by cmp = isNothing . find_non_ascending cmp
+
+-- | 'is_ascending_by' 'compare'.
+is_ascending :: Ord a => [a] -> Bool
+is_ascending = is_ascending_by compare
 
 -- | A 'zipWith' variant that always consumes an element from the left
 -- hand side (lhs), but only consumes an element from the right hand
