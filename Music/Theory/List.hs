@@ -14,6 +14,24 @@ import Data.Maybe {- base -}
 bracket :: (a,a) -> [a] -> [a]
 bracket (l,r) x = l : x ++ [r]
 
+unbracket' :: [a] -> (Maybe a,[a],Maybe a)
+unbracket' x =
+    case x of
+      [] -> (Nothing,[],Nothing)
+      l:x' -> let (m,r) = separate_last' x' in (Just l,m,r)
+
+-- | The first & middle & last elements of a list.
+--
+-- > unbracket "[12]" == Just ('[',"12",']')
+unbracket :: [t] -> Maybe (t,[t],t)
+unbracket x =
+    case unbracket' x of
+      (Just l,m,Just r) -> Just (l,m,r)
+      _ -> Nothing
+
+unbracket_err :: [t] -> (t,[t],t)
+unbracket_err = fromMaybe (error "unbracket") . unbracket
+
 -- | Variant where brackets are sequences.
 --
 -- > bracket_l ("<:",":>") "1,2,3" == "<:1,2,3:>"
@@ -387,13 +405,20 @@ at_last f g x =
       [i] -> [g i]
       i:x' -> f i : at_last f g x'
 
--- | Separate list into an initial list and a last element tuple.
+-- | Separate list into an initial list and perhaps the last element tuple.
+--
+-- > separate_last' [] == ([],Nothing)
+separate_last' :: [a] -> ([a],Maybe a)
+separate_last' x =
+    case reverse x of
+      [] -> ([],Nothing)
+      e:x' -> (reverse x',Just e)
+
+-- | Error on null input.
 --
 -- > separate_last [1..5] == ([1..4],5)
 separate_last :: [a] -> ([a],a)
-separate_last x =
-    let e:x' = reverse x
-    in (reverse x',e)
+separate_last = fmap (fromMaybe (error "separate_last")) . separate_last'
 
 -- | Replace directly repeated elements with 'Nothing'.
 --
