@@ -64,7 +64,7 @@ cps_tbl_d12 (nm,c,k) (l,r) = do
 
 help :: [String]
 help =
-    ["cps-tbl d12 name:string cents:double mnn:int"
+    ["cps-tbl d12 name:string cents:double mnn:int mnn-l:int mnn-r:int"
     ,"db-stat"
     ,"env"
     ,"search ci|cs lm|nil text:string..."
