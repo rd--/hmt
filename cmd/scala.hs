@@ -9,6 +9,7 @@ import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 
 db_stat :: IO ()
@@ -50,21 +51,35 @@ stat_by_name lm nm = do
   sc <- T.scl_load nm :: IO (T.Scale Integer)
   putStrLn (unlines (map (cut lm) (T.scale_stat sc)))
 
+cps_tbl :: T.MNN_CPS_Table -> (Int,Int) -> IO ()
+cps_tbl tbl (l,r) = do
+  let cps_pp = T.double_pp 2
+      gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
+      t_pp (i,p,cps) = let ref = T.midi_to_cps i
+                           (_,nr,_,_,_) = T.nearest_12et_tone cps
+                       in [show i,T.pitch_pp_iso p,cps_pp cps,T.pitch_pp_iso nr
+                          ,cps_pp ref,cps_pp (cps - ref)]
+      hdr = Just ["MNN","PITCH","CPS","NEAR","ET12","-/+"]
+  putStr (unlines (T.md_table hdr (map (t_pp . gen_t) [l .. r])))
+
 -- > cps_tbl_d12 ("young-lm_piano",-74.7,3) (60,72)
 cps_tbl_d12 :: (String,T.Cents,Int) -> (Int,Int) -> IO ()
 cps_tbl_d12 (nm,c,k) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
   let tbl = T.gen_cps_tuning_tbl (T.d12_midi_tuning_f (t,c,k))
-      cps_pp = T.double_pp 2
-      gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
-      t_pp (i,p,cps) = let ref = T.midi_to_cps i
-                       in show i : T.pitch_pp_iso p : map cps_pp [cps,ref,cps - ref]
-      hdr = Just ["MNN","PITCH","CPS","ET12","-/+"]
-  putStr (unlines (T.md_table hdr (map (t_pp . gen_t) [l .. r])))
+  cps_tbl tbl (l,r)
+
+-- > cps_tbl_cps ("cet111",27.5,9,127-9) (69,69+25)
+cps_tbl_cps :: (String,Double,Int,Int) -> (Int,Int) -> IO ()
+cps_tbl_cps (nm,f0,k,n) (l,r) = do
+  t <- T.scl_load_tuning 0.01 nm
+  let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
+  cps_tbl tbl (l,r)
 
 help :: [String]
 help =
-    ["cps-tbl d12 name:string cents:double mnn:int mnn-l:int mnn-r:int"
+    ["cps-tbl cps name:string f0:double mnn0:int gamut:int mnn-l:int mnn-r:int"
+    ,"cps-tbl d12 name:string cents:double mnn:int mnn-l:int mnn-r:int"
     ,"db-stat"
     ,"env"
     ,"search ci|cs lm|nil text:string..."
@@ -80,6 +95,7 @@ main :: IO ()
 main = do
   a <- getArgs
   case a of
+    ["cps-tbl","cps",nm,f0,k,n,l,r] -> cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
     ["cps-tbl","d12",nm,c,k,l,r] -> cps_tbl_d12 (nm,read c,read k) (read l,read r)
     ["db-stat"] -> db_stat
     ["env"] -> env

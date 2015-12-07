@@ -433,6 +433,7 @@ pitch_class_names_12et k n =
 --
 -- > pitch_pp_iso (Pitch E Flat 4) == "Eb4"
 -- > pitch_pp_iso (Pitch F DoubleSharp 3) == "Fx3"
+-- > pitch_pp_iso (Pitch C ThreeQuarterToneSharp 4) -- error
 pitch_pp_iso :: Pitch -> String
 pitch_pp_iso (Pitch n a o) = show n ++ alteration_iso a ++ show o
 
