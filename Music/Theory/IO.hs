@@ -14,8 +14,12 @@ read_file_utf8_text = fmap T.decodeUtf8 . B.readFile
 read_file_utf8 :: FilePath -> IO String
 read_file_utf8 = fmap T.unpack . read_file_utf8_text
 
--- | Read file, current locale.  Note: strictness, see System.IO.Strict.
+-- | 'read_file_utf8', or a default value if the file doesn't exist.
 read_file_utf8_or :: String -> FilePath -> IO String
-read_file_utf8_or s f = do
+read_file_utf8_or def f = do
   x <- D.doesFileExist f
-  if x then read_file_utf8 f else return s
+  if x then read_file_utf8 f else return def
+
+-- | Write UTF8 string as file, via "Data.Text".
+write_file_utf8 :: FilePath -> String -> IO ()
+write_file_utf8 fn = B.writeFile fn . T.encodeUtf8 . T.pack

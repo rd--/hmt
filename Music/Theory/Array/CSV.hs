@@ -284,9 +284,9 @@ csv_table_pp f (_,delim,brk,align) (hdr,tbl) =
       (_,t) = C.toCSVTable tbl'
   in C.ppDSVTable brk delim t
 
--- | 'writeFile' of 'csv_table_pp'.
+-- | 'T.write_file_utf8' of 'csv_table_pp'.
 csv_table_write :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
-csv_table_write f opt fn csv = writeFile fn (csv_table_pp f opt csv)
+csv_table_write f opt fn csv = T.write_file_utf8 fn (csv_table_pp f opt csv)
 
 -- | Write 'Table' only (no header).
 csv_table_write' :: (a -> String) -> CSV_Opt -> FilePath -> Table a -> IO ()

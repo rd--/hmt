@@ -45,10 +45,10 @@ Library
                    Music.Theory.Clef
                    Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992
-                   Music.Theory.DB.Char
                    Music.Theory.DB.Common
                    Music.Theory.DB.CSV
                    Music.Theory.DB.JSON
+                   Music.Theory.DB.Plain
                    Music.Theory.Directory
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
