@@ -37,8 +37,8 @@ db_parse s =
         c = splitOn [""] l
     in map (mapMaybe entry_parse) c
 
-db_sort :: [Record] -> [Record]
-db_sort = T.sort_by_two_stage (record_lookup ('A',0)) (record_lookup ('T',0))
+db_sort :: [(Char,Int)] -> [Record] -> [Record]
+db_sort k = T.sort_by_n_stage (map record_lookup k)
 
 db_load_utf8 :: FilePath -> IO [Record]
 db_load_utf8 = fmap db_parse . T.read_file_utf8

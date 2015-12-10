@@ -521,6 +521,10 @@ sort_on = flip sort_to
 sort_by_two_stage :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]
 sort_by_two_stage f g = sortBy (two_stage_compare (compare `on` f) (compare `on` g))
 
+-- | 'sortBy' of 'n_stage_compare'.
+sort_by_n_stage :: Ord b => [a -> b] -> [a] -> [a]
+sort_by_n_stage f = sortBy (n_stage_compare (map (compare `on`) f))
+
 -- | Given a comparison function, merge two ascending lists.
 --
 -- > mergeBy compare [1,3,5] [2,4] == [1..5]
