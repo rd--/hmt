@@ -44,6 +44,7 @@ Library
                    Music.Theory.Clef
                    Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992
+                   Music.Theory.DB.Char
                    Music.Theory.Directory
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
