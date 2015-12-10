@@ -9,6 +9,7 @@ import Data.String {- base -}
 
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 
+import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
 -- * Indexing
@@ -248,7 +249,7 @@ type CSV_Table a = (Maybe [String],Table a)
 -- | Read 'CSV_Table' from @CSV@ file.
 csv_table_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (CSV_Table a)
 csv_table_read (hdr,delim,brk,_) f fn = do
-  s <- readFile fn
+  s <- T.read_file_utf8 fn
   let t = C.csvTable (C.parseDSV brk delim s)
       p = C.fromCSVTable t
       (h,d) = if hdr then (Just (head p),tail p) else (Nothing,p)

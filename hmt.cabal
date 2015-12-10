@@ -17,7 +17,8 @@ Data-files:        README
                    Help/hmt.help.lhs
 
 Library
-  Build-Depends:   array,
+  Build-Depends:   aeson,
+                   array,
                    base >= 4.8,
                    bytestring,
                    colour,
@@ -46,6 +47,7 @@ Library
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.DB.Char
                    Music.Theory.DB.Common
+                   Music.Theory.DB.CSV
                    Music.Theory.DB.JSON
                    Music.Theory.Directory
                    Music.Theory.Duration
