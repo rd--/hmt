@@ -5,7 +5,6 @@ import qualified Data.ByteString as B {- bytestring -}
 import qualified Data.Text as T {- text -}
 import qualified Data.Text.Encoding as T {- text -}
 import qualified System.Directory as D {- directory -}
-import qualified System.IO as IO {- base -}
 
 -- | 'T.decodeUtf8' of 'B.readFile'.
 read_file_utf8_text :: FilePath -> IO T.Text
@@ -20,11 +19,3 @@ read_file_utf8_or :: String -> FilePath -> IO String
 read_file_utf8_or s f = do
   x <- D.doesFileExist f
   if x then read_file_utf8 f else return s
-
--- | Alternative implementation of 'read_file_utf8' via "System.IO".
-read_file_utf8_base :: FilePath -> IO String
-read_file_utf8_base nm = do
-  h <- IO.openFile nm IO.ReadMode
-  IO.hSetEncoding h IO.utf8
-  s <- IO.hGetContents h
-  length s `seq` return s
