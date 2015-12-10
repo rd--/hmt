@@ -1,3 +1,4 @@
+-- | Single character line oriented database format.
 module Music.Theory.DB.Char where
 
 import Data.Char {- base -}
@@ -5,8 +6,9 @@ import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 import Safe {- safe -}
 
-import Music.Theory.Function {- hmt -}
-import Music.Theory.List {- hmt -}
+import qualified Music.Theory.Function as T {- hmt -}
+import qualified Music.Theory.IO as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 
 type Entry = (Char,String)
 type Record = [Entry]
@@ -31,9 +33,12 @@ is_entry = isJust . entry_parse
 
 db_parse :: String -> [Record]
 db_parse s =
-    let l = filter (is_entry `predicate_or` null) (lines s)
+    let l = filter (T.predicate_or is_entry null) (lines s)
         c = splitOn [""] l
     in map (mapMaybe entry_parse) c
 
 db_sort :: [Record] -> [Record]
-db_sort = sort_by_two_stage (record_lookup ('A',0)) (record_lookup ('T',0))
+db_sort = T.sort_by_two_stage (record_lookup ('A',0)) (record_lookup ('T',0))
+
+db_load_utf8 :: FilePath -> IO [Record]
+db_load_utf8 = fmap db_parse . T.read_file_utf8

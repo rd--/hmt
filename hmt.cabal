@@ -64,6 +64,7 @@ Library
                    Music.Theory.Interval.Barlow_1987
                    Music.Theory.Interval.Name
                    Music.Theory.Interval.Spelling
+                   Music.Theory.IO
                    Music.Theory.Key
                    Music.Theory.List
                    Music.Theory.Map
