@@ -37,8 +37,9 @@ mn z n = fmap (z_mul z n)
 -- | T-related sequences of /p/.
 --
 -- > length (t_related 12 [0,3,6,9]) == 12
+-- > t_related 5 [0,2] == [[0,2],[1,3],[2,4],[3,0],[4,1]]
 t_related :: (Integral i, Functor f) => i -> f i -> [f i]
-t_related z p = fmap (\n -> tn z n p) [0..11]
+t_related z p = fmap (\n -> tn z n p) [0 .. z - 1]
 
 -- | T\/I-related sequences of /p/.
 --

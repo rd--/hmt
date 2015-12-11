@@ -344,3 +344,11 @@ spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length
     in (map T.sc_name . head . groupBy g . filter f) T.scs
+
+-- | Vector indicating degree of intersection with inversion at each transposition.
+--
+-- > tics [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
+tics :: [Z12] -> [Int]
+tics p =
+    let q = TTO.t_related (TTO.invert 0 p)
+    in map (length . intersect p) q

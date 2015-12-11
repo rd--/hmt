@@ -388,3 +388,11 @@ sc_name = sc_name' sc_table
 -- | UTF-8 (non-breaking hyphen) variant.
 sc_name_utf8 :: Integral n => [n] -> SC_Name
 sc_name_utf8 = sc_name' sc_table_utf8
+
+-- | Vector indicating degree of intersection with inversion at each transposition.
+--
+-- > tics 12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
+tics :: Integral i => i -> [i] -> [Int]
+tics z p =
+    let q = t_related z (invert z 0 p)
+    in map (length . intersect p) q
