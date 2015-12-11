@@ -5,10 +5,10 @@ module Music.Theory.Z.Forte_1973 where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import Music.Theory.List
-import qualified Music.Theory.Set.List as S
-import Music.Theory.Z
-import Music.Theory.Z.SRO
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Set.List as S {- hmt -}
+import Music.Theory.Z {- hmt -}
+import Music.Theory.Z.SRO {- hmt -}
 
 -- * Prime form
 
@@ -17,7 +17,7 @@ import Music.Theory.Z.SRO
 -- > t_rotations 12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]]
 t_rotations :: Integral a => a -> [a] -> [[a]]
 t_rotations z p =
-    let r = rotations (sort p)
+    let r = T.rotations (sort p)
     in map (tn_to z 0) r
 
 -- | T\/I-related rotations of /p/.
@@ -27,7 +27,7 @@ t_rotations z p =
 ti_rotations :: Integral a => a -> [a] -> [[a]]
 ti_rotations z p =
     let q = invert z 0 p
-        r = rotations (sort p) ++ rotations (sort q)
+        r = T.rotations (sort p) ++ T.rotations (sort q)
     in map (tn_to z 0) r
 
 -- | Variant with default value for empty input list case.
@@ -46,10 +46,13 @@ ti_cmp_prime z f = minimumBy_or [] f . ti_rotations z
 --
 -- > forte_cmp [0,1,3,6,8,9] [0,2,3,6,7,9] == LT
 forte_cmp :: (Ord t) => [t] -> [t] -> Ordering
-forte_cmp [] [] = EQ
 forte_cmp p  q  =
-    let r = compare (last p) (last q)
-    in if r == EQ then compare p q else r
+    case (p,q) of
+      ([],[]) -> EQ
+      ([],_) -> LT
+      (_,[]) -> GT
+      _ -> let r = compare (last p) (last q)
+           in if r == EQ then compare p q else r
 
 -- | Forte prime form, ie. 'cmp_prime' of 'forte_cmp'.
 --
@@ -57,6 +60,7 @@ forte_cmp p  q  =
 -- > forte_prime 5 [0,1,4] == [0,1,2]
 --
 -- > S.set (map (forte_prime 5) (S.powerset [0..4]))
+-- > S.set (map (forte_prime 7) (S.powerset [0..6]))
 forte_prime :: Integral a => a -> [a] -> [a]
 forte_prime z = ti_cmp_prime z forte_cmp
 
@@ -98,9 +102,33 @@ icv z s =
 --
 -- > bip 12 [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]
 bip :: Integral a => a -> [a] -> [a]
-bip z = sort . map (ic z . to_Z z) . d_dx
+bip z = sort . map (ic z . to_Z z) . T.d_dx
 
 -- * Name
+
+{- | Generate SC universe, though not in order of the Forte table.
+
+> let r = [[]
+>         ,[0]
+>         ,[0,1],[0,2],[0,3]
+>         ,[0,1,2],[0,1,3],[0,1,4],[0,2,4]
+>         ,[0,1,2,3],[0,1,2,4],[0,1,3,4],[0,1,3,5]
+>         ,[0,1,2,3,4],[0,1,2,3,5],[0,1,2,4,5]
+>         ,[0,1,2,3,4,5]
+>         ,[0,1,2,3,4,5,6]]
+> in sc_univ 7 == r
+
+> sort (sc_univ 12) == sort (map snd sc_table)
+
+> zipWith (\p q -> (p == q,p,q)) (sc_univ 12) (map snd sc_table)
+
+-}
+sc_univ :: (Integral a,Ord a,Enum a) => a -> [[a]]
+sc_univ z =
+    T.sort_by_two_stage length id $
+    nub $
+    map (forte_prime z) $
+    S.powerset [0 .. z - 1]
 
 -- | Synonym for 'String'.
 type SC_Name = String
