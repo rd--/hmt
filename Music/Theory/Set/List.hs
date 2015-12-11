@@ -1,9 +1,11 @@
 -- | Set operations on lists.
 module Music.Theory.Set.List where
 
-import Control.Monad
-import Data.List
+import Control.Monad {- base -}
+import Data.List {- base -}
 import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
+
+import qualified Music.Theory.List as T {- hmt -}
 
 -- | Remove duplicate elements with 'nub' and then 'sort'.
 --
@@ -23,6 +25,12 @@ n_powerset = (^) 2
 -- > map length (map (\n -> powerset [1..n]) [6..9]) == [64,128,256,512]
 powerset :: [a] -> [[a]]
 powerset = filterM (const [True,False])
+
+-- | Variant where result is sorted and the empty set is not given.
+--
+-- > powerset' [1,2,3] == [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
+powerset' :: Ord a => [a] -> [[a]]
+powerset' = tail . T.sort_by_two_stage length id . powerset
 
 -- | Two element subsets.
 --
