@@ -21,6 +21,22 @@ record_has_duplicate_keys = any (> 0) . map snd . record_key_histogram
 record_lookup_by :: (k -> k -> Bool) -> k -> Record k v -> [(k,v)]
 record_lookup_by f c = filter (f c . fst)
 
+record_collate' :: Eq k => (k,[v]) -> Record k v -> [(k,[v])]
+record_collate' (k,v) r =
+    case r of
+      [] -> [(k,reverse v)]
+      (k',v'):r' ->
+          if k == k'
+          then record_collate' (k,v' : v) r'
+          else (k,reverse v) : record_collate' (k',[v']) r'
+
+-- | Collate adjacent entries of existing sequence with equal key.
+record_collate :: Eq k => Record k v -> [(k,[v])]
+record_collate r =
+    case r of
+      [] -> error "record_collate: nil"
+      (k,v):r' -> record_collate' (k,[v]) r'
+
 -- | Lookup all values for key at 'Record'.
 record_lookup :: Eq k => k -> Record k v -> [v]
 record_lookup k = map snd . record_lookup_by (==) k
