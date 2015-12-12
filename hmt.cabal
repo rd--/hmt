@@ -42,6 +42,7 @@ Library
                    Music.Theory.Array.MD
                    Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
+                   Music.Theory.Braille
                    Music.Theory.Clef
                    Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992

@@ -636,12 +636,10 @@ fill_gaps_ascending' def (l,r) =
 -- > minmax "minimumandmaximum" == ('a','x')
 minmax :: Ord t => [t] -> (t,t)
 minmax inp =
-    let go (l,r) xs = case xs of
-                        [] -> (l,r)
-                        x:xs' -> go (min x l,max x r) xs'
-    in case inp of
-         [] -> error "minmax"
-         x:xs -> go (x,x) xs
+    case inp of
+      [] -> error "minmax: null"
+      x:xs -> let mm p (l,r) = (min p l,max p r) in foldr mm (x,x) xs
+
 -- * Bimap
 
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.

@@ -5,6 +5,7 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import Numeric {- base -}
 
 -- | 'reads' variant that requires using all the input to produce a
 -- single token.  The only exception is a singular trailing white
@@ -110,3 +111,12 @@ read_maybe_rational = read_maybe
 -- > read_rational "1%4"
 read_rational :: String -> Rational
 read_rational = read_err
+
+-- * Numeric variants
+
+-- | Error variant of 'readHex'.
+read_hex_err :: (Eq n,Num n) => String -> n
+read_hex_err s =
+    case readHex s of
+      [(n,"")] -> n
+      _ -> error ("readHex: " ++ s)
