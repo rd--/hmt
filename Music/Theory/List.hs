@@ -228,6 +228,19 @@ cycles n = transpose . chunksOf n
 filter_halt :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
 filter_halt sel end = filter sel . takeWhile end
 
+-- | Replace all /p/ with /q/ in /s/.
+--
+-- > replace "_x_" "-X-" "an _x_ string" == "an -X- string"
+-- > replace "ab" "cd" "ab ab cd ab" == "cd cd cd cd"
+replace :: Eq a => [a] -> [a] -> [a] -> [a]
+replace p q s =
+    let n = length p
+    in case s of
+         [] -> []
+         c:s' -> if p `isPrefixOf` s
+                 then q ++ replace p q (drop n s)
+                 else c : replace p q s'
+
 -- * Association lists
 
 -- | Equivalent to 'groupBy' '==' 'on' /f/.
