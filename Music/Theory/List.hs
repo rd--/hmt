@@ -38,6 +38,21 @@ unbracket_err = fromMaybe (error "unbracket") . unbracket
 bracket_l :: ([a],[a]) -> [a] -> [a]
 bracket_l (l,r) s = l ++ s ++ r
 
+-- | Relative of 'splitOn', but only makes first separation.
+--
+-- > splitOn "//" "lhs//rhs//rem" == ["lhs","rhs","rem"]
+-- > seperate_at "//" "lhs//rhs//rem" == Just ("lhs","rhs//rem")
+seperate_at :: Eq a => [a] -> [a] -> Maybe ([a],[a])
+seperate_at x =
+    let n = length x
+        f lhs rhs =
+            if null rhs
+            then Nothing
+                 else if x == take n rhs
+                      then Just (reverse lhs,drop n rhs)
+                      else f (head rhs : lhs) (tail rhs)
+    in f []
+
 -- | 'Splitter' comparing single element.
 on_elem :: Eq a => a -> Splitter a
 on_elem e = defaultSplitter { delimiter = Delimiter [(==) e] }
