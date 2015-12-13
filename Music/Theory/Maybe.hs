@@ -1,7 +1,11 @@
 -- | Extensions to "Data.Maybe".
 module Music.Theory.Maybe where
 
--- import Data.Maybe {- base -}
+import Data.Maybe {- base -}
+
+-- | Variant with error text.
+from_just :: String -> Maybe a -> a
+from_just err = fromMaybe (error err)
 
 -- | Variant of unzip.
 --
