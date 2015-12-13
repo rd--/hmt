@@ -9,6 +9,12 @@ type Entry k v = (k,v)
 type Record k v = [Entry k v]
 type DB k v = [Record k v]
 
+type Key = String
+type Value = String
+type Entry' = Entry Key Value
+type Record' = Record Key Value
+type DB' = DB Key Value
+
 record_key_seq :: Record k v -> [k]
 record_key_seq = map fst
 
@@ -20,22 +26,6 @@ record_has_duplicate_keys = any (> 0) . map snd . record_key_histogram
 
 record_lookup_by :: (k -> k -> Bool) -> k -> Record k v -> [(k,v)]
 record_lookup_by f c = filter (f c . fst)
-
-record_collate' :: Eq k => (k,[v]) -> Record k v -> [(k,[v])]
-record_collate' (k,v) r =
-    case r of
-      [] -> [(k,reverse v)]
-      (k',v'):r' ->
-          if k == k'
-          then record_collate' (k,v' : v) r'
-          else (k,reverse v) : record_collate' (k',[v']) r'
-
--- | Collate adjacent entries of existing sequence with equal key.
-record_collate :: Eq k => Record k v -> [(k,[v])]
-record_collate r =
-    case r of
-      [] -> error "record_collate: nil"
-      (k,v):r' -> record_collate' (k,[v]) r'
 
 -- | Lookup all values for key at 'Record'.
 record_lookup :: Eq k => k -> Record k v -> [v]
@@ -72,3 +62,24 @@ db_to_table f db =
         hdr = concatMap (\(k,n) -> replicate n k) kh
         ix = concatMap (\(k,n) -> zip (repeat k) [0 .. n - 1]) kh
     in (hdr,map (\r -> map (\i -> f (record_lookup_at i r)) ix) db)
+
+-- * Collating duplicate keys.
+
+record_collate' :: Eq k => (k,[v]) -> Record k v -> Record k [v]
+record_collate' (k,v) r =
+    case r of
+      [] -> [(k,reverse v)]
+      (k',v'):r' ->
+          if k == k'
+          then record_collate' (k,v' : v) r'
+          else (k,reverse v) : record_collate' (k',[v']) r'
+
+-- | Collate adjacent entries of existing sequence with equal key.
+record_collate :: Eq k => Record k v -> Record k [v]
+record_collate r =
+    case r of
+      [] -> error "record_collate: nil"
+      (k,v):r' -> record_collate' (k,[v]) r'
+
+record_uncollate :: Eq k => Record k [v] -> Record k v
+record_uncollate = concatMap (\(k,v) -> zip (repeat k) v)
