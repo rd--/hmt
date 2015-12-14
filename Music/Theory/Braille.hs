@@ -122,9 +122,9 @@ braille_lookup_ascii c =
 -- patterns that are down shifts of a 4-dot pattern.
 --
 -- > let trimap f (p,q,r) = (f p,f q,f r)
--- > let f = map (fromJust . decode) in map (trimap f) braile_64
-braile_64 :: [(String,String,String)]
-braile_64 =
+-- > let f = map (fromJust . decode) in map (trimap f) braille_64
+braille_64 :: [(String,String,String)]
+braille_64 =
     [("⠀","⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚","⠈⠘")
     ,("⠄","⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞","⠌⠜")
     ,("⠤","⠥⠧⠭⠽⠵⠯⠿⠷⠮⠾","⠬⠼")
@@ -176,19 +176,19 @@ decode c =
       Nothing -> Nothing
 
 -- | Start and end unicode indices.
-braile_rng :: Integral i => (i,i)
-braile_rng = (0x2800,0x28FF)
+braille_rng :: Integral i => (i,i)
+braille_rng = (0x2800,0x28FF)
 
 -- | All characters, in sequence.
 --
--- > length braile_seq == 256
--- > putStrLn braile_seq
-braile_seq :: [Char]
-braile_seq = let (l,r) = braile_rng in [toEnum l .. toEnum r]
+-- > length braille_seq == 256
+-- > putStrLn braille_seq
+braille_seq :: [Char]
+braille_seq = let (l,r) = braille_rng in [toEnum l .. toEnum r]
 
 -- | The /n/th character, zero indexed.
-braile_char :: Int -> Char
-braile_char = toEnum . (+) 0x2800
+braille_char :: Int -> Char
+braille_char = toEnum . (+) 0x2800
 
 -- | Two element index, 255 * 255 = 65025 places.
 --
@@ -196,12 +196,12 @@ braile_char = toEnum . (+) 0x2800
 braille_ix :: Int -> (Char,Char)
 braille_ix n =
     let (i,j) = n `divMod` 255
-        f k = braile_char (k + 1)
+        f k = braille_char (k + 1)
     in (f i,f j)
 
 -- | HTML character encoding (as hex integer).
 --
--- > unwords $ map unicode_html braile_seq
+-- > unwords $ map unicode_html braille_seq
 unicode_html :: Char -> String
 unicode_html = printf "&#x%x;" . fromEnum
 
