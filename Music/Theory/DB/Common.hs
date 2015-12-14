@@ -39,7 +39,7 @@ record_has_duplicate_keys = any (> 0) . map snd . record_key_histogram
 
 -- | Find all associations for key using given equality function.
 record_lookup_by :: (k -> k -> Bool) -> k -> Record k v -> [v]
-record_lookup_by f c = map snd . filter (f c . fst)
+record_lookup_by f k = map snd . filter (f k . fst)
 
 -- | 'record_lookup_by' of '=='.
 record_lookup :: Eq k => k -> Record k v -> [v]
@@ -69,6 +69,14 @@ record_lookup_uniq_err k = T.from_just "record_lookup_uniq: none" . record_looku
 -- | Default value variant.
 record_lookup_uniq_def :: Eq k => v -> k -> Record k v -> v
 record_lookup_uniq_def v k = fromMaybe v . record_lookup_uniq k
+
+-- | Remove all associations for key using given equality function.
+record_delete_by :: (k -> k -> Bool) -> k -> Record k v -> Record k v
+record_delete_by f k = filter (not . f k . fst)
+
+-- | 'record_delete_by' of '=='.
+record_delete :: Eq k => k -> Record k v -> Record k v
+record_delete = record_delete_by (==)
 
 -- * DB
 
