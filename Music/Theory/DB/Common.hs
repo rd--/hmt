@@ -1,10 +1,13 @@
 module Music.Theory.DB.Common where
 
 import Data.List {- base -}
+import Data.Maybe {- base -}
 import Safe {- safe -}
 
 import qualified Music.Theory.List as T {- base -}
 import qualified Music.Theory.Maybe as T {- base -}
+
+-- * Type
 
 type Entry k v = (k,v)
 type Record k v = [Entry k v]
@@ -16,9 +19,15 @@ type Entry' = Entry Key Value
 type Record' = Record Key Value
 type DB' = DB Key Value
 
+-- * Record
+
 -- | The sequence of keys at 'Record'.
 record_key_seq :: Record k v -> [k]
 record_key_seq = map fst
+
+-- | 'True' if 'Key' is present in 'Entity'.
+record_has_key :: Eq k => k -> Record k v -> Bool
+record_has_key k = elem k . record_key_seq
 
 -- | 'T.histogram' of 'record_key_seq'.
 record_key_histogram :: Ord k => Record k v -> [(k,Int)]
@@ -32,15 +41,16 @@ record_has_duplicate_keys = any (> 0) . map snd . record_key_histogram
 record_lookup_by :: (k -> k -> Bool) -> k -> Record k v -> [v]
 record_lookup_by f c = map snd . filter (f c . fst)
 
--- | Lookup all values for key at 'Record' using '=='.
+-- | 'record_lookup_by' of '=='.
 record_lookup :: Eq k => k -> Record k v -> [v]
-record_lookup k = record_lookup_by (==) k
+record_lookup = record_lookup_by (==)
 
 -- | /n/th element of 'record_lookup'.
 record_lookup_at :: Eq k => (k,Int) -> Record k v -> Maybe v
 record_lookup_at (c,n) = flip atMay n . record_lookup c
 
--- | Variant requiring unique key, error if multiples, 'Nothing' if none.
+-- | Variant of 'record_lookup' requiring a unique key.  'Nothing' indicates
+-- there is no entry, it is an 'error' if duplicate keys are present.
 record_lookup_uniq :: Eq k => k -> Record k v -> Maybe v
 record_lookup_uniq k r =
     case record_lookup k r of
@@ -48,9 +58,19 @@ record_lookup_uniq k r =
       [v] -> Just v
       _ -> error "record_lookup_uniq: non uniq"
 
+-- | 'True' if key exists and is unique.
+record_has_key_uniq :: Eq k => k -> Record k v -> Bool
+record_has_key_uniq k = isJust . record_lookup_uniq k
+
 -- | Error variant.
-record_lookup_uniq_err :: Eq k => k -> Record k c -> c
+record_lookup_uniq_err :: Eq k => k -> Record k v -> v
 record_lookup_uniq_err k = T.from_just "record_lookup_uniq: none" . record_lookup_uniq k
+
+-- | Default value variant.
+record_lookup_uniq_def :: Eq k => v -> k -> Record k v -> v
+record_lookup_uniq_def v k = fromMaybe v . record_lookup_uniq k
+
+-- * DB
 
 -- | Preserves order of occurence.
 db_key_set :: Ord k => DB k v -> [k]

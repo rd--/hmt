@@ -10,9 +10,6 @@ import qualified Music.Theory.List as T {- hmt -}
 
 import Music.Theory.DB.Common {- hmt -}
 
---is_entry :: String -> Bool
---is_entry = isJust . T.seperate_at ": "
-
 -- | (RECORD-SEPARATOR,FIELD-SEPARATOR,ENTRY-SEPARATOR)
 type SEP = (String,String,String)
 
