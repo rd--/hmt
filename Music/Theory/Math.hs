@@ -71,6 +71,19 @@ rational_whole r = if denominator r == 1 then Just (numerator r) else Nothing
 rational_whole_err :: Integral a => Ratio a -> a
 rational_whole_err = fromMaybe (error "rational_whole") . rational_whole
 
+-- | Show rational to /n/ decimal places.
+--
+-- > let r = approxRational pi 1e-100
+-- > r == 884279719003555 / 281474976710656
+-- > show_rational_decimal 12 r == "3.141592653590"
+show_rational_decimal :: Int -> Rational -> String
+show_rational_decimal n r =
+    let d = round (abs r * 10^n)
+        s = show (d :: Integer)
+        s' = replicate (n - length s + 1) '0' ++ s
+        (h, f) = splitAt (length s' - n) s'
+    in  (if r < 0 then "-" else "") ++ h ++ "." ++ f
+
 -- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
 -- to exponential notation very readily.
 --

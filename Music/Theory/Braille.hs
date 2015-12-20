@@ -138,6 +138,7 @@ transcribe_unicode :: String -> String
 transcribe_unicode = map (braille_unicode . fromJust . braille_lookup_ascii)
 
 -- > let ch = (white_circle,black_circle)
+-- > let ch = (' ','.')
 -- > putStrLn$ transcribe_char_grid ch "ROHAN DRAPE"
 -- > putStrLn$ string_html_table $ transcribe_char_grid ch "ERKKI VELTHEIM"
 transcribe_char_grid :: (Char,Char) -> String -> String
