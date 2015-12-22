@@ -265,22 +265,39 @@ replace p q s =
 group_on :: Eq x => (a -> x) -> [a] -> [[a]]
 group_on f = map (map snd) . groupBy ((==) `on` fst) . map (\x -> (f x,x))
 
--- | Given accesors for /key/ and /value/ collate input.
+-- | Given accesors for /key/ and /value/ collate adjacent values.
+collate_on_adjacent :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
+collate_on_adjacent f g =
+    let h l = case l of
+                [] -> error "collate_on_adjacent"
+                l0:_ -> (f l0,map g l)
+    in map h . group_on f
+
+-- | 'collate_on_adjacent' of 'fst' and 'snd'.
+--
+-- > collate_adjacent (zip "TDD" "xyz") == [('T',"x"),('D',"yz")]
+collate_adjacent :: Ord a => [(a,b)] -> [(a,[b])]
+collate_adjacent = collate_on_adjacent fst snd
+
+-- | 'sortOn' prior to 'collate_on_adjacent'.
 --
 -- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
 -- > in collate_on fst snd (zip "ABCBCD" "abcdef") == r
 collate_on :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
-collate_on f g =
-    let h l = case l of
-                [] -> error "collate_on"
-                l0:_ -> (f l0,map g l)
-    in map h . group_on f . sortOn f
+collate_on f g = collate_on_adjacent f g . sortOn f
 
 -- | 'collate_on' of 'fst' and 'snd'.
 --
+-- > collate (zip "TDD" "xyz") == [('D',"yz"),('T',"x")]
 -- > collate (zip [1,2,1] "abc") == [(1,"ac"),(2,"b")]
 collate :: Ord a => [(a,b)] -> [(a,[b])]
 collate = collate_on fst snd
+
+-- | Reverse of 'collate', inverse if order is not considered.
+--
+-- > uncollate [(1,"ac"),(2,"b")] == zip [1,1,2] "acb"
+uncollate :: Eq k => [(k,[v])] -> [(k,v)]
+uncollate = concatMap (\(k,v) -> zip (repeat k) v)
 
 -- | Make /assoc/ list with given /key/.
 --
