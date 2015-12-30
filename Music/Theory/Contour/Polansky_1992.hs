@@ -10,32 +10,12 @@ import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.Set.List as T
+import qualified Music.Theory.Enum as T
+import qualified Music.Theory.List as T
 import qualified Music.Theory.Permutations.List as T
-
--- * List functions
-
--- | Replace the /i/th value at /ns/ with /x/.
---
--- > replace "test" 2 'n' == "tent"
-replace :: Integral i => [a] -> i -> a -> [a]
-replace ns i x =
-    let f j y = if i == j then x else y
-    in zipWith f [0..] ns
-
--- | Are all elements equal.
---
--- > all_equal "aaa" == True
-all_equal :: Eq a => [a] -> Bool
-all_equal xs = all id (zipWith (==) xs (tail xs))
+import qualified Music.Theory.Set.List as T
 
 -- * Indices
-
--- | Compare adjacent elements (p.262) left to right.
---
--- > compare_adjacent [0,1,3,2] == [LT,LT,GT]
-compare_adjacent :: Ord a => [a] -> [Ordering]
-compare_adjacent xs = zipWith compare xs (tail xs)
 
 -- | Construct set of /n/ '-' @1@ adjacent indices, left right order.
 --
@@ -51,25 +31,15 @@ all_indices n =
     let n' = n - 1
     in [(i,j) | i <- [0 .. n'], j <- [i + 1 .. n']]
 
--- * 'Enum' functions
-
--- | Generic variant of 'fromEnum' (p.263).
-genericFromEnum :: (Integral i,Enum e) => e -> i
-genericFromEnum = fromIntegral . fromEnum
-
--- | Generic variant of 'toEnum' (p.263).
-genericToEnum :: (Integral i,Enum e) => i -> e
-genericToEnum = toEnum . fromIntegral
-
 -- * 'Ordering' functions
 
--- | Specialised 'genericFromEnum'.
+-- | Specialised 'T.genericFromEnum'.
 ord_to_int :: Integral a => Ordering -> a
-ord_to_int = genericFromEnum
+ord_to_int = T.genericFromEnum
 
--- | Specialised 'genericToEnum'.
+-- | Specialised 'T.genericToEnum'.
 int_to_ord :: Integral a => a -> Ordering
-int_to_ord = genericToEnum
+int_to_ord = T.genericToEnum
 
 -- | Invert 'Ordering'.
 --
@@ -183,7 +153,7 @@ contour_description_ix d i = contour_description_m d M.! i
 -- > let c = ["abc","bbb","cba"]
 -- > in map (uniform.contour_description) c == [True,True,True]
 uniform :: Contour_Description -> Bool
-uniform (Contour_Description _ m) = all_equal (M.elems m)
+uniform (Contour_Description _ m) = T.all_equal (M.elems m)
 
 -- | 'True' if contour does not containt any 'EQ' elements.
 --
@@ -317,7 +287,7 @@ draw_contour d =
                                             LT -> i' + adjustment j'
                                             EQ -> i'
                                             GT -> i' - adjustment j'
-                                in Just (replace ns j j'')
+                                in Just (T.replace_at ns j j'')
         refine [] ns = ns
         refine (i:is) ns = case step i ns of
                              Nothing -> refine is ns

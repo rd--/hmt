@@ -1,6 +1,14 @@
 -- | Enumeration functions.
 module Music.Theory.Enum where
 
+-- | Generic variant of 'fromEnum' (p.263).
+genericFromEnum :: (Integral i,Enum e) => e -> i
+genericFromEnum = fromIntegral . fromEnum
+
+-- | Generic variant of 'toEnum' (p.263).
+genericToEnum :: (Integral i,Enum e) => i -> e
+genericToEnum = toEnum . fromIntegral
+
 -- | Variant of 'enumFromTo' that, if /p/ is after /q/, cycles from
 -- 'maxBound' to 'minBound'.
 --

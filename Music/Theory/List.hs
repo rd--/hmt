@@ -256,6 +256,14 @@ replace p q s =
                  then q ++ replace p q (drop n s)
                  else c : replace p q s'
 
+-- | Replace the /i/th value at /ns/ with /x/.
+--
+-- > replace_at "test" 2 'n' == "tent"
+replace_at :: Integral i => [a] -> i -> a -> [a]
+replace_at ns i x =
+    let f j y = if i == j then x else y
+    in zipWith f [0..] ns
+
 -- * Association lists
 
 -- | Equivalent to 'groupBy' '==' 'on' /f/.
@@ -475,6 +483,22 @@ indicate_repetitions =
                 e:l' -> Just e : map (const Nothing) l'
     in concatMap f . group
 
+-- | 'zipWith' of list and it's own tail.
+--
+-- > zip_with_adj (,) "abcde" == [('a','b'),('b','c'),('c','d'),('d','e')]
+zip_with_adj :: (a -> a -> b) -> [a] -> [b]
+zip_with_adj f xs = zipWith f xs (tail xs)
+
+-- | Type-specialised 'zip_with_adj'.
+compare_adjacent_by :: (a -> a -> Ordering) -> [a] -> [Ordering]
+compare_adjacent_by = zip_with_adj
+
+-- | 'compare_adjacent_by' of 'compare'.
+--
+-- > compare_adjacent [0,1,3,2] == [LT,LT,GT]
+compare_adjacent :: Ord a => [a] -> [Ordering]
+compare_adjacent = compare_adjacent_by compare
+
 -- | 'Data.List.groupBy' does not make adjacent comparisons, it
 -- compares each new element to the start of the group.  This function
 -- is the adjacent variant.
@@ -500,6 +524,16 @@ group_just :: [Maybe a] -> [[Maybe a]]
 group_just = group_on isJust
 
 -- | Predicate to determine if all elements of the list are '=='.
+--
+-- > all_equal "aaa" == True
+all_equal :: Eq a => [a] -> Bool
+all_equal l =
+    case l of
+      [] -> True
+      [_] -> True
+      x:xs -> all id (map (== x) xs)
+
+-- | Variant using 'nub'.
 all_eq :: Eq n => [n] -> Bool
 all_eq = (== 1) . length . nub
 
