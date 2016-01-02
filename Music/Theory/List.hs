@@ -372,6 +372,12 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+-- | Reverse lookup.
+--
+-- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
+reverse_lookup :: Eq k => k -> [(v,k)] -> Maybe v
+reverse_lookup k = lookup k . map (\(p,q) -> (q,p))
+
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
 -- right of the list, and it to the right whether equal or not.
 -- 'Right' values will be correct is the list is not ascending,
