@@ -372,6 +372,10 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+-- | 'lookup' variant with default value.
+lookup_def :: Eq a => a -> b -> [(a,b)] -> b
+lookup_def k d = fromMaybe d . lookup k
+
 -- | Reverse lookup.
 --
 -- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
