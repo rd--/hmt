@@ -20,31 +20,31 @@ type MINCSEC = (Int,Int,Int)
 
 -- | 'divMod' by @60@.
 --
--- > sec_minsec 123 == (2,3)
-sec_minsec :: Integral n => n -> MinSec n
-sec_minsec = flip divMod 60
+-- > sec_to_minsec 123 == (2,3)
+sec_to_minsec :: Integral n => n -> MinSec n
+sec_to_minsec = flip divMod 60
 
 -- | Inverse of 'sec_minsec'.
 --
--- > minsec_sec (2,3) == 123
-minsec_sec :: Num n => MinSec n -> n
-minsec_sec (m,s) = m * 60 + s
+-- > minsec_to_sec (2,3) == 123
+minsec_to_sec :: Num n => MinSec n -> n
+minsec_to_sec (m,s) = m * 60 + s
 
 -- | Difference, assumes /p/ precedes /q/.
 --
 -- > minsec_diff (1,59) (2,35) == (0,36)
 minsec_diff :: Integral n => MinSec n -> MinSec n -> MinSec n
-minsec_diff p q = sec_minsec (minsec_sec q - minsec_sec p)
+minsec_diff p q = sec_to_minsec (minsec_to_sec q - minsec_to_sec p)
 
 -- | Fractional seconds to @(min,sec)@.
 --
--- > map fsec_minsec [59.49,60,60.51] == [(0,59),(1,0),(1,1)]
-fsec_minsec :: FSEC -> MINSEC
-fsec_minsec = sec_minsec . round
+-- > map fsec_to_minsec [59.49,60,60.51] == [(0,59),(1,0),(1,1)]
+fsec_to_minsec :: FSEC -> MINSEC
+fsec_to_minsec = sec_to_minsec . round
 
 -- | 'MINSEC' pretty printer.
 --
--- > map (minsec_pp . fsec_minsec) [59,61] == ["00:59","01:01"]
+-- > map (minsec_pp . fsec_to_minsec) [59,61] == ["00:59","01:01"]
 minsec_pp :: MINSEC -> String
 minsec_pp (m,s) = printf "%02d:%02d" m s
 
@@ -57,21 +57,21 @@ minsec_parse x =
 
 -- | Fractional seconds to @(min,sec,csec)@.
 --
--- > map fsec_mincsec [1,1.5,4/3] == [(0,1,0),(0,1,50),(0,1,33)]
-fsec_mincsec :: FSEC -> MINCSEC
-fsec_mincsec tm =
+-- > map fsec_to_mincsec [1,1.5,4/3] == [(0,1,0),(0,1,50),(0,1,33)]
+fsec_to_mincsec :: FSEC -> MINCSEC
+fsec_to_mincsec tm =
     let tm' = floor tm
-        (m,s) = sec_minsec tm'
+        (m,s) = sec_to_minsec tm'
         cs = round ((tm - fromIntegral tm') * 100)
     in (m,s,cs)
 
 -- | Inverse of 'fsec_mincsec'.
-mincsec_fsec :: Real n => MinCsec n -> FSEC
-mincsec_fsec (m,s,cs) = realToFrac m * 60 + realToFrac s + (realToFrac cs / 100)
+mincsec_to_fsec :: Real n => MinCsec n -> FSEC
+mincsec_to_fsec (m,s,cs) = realToFrac m * 60 + realToFrac s + (realToFrac cs / 100)
 
 -- | 'MINCSEC' pretty printer.
 --
--- > map (mincsec_pp . fsec_mincsec) [1,4/3] == ["00:01.00","00:01.33"]
+-- > map (mincsec_pp . fsec_to_mincsec) [1,4/3] == ["00:01.00","00:01.33"]
 mincsec_pp :: MINCSEC -> String
 mincsec_pp (m,s,cs) = printf "%02d:%02d.%02d" m s cs
 
