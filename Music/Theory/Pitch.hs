@@ -310,10 +310,18 @@ cps_to_octpc = midi_to_octpc . cps_to_midi
 type Midi_Detune = (Int,Double)
 
 -- | Fractional midi note number to 'Midi_Detune'.
+--
+-- > fmidi_to_midi_detune 60.5 == (60,50.0)
 fmidi_to_midi_detune :: Double -> Midi_Detune
 fmidi_to_midi_detune mnn =
     let (n,c) = T.integral_and_fractional_parts mnn
     in (n,c * 100)
+
+-- | 'Midi_Detune' to fractional midi note number.
+--
+-- > midi_detune_to_fmidi (60,50.0) == 60.5
+midi_detune_to_fmidi :: Midi_Detune -> Double
+midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (c / 100)
 
 -- | Frequency (in hertz) to 'Midi_Detune'.
 --

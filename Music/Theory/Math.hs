@@ -9,6 +9,8 @@ import Numeric {- base -}
 type R = Double
 
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
+--
+-- > integral_and_fractional_parts 1.5 == (1,0.5)
 integral_and_fractional_parts :: (Integral i, RealFrac t) => t -> (i,t)
 integral_and_fractional_parts n =
     if n >= 0
