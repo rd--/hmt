@@ -277,28 +277,28 @@ harmonic_series_cps_derived k f1 =
     let f0 = fold_cps_to_octave_from f1 (partial f1 k)
     in harmonic_series_cps f0
 
--- | Harmonic series to /n/th harmonic (folded).
+-- | Harmonic series to /n/th harmonic (folded, duplicated removed).
 --
 -- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
 --
 -- > let r = [0,105,204,386,551,702,841,969,1088]
--- > in map (round . ratio_to_cents) (harmonic_series_folded 17) == r
-harmonic_series_folded :: Integer -> [Rational]
-harmonic_series_folded n =
-    nub (sort (map fold_ratio_to_octave [1 .. n%1]))
+-- > in map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
+harmonic_series_folded_r :: Integer -> [Rational]
+harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave [1 .. n%1]))
 
 -- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
---
--- > map round (harmonic_series_folded_c 21) == [0,105,204,298,386,471,551,702,841,969,1088]
 harmonic_series_folded_c :: Integer -> [Cents]
-harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded
+harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded_r
+
+harmonic_series_folded :: Integer -> Rational -> Tuning
+harmonic_series_folded n o = Tuning (Left (harmonic_series_folded_r n)) o
 
 -- | @12@-tone tuning of first @21@ elements of the harmonic series.
 --
 -- > cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
 -- > divisions harmonic_series_folded_21 == 11
 harmonic_series_folded_21 :: Tuning
-harmonic_series_folded_21 = Tuning (Left (harmonic_series_folded 21)) 2
+harmonic_series_folded_21 = harmonic_series_folded 21 2
 
 -- * Cents
 
