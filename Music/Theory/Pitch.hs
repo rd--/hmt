@@ -254,8 +254,18 @@ cps_in_octave' f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
 cps_in_octave_nearest :: (Floating f,RealFrac f) => f -> f -> f
 cps_in_octave_nearest = cps_in_octave' fmidi_in_octave_nearest
 
-cps_in_octave_above :: (Floating f,RealFrac f) => f -> f -> f
-cps_in_octave_above = cps_in_octave' fmidi_in_octave_above
+-- | Raise or lower the frequency /q/ by octaves until it is in the
+-- octave starting at /p/.
+--
+-- > cps_in_octave_above 55.0 392.0 == 98.0
+cps_in_octave_above :: (Ord a, Fractional a) => a -> a -> a
+cps_in_octave_above p =
+    let go q = if q > p * 2 then go (q / 2) else if q < p then go (q * 2) else q
+    in go
+
+-- > cps_in_octave_above' 55.0 392.0 == 97.99999999999999
+cps_in_octave_above' :: (Floating f,RealFrac f) => f -> f -> f
+cps_in_octave_above' = cps_in_octave' fmidi_in_octave_above
 
 cps_in_octave_below :: (Floating f,RealFrac f) => f -> f -> f
 cps_in_octave_below = cps_in_octave' fmidi_in_octave_below

@@ -206,14 +206,11 @@ equal_temperament_96 = equal_temperament (96::Int)
 
 -- * Harmonic series
 
--- | Raise or lower the frequency /q/ by octaves until it is in the
--- octave starting at /p/.
+-- | Harmonic series to /n/th partial, with indicated octave.
 --
--- > fold_cps_to_octave_of 55 392 == 98
-fold_cps_to_octave_from :: (Ord a, Fractional a) => a -> a -> a
-fold_cps_to_octave_from p =
-    let go q = if q > p * 2 then go (q / 2) else if q < p then go (q * 2) else q
-    in go
+-- > harmonic_series 17 2
+harmonic_series :: Integer -> Rational -> Tuning
+harmonic_series n o = Tuning (Left [1 .. n%1]) o
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
@@ -274,7 +271,7 @@ ratio_interval_class i =
 -- > in map round (take 15 d) == r
 harmonic_series_cps_derived :: (Ord a, Fractional a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
-    let f0 = fold_cps_to_octave_from f1 (partial f1 k)
+    let f0 = T.cps_in_octave_above f1 (partial f1 k)
     in harmonic_series_cps f0
 
 -- | Harmonic series to /n/th harmonic (folded, duplicated removed).
