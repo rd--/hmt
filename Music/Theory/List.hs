@@ -372,6 +372,10 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+-- | Error variant.
+lookup_err :: Eq a => a -> [(a,x)] -> x
+lookup_err n = fromMaybe (error "lookup") . lookup n
+
 -- | 'lookup' variant with default value.
 lookup_def :: Eq a => a -> b -> [(a,b)] -> b
 lookup_def k d = fromMaybe d . lookup k
@@ -734,8 +738,3 @@ minmax inp =
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
 bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)
-
--- * Error variants
-
-lookup_err :: Eq a => a -> [(a,x)] -> x
-lookup_err n = fromMaybe (error "lookup") . lookup n

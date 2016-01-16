@@ -141,6 +141,25 @@ octpc_to_fmidi = fromIntegral . octpc_to_midi
 midi_to_octpc :: Integral i => i -> Octave_PitchClass i
 midi_to_octpc n = (n - 12) `divMod` 12
 
+-- | Fractional midi to fractional octave pitch-class.
+--
+-- > fmidi_to_foctpc 69.5 == (4,9.5)
+fmidi_to_foctpc :: RealFrac f => f -> (Octave,f)
+fmidi_to_foctpc n = let o = (floor n - 12) `div` 12 in (o,n - (fromIntegral (o + 1) * 12))
+
+-- | Octave of fractional midi note number.
+fmidi_octave :: RealFrac f => f -> Octave
+fmidi_octave = fst . fmidi_to_foctpc
+
+foctpc_to_fmidi :: RealFrac f => (Octave,f) -> f
+foctpc_to_fmidi (o,pc) = (fromIntegral (o + 1) * 12) + pc
+
+-- | Move fractional midi note number to indicated octave.
+--
+-- > map (fmidi_in_octave 1) [59.5,60.5] == [35.5,24.5]
+fmidi_in_octave :: RealFrac f => Octave -> f -> f
+fmidi_in_octave o m = let (_,pc) = fmidi_to_foctpc m in foctpc_to_fmidi (o,pc)
+
 -- | Enumerate range, inclusive.
 --
 -- > octpc_range ((3,8),(4,1)) == [(3,8),(3,9),(3,10),(3,11),(4,0),(4,1)]
@@ -193,6 +212,54 @@ pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch sp (m + n)
 
+-- | Displacement of /q/ into octave of /p/.
+fmidi_in_octave_of :: RealFrac f => f -> f -> f
+fmidi_in_octave_of p = fmidi_in_octave (fmidi_octave p)
+
+-- | Octave displacement of /m2/ that is nearest /m1/.
+--
+-- > let {p = octpc_to_fmidi (2,1);q = map octpc_to_fmidi [(4,11),(4,0),(4,1)]}
+-- > in map (fmidi_in_octave_nearest p) q == [35,36,37]
+fmidi_in_octave_nearest :: (RealFrac n,Ord n) => n -> n -> n
+fmidi_in_octave_nearest m1 m2 =
+    let m2' = fmidi_in_octave (fmidi_octave m1) m2
+        m2'' = [m2' - 12,m2',m2' + 12]
+        d = map (abs . (m1 -)) m2''
+        z = sortOn snd (zip m2'' d)
+    in fst (head z)
+
+-- | Displacement of /q/ into octave above /p/.
+--
+-- > fmidi_in_octave_of 69 51 == 63
+-- > fmidi_in_octave_nearest 69 51 == 63
+-- > fmidi_in_octave_above 69 51 == 75
+fmidi_in_octave_above :: RealFrac a => a -> a -> a
+fmidi_in_octave_above p q = let r = fmidi_in_octave_nearest p q in if r < p then r + 12 else r
+
+-- | Displacement of /q/ into octave below /p/.
+--
+-- > fmidi_in_octave_of 69 85 == 61
+-- > fmidi_in_octave_nearest 69 85 == 73
+-- > fmidi_in_octave_below 69 85 == 61
+fmidi_in_octave_below :: RealFrac a => a -> a -> a
+fmidi_in_octave_below p q = let r = fmidi_in_octave_nearest p q in if r > p then r - 12 else r
+
+cps_in_octave' :: (Floating f,RealFrac f) => (f -> f -> f) -> f -> f -> f
+cps_in_octave' f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
+
+-- | CPS form of 'fmidi_in_octave_nearest'.
+--
+-- > map cps_octave [440,256] == [4,4]
+-- > round (cps_in_octave_nearest 440 256) == 512
+cps_in_octave_nearest :: (Floating f,RealFrac f) => f -> f -> f
+cps_in_octave_nearest = cps_in_octave' fmidi_in_octave_nearest
+
+cps_in_octave_above :: (Floating f,RealFrac f) => f -> f -> f
+cps_in_octave_above = cps_in_octave' fmidi_in_octave_above
+
+cps_in_octave_below :: (Floating f,RealFrac f) => f -> f -> f
+cps_in_octave_below = cps_in_octave' fmidi_in_octave_below
+
 -- | Set octave of /p2/ so that it nearest to /p1/.
 --
 -- > import Music.Theory.Pitch.Name as T
@@ -201,13 +268,9 @@ pitch_tranpose sp n p =
 -- > in map (pitch_pp_iso . f) [T.b4,T.c4,T.cis4] == r
 pitch_in_octave_nearest :: Pitch -> Pitch -> Pitch
 pitch_in_octave_nearest p1 p2 =
-    let o1 = octave p1
-        p2' = map (\n -> p2 {octave = n}) [o1 - 1,o1,o1 + 1]
-        m1 = pitch_to_fmidi p1 :: Double
-        m2 = map (pitch_to_fmidi) p2'
-        d = map (abs . (m1 -)) m2
-        z = sortOn snd (zip p2' d)
-    in fst (head z)
+    let f = pitch_to_fmidi :: Pitch -> Double
+        o = fmidi_octave (fmidi_in_octave_nearest (f p1) (f p2))
+    in p2 {octave = o}
 
 -- | Raise 'Note_T' of 'Pitch', account for octave transposition.
 --
@@ -303,6 +366,9 @@ octpc_to_cps = octpc_to_cps_f0 440
 -- | 'midi_to_octpc' of 'cps_to_midi'.
 cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
 cps_to_octpc = midi_to_octpc . cps_to_midi
+
+cps_octave :: (Floating f,RealFrac f) => f -> Octave
+cps_octave = fst . cps_to_octpc
 
 -- * MIDI detune
 

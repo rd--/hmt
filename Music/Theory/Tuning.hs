@@ -210,10 +210,10 @@ equal_temperament_96 = equal_temperament (96::Int)
 -- octave starting at /p/.
 --
 -- > fold_cps_to_octave_of 55 392 == 98
-fold_cps_to_octave_of :: (Ord a, Fractional a) => a -> a -> a
-fold_cps_to_octave_of p =
-    let f q = if q > p * 2 then f (q / 2) else if q < p then f (q * 2) else q
-    in f
+fold_cps_to_octave_from :: (Ord a, Fractional a) => a -> a -> a
+fold_cps_to_octave_from p =
+    let go q = if q > p * 2 then go (q / 2) else if q < p then go (q * 2) else q
+    in go
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
@@ -274,7 +274,7 @@ ratio_interval_class i =
 -- > in map round (take 15 d) == r
 harmonic_series_cps_derived :: (Ord a, Fractional a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
-    let f0 = fold_cps_to_octave_of f1 (partial f1 k)
+    let f0 = fold_cps_to_octave_from f1 (partial f1 k)
     in harmonic_series_cps f0
 
 -- | Harmonic series to /n/th harmonic (folded).
