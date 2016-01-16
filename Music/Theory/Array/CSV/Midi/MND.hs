@@ -1,10 +1,12 @@
 -- | Functions for reading midi note data (MND) from CSV files.
 -- This is /not/ a generic text midi notation.
 -- The defined commands are @on@ and @off@, but others may be present.
+-- Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
 import Data.Function {- base -}
 import Data.Maybe {- base -}
+import Data.Word {- base -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
@@ -30,12 +32,12 @@ csv_mnd_hdr = ["time","on/off","note","velocity","channel"]
 -- The command is a string, @on@ and @off@ are standard, other commands may be present.
 --
 -- > unwords csv_mnd_hdr == "time on/off note velocity channel"
-type MND t n = (t,String,n,n,Int)
+type MND t n = (t,String,n,n,Word8)
 
 -- | Midi note data.
 --
 -- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
--- > m <- csv_mnd_read fn :: IO [(Double,String,Double,Double,Int)]
+-- > m <- csv_mnd_read fn :: IO [MND Double Double]
 -- > length m == 17655
 csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MND t n]
 csv_mnd_read =
@@ -81,7 +83,7 @@ midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
 -- | 'Tseq' form of 'csv_mnd_write', data is (midi-note,velocity,channel).
-midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n,Int)) -> IO ()
+midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n,Word8)) -> IO ()
 midi_tseq_write nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
