@@ -4,6 +4,7 @@ module Music.Theory.IO where
 import qualified Data.ByteString as B {- bytestring -}
 import qualified Data.Text as T {- text -}
 import qualified Data.Text.Encoding as T {- text -}
+import qualified Data.Text.IO as T {- text -}
 import qualified System.Directory as D {- directory -}
 
 -- | 'T.decodeUtf8' of 'B.readFile'.
@@ -23,3 +24,11 @@ read_file_utf8_or def f = do
 -- | Write UTF8 string as file, via "Data.Text".
 write_file_utf8 :: FilePath -> String -> IO ()
 write_file_utf8 fn = B.writeFile fn . T.encodeUtf8 . T.pack
+
+-- | 'readFile' variant using 'Text' for @ISO 8859-1@ (Latin 1) encoding.
+read_file_iso_8859_1 :: FilePath -> IO String
+read_file_iso_8859_1 = fmap (T.unpack . T.decodeLatin1) . B.readFile
+
+-- | 'readFile' variant using 'Text' for local encoding.
+read_file_locale :: FilePath -> IO String
+read_file_locale = fmap T.unpack . T.readFile
