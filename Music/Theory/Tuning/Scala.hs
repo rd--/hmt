@@ -16,6 +16,7 @@ import System.FilePath {- filepath -}
 import qualified Music.Theory.Directory as T {- hmt -}
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
+import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}

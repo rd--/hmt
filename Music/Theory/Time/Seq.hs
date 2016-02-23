@@ -176,8 +176,20 @@ tseq_merge_resolve f =
         g (t,p) (_,q) = (t,f p q)
     in T.merge_by_resolve g cmp
 
+-- | Compare first by start time, then by duration.
+w_compare :: Ord t => ((t,t),a) -> ((t,t),a) -> Ordering
+w_compare ((t1,d1),_) ((t2,d2),_) =
+    case compare t1 t2 of
+      EQ -> compare d1 d2
+      r -> r
+
+-- | Merge considering only start times.
 wseq_merge :: Ord t => Wseq t a -> Wseq t a -> Wseq t a
 wseq_merge = O.mergeBy (compare `on` (fst . fst))
+
+-- | Merge set considering both start times & durations.
+wseq_merge_set :: Ord t => [Wseq t a] -> Wseq t a
+wseq_merge_set = T.merge_set_by w_compare
 
 -- * Lookup
 
@@ -595,6 +607,9 @@ tseq_on_off_to_wseq cmp =
 useq_to_dseq :: Useq t a -> Dseq t a
 useq_to_dseq (t,e) = zip (repeat t) e
 
+useq_to_wseq :: Num t => t -> Useq t a -> Wseq t a
+useq_to_wseq t0 = dseq_to_wseq t0 . useq_to_dseq
+
 -- | The conversion requires a start time and a /nil/ value used as an
 -- /eof/ marker. Productive given indefinite input sequence.
 --
@@ -727,6 +742,30 @@ dseql_to_tseql =
                 (z',r) = T.dx_d' z tm
             in (z',zip r el)
     in mapAccumL f
+
+-- * Cycle
+
+wseq_cycle' :: Num t => Wseq t a -> [Wseq t a]
+wseq_cycle' sq =
+    let (_,et) = wseq_tspan sq
+        t_sq = iterate (+ et) 0
+    in map (\x -> wseq_tmap (\(t,d) -> (x + t,d)) sq) t_sq
+
+-- | Only finite 'Wseq' can be cycled, the resulting Wseq is infinite.
+--
+-- > take 5 (wseq_cycle [((0,1),'a'),((3,3),'b')])
+wseq_cycle :: Num t => Wseq t a -> Wseq t a
+wseq_cycle = concat . wseq_cycle'
+
+-- | Variant cycling only /n/ times.
+--
+-- > wseq_cycle_n 3 [((0,1),'a'),((3,3),'b')]
+wseq_cycle_n :: Num t => Int -> Wseq t a -> Wseq t a
+wseq_cycle_n n = concat . take n . wseq_cycle'
+
+-- | 'wseq_until' of 'wseq_cycle'.
+wseq_cycle_until :: (Num t,Ord t) => t -> Wseq t a -> Wseq t a
+wseq_cycle_until et = wseq_until et . wseq_cycle
 
 -- * Type specialised map
 
