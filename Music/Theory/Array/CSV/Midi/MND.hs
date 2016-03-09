@@ -4,7 +4,6 @@
 -- Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
-import Data.Function {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 
@@ -28,11 +27,14 @@ reads_err str = fromMaybe (error ("reads_err: " ++ str)) (reads_exact str)
 csv_mnd_hdr :: [String]
 csv_mnd_hdr = ["time","on/off","note","velocity","channel"]
 
+-- | Channel values are 4-bit (0-15).
+type Channel = Word8
+
 -- | Midi note data, the type parameters are to allow for fractional note & velocity values.
 -- The command is a string, @on@ and @off@ are standard, other commands may be present.
 --
 -- > unwords csv_mnd_hdr == "time on/off note velocity channel"
-type MND t n = (t,String,n,n,Word8)
+type MND t n = (t,String,n,n,Channel)
 
 -- | Midi note data.
 --
@@ -64,26 +66,25 @@ csv_mnd_write nm =
 
 -- * Seq forms
 
--- | 'Tseq' form of 'csv_mnd_read', channel information is discarded.
-midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n)))
+-- | 'Tseq' form of 'csv_mnd_read', channel information is retained, off-velocity is zero.
+midi_tseq_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n,Channel)))
 midi_tseq_read =
-    let mk_node (st,md,mnn,amp,_) =
+    let mk_node (st,md,mnn,amp,ch) =
             case md of
-              "on" -> Just (st,T.On (mnn,amp))
-              "off" -> Just (st,T.Off (mnn,0))
+              "on" -> Just (st,T.On (mnn,amp,ch))
+              "off" -> Just (st,T.Off (mnn,0,ch))
               _ -> Nothing
     in fmap (mapMaybe mk_node) . csv_mnd_read
 
 -- | Translate from 'Tseq' form to 'Wseq' form.
-midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (n,n)) -> T.Wseq t (n,n)
-midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq ((==) `on` fst)
+midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (n,n,Channel)) -> T.Wseq t (n,n,Channel)
+midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq (\(n0,_,c0) (n1,_,c1) -> c0 == c1 && n0 == n1)
 
--- | Off-velocity is zero.
 midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
 -- | 'Tseq' form of 'csv_mnd_write', data is (midi-note,velocity,channel).
-midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n,Word8)) -> IO ()
+midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
 midi_tseq_write nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
