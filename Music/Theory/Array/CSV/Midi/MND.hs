@@ -6,6 +6,7 @@ module Music.Theory.Array.CSV.Midi.MND where
 
 import Data.Maybe {- base -}
 import Data.Word {- base -}
+import Numeric {- base -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
@@ -57,10 +58,16 @@ csv_mnd_read =
                         Nothing -> err "no header?"
     in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
 
+real_to_double :: Real t => t -> Double
+real_to_double = realToFrac
+
+time_stamp_pp :: Real t => Int -> t -> String
+time_stamp_pp k t = showFFloat (Just k) (real_to_double t) ""
+
 -- | Writer.
-csv_mnd_write :: (Show t,Real t,Show n,Real n) => FilePath -> [MND t n] -> IO ()
-csv_mnd_write nm =
-    let un_node (st,md,mnn,amp,ch) = [show st,md,show mnn,show amp,show ch]
+csv_mnd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MND t n] -> IO ()
+csv_mnd_write ts_prec nm =
+    let un_node (st,md,mnn,amp,ch) = [time_stamp_pp ts_prec st,md,show mnn,show amp,show ch]
         with_hdr dat = (Just csv_mnd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
@@ -84,10 +91,10 @@ midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
 -- | 'Tseq' form of 'csv_mnd_write', data is (midi-note,velocity,channel).
-midi_tseq_write :: (Show t,Real t,Show n,Real n) => FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
-midi_tseq_write nm sq =
+midi_tseq_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
+midi_tseq_write ts_prec nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
                     T.Off (n,_,c) -> (t,"off",n,0,c)
         sq' = map f sq
-    in csv_mnd_write nm sq'
+    in csv_mnd_write ts_prec nm sq'
