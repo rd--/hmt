@@ -2,8 +2,10 @@
 -- Interval Sizes in Javanese Slendro\". /Balungan/, 1(2):9-11, 1984
 module Music.Theory.Tuning.Polansky_1984 where
 
-import Data.List
-import Music.Theory.Tuning
+import Data.List {- base -}
+
+import qualified Music.Theory.List as T
+import qualified Music.Theory.Tuning as T
 
 k_manisrenga :: Fractional n => [n]
 k_manisrenga = [219.5,266.5,227,233.5,258.5]
@@ -100,12 +102,6 @@ i_category x =
     let f n (i,j) = i <= n && n < j
     in maybe "U" snd (find (f x . fst) i_categories)
 
--- | Pad 'String' to right with spaces until at least /n/ characters.
---
--- > map (pad 3) ["S","E-L"] == ["S  ","E-L"]
-pad :: Int -> String -> String
-pad n s = s ++ replicate (n - length s) ' '
-
 -- | Pretty interval category table (pp. 10-11).
 --
 -- > i_category_table k_set ==
@@ -128,7 +124,7 @@ pad n s = s ++ replicate (n - length s) ' '
 -- >  ,"S-E  S    L    E    L  "
 -- >  ,"S    S    E-L  L    L  "]
 i_category_table :: (Ord a, Num a) => [[a]] -> [String]
-i_category_table = map (intercalate "  " .  map (pad 3 . i_category))
+i_category_table = map (intercalate "  " .  map (T.pad_right ' ' 3 . i_category))
 
 -- | Rational tuning derived from 'gm_averages', p.11.
 --
@@ -148,5 +144,5 @@ polansky_1984_r =
 --
 -- > import Music.Theory.List
 -- > map round (d_dx polansky_1984_c) == [231,240,223,240,231]
-polansky_1984_c :: [Cents]
-polansky_1984_c = map ratio_to_cents polansky_1984_r
+polansky_1984_c :: [T.Cents]
+polansky_1984_c = map T.ratio_to_cents polansky_1984_r

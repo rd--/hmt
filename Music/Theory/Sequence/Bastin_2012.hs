@@ -1,8 +1,8 @@
 module Music.Theory.Sequence.Bastin_2012 where
 
-import Data.Bits
-import Data.Word
+import Data.Bits {- base -}
 
+import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
 
 -- | Set of elements.
@@ -229,17 +229,13 @@ set_binary =
     let f n = True : replicate (n - 1) False
     in (++ [True]) . concatMap f . differentiate
 
--- > pad_right 12 '0' "1101" == "110100000000"
-pad_right :: Int -> a -> [a] -> [a]
-pad_right n k l = l ++ replicate (n - length l) k
-
 -- > set_binary_pp 12 [0,1,4] == "110010000000"
 --
 -- > map (set_binary_pp 4) (family 4 [0..3]) == ["1111","1000","1100","1010"]
 set_binary_pp :: Int -> Set -> String
 set_binary_pp k =
     let c b = if b then '1' else '0'
-    in pad_right k '0' . map c . set_binary
+    in T.pad_right '0' k . map c . set_binary
 
 {-
 http://en.wikipedia.org/wiki/Linear_feedback_shift_register

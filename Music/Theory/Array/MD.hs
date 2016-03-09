@@ -5,21 +5,14 @@ import Data.Char {- base -}
 import Data.List {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
-
--- | Append /k/ to the right of /l/ until result has /n/ places.
-pad_right :: a -> Int -> [a] -> [a]
-pad_right k n l = take n (l ++ repeat k)
+import qualified Music.Theory.String as T {- hmt -}
 
 -- | Append /k/ to each row of /tbl/ as required to be regular (all
 -- rows equal length).
 make_regular :: a -> [[a]] -> [[a]]
 make_regular k tbl =
     let z = maximum (map length tbl)
-    in map (pad_right k z) tbl
-
--- | Delete trailing 'Char' where 'isSpace' holds.
-delete_trailing_whitespace :: [Char] -> [Char]
-delete_trailing_whitespace = reverse . dropWhile isSpace . reverse
+    in map (T.pad_right k z) tbl
 
 -- | Optional header row then data rows.
 type MD_Table t = (Maybe [String],[[t]])
@@ -47,11 +40,10 @@ md_table_opt pleft (hdr,t) =
     let t' = maybe t (:t) hdr
         c = transpose (make_regular "" t')
         n = map (maximum . map length) c
-        ext k s = let pd = replicate (k - length s) ' '
-                  in if pleft then pd ++ s else s ++ pd
+        ext k s = if pleft then T.pad_left ' ' k s else s
         m = unwords (map (flip replicate '-') n)
         w = map unwords (transpose (zipWith (map . ext) n c))
-        d = map delete_trailing_whitespace w
+        d = map T.delete_trailing_whitespace w
     in case hdr of
          Nothing -> T.bracket (m,m) d
          Just _ -> case d of

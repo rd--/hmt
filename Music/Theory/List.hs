@@ -738,3 +738,17 @@ minmax inp =
 -- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
 bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)
+
+-- | Append /k/ to the right of /l/ until result has /n/ places.
+--
+-- > map (pad_right '0' 2 . return) ['0' .. '9']
+-- > pad_right '0' 12 "1101" == "110100000000"
+-- > map (pad_right ' '3) ["S","E-L"] == ["S  ","E-L"]
+pad_right :: a -> Int -> [a] -> [a]
+pad_right k n l = take n (l ++ repeat k)
+
+-- | Append /k/ to the left of /l/ until result has /n/ places.
+--
+-- > map (pad_left '0' 2 . return) ['0' .. '9']
+pad_left :: a -> Int -> [a] -> [a]
+pad_left k n l = replicate (n - length l) k ++ l
