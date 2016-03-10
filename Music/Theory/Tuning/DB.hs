@@ -1,6 +1,8 @@
 -- | DB of locally defined tunings, but for ordinary use see "Music.Theory.Tuning.Scala".
 module Music.Theory.Tuning.DB where
 
+import Data.List {- base -}
+
 import Music.Theory.Tuning
 import Music.Theory.Tuning.Alves
 import Music.Theory.Tuning.Alves_1997
@@ -13,6 +15,9 @@ import Music.Theory.Tuning.Werckmeister
 
 -- | (last-name,first-name,title,year,hmt/tuning,scala/name)
 type Named_Tuning = (String,String,String,String,Tuning,String)
+
+named_tuning_t :: Named_Tuning -> Tuning
+named_tuning_t (_,_,_,_,t,_) = t
 
 tuning_db :: [Named_Tuning]
 tuning_db =
@@ -49,3 +54,6 @@ tuning_db =
     ,("","","ET/96","",equal_temperament_96,"")
     ,("","","Pythagorean/12","",pythagorean_12,"pyth_12")
     ]
+
+tuning_db_lookup_scl :: String -> Maybe Tuning
+tuning_db_lookup_scl nm = fmap named_tuning_t (find (\(_,_,_,_,_,scl) -> scl == nm) tuning_db)
