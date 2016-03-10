@@ -68,6 +68,20 @@ tseq_tspan = seq_tspan id id
 wseq_tspan :: Num t => Wseq t a -> (t,t)
 wseq_tspan = seq_tspan fst (uncurry (+))
 
+-- | Start time of sequence.
+--
+-- > wseq_start [((1,2),'a')] == 1
+-- > wseq_start [] == 0
+wseq_start :: Num t => Wseq t a -> t
+wseq_start = fst . wseq_tspan
+
+-- | End time of sequence.
+--
+-- > wseq_end [((1,2),'a')] == 3
+-- > wseq_end (useq_to_wseq 0 (1,"linear")) == 6
+wseq_end :: Num t => Wseq t a -> t
+wseq_end = snd . wseq_tspan
+
 -- * Duration
 
 dseq_dur :: Num t => Dseq t a -> t
@@ -428,6 +442,9 @@ group_f cmp =
 --
 -- > let r = [(0,"a"),(1,"bc"),(2,"de"),(3,"f")]
 -- > in tseq_group (zip [0,1,1,2,2,3] ['a'..]) == r
+--
+-- > tseq_group [(1,'a'),(1,'b')] == [(1,"ab")]
+-- > tseq_group [(1,'a'),(2,'b'),(2,'c')] == [(1,"a"),(2,"bc")]
 tseq_group :: (Eq t,Num t) => Tseq t a -> Tseq t [a]
 tseq_group = group_f (==)
 
@@ -518,6 +535,38 @@ seq_unjoin = let f (t,e) = zip (repeat t) e in concatMap f
 -- | Type specialised.
 wseq_unjoin :: Wseq t [e] -> Wseq t e
 wseq_unjoin = seq_unjoin
+
+-- | Shift (displace) onset times by /i/.
+--
+-- > wseq_shift 3 [((1,2),'a')] == [((4,2),'a')]
+wseq_shift :: Num t => t -> Wseq t a -> Wseq t a
+wseq_shift i = wseq_tmap_st (+ i)
+
+-- | Shift q to end of p and append.
+--
+-- > wseq_append [((1,2),'a')] [((1,2),'b')] == [((1,2),'a'),((4,2),'b')]
+wseq_append :: Num t => Wseq t a -> Wseq t a -> Wseq t a
+wseq_append p q = p ++ wseq_shift (wseq_end p) q
+
+-- | 'foldl1' of 'wseq_append'
+--
+-- > wseq_concat [[((1,2),'a')],[((1,2),'b')]] == [((1,2),'a'),((4,2),'b')]
+wseq_concat :: Num t => [Wseq t a] -> Wseq t a
+wseq_concat = foldl1 wseq_append
+
+-- | The transition sequence of /active/ elements.
+--
+-- > let w = [((0,3),'a'),((1,2),'b'),((2,1),'c'),((3,3),'d')]
+-- > in wseq_accumulate w == [(0,"a"),(1,"ba"),(2,"cba"),(3,"d"),(6,"")]
+wseq_accumulate :: (Eq a,Ord t,Num t) => Wseq t a -> Tseq t [a]
+wseq_accumulate =
+    let f st (t,e) =
+            let g st' = (st',(t,st'))
+                h st' e' = case e' of
+                             On x -> x : st'
+                             Off x -> delete x st'
+            in g (foldl h st e)
+    in snd . mapAccumL f [] . tseq_group . wseq_on_off
 
 -- * On/Off
 
