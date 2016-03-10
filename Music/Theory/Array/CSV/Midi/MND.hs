@@ -9,6 +9,8 @@ import Data.Word {- base -}
 import Numeric {- base -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
 -- | Variant of 'reads' requiring exact match.
@@ -58,16 +60,20 @@ csv_mnd_read =
                         Nothing -> err "no header?"
     in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
 
-real_to_double :: Real t => t -> Double
-real_to_double = realToFrac
+-- | Show /r/ as float to /k/ places.
+real_pp :: Real t => Int -> t -> String
+real_pp k t = showFFloat (Just k) (T.real_to_double t) ""
 
-time_stamp_pp :: Real t => Int -> t -> String
-time_stamp_pp k t = showFFloat (Just k) (real_to_double t) ""
+-- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
+data_value_pp :: Real t => Int -> t -> String
+data_value_pp k r = if T.whole_to_precision k r then show (T.real_floor_int r) else real_pp k r
 
 -- | Writer.
 csv_mnd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MND t n] -> IO ()
-csv_mnd_write ts_prec nm =
-    let un_node (st,md,mnn,amp,ch) = [time_stamp_pp ts_prec st,md,show mnn,show amp,show ch]
+csv_mnd_write r_prec nm =
+    let un_node (st,md,mnn,amp,ch) = [real_pp r_prec st,md
+                                     ,data_value_pp r_prec mnn,data_value_pp r_prec amp
+                                     ,show ch]
         with_hdr dat = (Just csv_mnd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
@@ -92,9 +98,9 @@ midi_wseq_to_midi_tseq = T.wseq_on_off
 
 -- | 'Tseq' form of 'csv_mnd_write', data is (midi-note,velocity,channel).
 midi_tseq_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
-midi_tseq_write ts_prec nm sq =
+midi_tseq_write r_prec nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
                     T.Off (n,_,c) -> (t,"off",n,0,c)
         sq' = map f sq
-    in csv_mnd_write ts_prec nm sq'
+    in csv_mnd_write r_prec nm sq'

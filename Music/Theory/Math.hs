@@ -5,6 +5,8 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Numeric {- base -}
 
+import qualified Music.Theory.Math.Convert as T
+
 -- | Real (alias for 'Double').
 type R = Double
 
@@ -27,6 +29,27 @@ integer_and_fractional_parts = integral_and_fractional_parts
 -- > plotTable1 (map fractional_part [-2.0,-1.99 .. 2.0])
 fractional_part :: RealFrac a => a -> a
 fractional_part = snd . integer_and_fractional_parts
+
+-- | 'floor' of 'T.real_to_double'.
+real_floor :: (Real r,Integral i)  => r -> i
+real_floor = floor . T.real_to_double
+
+-- | Type specialised 'real_floor'.
+real_floor_int :: Real r => r -> Int
+real_floor_int = real_floor
+
+-- | Is /r/ zero to /k/ decimal places.
+--
+-- > map (flip zero_to_precision 0.00009) [4,5] == [True,False]
+-- > zero_to_precision 4 1.00009 == False
+zero_to_precision :: Real r => Int -> r -> Bool
+zero_to_precision k r = real_floor_int (r * (fromIntegral ((10::Int) ^ k))) == 0
+
+-- | Is /r/ whole to /k/ decimal places.
+--
+-- > map (flip whole_to_precision 1.00009) [4,5] == [True,False]
+whole_to_precision :: Real r => Int -> r -> Bool
+whole_to_precision k = zero_to_precision k . fractional_part . T.real_to_double
 
 -- | <http://reference.wolfram.com/mathematica/ref/SawtoothWave.html>
 --

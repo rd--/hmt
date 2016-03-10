@@ -1,4 +1,4 @@
-{- | Specialised type conversions.
+{- | Specialised type conversions, see mk/mk-convert.hs
 
 > map int_to_word8 [-1,0,255,256] == [255,0,255,0]
 > map int_to_word8_maybe [-1,0,255,256] == [Nothing,Just 0,Just 255,Nothing]
@@ -13,6 +13,14 @@ module Music.Theory.Math.Convert where
 
 import Data.Int {- base -}
 import Data.Word {- base -}
+
+-- | Type specialised 'realToFrac'
+real_to_float :: Real t => t -> Float
+real_to_float = realToFrac
+
+-- | Type specialised 'realToFrac'
+real_to_double :: Real t => t -> Double
+real_to_double = realToFrac
 
 -- | Type specialised 'fromIntegral'
 word8_to_word16 :: Word8 -> Word16
