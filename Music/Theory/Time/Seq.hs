@@ -498,6 +498,13 @@ tseq_latch def sq t =
 
 -- * Wseq
 
+-- | Sort 'Wseq' by start time, 'Wseq' ought never to be out of
+-- order.
+--
+-- > wseq_sort [((3,1),'a'),((1,3),'b')] == [((1,3),'b'),((3,1),'a')]
+wseq_sort :: Ord t => Wseq t a -> Wseq t a
+wseq_sort = sortBy (compare `on` (fst . fst))
+
 -- | Transform 'Wseq' to 'Tseq' by discaring durations.
 wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
