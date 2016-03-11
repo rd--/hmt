@@ -2,6 +2,7 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import System.Environment {- base -}
 
+import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 import qualified Music.Theory.Array.MD as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
@@ -76,10 +77,19 @@ cps_tbl_cps (nm,f0,k,n) (l,r) = do
   let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
   cps_tbl tbl (l,r)
 
+csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
+csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
+  t <- T.scl_load_tuning 0.01 nm
+  let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
+  m <- T.csv_mnd_read in_fn :: IO [T.MND Double Int]
+  let f (tm,ty,mnn,vel,ch) = (tm,ty,retune_f mnn,fromIntegral vel,ch)
+  T.csv_mnd_write 4 out_fn (map f m)
+
 help :: [String]
 help =
     ["cps-tbl cps name:string f0:double mnn0:int gamut:int mnn-l:int mnn-r:int"
     ,"cps-tbl d12 name:string cents:double mnn:int mnn-l:int mnn-r:int"
+    ,"csv-mnd-retune d12 name:string cents:double mnn:int input-file output-file"
     ,"db-stat"
     ,"env"
     ,"search ci|cs lm|nil text:string..."
@@ -97,6 +107,7 @@ main = do
   case a of
     ["cps-tbl","cps",nm,f0,k,n,l,r] -> cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
     ["cps-tbl","d12",nm,c,k,l,r] -> cps_tbl_d12 (nm,read c,read k) (read l,read r)
+    ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] -> csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
     ["db-stat"] -> db_stat
     ["env"] -> env
     "search":ci:lm:txt -> search (ci == "ci",nil_or_read lm) txt
