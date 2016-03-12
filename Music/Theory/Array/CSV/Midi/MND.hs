@@ -47,27 +47,31 @@ csv_mnd_hdr = ["time","on/off","note","velocity","channel"]
 -- > unwords csv_mnd_hdr == "time on/off note velocity channel"
 type MND t n = (t,String,n,n,Channel)
 
+csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n]
+csv_mnd_parse (hdr,dat) =
+    let err x = error ("csv_mnd_read: " ++ x)
+        f m = case m of
+                [st,msg,mnn,vel,ch] ->
+                    (reads_err st
+                    ,msg
+                    ,reads_err mnn
+                    ,reads_err vel
+                    ,reads_err ch)
+                _ -> err "entry?"
+    in case hdr of
+         Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
+         Nothing -> err "no header?"
+
+load_csv :: FilePath -> IO (T.CSV_Table String)
+load_csv = T.csv_table_read (True,',',False,T.CSV_No_Align) id
+
 -- | Midi note data.
 --
 -- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
 -- > m <- csv_mnd_read fn :: IO [MND Double Double]
 -- > length m == 17655
 csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MND t n]
-csv_mnd_read =
-    let err x = error ("csv_mnd_read: " ++ x)
-        f m =
-            case m of
-              [st,msg,mnn,vel,ch] ->
-                   (reads_err st
-                   ,msg
-                   ,reads_err mnn
-                   ,reads_err vel
-                   ,reads_err ch)
-              _ -> err "entry?"
-        g (hdr,dat) = case hdr of
-                        Just hdr' -> if hdr' == csv_mnd_hdr then dat else err "header?"
-                        Nothing -> err "no header?"
-    in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
+csv_mnd_read = fmap csv_mnd_parse . load_csv
 
 -- | Writer.
 csv_mnd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MND t n] -> IO ()
@@ -87,15 +91,18 @@ midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq (\(n0,_,c0) (n1,_,c1) -> c0 == c1
 midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
--- | 'Tseq' form of 'csv_mnd_read', channel information is retained, off-velocity is zero.
-csv_mnd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n,Channel)))
-csv_mnd_read_tseq =
+mnd_to_tseq :: Num n => [MND t n] -> T.Tseq t (T.On_Off (n,n,Channel))
+mnd_to_tseq =
     let mk_node (st,msg,mnn,vel,ch) =
             case msg of
               "on" -> Just (st,T.On (mnn,vel,ch))
               "off" -> Just (st,T.Off (mnn,0,ch))
               _ -> Nothing
-    in fmap (mapMaybe mk_node) . csv_mnd_read
+    in mapMaybe mk_node
+
+-- | 'Tseq' form of 'csv_mnd_read', channel information is retained, off-velocity is zero.
+csv_mnd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (n,n,Channel)))
+csv_mnd_read_tseq = fmap mnd_to_tseq . csv_mnd_read
 
 -- | 'Tseq' form of 'csv_mnd_write', data is (midi-note,velocity,channel).
 csv_mnd_write_tseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
@@ -103,8 +110,7 @@ csv_mnd_write_tseq r_prec nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c) -> (t,"on",n,v,c)
                     T.Off (n,_,c) -> (t,"off",n,0,c)
-        sq' = map f sq
-    in csv_mnd_write r_prec nm sq'
+    in csv_mnd_write r_prec nm (map f sq)
 
 -- * MNDD (simplifies cases where overlaps on the same channel are allowed).
 
@@ -114,13 +120,8 @@ csv_mndd_hdr = ["time","duration","message","note","velocity","channel"]
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel"
 type MNDD t n = (t,t,String,n,n,Channel)
 
--- | Midi note/duration data.
---
--- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
--- > m <- csv_mnd_read fn :: IO [MND Double Double]
--- > length m == 17655
-csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
-csv_mndd_read =
+csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
+csv_mndd_parse (hdr,dat) =
     let err x = error ("csv_mndd_read: " ++ x)
         f m =
             case m of
@@ -132,10 +133,13 @@ csv_mndd_read =
                   ,reads_err vel
                   ,reads_err ch)
               _ -> err "entry?"
-        g (hdr,dat) = case hdr of
-                        Just hdr' -> if hdr' == csv_mndd_hdr then dat else err "header?"
-                        Nothing -> err "no header?"
-    in fmap (map f . g) . T.csv_table_read (True,',',False,T.CSV_No_Align) id
+    in case hdr of
+         Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
+         Nothing -> err "no header?"
+
+-- | Midi note/duration data.
+csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
+csv_mndd_read = fmap csv_mndd_parse . load_csv
 
 -- | Writer.
 csv_mndd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
@@ -143,16 +147,41 @@ csv_mndd_write r_prec nm =
     let un_node (st,du,msg,mnn,vel,ch) = [real_pp r_prec st,real_pp r_prec du,msg
                                         ,data_value_pp r_prec mnn,data_value_pp r_prec vel
                                         ,show ch]
-        with_hdr dat = (Just csv_mnd_hdr,dat)
+        with_hdr dat = (Just csv_mndd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
 -- * MNDD Seq forms
 
--- | 'Wseq' form of 'csv_mndd_read'.
-csv_mndd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t (n,n,Channel))
-csv_mndd_read_tseq =
+mndd_to_wseq :: [MNDD t n] -> T.Wseq t (n,n,Channel)
+mndd_to_wseq =
     let mk_node (st,du,msg,mnn,vel,ch) =
             case msg of
               "note" -> Just ((st,du),(mnn,vel,ch))
               _ -> Nothing
-    in fmap (mapMaybe mk_node) . csv_mndd_read
+    in mapMaybe mk_node
+
+-- | 'Wseq' form of 'csv_mndd_read'.
+csv_mndd_read_wseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t (n,n,Channel))
+csv_mndd_read_wseq = fmap mndd_to_wseq . csv_mndd_read
+
+-- | 'Wseq' form of 'csv_mndd_write'.
+csv_mndd_write_wseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Wseq t (n,n,Channel) -> IO ()
+csv_mndd_write_wseq r_prec nm =
+    let f ((st,du),(mnn,vel,ch)) = (st,du,"note",mnn,vel,ch)
+    in csv_mndd_write r_prec nm . map f
+
+-- * Composite
+
+-- | Parse either MND or MNDD data to Wseq, CSV type is decided by header.
+csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> T.Wseq t (n,n,Channel)
+csv_midi_parse_wseq (hdr,dat) = do
+  case hdr of
+    Just hdr' -> if hdr' == csv_mnd_hdr
+                 then midi_tseq_to_midi_wseq (mnd_to_tseq (csv_mnd_parse (hdr,dat)))
+                 else if hdr' == csv_mndd_hdr
+                      then mndd_to_wseq (csv_mndd_parse (hdr,dat))
+                      else error "csv_midi_read_wseq: not MND or MNDD"
+    _ -> error "csv_midi_read_wseq: header?"
+
+csv_midi_read_wseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t (n,n,Channel))
+csv_midi_read_wseq = fmap csv_midi_parse_wseq . load_csv
