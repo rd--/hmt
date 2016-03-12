@@ -38,14 +38,17 @@ $
 $ hmt-scala search mode ci nil xenakis
 mode-start-degree : 0
 mode-intervals    : 5,19,6,12,5,19,6
+mode-degree       : 72
 mode-description  : Xenakis Byzantine Liturgical Chromatic
 
 mode-start-degree : 0
 mode-intervals    : 7,16,7,12,7,16,7
+mode-degree       : 72
 mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
 
 mode-start-degree : 0
 mode-intervals    : 12,11,7,12,12,11,7
+mode-degree       : 72
 mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
 $
 ~~~~

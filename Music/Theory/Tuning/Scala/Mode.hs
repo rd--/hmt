@@ -47,6 +47,7 @@ mode_stat :: MODE -> [String]
 mode_stat (d,i,s) =
     ["mode-start-degree : " ++ show d
     ,"mode-intervals    : " ++ intercalate "," (map show i)
+    ,"mode-degree       : " ++ show (sum i)
     ,"mode-description  : " ++ s]
 
 -- * Parser
