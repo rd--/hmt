@@ -12,6 +12,7 @@ import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
 
 db_stat :: IO ()
 db_stat = do
@@ -31,15 +32,22 @@ env = do
 cut :: Maybe Int -> [a] -> [a]
 cut lm s = maybe s (\n -> take n s) lm
 
--- > search (True,Nothing) ["xenakis"]
--- > search (True,Just 75) ["lamonte","young"]
-search :: (Bool,Maybe Int) -> [String] -> IO ()
-search (ci,lm) txt = do
-  db <- T.scl_load_db :: IO [T.Scale Integer]
+search :: (IO [a], a -> String, a -> [String]) -> (Bool, Maybe Int) -> [String] -> IO ()
+search (load_f,descr_f,stat_f) (ci,lm) txt = do
+  db <- load_f
   let modify = if ci then map toLower else id
       txt' = map modify txt
-      db' = filter (T.predicate_all (map isInfixOf txt') . modify . T.scale_description) db
-  mapM_ (putStrLn . unlines . map (cut lm) . T.scale_stat) db'
+      db' = filter (T.predicate_all (map isInfixOf txt') . modify . descr_f) db
+  mapM_ (putStrLn . unlines . map (cut lm) . stat_f) db'
+
+-- > search_scale (True,Nothing) ["xenakis"]
+-- > search_scale (True,Just 75) ["lamonte","young"]
+search_scale :: (Bool,Maybe Int) -> [String] -> IO ()
+search_scale = search (T.scl_load_db :: IO [T.Scale Integer],T.scale_description,T.scale_stat)
+
+-- > search_mode (True,Nothing) ["xenakis"]
+search_mode :: (Bool,Maybe Int) -> [String] -> IO ()
+search_mode = search (fmap T.modenam_modes T.load_modenam,T.mode_description,T.mode_stat)
 
 stat_all :: Maybe Int -> IO ()
 stat_all lm = do
@@ -92,7 +100,7 @@ help =
     ,"csv-mnd-retune d12 name:string cents:double mnn:int input-file output-file"
     ,"db-stat"
     ,"env"
-    ,"search ci|cs lm|nil text:string..."
+    ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
     ,""
@@ -104,13 +112,18 @@ nil_or_read s = if s == "nil" then Nothing else Just (T.read_err s)
 main :: IO ()
 main = do
   a <- getArgs
+  let usage = putStrLn (unlines help)
   case a of
     ["cps-tbl","cps",nm,f0,k,n,l,r] -> cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
     ["cps-tbl","d12",nm,c,k,l,r] -> cps_tbl_d12 (nm,read c,read k) (read l,read r)
     ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] -> csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
     ["db-stat"] -> db_stat
     ["env"] -> env
-    "search":ci:lm:txt -> search (ci == "ci",nil_or_read lm) txt
+    "search":ty:ci:lm:txt ->
+        case ty of
+          "scale" -> search_scale (ci == "ci",nil_or_read lm) txt
+          "mode" -> search_mode (ci == "ci",nil_or_read lm) txt
+          _ -> usage
     ["stat","all",lm] -> stat_all (nil_or_read lm)
     ["stat","scale",lm,nm] -> stat_by_name (nil_or_read lm) nm
-    _ -> putStrLn (unlines help)
+    _ -> usage

@@ -15,7 +15,7 @@ $
 ~~~~
 
 ~~~~
-$ hmt-scala search ci 75 la monte young
+$ hmt-scala search scale ci 75 la monte young
 scale-name        : young-lm_guitar
 scale-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92,
 scale-degree      : 12
@@ -31,6 +31,22 @@ scale-type        : Pitch_Ratio
 perfect-octave    : True
 scale-cents-i     : [0,177,204,240,444,471,675,702,738,942,969,1173,1200]
 scale-ratios      : 1,567/512,9/8,147/128,1323/1024,21/16,189/128,3/2,49/32
+$
+~~~~
+
+~~~~
+$ hmt-scala search mode ci nil xenakis
+mode-start-degree : 0
+mode-intervals    : 5,19,6,12,5,19,6
+mode-description  : Xenakis Byzantine Liturgical Chromatic
+
+mode-start-degree : 0
+mode-intervals    : 7,16,7,12,7,16,7
+mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
+
+mode-start-degree : 0
+mode-intervals    : 12,11,7,12,12,11,7
+mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
 $
 ~~~~
 

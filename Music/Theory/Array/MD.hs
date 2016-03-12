@@ -1,7 +1,6 @@
 -- | Regular array data as markdown (MD) tables.
 module Music.Theory.Array.MD where
 
-import Data.Char {- base -}
 import Data.List {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}

@@ -11,6 +11,9 @@ import qualified Music.Theory.Tuning.Scala as T
 
 type MODE = (Int,[Int],String)
 
+mode_starting_degree :: MODE -> Int
+mode_starting_degree (d,_,_) = d
+
 mode_intervals :: MODE -> [Int]
 mode_intervals (_,i,_) = i
 
@@ -25,7 +28,7 @@ type MODENAM = (Int,Int,[MODE])
 modenam_modes :: MODENAM -> [MODE]
 modenam_modes (_,_,m) = m
 
--- > let sq = modenam_search_seq mn
+-- > let sq = mapM_ (putStrLn . unlines . mode_stat) . modenam_search_seq mn
 -- > sq [2,2,1,2,2,2,1]
 -- > sq [2,1,2,2,1,2,2]
 -- > sq [2,1,2,2,1,3,1]
@@ -36,10 +39,15 @@ modenam_modes (_,_,m) = m
 modenam_search_seq :: MODENAM -> [Int] -> [MODE]
 modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
 
--- > modenam_search_description mn "Messiaen"
--- > modenam_search_description mn "Xenakis"
+-- > map (modenam_search_description mn) ["Messiaen","Xenakis","Raga"]
 modenam_search_description :: MODENAM -> String -> [MODE]
 modenam_search_description (_,_,m) x = filter (isInfixOf x . mode_description) m
+
+mode_stat :: MODE -> [String]
+mode_stat (d,i,s) =
+    ["mode-start-degree : " ++ show d
+    ,"mode-intervals    : " ++ intercalate "," (map show i)
+    ,"mode-description  : " ++ s]
 
 -- * Parser
 
