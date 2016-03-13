@@ -1,12 +1,12 @@
 -- | Tuning theory
 module Music.Theory.Tuning where
 
-import Data.Fixed {- base -}
+import Data.Fixed (mod') {- base -}
 import Data.List {- base -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
-import Safe {- safe -}
+import Safe (at) {- safe -}
 
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
@@ -76,11 +76,44 @@ approximate_ratios_cyclic t =
         f n = map (* n) r
     in concatMap f g
 
+-- | Iterate the function /f/ /n/ times, the inital value is /x/.
+--
+-- > recur_n 5 (* 2) 1 == 32
+recur_n :: Integral n => n -> (t -> t) -> t -> t
+recur_n n f x = if n < 1 then x else recur_n (n - 1) f (f x)
+
+-- | Convert a (signed) number of octaves difference of given ratio to a ratio.
+--
+-- > map (oct_diff_to_ratio 2) [-3 .. 3] == [1/8,1/4,1/2,1,2,4,8]
+-- > map (oct_diff_to_ratio (9/8)) [-3 .. 3] == [512/729,64/81,8/9,1/1,9/8,81/64,729/512]
+oct_diff_to_ratio :: Integral a => Ratio a -> Int -> Ratio a
+oct_diff_to_ratio r n = if n >= 0 then recur_n n (* r) 1 else recur_n (negate n) (/ r) 1
+
+-- | Lookup function that allows both negative & multiple octave indices.
+--
+-- > let map_zip f l = zip l (map f l)
+-- > map_zip (ratios_lookup werckmeister_vi) [-24 .. 24]
+ratios_lookup :: Tuning -> Int -> Maybe Rational
+ratios_lookup t n =
+    let (o,pc) = n `divMod` divisions t
+        o_ratio = oct_diff_to_ratio (octave_ratio t) o
+    in fmap (\r -> o_ratio * (r !! pc)) (ratios t)
+
+-- | Lookup function that allows both negative & multiple octave indices.
+--
+-- > map_zip (approximate_ratios_lookup werckmeister_v) [-24 .. 24]
+approximate_ratios_lookup :: Tuning -> Int -> Approximate_Ratio
+approximate_ratios_lookup t n =
+    let (o,pc) = n `divMod` divisions t
+        o_ratio = fromRational (oct_diff_to_ratio (octave_ratio t) o)
+    in o_ratio * ((approximate_ratios t) !! pc)
+
 -- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.
 --
+-- > :l Music.Theory.Tuning.Werckmeister
 -- > let r = [1,17/16,9/8,13/11,5/4,4/3,7/5,3/2,11/7,5/3,16/9,15/8]
--- > in reconstructed_ratios 1e-2 werckmeister_iii == Just r
+-- > reconstructed_ratios 1e-2 werckmeister_iii == Just r
 reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
 reconstructed_ratios epsilon =
     fmap (map (reconstructed_ratio epsilon)) .
