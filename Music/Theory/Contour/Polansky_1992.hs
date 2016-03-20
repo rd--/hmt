@@ -10,8 +10,8 @@ import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.Enum as T
 import qualified Music.Theory.List as T
+import qualified Music.Theory.Ord as T
 import qualified Music.Theory.Permutations.List as T
 import qualified Music.Theory.Set.List as T
 
@@ -30,26 +30,6 @@ all_indices :: Integral i => i -> [(i,i)]
 all_indices n =
     let n' = n - 1
     in [(i,j) | i <- [0 .. n'], j <- [i + 1 .. n']]
-
--- * 'Ordering' functions
-
--- | Specialised 'T.genericFromEnum'.
-ord_to_int :: Integral a => Ordering -> a
-ord_to_int = T.genericFromEnum
-
--- | Specialised 'T.genericToEnum'.
-int_to_ord :: Integral a => a -> Ordering
-int_to_ord = T.genericToEnum
-
--- | Invert 'Ordering'.
---
--- > map ord_invert [LT,EQ,GT] == [GT,EQ,LT]
-ord_invert :: Ordering -> Ordering
-ord_invert x =
-    case x of
-      LT -> GT
-      EQ -> EQ
-      GT -> LT
 
 -- * Matrix
 
@@ -300,7 +280,7 @@ draw_contour d =
 -- > in draw_contour (contour_description_invert c) == [3,2,0,1]
 contour_description_invert :: Contour_Description -> Contour_Description
 contour_description_invert (Contour_Description n m) =
-    Contour_Description n (M.map ord_invert m)
+    Contour_Description n (M.map T.ord_invert m)
 
 -- * Construction
 
@@ -469,5 +449,5 @@ ex_4 :: Contour_Description
 ex_4 =
     let ns :: [[Int]]
         ns = [[2,2,2,1],[2,2,0],[0,0],[1]]
-        ns' = map (map int_to_ord) ns
+        ns' = map (map T.int_to_ord) ns
     in half_matrix_to_description (Contour_Half_Matrix 5 ns')
