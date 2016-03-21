@@ -350,3 +350,31 @@ table_to_array t =
 -- | 'table_to_array' of 'csv_table_read'.
 csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (A.Array Cell_Ref a)
 csv_array_read opt f fn = fmap (table_to_array . snd) (csv_table_read opt f fn)
+
+-- * Irregular
+
+csv_field_str :: C.CSVField -> String
+csv_field_str f =
+    case f of
+      C.CSVField _ _ _ _ s _ -> s
+      C.CSVFieldError _ _ _ _ _ -> error "csv_field_str"
+
+csv_error_recover :: C.CSVError -> C.CSVRow
+csv_error_recover e =
+    case e of
+      C.IncorrectRow _ _ _ f -> f
+      C.BlankLine _ _ _ _ -> []
+      _ -> error "csv_error_recover: not recoverable"
+
+csv_row_recover :: Either [C.CSVError] C.CSVRow -> C.CSVRow
+csv_row_recover r =
+    case r of
+      Left [e] -> csv_error_recover e
+      Left _ -> error "csv_row_recover: multiple errors"
+      Right r' -> r'
+
+-- | Read irregular @CSV@ file, ie. rows may have any number of columns, including no columns.
+csv_load_irregular :: (String -> a) -> FilePath -> IO [[a]]
+csv_load_irregular f fn = do
+  s <- T.read_file_utf8 fn
+  return (map (map (f . csv_field_str) . csv_row_recover) (C.parseCSV s))
