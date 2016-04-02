@@ -40,6 +40,7 @@ Library
                    Music.Theory.Array.CSV
                    Music.Theory.Array.CSV.Midi.MND
                    Music.Theory.Array.MD
+                   Music.Theory.Bits
                    Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Braille
@@ -93,6 +94,7 @@ Library
                    Music.Theory.Read
                    Music.Theory.Set.List
                    Music.Theory.Set.Set
+                   Music.Theory.Show
                    Music.Theory.String
                    Music.Theory.Tempo_Marking
                    Music.Theory.Tiling.Canon

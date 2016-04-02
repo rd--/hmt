@@ -7,15 +7,26 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Numeric {- base -}
 
--- | 'reads' variant that requires using all the input to produce a
--- single token.  The only exception is a singular trailing white
+-- | Transform 'ReadS' function into precise 'Read' function.
+-- Requires using all the input to produce a single token.  The only
+-- exception is a singular trailing white space character.
+reads_to_read_precise :: ReadS t -> (String -> Maybe t)
+reads_to_read_precise f s =
+    case f s of
+      [(r,[])] -> Just r
+      [(r,[c])] -> if isSpace c then Just r else Nothing
+      _ -> Nothing
+
+-- | Error variant of 'reads_to_read_precise'.
+reads_to_read_precise_err :: String -> ReadS t -> String -> t
+reads_to_read_precise_err err f =
+    fromMaybe (error ("reads_to_read_precise_err:" ++ err)) .
+    reads_to_read_precise f
+
+-- | 'reads_to_read_precise' of 'reads'.
 -- space character.
 read_maybe :: Read a => String -> Maybe a
-read_maybe s =
-    case reads s of
-      [(x,[])] -> Just x
-      [(x,[c])] -> if isSpace c then Just x else Nothing
-      _ -> Nothing
+read_maybe = reads_to_read_precise reads
 
 -- | Variant of 'read_maybe' with default value.
 --
@@ -115,8 +126,14 @@ read_rational = read_err
 -- * Numeric variants
 
 -- | Error variant of 'readHex'.
+--
+-- > read_hex_err "F0B0" == 61616
 read_hex_err :: (Eq n,Num n) => String -> n
-read_hex_err s =
-    case readHex s of
-      [(n,"")] -> n
-      _ -> error ("readHex: " ++ s)
+read_hex_err = reads_to_read_precise_err "readHex" readHex
+
+-- | Read two character hexadecimal string.
+read_hex_byte :: (Eq t,Num t) => String -> t
+read_hex_byte s =
+    case s of
+      [_,_] -> reads_to_read_precise_err "readHex" readHex s
+      _ -> error "read_hex_byte"
