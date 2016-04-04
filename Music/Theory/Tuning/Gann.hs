@@ -93,6 +93,12 @@ la_monte_young_wtp_r =
 -- > import Data.List {- base -}
 -- > scl <- scl_load "young-lm_piano"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i la_monte_young_wtp
+--
+-- > let f = d12_midi_tuning_f (la_monte_young_wtp,-74.7,-3)
+-- > import qualified Music.Theory.Pitch as T
+-- > T.octpc_to_midi (-1,11) == 11
+-- > map (round . T.midi_detune_to_cps . f) [62,63,69] == [293,298,440]
+-- > map (fmap round . T.midi_detune_normalise . f) [0 .. 127]
 la_monte_young_wtp :: Tuning
 la_monte_young_wtp = Tuning (Left la_monte_young_wtp_r) 2
 

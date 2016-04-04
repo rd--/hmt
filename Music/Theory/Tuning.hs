@@ -408,11 +408,6 @@ type D12_Midi_Tuning = (Tuning,Cents,Int)
 --
 -- > let f = d12_midi_tuning_f (equal_temperament 12,0,0)
 -- > map f [0..127] == zip [0..127] (repeat 0)
---
--- > import Music.Theory.Tuning.Gann
--- > let f = d12_midi_tuning_f (la_monte_young_wtp,-74.7,-3)
--- > T.octpc_to_midi (-1,11) == 11
--- > map (round . T.midi_detune_to_cps . f) [62,63,69] == [293,298,440]
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
     let (_,pc) = T.midi_to_octpc (n + k)
@@ -468,3 +463,4 @@ gen_dtt_lookup_f :: MNN_CPS_Table -> MNN_CPS_Table -> Midi_Tuning_F
 gen_dtt_lookup_f t0 t1 =
     let m = M.fromList (gen_dtt_lookup_tbl t0 t1)
     in T.cps_to_midi_detune . T.map_ix_err m
+

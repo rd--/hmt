@@ -405,9 +405,15 @@ midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (c / 100)
 cps_to_midi_detune :: Double -> Midi_Detune
 cps_to_midi_detune = fmidi_to_midi_detune . cps_to_fmidi
 
--- | In normal form the detune is in the range (-50,+50] instead of [0,100).
+-- | In normal form the detune is in the range (-50,+50] instead of [0,100) or wider.
+-- > map midi_detune_normalise [(60,-250),(60,-75),(60,75),(60,250)]
 midi_detune_normalise :: Midi_Detune -> Midi_Detune
-midi_detune_normalise (m,c) = if c <= 50 then (m,c) else (m + 1, negate (100 - c))
+midi_detune_normalise (m,c) =
+    if c > 50
+    then midi_detune_normalise (m + 1,c - 100)
+    else if c > (-50)
+         then (m,c)
+         else midi_detune_normalise (m - 1,c + 100)
 
 -- | Inverse of 'cps_to_midi_detune', given frequency of ISO A4.
 midi_detune_to_cps_f0 :: Double -> Midi_Detune -> Double
