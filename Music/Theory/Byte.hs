@@ -36,6 +36,9 @@ read_hex_byte s =
       [_,_] -> T.reads_to_read_precise_err "readHex" readHex s
       _ -> error "read_hex_byte"
 
+read_hex_byte_seq :: (Eq t,Num t) => String -> [t]
+read_hex_byte_seq = map read_hex_byte . words
+
 -- | Load binary 'U8' sequence from file.
 load_byte_seq :: Integral i => FilePath -> IO [i]
 load_byte_seq = fmap (map fromIntegral . B.unpack) . B.readFile
