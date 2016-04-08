@@ -130,10 +130,3 @@ read_rational = read_err
 -- > read_hex_err "F0B0" == 61616
 read_hex_err :: (Eq n,Num n) => String -> n
 read_hex_err = reads_to_read_precise_err "readHex" readHex
-
--- | Read two character hexadecimal string.
-read_hex_byte :: (Eq t,Num t) => String -> t
-read_hex_byte s =
-    case s of
-      [_,_] -> reads_to_read_precise_err "readHex" readHex s
-      _ -> error "read_hex_byte"

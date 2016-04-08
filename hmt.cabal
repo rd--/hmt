@@ -44,6 +44,7 @@ Library
                    Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Braille
+                   Music.Theory.Byte
                    Music.Theory.Clef
                    Music.Theory.Combinations
                    Music.Theory.Contour.Polansky_1992
