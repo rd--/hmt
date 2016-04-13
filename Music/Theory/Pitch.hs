@@ -5,6 +5,7 @@ import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Text.Printf {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
@@ -349,19 +350,24 @@ pitch_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . pitch_to_fmidi
 pitch_to_cps :: Floating n => Pitch -> n
 pitch_to_cps = pitch_to_cps_f0 440
 
+-- | Frequency (cps = cycles per second) to fractional /midi/ note
+-- number, given frequency of ISO A4 (mnn = 69).
+cps_to_fmidi_f0 :: Floating a => a -> a -> a
+cps_to_fmidi_f0 f0 a = (logBase 2 (a * (1 / f0)) * 12) + 69
+
+-- | 'cps_to_fmidi_f0' @440@.
+--
+-- > cps_to_fmidi 440 == 69
+-- > cps_to_fmidi (fmidi_to_cps 60.25) == 60.25
+cps_to_fmidi :: Floating a => a -> a
+cps_to_fmidi = cps_to_fmidi_f0 440
+
 -- | Frequency (cycles per second) to /midi/ note number, ie. 'round'
 -- of 'cps_to_fmidi'.
 --
 -- > map cps_to_midi [261.6,440] == [60,69]
 cps_to_midi :: (Integral i,Floating f,RealFrac f) => f -> i
 cps_to_midi = round . cps_to_fmidi
-
--- | Frequency (cycles per second) to fractional /midi/ note number.
---
--- > cps_to_fmidi 440 == 69
--- > cps_to_fmidi (fmidi_to_cps 60.25) == 60.25
-cps_to_fmidi :: Floating a => a -> a
-cps_to_fmidi a = (logBase 2 (a * (1 / 440)) * 12) + 69
 
 -- | 'midi_to_cps_f0' of 'octpc_to_midi', given frequency of ISO A4.
 octpc_to_cps_f0 :: (Integral i,Floating n) => n -> Octave_PitchClass i -> n
@@ -380,34 +386,25 @@ cps_to_octpc = midi_to_octpc . cps_to_midi
 cps_octave :: (Floating f,RealFrac f) => f -> Octave
 cps_octave = fst . cps_to_octpc
 
--- * MIDI detune
+-- * MIDI detune (cents)
 
 -- | Midi note number with cents detune.
-type Midi_Detune = (Int,Double)
+type Midi_Detune' c = (Int,c)
 
--- | Fractional midi note number to 'Midi_Detune'.
+-- | Is cents in (-50,+50].
 --
--- > fmidi_to_midi_detune 60.5 == (60,50.0)
-fmidi_to_midi_detune :: Double -> Midi_Detune
-fmidi_to_midi_detune mnn =
-    let (n,c) = T.integral_and_fractional_parts mnn
-    in (n,c * 100)
+-- > map cents_is_normal [-250,-75,75,250] == replicate 4 False
+cents_is_normal :: (Num c, Ord c) => c -> Bool
+cents_is_normal c = c > (-50) && c <= 50
 
--- | 'Midi_Detune' to fractional midi note number.
---
--- > midi_detune_to_fmidi (60,50.0) == 60.5
-midi_detune_to_fmidi :: Midi_Detune -> Double
-midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (c / 100)
-
--- | Frequency (in hertz) to 'Midi_Detune'.
---
--- > map (fmap round . cps_to_midi_detune) [440.00,508.35] == [(69,0),(71,50)]
-cps_to_midi_detune :: Double -> Midi_Detune
-cps_to_midi_detune = fmidi_to_midi_detune . cps_to_fmidi
+-- | 'cents_is_normal' of 'snd'.
+midi_detune_is_normal :: (Num c, Ord c) => Midi_Detune' c -> Bool
+midi_detune_is_normal = cents_is_normal . snd
 
 -- | In normal form the detune is in the range (-50,+50] instead of [0,100) or wider.
+--
 -- > map midi_detune_normalise [(60,-250),(60,-75),(60,75),(60,250)]
-midi_detune_normalise :: Midi_Detune -> Midi_Detune
+midi_detune_normalise :: (Ord c,Num c) => Midi_Detune' c -> Midi_Detune' c
 midi_detune_normalise (m,c) =
     if c > 50
     then midi_detune_normalise (m + 1,c - 100)
@@ -415,26 +412,65 @@ midi_detune_normalise (m,c) =
          then (m,c)
          else midi_detune_normalise (m - 1,c + 100)
 
--- | Inverse of 'cps_to_midi_detune', given frequency of ISO A4.
-midi_detune_to_cps_f0 :: Double -> Midi_Detune -> Double
-midi_detune_to_cps_f0 f0 (m,c) = fmidi_to_cps_f0 f0 (fromIntegral m + (c / 100))
+-- | Inverse of 'cps_to_midi_detune', given frequency of ISO @A4@.
+midi_detune_to_cps_f0 :: Real c => Double -> Midi_Detune' c -> Double
+midi_detune_to_cps_f0 f0 (m,c) = fmidi_to_cps_f0 f0 (fromIntegral m + (realToFrac c / 100))
 
 -- | Inverse of 'cps_to_midi_detune'.
 --
 -- > map midi_detune_to_cps [(69,0),(68,100)] == [440,440]
-midi_detune_to_cps :: Midi_Detune -> Double
+midi_detune_to_cps :: Real c => Midi_Detune' c -> Double
 midi_detune_to_cps = midi_detune_to_cps_f0 440
+
+-- | 'Midi_Detune' to fractional midi note number.
+--
+-- > midi_detune_to_fmidi (60,50.0) == 60.50
+midi_detune_to_fmidi :: Real c => Midi_Detune' c -> Double
+midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (realToFrac c / 100)
 
 -- | 'Midi_Detune' to 'Pitch', detune must be precisely at a notateable Pitch.
 --
 -- > let p = Pitch {note = C, alteration = QuarterToneSharp, octave = 4}
 -- > in midi_detune_to_pitch T.pc_spell_ks (midi_detune_nearest_24et (60,35)) == p
-midi_detune_to_pitch :: Spelling Int -> Midi_Detune -> Pitch
+midi_detune_to_pitch :: Real c => Spelling Int -> Midi_Detune' c -> Pitch
 midi_detune_to_pitch sp = fmidi_to_pitch sp . cps_to_fmidi . midi_detune_to_cps
 
--- | Round /detune/ value to nearest multiple of @50@.
+-- | Midi note number with real-valued cents detune.
+type Midi_Detune = Midi_Detune' Double
+
+-- | Fractional midi note number to 'Midi_Detune'.
+--
+-- > fmidi_to_midi_detune 60.50 == (60,50.0)
+fmidi_to_midi_detune :: Double -> Midi_Detune
+fmidi_to_midi_detune mnn =
+    let (n,c) = T.integral_and_fractional_parts mnn
+    in (n,c * 100)
+
+-- | Frequency (in hertz) to 'Midi_Detune'.
+--
+-- > map (fmap round . cps_to_midi_detune) [440.00,508.35] == [(69,0),(71,50)]
+cps_to_midi_detune :: Double -> Midi_Detune
+cps_to_midi_detune = fmidi_to_midi_detune . cps_to_fmidi
+
+-- | Round /detune/ value to nearest multiple of @50@, normalised.
+--
+-- > map midi_detune_nearest_24et [(59,70),(59,80)] == [(59,50),(60,00)]
 midi_detune_nearest_24et :: Midi_Detune -> Midi_Detune
-midi_detune_nearest_24et (m,dt) = (m,T.round_to 50 dt)
+midi_detune_nearest_24et (m,dt) = midi_detune_normalise (m,T.round_to 50 dt)
+
+-- * MIDI cents
+
+-- | Midi note number with integral cents detune.
+type Midi_Cents = Midi_Detune' Int
+
+midi_detune_to_midi_cents :: Midi_Detune -> Midi_Cents
+midi_detune_to_midi_cents (m,c) = (m,round c)
+
+-- | Printed as /fmidi/ value with cents to two places.  Must be normal.
+--
+-- > map midi_cents_pp [(60,0),(60,25)] == ["60.00","60.25"]
+midi_cents_pp :: Midi_Cents -> String
+midi_cents_pp (m,c) = if cents_is_normal c then printf "%d.%02d" m c else error "midi_cents_pp"
 
 -- * Parsers
 

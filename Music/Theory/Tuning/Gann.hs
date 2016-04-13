@@ -85,20 +85,22 @@ la_monte_young_wtp_r =
     ,7/4,441/256
     ,63/32]
 
--- | La Monte Young's \"The Well-Tuned Piano\", see
--- <http://www.kylegann.com/wtp.html>.
---
--- > cents_i la_monte_young_wtp == [0,177,204,240,471,444,675,702,738,969,942,1173]
---
--- > import Data.List {- base -}
--- > scl <- scl_load "young-lm_piano"
--- > cents_i (scale_tuning 0.01 scl) == cents_i la_monte_young_wtp
---
--- > let f = d12_midi_tuning_f (la_monte_young_wtp,-74.7,-3)
--- > import qualified Music.Theory.Pitch as T
--- > T.octpc_to_midi (-1,11) == 11
--- > map (round . T.midi_detune_to_cps . f) [62,63,69] == [293,298,440]
--- > map (fmap round . T.midi_detune_normalise . f) [0 .. 127]
+{- | La Monte Young's \"The Well-Tuned Piano\", see <http://www.kylegann.com/wtp.html>.
+
+> cents_i la_monte_young_wtp == [0,177,204,240,471,444,675,702,738,969,942,1173]
+
+> import Data.List {- base -}
+> import Music.Theory.Tuning.Scala {- hmt -}
+> scl <- scl_load "young-lm_piano"
+> cents_i (scale_to_tuning 0.01 scl) == cents_i la_monte_young_wtp
+
+> let f = d12_midi_tuning_f (la_monte_young_wtp,-74.7,-3)
+> import qualified Music.Theory.Pitch as T
+> T.octpc_to_midi (-1,11) == 11
+> map (round . T.midi_detune_to_cps . f) [62,63,69] == [293,298,440]
+> map (fmap round . T.midi_detune_normalise . f) [0 .. 127]
+
+-}
 la_monte_young_wtp :: Tuning
 la_monte_young_wtp = Tuning (Left la_monte_young_wtp_r) 2
 

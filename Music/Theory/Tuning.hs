@@ -445,7 +445,7 @@ gen_cps_tuning_tbl tn_f =
         cps = map (T.midi_detune_to_cps . tn_f) ix
     in zip ix cps
 
--- * Derived (secondary) tuning table lookup.
+-- * Derived (secondary) tuning table (DTT) lookup.
 
 -- | Given a 'MNN_CPS_Table' /t/, a list of @CPS@ /c/, and a @MNN@ /m/
 -- find the @CPS@ in /c/ that is nearest to the @CPS@ in /t/ for /m/.
@@ -463,4 +463,3 @@ gen_dtt_lookup_f :: MNN_CPS_Table -> MNN_CPS_Table -> Midi_Tuning_F
 gen_dtt_lookup_f t0 t1 =
     let m = M.fromList (gen_dtt_lookup_tbl t0 t1)
     in T.cps_to_midi_detune . T.map_ix_err m
-
