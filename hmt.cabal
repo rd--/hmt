@@ -123,6 +123,7 @@ Library
                    Music.Theory.Tuning.Scala
                    Music.Theory.Tuning.Scala.Interval
                    Music.Theory.Tuning.Scala.Mode
+                   Music.Theory.Tuning.Sethares1994
                    Music.Theory.Tuning.Syntonic
                    Music.Theory.Tuning.Werckmeister
                    Music.Theory.Unicode
