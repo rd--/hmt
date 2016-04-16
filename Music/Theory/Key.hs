@@ -1,6 +1,7 @@
 -- | Common music keys.
 module Music.Theory.Key where
 
+import Control.Monad {- base -}
 import Data.Char {- base -}
 import Data.List {- base -}
 
@@ -41,6 +42,26 @@ key_lc_uc_pp (n,a,m) =
     let c = note_pp n
         c' = if m == Minor_Mode then toLower c else c
     in [c',alteration_symbol a]
+
+note_char_to_key :: Char -> Maybe Key
+note_char_to_key c =
+    let m = if isUpper c then Major_Mode else Minor_Mode
+    in fmap (\n -> (n,Natural,m)) (parse_note True c)
+
+-- | Parse 'Key' from /lc-uc/ string.
+--
+-- > import Data.Maybe
+--
+-- > let k = mapMaybe key_lc_uc_parse ["c","E","f♯"]
+-- > in map key_lc_uc_pp k == ["c♮","E♮","f♯"]
+key_lc_uc_parse :: String -> Maybe Key
+key_lc_uc_parse k =
+    let with_k a (n,_,m) = (n,a,m)
+        with_a n a = fmap (with_k a) (note_char_to_key n)
+    in case k of
+         [c] -> note_char_to_key c
+         [n,a] -> join (fmap (with_a n) (symbol_to_alteration a))
+         _ -> Nothing
 
 -- | Distance along circle of fifths path of indicated 'Key'.  A
 -- positive number indicates the number of sharps, a negative number

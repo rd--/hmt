@@ -187,23 +187,30 @@ alteration_symbol a = fromMaybe (error "alteration_symbol") (lookup a alteration
 symbol_to_alteration :: Char -> Maybe Alteration_T
 symbol_to_alteration c = T.reverse_lookup c alteration_symbol_tbl
 
+-- | Variant of 'symbol_to_alteration' that /also/ recognises @b@ for 'Flat'
+-- and @#@ for 'Sharp'.
+symbol_to_alteration_iso :: Char -> Maybe Alteration_T
+symbol_to_alteration_iso c =
+    case c of
+      'b' -> Just Flat
+      '#' -> Just Sharp
+      _ -> symbol_to_alteration c
+
+alteration_iso_tbl :: [(Alteration_T,String)]
+alteration_iso_tbl =
+    [(DoubleFlat,"bb")
+    ,(Flat,"b")
+    ,(Natural,"")
+    ,(Sharp,"#")
+    ,(DoubleSharp,"x")]
+
 -- | The @ISO@ ASCII spellings for alterations.  Naturals are written
 -- as the empty string.
 --
 -- > mapMaybe alteration_iso_m [Flat .. Sharp] == ["b","","#"]
 -- > mapMaybe alteration_iso_m [DoubleFlat,DoubleSharp] == ["bb","x"]
 alteration_iso_m :: Alteration_T -> Maybe String
-alteration_iso_m a =
-    case a of
-      DoubleFlat -> Just "bb"
-      ThreeQuarterToneFlat -> Nothing
-      Flat -> Just "b"
-      QuarterToneFlat -> Nothing
-      Natural -> Just ""
-      QuarterToneSharp -> Nothing
-      Sharp -> Just "#"
-      ThreeQuarterToneSharp -> Nothing
-      DoubleSharp -> Just "x"
+alteration_iso_m a = lookup a alteration_iso_tbl
 
 -- | The @ISO@ ASCII spellings for alterations.
 alteration_iso :: Alteration_T -> String
