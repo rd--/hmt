@@ -13,11 +13,26 @@ import Music.Theory.Interval
 data Mode_T = Minor_Mode | Major_Mode
               deriving (Eq,Ord,Show)
 
+-- | There are two modes, given one return the other.
+mode_parallel :: Mode_T -> Mode_T
+mode_parallel m = if m == Minor_Mode then Major_Mode else Minor_Mode
+
 -- | A common music notation key is a 'Note_T', 'Alteration_T',
 -- 'Mode_T' triple.
 type Key = (Note_T,Alteration_T,Mode_T)
 
--- | Pretty-printer where 'Minor_Mode' is in lower case (lc) and
+-- | Parallel key.
+key_parallel :: Key -> Key
+key_parallel (n,a,m) = (n,a,mode_parallel m)
+
+-- > map (key_lc_uc_pp . key_relative) [(C,Natural,Major_Mode)] == ["a♮"]
+key_relative :: Key -> Key
+key_relative (n,a,m) =
+    case m of
+      Major_Mode -> (note_t_transpose n 5,a,Minor_Mode)
+      Minor_Mode -> (note_t_transpose n 2,a,Major_Mode)
+
+-- | Pretty-printer where 'Minor_Mode' is written in lower case (lc) and
 -- alteration symbol is unicode (uc).
 --
 -- > map key_lc_uc_pp [(C,Sharp,Minor_Mode),(E,Flat,Major_Mode)] == ["c♯","E♭"]
