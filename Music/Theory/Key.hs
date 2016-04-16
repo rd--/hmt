@@ -1,6 +1,7 @@
 -- | Common music keys.
 module Music.Theory.Key where
 
+import Data.Char {- base -}
 import Data.List {- base -}
 
 import Music.Theory.Pitch
@@ -15,6 +16,16 @@ data Mode_T = Minor_Mode | Major_Mode
 -- | A common music notation key is a 'Note_T', 'Alteration_T',
 -- 'Mode_T' triple.
 type Key = (Note_T,Alteration_T,Mode_T)
+
+-- | Pretty-printer where 'Minor_Mode' is in lower case (lc) and
+-- alteration symbol is unicode (uc).
+--
+-- > map key_lc_uc_pp [(C,Sharp,Minor_Mode),(E,Flat,Major_Mode)] == ["c♯","E♭"]
+key_lc_uc_pp :: Key -> String
+key_lc_uc_pp (n,a,m) =
+    let c = note_pp n
+        c' = if m == Minor_Mode then toLower c else c
+    in [c',alteration_symbol a]
 
 -- | Distance along circle of fifths path of indicated 'Key'.  A
 -- positive number indicates the number of sharps, a negative number

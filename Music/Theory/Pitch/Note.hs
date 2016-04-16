@@ -10,6 +10,9 @@ import Data.Maybe {- base -}
 data Note_T = C | D | E | F | G | A | B
               deriving (Eq,Enum,Bounded,Ord,Read,Show)
 
+note_pp :: Note_T -> Char
+note_pp = head . show
+
 -- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
@@ -177,6 +180,7 @@ alteration_symbol a =    case a of
 -- as the empty string.
 --
 -- > mapMaybe alteration_iso_m [Flat .. Sharp] == ["b","","#"]
+-- > mapMaybe alteration_iso_m [DoubleFlat,DoubleSharp] == ["bb","x"]
 alteration_iso_m :: Alteration_T -> Maybe String
 alteration_iso_m a =
     case a of
