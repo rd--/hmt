@@ -39,22 +39,31 @@ key_sequence_7 = filter (\k -> maybe False ((< 8) . abs) (key_fifths k)) key_seq
 key_parallel :: Key -> Key
 key_parallel (n,a,m) = (n,a,mode_parallel m)
 
--- > map (key_lc_uc_pp . key_relative) [(C,Natural,Major_Mode)] == ["a♮"]
+-- | Relative key (ie. 'mode_parallel' with the same number of and type of alterations.
+--
+-- > let k = [(C,Natural,Major_Mode),(E,Natural,Minor_Mode)]
+-- > in map (key_lc_uc_pp . key_relative) k == ["a♮","G♮"]
 key_relative :: Key -> Key
 key_relative (n,a,m) =
     case m of
       Major_Mode -> (note_t_transpose n 5,a,Minor_Mode)
       Minor_Mode -> (note_t_transpose n 2,a,Major_Mode)
 
+key_lc_pp :: (Alteration_T -> String) -> Key -> String
+key_lc_pp a_pp (n,a,m) =
+    let c = note_pp n
+        c' = if m == Minor_Mode then toLower c else c
+    in c' : a_pp a
+
 -- | Pretty-printer where 'Minor_Mode' is written in lower case (lc) and
 -- alteration symbol is unicode (uc).
 --
 -- > map key_lc_uc_pp [(C,Sharp,Minor_Mode),(E,Flat,Major_Mode)] == ["c♯","E♭"]
 key_lc_uc_pp :: Key -> String
-key_lc_uc_pp (n,a,m) =
-    let c = note_pp n
-        c' = if m == Minor_Mode then toLower c else c
-    in [c',alteration_symbol a]
+key_lc_uc_pp = key_lc_pp (return . alteration_symbol)
+
+key_lc_iso_pp :: Key -> String
+key_lc_iso_pp = key_lc_pp alteration_iso
 
 note_char_to_key :: Char -> Maybe Key
 note_char_to_key c =
