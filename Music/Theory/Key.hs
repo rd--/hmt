@@ -22,7 +22,20 @@ mode_parallel m = if m == Minor_Mode then Major_Mode else Minor_Mode
 -- 'Mode_T' triple.
 type Key = (Note_T,Alteration_T,Mode_T)
 
--- | Parallel key.
+-- | Enumeration of 42 CMN keys.
+--
+-- > length key_sequence == 7 * 3 * 2
+key_sequence :: [Key]
+key_sequence = [(n,a,m) | n <- [C .. B],a <- [Flat,Natural,Sharp],m <- [Major_Mode,Minor_Mode]]
+
+-- | Subset of 'key_sequence' not including very eccentric keys (where
+-- there are more than 7 alterations).
+--
+-- > length key_sequence_7 == 30
+key_sequence_7 :: [Key]
+key_sequence_7 = filter (\k -> maybe False ((< 8) . abs) (key_fifths k)) key_sequence
+
+-- | Parallel key, ie. 'mode_parallel' of 'Key'.
 key_parallel :: Key -> Key
 key_parallel (n,a,m) = (n,a,mode_parallel m)
 
