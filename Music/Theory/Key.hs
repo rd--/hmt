@@ -74,29 +74,32 @@ note_char_to_key c =
 --
 -- > import Data.Maybe
 --
--- > let k = mapMaybe key_lc_uc_parse ["c","E","f♯"]
--- > in map key_lc_uc_pp k == ["c♮","E♮","f♯"]
+-- > let k = mapMaybe key_lc_uc_parse ["c","E","f♯","ab","G#"]
+-- > in map key_lc_uc_pp k == ["c♮","E♮","f♯","a♭","G♯"]
 key_lc_uc_parse :: String -> Maybe Key
 key_lc_uc_parse k =
     let with_k a (n,_,m) = (n,a,m)
         with_a n a = fmap (with_k a) (note_char_to_key n)
     in case k of
          [c] -> note_char_to_key c
-         [n,a] -> join (fmap (with_a n) (symbol_to_alteration a))
+         [n,a] -> join (fmap (with_a n) (symbol_to_alteration_iso a))
          _ -> Nothing
 
 -- | Distance along circle of fifths path of indicated 'Key'.  A
 -- positive number indicates the number of sharps, a negative number
 -- the number of flats.
 --
--- > key_fifths (A,Natural,Minor_Mode) == 0
--- > key_fifths (A,Natural,Major_Mode) == 3
--- > key_fifths (C,Natural,Minor_Mode) == -3
-key_fifths :: Key -> Int
+-- > key_fifths (A,Natural,Minor_Mode) == Just 0
+-- > key_fifths (A,Natural,Major_Mode) == Just 3
+-- > key_fifths (C,Natural,Minor_Mode) == Just (-3)
+-- > key_fifths (B,Sharp,Minor_Mode) == Just 9
+--
+-- > zip (map key_lc_iso_pp key_sequence) (map key_fifths key_sequence)
+key_fifths :: Key -> Maybe Int
 key_fifths (n,a,m) =
     let cf x = let (p,q) = circle_of_fifths x in p ++ q
         eq (Pitch n' a' _) = n == n' && a == a'
-        (Just ix) = case m of
-                      Major_Mode -> findIndex eq (cf c4)
-                      Minor_Mode -> findIndex eq (cf a4)
-    in if ix < 13 then negate ix else ix - 12
+        ix = case m of
+               Major_Mode -> findIndex eq (cf c4)
+               Minor_Mode -> findIndex eq (cf a4)
+    in fmap (\i -> if i < 13 then negate i else i - 12) ix

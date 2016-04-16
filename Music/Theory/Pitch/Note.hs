@@ -15,19 +15,17 @@ data Note_T = C | D | E | F | G | A | B
 note_pp :: Note_T -> Char
 note_pp = head . show
 
+note_pc_tbl :: Integral i => [(Note_T,i)]
+note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
+
 -- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
 note_to_pc :: Integral i => Note_T -> i
-note_to_pc n =
-    case n of
-      C -> 0
-      D -> 2
-      E -> 4
-      F -> 5
-      G -> 7
-      A -> 9
-      B -> 11
+note_to_pc n = fromMaybe (error "note_to_pc") (lookup n note_pc_tbl)
+
+pc_to_note :: Integral i => i -> Maybe Note_T
+pc_to_note i = T.reverse_lookup i note_pc_tbl
 
 -- | Modal transposition of 'Note_T' value.
 --
@@ -236,6 +234,27 @@ alteration_tonh a =
       Sharp -> "is"
       ThreeQuarterToneSharp -> "isih"
       DoubleSharp -> "isis"
+
+-- * 12-ET
+
+note_alteration_to_pc :: (Note_T,Alteration_T) -> Maybe Int
+note_alteration_to_pc (n,a) =
+    let n' = note_to_pc n
+    in fmap (+ n') (alteration_to_diff a)
+
+-- | Note & alteration sequence in key-signature spelling.
+note_alteration_ks :: [(Note_T, Alteration_T)]
+note_alteration_ks =
+    [(C,Natural),(C,Sharp),(D,Natural),(E,Flat),(E,Natural),(F,Natural)
+    ,(F,Sharp),(G,Natural),(A,Flat),(A,Natural),(B,Flat),(B,Natural)]
+
+-- | Table connecting pitch class number with 'note_alteration_ks'.
+pc_note_alteration_ks_tbl :: Integral i => [((Note_T,Alteration_T),i)]
+pc_note_alteration_ks_tbl = zip note_alteration_ks [0..11]
+
+-- | 'T.reverse_lookup' of 'pc_note_alteration_ks_tbl'.
+pc_to_note_alteration_ks :: Integral i => i -> Maybe (Note_T,Alteration_T)
+pc_to_note_alteration_ks i = T.reverse_lookup i pc_note_alteration_ks_tbl
 
 -- * Generalised Alteration
 
