@@ -4,6 +4,8 @@ module Music.Theory.Pitch.Note where
 import Data.Char {- base -}
 import Data.Maybe {- base -}
 
+import qualified Music.Theory.List as T {- hmt -}
+
 -- * Note
 
 -- | Enumeration of common music notation note names (@C@ to @B@).
@@ -158,6 +160,18 @@ alteration_clear_quarter_tone x =
       ThreeQuarterToneSharp -> Sharp
       _ -> x
 
+alteration_symbol_tbl :: [(Alteration_T,Char)]
+alteration_symbol_tbl =
+    [(DoubleFlat,'𝄫')
+    ,(ThreeQuarterToneFlat,'𝄭')
+    ,(Flat,'♭')
+    ,(QuarterToneFlat,'𝄳')
+    ,(Natural,'♮')
+    ,(QuarterToneSharp,'𝄲')
+    ,(Sharp,'♯')
+    ,(ThreeQuarterToneSharp,'𝄰')
+    ,(DoubleSharp,'𝄪')]
+
 -- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@
 -- through @U+1D1FF@.  The @3/4@ symbols are non-standard, here they
 -- correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP
@@ -165,16 +179,13 @@ alteration_clear_quarter_tone x =
 --
 -- > map alteration_symbol [minBound .. maxBound] == "𝄫𝄭♭𝄳♮𝄲♯𝄰𝄪"
 alteration_symbol :: Alteration_T -> Char
-alteration_symbol a =    case a of
-      DoubleFlat -> '𝄫'
-      ThreeQuarterToneFlat -> '𝄭'
-      Flat -> '♭'
-      QuarterToneFlat -> '𝄳'
-      Natural -> '♮'
-      QuarterToneSharp -> '𝄲'
-      Sharp -> '♯'
-      ThreeQuarterToneSharp -> '𝄰'
-      DoubleSharp -> '𝄪'
+alteration_symbol a = fromMaybe (error "alteration_symbol") (lookup a alteration_symbol_tbl)
+
+-- | Inverse of 'alteration_symbol'.
+--
+-- > mapMaybe symbol_to_alteration "♭♮♯" == [Flat,Natural,Sharp]
+symbol_to_alteration :: Char -> Maybe Alteration_T
+symbol_to_alteration c = T.reverse_lookup c alteration_symbol_tbl
 
 -- | The @ISO@ ASCII spellings for alterations.  Naturals are written
 -- as the empty string.
