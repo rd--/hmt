@@ -59,15 +59,15 @@ ti_related = Z.ti_related z12_modulo
 rti_related :: [Z12] -> [[Z12]]
 rti_related = Z.rti_related z12_modulo
 
--- | T\/M\/I-related sequences of /p/.
+-- | T\/M\/I-related sequences of /p/, duplicates removed.
 tmi_related :: [Z12] -> [[Z12]]
 tmi_related p = let q = ti_related p in nub (q ++ map m5 q)
 
--- | R\/T\/M\/I-related sequences of /p/.
+-- | R\/T\/M\/I-related sequences of /p/, duplicates removed.
 rtmi_related :: [Z12] -> [[Z12]]
 rtmi_related p = let q = tmi_related p in nub (q ++ map reverse q)
 
--- | r\/R\/T\/M\/I-related sequences of /p/.
+-- | r\/R\/T\/M\/I-related sequences of /p/, duplicates removed.
 rrtmi_related :: [Z12] -> [[Z12]]
 rrtmi_related p = nub (concatMap rtmi_related (T.rotations p))
 

@@ -1,5 +1,5 @@
 -- | Haskell implementations of @pct@ operations.
--- See <http://slavepianos.org/rd/?t=pct>.
+-- See <http://slavepianos.org/rd/t/pct>.
 module Music.Theory.Z12.Drape_1999 where
 
 import Data.Function {- base -}
@@ -39,7 +39,7 @@ cg = T.powerset
 
 -- | Powerset filtered by cardinality.
 --
--- >>> cg -r3 0159
+-- >>> pct cg -r3 0159
 -- 015
 -- 019
 -- 059
@@ -49,13 +49,40 @@ cg = T.powerset
 cg_r :: (Integral n) => n -> [a] -> [[a]]
 cg_r n = cf [n] . cg
 
--- | Cyclic interval segment.
+{- | Chain pcsegs.
+
+>>> echo 024579 | pct chn T0 3 | sort -u
+579468 (RT8M)
+579A02 (T5)
+
+> chn_t0 3 [0,2,4,5,7,9] == [[5,7,9,10,0,2],[5,7,9,4,6,8]]
+
+>>> echo 02457t | pct chn T0 2
+7A0135 (RT5I)
+7A81B9 (RT9MI)
+
+> chn_t0 2 [0,2,4,5,7,10] == [[7,10,0,1,3,5],[7,10,8,1,11,9]]
+
+-}
+chn_t0 :: Int -> [Z12] -> [[Z12]]
+chn_t0 n p =
+    let f q = T.take_right n p == take n q
+    in filter f (SRO.rtmi_related p)
+
+{- | Cyclic interval segment.
+
+>>> echo 014295e38t76 | pct cisg
+13A7864529B6
+
+> ciseg [0,1,4,2,9,5,11,3,8,10,7,6] == [1,3,10,7,8,6,4,5,2,9,11,6]
+
+-}
 ciseg :: [Z12] -> [Z12]
 ciseg = T.int . cyc
 
 -- | Synonynm for 'complement'.
 --
--- >>> cmpl 02468t
+-- >>> pct cmpl 02468t
 -- 13579B
 --
 -- > cmpl [0,2,4,6,8,10] == [1,3,5,7,9,11]
@@ -64,7 +91,7 @@ cmpl = complement
 
 -- | Form cycle.
 --
--- >>> cyc 056
+-- >>> echo 056 | pct cyc
 -- 0560
 --
 -- > cyc [0,5,6] == [0,5,6,0]
@@ -96,7 +123,7 @@ dim p =
 
 -- | Variant of 'dim' that is closer to the 'pct' form.
 --
--- >>> dim 016
+-- >>> pct dim 016
 -- T1d
 -- T1m
 -- T0o
@@ -111,7 +138,7 @@ dim_nm =
 
 -- | Diatonic interval set to interval set.
 --
--- >>> dis 24
+-- >>> pct dis 24
 -- 1256
 --
 -- > dis [2,4] == [1,2,5,6]
@@ -122,14 +149,14 @@ dis =
 
 -- | Degree of intersection.
 --
--- >>> echo 024579e | doi 6 | sort -u
+-- >>> echo 024579e | pct doi 6 | sort -u
 -- 024579A
 -- 024679B
 --
 -- > let p = [0,2,4,5,7,9,11]
 -- > in doi 6 p p == [[0,2,4,5,7,9,10],[0,2,4,6,7,9,11]]
 --
--- >>> echo 01234 | doi 2 7-35 | sort -u
+-- >>> echo 01234 | pct doi 2 7-35 | sort -u
 -- 13568AB
 --
 -- > doi 2 (T.sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
@@ -153,7 +180,7 @@ has_ess (p:ps) (q:qs) = if p == q
 
 -- | Embedded segment search.
 --
--- >>> echo 23a | ess 0164325
+-- >>> echo 23a | pct ess 0164325
 -- 2B013A9
 -- 923507A
 --
@@ -177,7 +204,7 @@ has_sc = has_sc_pf T.forte_prime
 
 -- | Interval cycle filter.
 --
--- >>> echo 22341 | icf
+-- >>> echo 22341 | pct icf
 -- 22341
 --
 -- > icf [[2,2,3,4,1]] == [[2,2,3,4,1]]
@@ -186,7 +213,7 @@ icf = filter ((== 12) . sum)
 
 -- | Interval class set to interval sets.
 --
--- >>> ici -c 123
+-- >>> pct ici -c 123
 -- 123
 -- 129
 -- 1A3
@@ -208,7 +235,7 @@ ici_c (x:xs) = map (x:) (ici xs)
 
 -- | Interval-class segment.
 --
--- >>> icseg 013265e497t8
+-- >>> pct icseg 013265e497t8
 -- 12141655232
 --
 -- > icseg [0,1,3,2,6,5,11,4,9,7,10,8] == [1,2,1,4,1,6,5,5,2,3,2]
@@ -228,7 +255,7 @@ imb cs p =
 
 -- | 'issb' gives the set-classes that can append to 'p' to give 'q'.
 --
--- >>> issb 3-7 6-32
+-- >>> pct issb 3-7 6-32
 -- 3-7
 -- 3-2
 -- 3-11
@@ -242,7 +269,7 @@ issb p q =
 
 -- | Matrix search.
 --
--- >>> mxs 024579 642 | sort -u
+-- >>> pct mxs 024579 642 | sort -u
 -- 6421B9
 -- B97642
 --
@@ -252,7 +279,7 @@ mxs p q = filter (q `isInfixOf`) (SRO.rti_related p)
 
 -- | Normalize.
 --
--- >>> nrm 0123456543210
+-- >>> pct nrm 0123456543210
 -- 0123456
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
@@ -265,11 +292,11 @@ nrm_r = sort
 
 -- | Pitch-class invariances (called @pi@ at @pct@).
 --
--- >>> pi 0236 12
--- 0236
--- 6320
--- 532B
--- B235
+-- >>> pct pi 0236 12
+-- pcseg 0236
+-- pcseg 6320
+-- pcseg 532B
+-- pcseg B235
 --
 -- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 pci :: [Z12] -> [Z12] -> [[Z12]]
@@ -279,7 +306,7 @@ pci p i =
 
 -- | Relate sets.
 --
--- >>> rs 0123 641e
+-- >>> pct rs 0123 641e
 -- T1M
 --
 -- > import Music.Theory.Z12.Morris_1987.Parse
@@ -291,28 +318,29 @@ rs x y =
         q = T.set y
     in filter (\(_,p) -> T.set p == q) xs
 
--- | Relate segments.
---
--- >>> rsg 156 3BA
--- T4I
---
--- > rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
---
--- >>> rsg 0123 05t3
--- T0M
---
--- > rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
---
--- >>> rsg 0123 4e61
--- RT1M
---
--- > rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
---
--- >>> echo e614 | rsg 0123
--- r3RT1M
---
--- > rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
---
+{- | Relate segments.
+
+>>> pct rsg 156 3BA
+T4I
+
+> rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
+
+>>> pct rsg 0123 05t3
+T0M
+
+> rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
+
+>>> pct rsg 0123 4e61
+RT1M
+
+> rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
+
+>>> echo e614 | pct rsg 0123
+r3RT1M
+
+> rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
+
+-}
 rsg :: [Z12] -> [Z12] -> [T.SRO]
 rsg x y = map fst (filter (\(_,x') -> x' == y) (T.sros x))
 
@@ -322,23 +350,25 @@ sb xs =
     let f p = all id (map (`has_sc` p) xs)
     in filter f T.scs
 
--- | Super set-class.
---
--- >>> spsc 4-11 4-12
--- 5-26[02458]
---
--- > spsc [T.sc "4-11",T.sc "4-12"] == ["5-26"]
---
--- >>> spsc 3-11 3-8
--- 4-27[0258]
--- 4-Z29[0137]
---
--- > spsc [T.sc "3-11",T.sc "3-8"] == ["4-27","4-Z29"]
---
--- >>> spsc `fl 3`
--- 6-Z17[012478]
---
--- > spsc (cf [3] T.scs) == ["6-Z17"]
+{- | Super set-class.
+
+>>> pct spsc 4-11 4-12
+5-26[02458]
+
+> spsc [T.sc "4-11",T.sc "4-12"] == ["5-26"]
+
+>>> pct spsc 3-11 3-8
+4-27[0258]
+4-Z29[0137]
+
+> spsc [T.sc "3-11",T.sc "3-8"] == ["4-27","4-Z29"]
+
+>>> pct spsc `pct fl 3`
+6-Z17[012478]
+
+> spsc (cf [3] T.scs) == ["6-Z17"]
+
+-}
 spsc :: [[Z12]] -> [String]
 spsc xs =
     let f y = all (y `has_sc`) xs

@@ -453,6 +453,18 @@ dropRight n = reverse . drop n . reverse
 dropWhileRight :: (a -> Bool) -> [a] -> [a]
 dropWhileRight p = reverse . dropWhile p . reverse
 
+-- | 'take' from right.
+--
+-- > take_right 3 "taking" == "ing"
+take_right :: Int -> [a] -> [a]
+take_right n = reverse . take n . reverse
+
+-- | 'takeWhile' from right.
+--
+-- > take_while_right Data.Char.isDigit "A440" == "440"
+take_while_right :: (a -> Bool) -> [a] -> [a]
+take_while_right p = reverse . takeWhile p . reverse
+
 -- | Apply /f/ at first element, and /g/ at all other elements.
 --
 -- > at_head negate id [1..5] == [-1,2,3,4,5]
