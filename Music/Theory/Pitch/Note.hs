@@ -12,6 +12,9 @@ import qualified Music.Theory.List as T {- hmt -}
 data Note_T = C | D | E | F | G | A | B
               deriving (Eq,Enum,Bounded,Ord,Read,Show)
 
+note_seq :: [Note_T]
+note_seq = [C .. B]
+
 note_pp :: Note_T -> Char
 note_pp = head . show
 
