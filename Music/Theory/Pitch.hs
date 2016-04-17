@@ -104,6 +104,9 @@ octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc
     in Pitch n a (fromIntegral o)
 
+octpc_to_pitch_ks :: Integral i => Octave_PitchClass i -> Pitch
+octpc_to_pitch_ks = octpc_to_pitch T.pc_spell_ks
+
 -- | Normalise 'OctPC' value, ie. ensure 'PitchClass' is in (0,11).
 --
 -- > octpc_nrm (4,16) == (5,4)
@@ -201,6 +204,9 @@ fmidi_to_pitch' sp m =
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
 fmidi_to_pitch :: (Show n,RealFrac n) => Spelling Int -> n -> Pitch
 fmidi_to_pitch sp m = fromMaybe (error (show ("fmidi_to_pitch",m))) (fmidi_to_pitch' sp m)
+
+fmidi_to_pitch_ks :: (Show n,RealFrac n) => n -> Pitch
+fmidi_to_pitch_ks = fmidi_to_pitch T.pc_spell_ks
 
 -- | Composition of 'pitch_to_fmidi' and then 'fmidi_to_pitch'.
 --
@@ -435,6 +441,9 @@ midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (realToFrac c / 100)
 midi_detune_to_pitch :: Real c => Spelling Int -> Midi_Detune' c -> Pitch
 midi_detune_to_pitch sp = fmidi_to_pitch sp . cps_to_fmidi . midi_detune_to_cps
 
+midi_detune_to_pitch_ks :: Real c => Midi_Detune' c -> Pitch
+midi_detune_to_pitch_ks = midi_detune_to_pitch T.pc_spell_ks
+
 -- | Midi note number with real-valued cents detune.
 type Midi_Detune = Midi_Detune' Double
 
@@ -552,7 +561,7 @@ pitch_class_pp = pitch_class_pp' False
 -- > pitch_class_names_12et 11 2 == ["B","C"]
 pitch_class_names_12et :: Integral n => n -> n -> [String]
 pitch_class_names_12et k n =
-    let f = pitch_class_pp . midi_to_pitch T.pc_spell_ks
+    let f = pitch_class_pp . midi_to_pitch_ks
     in map f [60 + k .. 60 + k + n - 1]
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
