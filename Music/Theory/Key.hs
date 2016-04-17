@@ -22,11 +22,14 @@ mode_parallel m = if m == Minor_Mode then Major_Mode else Minor_Mode
 -- 'Mode_T' triple.
 type Key = (T.Note_T,T.Alteration_T,Mode_T)
 
+key_mode :: Key -> Mode_T
+key_mode (_,_,m) = m
+
 -- | Enumeration of 42 CMN keys.
 --
--- > length key_sequence == 7 * 3 * 2
-key_sequence :: [Key]
-key_sequence =
+-- > length key_sequence_42 == 7 * 3 * 2
+key_sequence_42 :: [Key]
+key_sequence_42 =
     let a_seq = [T.Flat,T.Natural,T.Sharp]
         m_seq = [Major_Mode,Minor_Mode]
     in [(n,a,m) | n <- T.note_seq,a <- a_seq,m <- m_seq]
@@ -34,29 +37,37 @@ key_sequence =
 -- | Subset of 'key_sequence' not including very eccentric keys (where
 -- there are more than 7 alterations).
 --
--- > length key_sequence_7 == 30
-key_sequence_7 :: [Key]
-key_sequence_7 = filter (\k -> maybe False ((< 8) . abs) (key_fifths k)) key_sequence
+-- > length key_sequence_30 == 30
+key_sequence_30 :: [Key]
+key_sequence_30 = filter (\k -> maybe False ((< 8) . abs) (key_fifths k)) key_sequence_42
 
 -- | Parallel key, ie. 'mode_parallel' of 'Key'.
 key_parallel :: Key -> Key
 key_parallel (n,a,m) = (n,a,mode_parallel m)
 
+key_transpose :: Key -> Int -> Key
+key_transpose (n,a,m) x =
+    let Just pc = T.note_alteration_to_pc (n,a)
+        Just (n',a') = T.pc_to_note_alteration_ks (pc + x)
+    in (n',a',m)
+
 -- | Relative key (ie. 'mode_parallel' with the same number of and type of alterations.
 --
--- > let k = [(C,Natural,Major_Mode),(E,Natural,Minor_Mode)]
+-- > let k = [(T.C,T.Natural,Major_Mode),(T.E,T.Natural,Minor_Mode)]
 -- > in map (key_lc_uc_pp . key_relative) k == ["a♮","G♮"]
 key_relative :: Key -> Key
-key_relative (n,a,m) =
-    case m of
-      Major_Mode -> (T.note_t_transpose n 5,a,Minor_Mode)
-      Minor_Mode -> (T.note_t_transpose n 2,a,Major_Mode)
+key_relative k =
+    case key_mode k of
+      Major_Mode -> key_parallel (key_transpose k 9)
+      Minor_Mode -> key_parallel (key_transpose k 3)
 
--- > key_mediant (C,Natural,Major_Mode) == Just (E,Natural,Minor_Mode)
+-- | Mediant minor of major key.
+--
+-- > key_mediant (T.C,T.Natural,Major_Mode) == Just (T.E,T.Natural,Minor_Mode)
 key_mediant :: Key -> Maybe Key
 key_mediant k =
-    case k of
-      (n,a,Major_Mode) -> Just (T.note_t_transpose n 2,a,Minor_Mode)
+    case key_mode k of
+      Major_Mode -> Just (key_parallel (key_transpose k 4))
       _ -> Nothing
 
 key_lc_pp :: (T.Alteration_T -> String) -> Key -> String
