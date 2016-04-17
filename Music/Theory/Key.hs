@@ -14,6 +14,15 @@ import qualified Music.Theory.Interval as T
 data Mode_T = Minor_Mode | Major_Mode
               deriving (Eq,Ord,Show)
 
+mode_pp :: Mode_T -> String
+mode_pp m =
+    case m of
+      Minor_Mode -> "Minor"
+      Major_Mode -> "Major"
+
+mode_identifier_pp :: Mode_T -> String
+mode_identifier_pp = map toLower . mode_pp
+
 -- | There are two modes, given one return the other.
 mode_parallel :: Mode_T -> Mode_T
 mode_parallel m = if m == Minor_Mode then Major_Mode else Minor_Mode
@@ -48,7 +57,7 @@ key_parallel (n,a,m) = (n,a,mode_parallel m)
 key_transpose :: Key -> Int -> Key
 key_transpose (n,a,m) x =
     let Just pc = T.note_alteration_to_pc (n,a)
-        Just (n',a') = T.pc_to_note_alteration_ks (pc + x)
+        Just (n',a') = T.pc_to_note_alteration_ks ((pc + x) `mod` 12)
     in (n',a',m)
 
 -- | Relative key (ie. 'mode_parallel' with the same number of and type of alterations.
@@ -85,6 +94,14 @@ key_lc_uc_pp = key_lc_pp (return . T.alteration_symbol)
 
 key_lc_iso_pp :: Key -> String
 key_lc_iso_pp = key_lc_pp T.alteration_iso
+
+-- > map key_lc_tonh_pp [(T.C,T.Sharp,Minor_Mode),(T.E,T.Flat,Major_Mode)]
+key_lc_tonh_pp :: Key -> String
+key_lc_tonh_pp = key_lc_pp T.alteration_tonh
+
+-- > map key_identifier_pp [(T.C,T.Sharp,Minor_Mode),(T.E,T.Flat,Major_Mode)]
+key_identifier_pp :: (Show a, Show a1) => (a, a1, Mode_T) -> [Char]
+key_identifier_pp (n,a,m) = map toLower (intercalate "_" [show n,show a,mode_pp m])
 
 note_char_to_key :: Char -> Maybe Key
 note_char_to_key c =
