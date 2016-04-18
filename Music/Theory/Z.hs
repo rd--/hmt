@@ -56,8 +56,11 @@ z_quot z p = to_Z z . quot p
 z_rem :: Integral c => c -> c -> c -> c
 z_rem z p = to_Z z . rem p
 
+div_err :: Integral a => String -> a -> a -> a
+div_err s p q = if q == 0 then error ("div_err: zero" ++ s) else p `div` q
+
 z_div :: Integral c => c -> c -> c -> c
-z_div z p = to_Z z . div p
+z_div z p = to_Z z . div_err "z_div" p
 
 -- > z_mod 12 6 12
 z_mod :: Integral c => c -> c -> c -> c

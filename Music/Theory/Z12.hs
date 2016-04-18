@@ -100,3 +100,9 @@ from_Z12 = fromIntegral
 -- > complement [0,2,4,5,7,9,11] == [1,3,6,8,10]
 complement :: [Z12] -> [Z12]
 complement = (\\) [0 .. 11]
+
+-- | Z12 to character (10 -> A, 11 -> B).
+--
+-- > map z12_char [0 .. 11] == "0123456789AB"
+z12_char :: Z12 -> Char
+z12_char (Z12 n) = if n < 0 || n > 11 then error "z12_char" else "0123456789AB" !! n

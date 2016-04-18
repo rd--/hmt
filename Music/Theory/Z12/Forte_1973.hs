@@ -26,6 +26,7 @@ ti_rotations = Z.ti_rotations z12_modulo
 -- | Forte prime form, ie. 'cmp_prime' of 'forte_cmp'.
 --
 -- > forte_prime [0,1,3,6,8,9] == [0,1,3,6,8,9]
+-- > forte_prime [0,2,3,6,7] == [0,1,4,5,7]
 forte_prime :: [Z12] -> [Z12]
 forte_prime = Z.forte_prime z12_modulo
 
@@ -52,7 +53,7 @@ sc_table = Z.sc_table
 -- > sc_name [0,2,3,6,7] == "5-Z18"
 -- > sc_name [0,1,4,6,7,8] == "6-Z17"
 sc_name :: [Z12] -> SC_Name
-sc_name = Z.sc_name
+sc_name = Z.sc_name z12_modulo
 
 -- | Lookup a set-class given a set-class name.
 --
@@ -303,7 +304,7 @@ scs_n n = filter ((== n) . genericLength) scs
 -- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\"
 -- /JMT/ 17/2 (1973):234-272
 --
--- >>> bip 0t95728e3416
+-- >>> pct bip 0t95728e3416
 -- 11223344556
 --
 -- > bip [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]

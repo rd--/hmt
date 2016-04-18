@@ -253,14 +253,16 @@ imb cs p =
         f ps n = filter (g n) (map (genericTake n) ps)
     in concatMap (f (tails p)) cs
 
--- | 'issb' gives the set-classes that can append to 'p' to give 'q'.
---
--- >>> pct issb 3-7 6-32
--- 3-7
--- 3-2
--- 3-11
---
--- > issb (T.sc "3-7") (T.sc "6-32") == ["3-2","3-7","3-11"]
+{- | 'issb' gives the set-classes that can append to 'p' to give 'q'.
+
+>>> pct issb 3-7 6-32
+3-7
+3-2
+3-11
+
+> issb (T.sc "3-7") (T.sc "6-32") == ["3-2","3-7","3-11"]
+
+-}
 issb :: [Z12] -> [Z12] -> [String]
 issb p q =
     let k = length q - length p
