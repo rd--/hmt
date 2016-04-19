@@ -25,6 +25,7 @@ Library
                    containers,
                    data-ordlist,
                    directory,
+                   fgl,
                    filepath,
                    lazy-csv,
                    logict,
@@ -67,6 +68,7 @@ Library
                    Music.Theory.Either
                    Music.Theory.Enum
                    Music.Theory.Function
+                   Music.Theory.Graph.FGL
                    Music.Theory.Instrument.Choir
                    Music.Theory.Interval
                    Music.Theory.Interval.Barlow_1987
