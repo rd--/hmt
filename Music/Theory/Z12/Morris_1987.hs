@@ -2,7 +2,8 @@
 -- Compositional Design/. Yale University Press, New Haven, 1987.
 module Music.Theory.Z12.Morris_1987 where
 
-import Data.List
+import Data.List {- base -}
+
 import Music.Theory.List
 import Music.Theory.Z12
 import Music.Theory.Z12.SRO
@@ -19,36 +20,47 @@ int = d_dx
 data SRO = SRO Z12 Bool Z12 Bool Bool
            deriving (Eq,Show)
 
--- | Serial operation.
---
--- >>> sro T4 156
--- 59A
---
--- > sro (rnrtnmi "T4") (pco "156") == [5,9,10]
---
--- >>> echo 024579 | sro RT4I
--- 79B024
---
--- > sro (SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
---
--- >>> sro T4I 156
--- 3BA
---
--- > sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
--- > sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
---
--- >>> echo 156 | sro T4  | sro T0I
--- 732
---
--- > (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
---
--- >>> echo 024579 | sro RT4I
--- 79B024
---
--- > sro (rnrtnmi "RT4I") (pco "024579") == [7,9,11,0,2,4]
---
--- > sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
--- > sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
+sro_pp :: SRO -> String
+sro_pp (SRO rn r tn m i) =
+    concat [if rn /= 0 then 'r' : show rn else ""
+           ,if r then "R" else ""
+           ,'T' : show tn
+           ,if m then "M" else ""
+           ,if i then "I" else ""]
+
+{- | Serial operation.
+
+>>> echo 156 | pct sro T4
+59A
+
+> import Music.Theory.Z12.Morris_1987.Parse
+> sro (rnrtnmi "T4") (pco "156") == [5,9,10]
+
+>>> echo 024579 | pct sro RT4I
+79B024
+
+> sro (SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
+
+>>> echo 156 | pct sro T4I
+3BA
+
+> sro (rnrtnmi "T4I") (pco "156") == [3,11,10]
+> sro (SRO 0 False 4 False True) [1,5,6] == [3,11,10]
+
+>>> echo 156 | pct sro T4  | pct sro T0I
+732
+
+> (sro (rnrtnmi "T0I") . sro (rnrtnmi "T4")) (pco "156") == [7,3,2]
+
+>>> echo 024579 | pct sro RT4I
+79B024
+
+> sro (rnrtnmi "RT4I") (pco "024579") == [7,9,11,0,2,4]
+
+> sro (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
+> sro (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
+
+-}
 sro :: SRO -> [Z12] -> [Z12]
 sro (SRO r r' t m i) x =
     let x1 = if i then invert 0 x else x

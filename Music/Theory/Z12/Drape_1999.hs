@@ -306,7 +306,7 @@ pci p i =
     let f q = T.set (map (q `genericIndex`) i)
     in filter (\q -> f q == f p) (SRO.rti_related p)
 
--- | Relate sets.
+-- | Relate sets (TnMI).
 --
 -- >>> pct rs 0123 641e
 -- T1M
