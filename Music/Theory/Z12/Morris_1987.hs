@@ -21,10 +21,10 @@ data SRO = SRO Z12 Bool Z12 Bool Bool
            deriving (Eq,Show)
 
 sro_pp :: SRO -> String
-sro_pp (SRO rn r tn m i) =
-    concat [if rn /= 0 then 'r' : show rn else ""
+sro_pp (SRO rN r tN m i) =
+    concat [if rN /= 0 then 'r' : show rN else ""
            ,if r then "R" else ""
-           ,'T' : show tn
+           ,'T' : show tN
            ,if m then "M" else ""
            ,if i then "I" else ""]
 
