@@ -17,9 +17,14 @@ int = d_dx
 -- * Serial operations
 
 -- | Serial Operator,of the form rRTMI.
-data SRO = SRO Z12 Bool Z12 Bool Bool
+data SRO = SRO {sro_r :: Z12
+               ,sro_R :: Bool
+               ,sro_T :: Z12
+               ,sro_M :: Bool
+               ,sro_I :: Bool}
            deriving (Eq,Show)
 
+-- | Printer in 'rnRTnMI' form.
 sro_pp :: SRO -> String
 sro_pp (SRO rN r tN m i) =
     concat [if rN /= 0 then 'r' : show rN else ""
