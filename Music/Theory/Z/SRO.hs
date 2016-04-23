@@ -2,8 +2,46 @@
 module Music.Theory.Z.SRO where
 
 import Data.List {- base -}
+import qualified Text.ParserCombinators.Parsec as P {- parsec -}
 
+import Music.Theory.Parse
 import Music.Theory.Z
+
+-- | Serial operator,of the form rRTMI.
+data SRO t = SRO {sro_r :: t
+                 ,sro_R :: Bool
+                 ,sro_T :: t
+                 ,sro_M :: Bool
+                 ,sro_I :: Bool}
+             deriving (Eq,Show)
+
+-- | Printer in 'rnRTnMI' form.
+sro_pp :: (Num t,Eq t,Show t) => SRO t -> String
+sro_pp (SRO rN r tN m i) =
+    concat [if rN /= 0 then 'r' : show rN else ""
+           ,if r then "R" else ""
+           ,'T' : show tN
+           ,if m then "M" else ""
+           ,if i then "I" else ""]
+
+-- | Parse a Morris format serial operator descriptor.
+--
+-- > rnrtnmi "r2RT3MI" == SRO 2 True 3 True True
+rnrtnmi :: Integral i => String -> SRO i
+rnrtnmi s =
+  let p = do r <- rot
+             r' <- is_char 'R'
+             _ <- P.char 'T'
+             t <- get_int
+             m <- is_char 'M'
+             i <- is_char 'I'
+             P.eof
+             return (SRO r r' t m i)
+      rot = P.option 0 (P.char 'r' >> get_int)
+  in either
+         (\e -> error ("rnRTnMI parse failed\n" ++ show e))
+         id
+         (P.parse p "" s)
 
 -- | Transpose /p/ by /n/.
 --

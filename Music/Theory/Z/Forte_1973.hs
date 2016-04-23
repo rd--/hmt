@@ -389,6 +389,21 @@ sc_name z = sc_name' z sc_table
 sc_name_utf8 :: Integral n => n -> [n] -> SC_Name
 sc_name_utf8 z = sc_name' z sc_table_utf8
 
+-- | Lookup a set-class given a set-class name.
+--
+-- > sc "6-Z17" == [0,1,2,4,7,8]
+sc :: Num n => SC_Name -> [n]
+sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
+
+scs :: Num n => [[n]]
+scs = map snd sc_table
+
+-- | Cardinality /n/ subset of 'scs'.
+--
+-- > map (length . scs_n) [1..11] == [1,6,12,29,38,50,38,29,12,6,1]
+scs_n :: (Integral i, Num n) => i -> [[n]]
+scs_n n = filter ((== n) . genericLength) scs
+
 -- | Vector indicating degree of intersection with inversion at each transposition.
 --
 -- > tics 12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
@@ -396,3 +411,19 @@ tics :: Integral i => i -> [i] -> [Int]
 tics z p =
     let q = t_related z (invert z 0 p)
     in map (length . intersect p) q
+
+-- * Z-relation
+
+-- | Locate /Z/ relation of set class.
+--
+-- > fmap (sc_name 12) (z_relation_of 12 (sc "7-Z12")) == Just "7-Z36"
+z_relation_of :: Integral i => i -> [i] -> Maybe [i]
+z_relation_of z x =
+    let n = length x
+        eq_i :: [Integer] -> [Integer] -> Bool
+        eq_i = (==)
+        f y = (x /= y) && (icv z x `eq_i` icv z y)
+    in case filter f (scs_n n) of
+         [] -> Nothing
+         [r] -> Just r
+         _ -> error "z_relation_of"

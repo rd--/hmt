@@ -87,6 +87,7 @@ Library
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Monad
                    Music.Theory.Ord
+                   Music.Theory.Parse
                    Music.Theory.Permutations
                    Music.Theory.Permutations.List
                    Music.Theory.Permutations.Morris_1984
@@ -138,6 +139,7 @@ Library
                    Music.Theory.Z.DK
                    Music.Theory.Z.Forte_1973
                    Music.Theory.Z.Read_1978
+                   Music.Theory.Z.TTO
                    Music.Theory.Z.SRO
                    Music.Theory.Z12
                    Music.Theory.Z12.Castren_1994

@@ -8,6 +8,7 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
+import Music.Theory.Z.SRO (SRO(..))
 import Music.Theory.Z12
 import qualified Music.Theory.Z12.Forte_1973 as T
 import qualified Music.Theory.Z12.Morris_1987 as T
@@ -314,7 +315,7 @@ pci p i =
 -- > import Music.Theory.Z12.Morris_1987.Parse
 -- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
 -- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
-rs :: [Z12] -> [Z12] -> [(T.SRO, [Z12])]
+rs :: [Z12] -> [Z12] -> [(SRO Z12, [Z12])]
 rs x y =
     let xs = map (\o -> (o, o `T.sro` x)) T.sro_TnMI
         q = T.set y
@@ -343,7 +344,7 @@ r3RT1M
 > rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
 
 -}
-rsg :: [Z12] -> [Z12] -> [T.SRO]
+rsg :: [Z12] -> [Z12] -> [SRO Z12]
 rsg x y = map fst (filter (\(_,x') -> x' == y) (T.sros x))
 
 -- | Subsets.

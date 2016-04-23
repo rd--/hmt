@@ -2,9 +2,6 @@
 -- Press, New Haven, 1973.
 module Music.Theory.Z12.Forte_1973 where
 
-import Data.List {- base -}
-import Data.Maybe {- base -}
-
 import qualified Music.Theory.Z.Forte_1973 as Z
 import Music.Theory.Z12
 
@@ -59,7 +56,7 @@ sc_name = Z.sc_name z12_modulo
 --
 -- > sc "6-Z17" == [0,1,2,4,7,8]
 sc :: SC_Name -> [Z12]
-sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
+sc = Z.sc
 
 {- | List of set classes (the set class universe).
 
@@ -291,13 +288,13 @@ sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
 
 -}
 scs :: [[Z12]]
-scs = map snd sc_table
+scs = Z.scs
 
 -- | Cardinality /n/ subset of 'scs'.
 --
 -- > map (length . scs_n) [1..11] == [1,6,12,29,38,50,38,29,12,6,1]
 scs_n :: Integral i => i -> [[Z12]]
-scs_n n = filter ((== n) . genericLength) scs
+scs_n = Z.scs_n
 
 -- * BIP Metric
 
@@ -337,10 +334,4 @@ icv' = icv
 --
 -- > fmap sc_name (z_relation_of (sc "7-Z12")) == Just "7-Z36"
 z_relation_of :: [Z12] -> Maybe [Z12]
-z_relation_of x =
-    let n = length x
-        f y = x /= y && icv' x == icv' y
-    in case filter f (scs_n n) of
-         [] -> Nothing
-         [r] -> Just r
-         _ -> error "z_relation_of"
+z_relation_of = Z.z_relation_of z12_modulo
