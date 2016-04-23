@@ -1,7 +1,8 @@
 -- | Serial (ordered) pitch-class operations on 'Z12'.
 module Music.Theory.Z12.SRO where
 
-import Data.List
+import Data.List {- base -}
+
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Z.SRO as Z
 import Music.Theory.Z12
