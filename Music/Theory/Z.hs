@@ -3,74 +3,97 @@ module Music.Theory.Z where
 
 import Data.List {- base -}
 
-lift_unary_Z :: Integral a => a -> (t -> a) -> t -> a
-lift_unary_Z z f n = mod (f n) z
+-- | The modulo function for Z.
+type Z t = (t -> t)
 
-lift_binary_Z :: Integral a => a -> (s -> t -> a) -> s -> t -> a
-lift_binary_Z z f n1 n2 = mod (n1 `f` n2) z
+mod5 :: Integral i => Z i
+mod5 n = n `mod` 5
+
+mod7 :: Integral i => Z i
+mod7 n = n `mod` 7
+
+mod12 :: Integral i => Z i
+mod12 n = n `mod` 12
+
+lift_unary_Z :: Integral i => Z i -> (t -> i) -> t -> i
+lift_unary_Z z f n = z (f n)
+
+lift_binary_Z :: Integral i => Z i -> (s -> t -> i) -> s -> t -> i
+lift_binary_Z z f n1 n2 = z (n1 `f` n2)
 
 -- > import Music.Theory.Z
 -- > import qualified Music.Theory.Z12 as Z12
--- > z_mod 12 (6::Z12.Z12) 12
--- > z_add 12 (1::Z12.Z12) 5
--- > (1::Z12.Z12) + 5
--- > map (z_add 12 4) [1,5,6] == [5,9,10]
-z_add :: Integral a => a -> a -> a -> a
+-- > z_add id (11::Z12.Z12) 5 == 4
+-- > (11::Z12.Z12) + 5 == 4
+-- > map (z_add mod12 4) [1,5,6] == [5,9,10]
+z_add :: Integral i => Z i -> i -> i -> i
 z_add z = lift_binary_Z z (+)
 
-z_sub :: Integral a => a -> a -> a -> a
+z_sub :: Integral i => Z i -> i -> i -> i
 z_sub z = lift_binary_Z z (-)
 
-z_mul :: Integral a => a -> a -> a -> a
+z_mul :: Integral i => Z i -> i -> i -> i
 z_mul z = lift_binary_Z z (*)
 
-z_negate :: Integral a => a -> a -> a
+z_negate :: Integral i => Z i -> i -> i
 z_negate z = lift_unary_Z z negate
 
-z_fromInteger :: Integral a => a -> Integer -> a
-z_fromInteger z i = fromInteger i `mod` z
+z_fromInteger :: Integral i => Z i -> Integer -> i
+z_fromInteger z i = z (fromInteger i)
 
-z_signum :: t -> t1 -> t2
+z_signum :: t -> u -> v
 z_signum _ _ = error "Z numbers are not signed"
 
-z_abs :: t -> t1 -> t2
+z_abs :: t -> u -> v
 z_abs _ _ = error "Z numbers are not signed"
 
--- > map (to_Z 12) [-9,-3,0] == [3,9,0]
-to_Z :: Integral i => i -> i -> i
+-- > map (to_Z mod12) [-9,-3,0] == [3,9,0]
+to_Z :: Integral i => Z i -> i -> i
 to_Z z = z_fromInteger z . fromIntegral
 
 from_Z :: (Integral i,Num n) => i -> n
 from_Z = fromIntegral
 
--- | Z not in set.
+-- | Modulus of /z/.
 --
--- > z_complement 5 [0,2,3] == [1,4]
--- > z_complement 12 [0,2,4,5,7,9,11] == [1,3,6,8,10]
-z_complement :: (Enum a, Eq a, Num a) => a -> [a] -> [a]
-z_complement z = (\\) [0 .. z - 1]
+-- > z_modulus mod12 == 12
+z_modulus :: Integral i => Z i -> i
+z_modulus z = maybe (error "z_modulus") (fromIntegral . (+ 1)) (findIndex ((== 0) . z) [1..])
 
-z_quot :: Integral i => i -> i -> i -> i
+-- | Universe of 'Z'.
+--
+-- > z_univ mod12 == [0..11]
+z_univ :: Integral i => Z i -> [i]
+z_univ z = 0 : takeWhile ((> 0) . z) [1..]
+
+-- | Z of 'z_univ' not in given set.
+--
+-- > z_complement mod5 [0,2,3] == [1,4]
+-- > z_complement mod12 [0,2,4,5,7,9,11] == [1,3,6,8,10]
+z_complement :: (Enum i, Eq i, Integral i) => Z i -> [i] -> [i]
+z_complement z = (\\) (z_univ z)
+
+z_quot :: Integral i => Z i -> i -> i -> i
 z_quot z p = to_Z z . quot p
 
-z_rem :: Integral c => c -> c -> c -> c
+z_rem :: Integral i => Z i -> i -> i -> i
 z_rem z p = to_Z z . rem p
 
-div_err :: Integral a => String -> a -> a -> a
+div_err :: Integral i => String -> i -> i -> i
 div_err s p q = if q == 0 then error ("div_err: zero" ++ s) else p `div` q
 
-z_div :: Integral c => c -> c -> c -> c
+z_div :: Integral i => Z i -> i -> i -> i
 z_div z p = to_Z z . div_err "z_div" p
 
 -- > z_mod 12 6 12
-z_mod :: Integral c => c -> c -> c -> c
+z_mod :: Integral i => Z i -> i -> i -> i
 z_mod z p = to_Z z . mod p
 
-z_quotRem :: Integral t => t -> t -> t -> (t, t)
+z_quotRem :: Integral i => Z i -> i -> i -> (i,i)
 z_quotRem z p q = (z_quot z p q,z_quot z p q)
 
-z_divMod :: Integral t => t -> t -> t -> (t, t)
+z_divMod :: Integral i => Z i -> i -> i -> (i,i)
 z_divMod z p q = (z_div z p q,z_mod z p q)
 
-z_toInteger :: Integral i => i -> i -> i
+z_toInteger :: Integral i => Z i -> i -> i
 z_toInteger z = to_Z z

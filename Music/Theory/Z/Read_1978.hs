@@ -9,6 +9,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Z as T {- hmt -}
 import qualified Music.Theory.Z.SRO as T {- hmt -}
 
 -- | Coding.
@@ -45,7 +46,7 @@ code_to_array n c = map (testBit c) [n - 1, n - 2 .. 0]
 -- | Array to set.
 --
 -- > array_to_set (map toEnum [1,1,0,0,1,0,0,0,1,1,1,0,0]) == [0,1,4,8,9,10]
--- > T.encode [0,1,4,8,9,10] == 1811
+-- > encode [0,1,4,8,9,10] == 1811
 array_to_set :: Integral i => [Bool] -> [i]
 array_to_set =
     let f (i,e) = if e then Just i else Nothing
@@ -57,8 +58,8 @@ set_to_array z p = map (`elem` p) [0 .. z - 1]
 
 -- | 'array_to_code' of 'set_to_array'.
 --
--- > set_to_code 12 [0,2,3,5]
--- > map (set_to_code 12) (T.ti_related 12 [0,2,3,5])
+-- > set_to_code 12 [0,2,3,5] == 2880
+-- > map (set_to_code 12) (T.z_ti_related (flip mod 12) [0,2,3,5])
 set_to_code :: Integral i => i -> [i] -> Code
 set_to_code z = array_to_code . set_to_array z
 
@@ -73,8 +74,9 @@ array_is_prime :: Array -> Bool
 array_is_prime a =
     let c = array_to_code a
         p = array_to_set a
-        z = length a
-        u = maximum (map (set_to_code z) (T.ti_related z p))
+        n = length a
+        z = flip mod n
+        u = maximum (map (set_to_code n) (T.z_ti_related z p))
     in c == u
 
 -- | The augmentation rule adds @1@ in each empty slot at end of array.
@@ -137,8 +139,8 @@ decode z n =
 --
 -- > encode_prime 12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
 -- > Music.Theory.Z12.Rahn_1980.rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
-encode_prime :: Integral i => i -> [i] -> [i]
+encode_prime :: Integral i => T.Z i -> [i] -> [i]
 encode_prime z s =
-    let t = map (\n -> T.tn z n s) [0..11]
-        c = t ++ map (T.invert z 0) t
-    in decode z (minimum (map encode c))
+    let t = map (\x -> T.z_tn z x s) (T.z_univ z)
+        c = t ++ map (T.z_invert z 0) t
+    in decode (T.z_modulus z) (minimum (map encode c))

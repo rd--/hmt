@@ -11,28 +11,28 @@ import Music.Theory.Z12
 --
 -- > t_rotations [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]]
 t_rotations :: [Z12] -> [[Z12]]
-t_rotations = Z.t_rotations z12_modulo
+t_rotations = Z.t_rotations id
 
 -- | T\/I-related rotations of /p/.
 --
 -- > ti_rotations [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]
 -- >                         ,[0,9,11],[0,2,3],[0,1,10]]
 ti_rotations :: [Z12] -> [[Z12]]
-ti_rotations = Z.ti_rotations z12_modulo
+ti_rotations = Z.ti_rotations id
 
 -- | Forte prime form, ie. 'cmp_prime' of 'forte_cmp'.
 --
 -- > forte_prime [0,1,3,6,8,9] == [0,1,3,6,8,9]
 -- > forte_prime [0,2,3,6,7] == [0,1,4,5,7]
 forte_prime :: [Z12] -> [Z12]
-forte_prime = Z.forte_prime z12_modulo
+forte_prime = Z.forte_prime id
 
 -- | Transpositional equivalence prime form, ie. 't_cmp_prime' of
 -- 'forte_cmp'.
 --
 -- > (forte_prime [0,2,3],t_prime [0,2,3]) == ([0,1,3],[0,2,3])
 t_prime :: [Z12] -> [Z12]
-t_prime = Z.t_prime z12_modulo
+t_prime = Z.t_prime id
 
 -- * Set Class Table
 
@@ -50,7 +50,7 @@ sc_table = Z.sc_table
 -- > sc_name [0,2,3,6,7] == "5-Z18"
 -- > sc_name [0,1,4,6,7,8] == "6-Z17"
 sc_name :: [Z12] -> SC_Name
-sc_name = Z.sc_name z12_modulo
+sc_name = Z.sc_name id
 
 -- | Lookup a set-class given a set-class name.
 --

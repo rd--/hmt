@@ -25,4 +25,4 @@ decode = Z.decode 12
 -- > encode_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
 -- > Music.Theory.Z12.Rahn_1980.rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
 encode_prime :: [Z12] -> [Z12]
-encode_prime = Z.encode_prime z12_modulo
+encode_prime = Z.encode_prime id
