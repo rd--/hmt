@@ -307,7 +307,7 @@ scs_n = Z.scs_n
 -- > bip [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]
 -- > bip (pco "0t95728e3416") == [1,1,2,2,3,3,4,4,5,5,6]
 bip :: [Z12] -> [Z12]
-bip = Z.bip z12_modulo
+bip = map to_Z12 . Z.bip 12 . map from_Z12
 
 -- * ICV Metric
 
@@ -316,13 +316,13 @@ bip = Z.bip z12_modulo
 -- > map ic [5,6,7] == [5,6,5]
 -- > map ic [-13,-1,0,1,13] == [1,1,0,1,1]
 ic :: Z12 -> Z12
-ic = Z.ic z12_modulo
+ic = to_Z12 . Z.ic 12 . from_Z12
 
 -- | Forte notation for interval class vector.
 --
 -- > icv [0,1,2,4,7,8] == [3,2,2,3,3,2]
 icv :: Integral i => [Z12] -> [i]
-icv = Z.icv z12_modulo
+icv = Z.icv 12 . map from_Z12
 
 -- | Type specialise...
 icv' :: [Z12] -> [Int]
@@ -334,4 +334,4 @@ icv' = icv
 --
 -- > fmap sc_name (z_relation_of (sc "7-Z12")) == Just "7-Z36"
 z_relation_of :: [Z12] -> Maybe [Z12]
-z_relation_of = Z.z_relation_of z12_modulo
+z_relation_of = fmap (map to_Z12) . Z.z_relation_of 12 . map from_Z12

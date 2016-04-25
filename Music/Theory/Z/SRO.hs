@@ -26,9 +26,9 @@ sro_pp (SRO rN r tN m i) =
 
 -- | Parse a Morris format serial operator descriptor.
 --
--- > rnrtnmi "r2RT3MI" == SRO 2 True 3 True True
-rnrtnmi :: Integral i => String -> SRO i
-rnrtnmi s =
+-- > sro_parse "r2RT3MI" == SRO 2 True 3 True True
+sro_parse :: Integral i => String -> SRO i
+sro_parse s =
   let p = do r <- rot
              r' <- is_char 'R'
              _ <- P.char 'T'
@@ -42,6 +42,10 @@ rnrtnmi s =
          (\e -> error ("rnRTnMI parse failed\n" ++ show e))
          id
          (P.parse p "" s)
+
+-- | Synonym for 'sro_parse'.
+rnrtnmi :: Integral i => String -> SRO i
+rnrtnmi = sro_parse
 
 -- | Transpose /p/ by /n/.
 --

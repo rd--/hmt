@@ -3,8 +3,9 @@
 module Music.Theory.Z12.Lewin_1980 where
 
 import Data.List
-import Music.Theory.Z12
 import qualified Music.Theory.Z12.Castren_1994 as C
+
+type Z12 = Int
 
 -- | REL function with given /ncv/ function (see 't_rel' and 'ti_rel').
 rel :: Floating n => (Int -> [a] -> [n]) -> [a] -> [a] -> n

@@ -7,17 +7,18 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.List as T
-import Music.Theory.Z12 (Z12)
-import qualified Music.Theory.Z12.Forte_1973 as T
-import qualified Music.Theory.Z12.TTO as T
+import Music.Theory.Z (mod12)
+import qualified Music.Theory.Z.SRO as T
+import qualified Music.Theory.Z.Forte_1973 as T
+
+type Z12 = Int
 
 -- | Is /p/ symmetrical under inversion.
 --
--- > import Music.Theory.Z12.Forte_1973
--- > map inv_sym (scs_n 2) == [True,True,True,True,True,True]
--- > map (fromEnum.inv_sym) (scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
+-- > map inv_sym (T.scs_n 2) == [True,True,True,True,True,True]
+-- > map (fromEnum.inv_sym) (T.scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
 inv_sym :: [Z12] -> Bool
-inv_sym x = x `elem` map (\i -> sort (T.tn i (T.invert 0 x))) [0..11]
+inv_sym x = x `elem` map (\i -> sort (T.z_tn mod12 i (T.z_invert mod12 0 x))) [0..11]
 
 -- | If /p/ is not 'inv_sym' then @(p,invert 0 p)@ else 'Nothing'.
 --
@@ -27,7 +28,7 @@ sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
     if inv_sym p
     then Nothing
-    else Just (p,T.t_prime (T.invert 0 p))
+    else Just (p,T.t_prime mod12 (T.z_invert mod12 0 p))
 
 -- | Transpositional equivalence variant of Forte's 'sc_table'.  The
 -- inversionally related classes are distinguished by labels @A@ and
@@ -35,11 +36,11 @@ sc_t_ti p =
 -- always the @A@ class. If neither @A@ nor @B@ appears in the name of
 -- a set-class, it is inversionally symmetrical.
 --
--- > (length sc_table,length t_sc_table) == (224,352)
+-- > (length T.sc_table,length t_sc_table) == (224,352)
 -- > lookup "5-Z18B" t_sc_table == Just [0,2,3,6,7]
 t_sc_table :: [(T.SC_Name,[Z12])]
 t_sc_table =
-    let f x = let nm = T.sc_name x
+    let f x = let nm = T.sc_name mod12 x
               in case sc_t_ti x of
                    Nothing -> [(nm,x)]
                    Just (p,q) -> [(nm++"A",p),(nm++"B",q)]
@@ -52,7 +53,7 @@ t_sc_table =
 -- > t_sc_name [0,1,4,6,7,8] == "6-Z17B"
 t_sc_name :: [Z12] -> T.SC_Name
 t_sc_name p =
-    let n = find (\(_,q) -> T.t_prime p == q) t_sc_table
+    let n = find (\(_,q) -> T.t_prime mod12 p == q) t_sc_table
     in fst (fromJust n)
 
 -- | Lookup a set-class given a set-class name.
@@ -77,7 +78,7 @@ t_scs_n n = filter ((== n) . genericLength) t_scs
 -- > t_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4]]
 -- > t_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6]]
 t_subsets :: [Z12] -> [Z12] -> [[Z12]]
-t_subsets x a = filter (`T.is_subset` x) (T.t_related a)
+t_subsets x a = filter (`T.is_subset` x) (map sort (T.z_t_related mod12 a))
 
 -- | T\/I-related /q/ that are subsets of /p/.
 --
@@ -85,7 +86,7 @@ t_subsets x a = filter (`T.is_subset` x) (T.t_related a)
 -- > ti_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4],[0,3,4]]
 -- > ti_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6],[3,6,7]]
 ti_subsets :: [Z12] -> [Z12] -> [[Z12]]
-ti_subsets x a = filter (`T.is_subset` x) (T.ti_related a)
+ti_subsets x a = filter (`T.is_subset` x) (nub (map sort (T.z_ti_related mod12 a)))
 
 -- | Trivial run length encoder.
 --
@@ -135,7 +136,7 @@ ti_n_class_vector n x =
 -- > dyad_class_percentage_vector [0,1,4,5,7] == [20,10,20,20,20,10]
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
-    let p' = T.icv p
+    let p' = T.icv 12 p
     in map (sum p' *) p'
 
 -- | /rel/ metric.

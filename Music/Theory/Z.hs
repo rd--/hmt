@@ -1,4 +1,4 @@
--- | Generalised Z-/n/ functions.
+-- | Z-/n/ functions with modulo function as parameter.
 module Music.Theory.Z where
 
 import Data.List {- base -}
@@ -85,7 +85,7 @@ div_err s p q = if q == 0 then error ("div_err: zero" ++ s) else p `div` q
 z_div :: Integral i => Z i -> i -> i -> i
 z_div z p = to_Z z . div_err "z_div" p
 
--- > z_mod 12 6 12
+-- > z_mod mod12 6 12 == 6
 z_mod :: Integral i => Z i -> i -> i -> i
 z_mod z p = to_Z z . mod p
 
