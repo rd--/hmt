@@ -9,84 +9,84 @@ import Music.Theory.Z12
 
 -- | Transpose /p/ by /n/.
 --
--- > tn 4 [1,5,6] == [5,9,10]
-tn :: Z12 -> [Z12] -> [Z12]
-tn = Z.z_tn id
+-- > sro_tn 4 [1,5,6] == [5,9,10]
+sro_tn :: Z12 -> [Z12] -> [Z12]
+sro_tn = Z.z_tn id
 
 -- | Invert /p/ about /n/.
 --
--- > invert 6 [4,5,6] == [8,7,6]
--- > invert 0 [0,1,3] == [0,11,9]
-invert :: Z12 -> [Z12] -> [Z12]
-invert = Z.z_invert id
+-- > sro_invert 6 [4,5,6] == [8,7,6]
+-- > sro_invert 0 [0,1,3] == [0,11,9]
+sro_invert :: Z12 -> [Z12] -> [Z12]
+sro_invert = Z.z_invert id
 
 -- | Composition of 'invert' about @0@ and 'tn'.
 --
 -- > tni 4 [1,5,6] == [3,11,10]
--- > (invert 0 . tn  4) [1,5,6] == [7,3,2]
-tni :: Z12 -> [Z12] -> [Z12]
-tni = Z.z_tni id
+-- > (sro_invert 0 . sro_tn  4) [1,5,6] == [7,3,2]
+sro_tni :: Z12 -> [Z12] -> [Z12]
+sro_tni = Z.z_tni id
 
 -- | Modulo 12 multiplication
 --
--- > mn 11 [0,1,4,9] == tni 0 [0,1,4,9]
-mn :: Z12 -> [Z12] -> [Z12]
-mn = Z.z_mn id
+-- > sro_mn 11 [0,1,4,9] == sro_tni 0 [0,1,4,9]
+sro_mn :: Z12 -> [Z12] -> [Z12]
+sro_mn = Z.z_mn id
 
 -- | M5, ie. 'mn' @5@.
 --
--- > m5 [0,1,3] == [0,5,3]
-m5 :: [Z12] -> [Z12]
-m5 = mn 5
+-- > sro_m5 [0,1,3] == [0,5,3]
+sro_m5 :: [Z12] -> [Z12]
+sro_m5 = sro_mn 5
 
 -- | T-related sequences of /p/.
 --
--- > length (t_related [0,3,6,9]) == 12
-t_related :: [Z12] -> [[Z12]]
-t_related = Z.z_t_related id
+-- > length (sro_t_related [0,3,6,9]) == 12
+sro_t_related :: [Z12] -> [[Z12]]
+sro_t_related = Z.z_t_related id
 
 -- | T\/I-related sequences of /p/.
 --
 -- > length (ti_related [0,1,3]) == 24
 -- > length (ti_related [0,3,6,9]) == 24
 -- > ti_related [0] == map return [0..11]
-ti_related :: [Z12] -> [[Z12]]
-ti_related = Z.z_ti_related id
+sro_ti_related :: [Z12] -> [[Z12]]
+sro_ti_related = Z.z_ti_related id
 
 -- | R\/T\/I-related sequences of /p/.
 --
 -- > length (rti_related [0,1,3]) == 48
 -- > length (rti_related [0,3,6,9]) == 24
-rti_related :: [Z12] -> [[Z12]]
-rti_related = Z.z_rti_related id
+sro_rti_related :: [Z12] -> [[Z12]]
+sro_rti_related = Z.z_rti_related id
 
 -- | T\/M\/I-related sequences of /p/, duplicates removed.
-tmi_related :: [Z12] -> [[Z12]]
-tmi_related p = let q = ti_related p in nub (q ++ map m5 q)
+sro_tmi_related :: [Z12] -> [[Z12]]
+sro_tmi_related p = let q = sro_ti_related p in nub (q ++ map sro_m5 q)
 
 -- | R\/T\/M\/I-related sequences of /p/, duplicates removed.
-rtmi_related :: [Z12] -> [[Z12]]
-rtmi_related p = let q = tmi_related p in nub (q ++ map reverse q)
+sro_rtmi_related :: [Z12] -> [[Z12]]
+sro_rtmi_related p = let q = sro_tmi_related p in nub (q ++ map reverse q)
 
 -- | r\/R\/T\/M\/I-related sequences of /p/, duplicates removed.
-rrtmi_related :: [Z12] -> [[Z12]]
-rrtmi_related p = nub (concatMap rtmi_related (T.rotations p))
+sro_rrtmi_related :: [Z12] -> [[Z12]]
+sro_rrtmi_related p = nub (concatMap sro_rtmi_related (T.rotations p))
 
 -- * Sequence operations
 
 -- | Variant of 'tn', transpose /p/ so first element is /n/.
 --
--- > tn_to 5 [0,1,3] == [5,6,8]
--- > map (tn_to 0) [[0,1,3],[1,3,0],[3,0,1]] == [[0,1,3],[0,2,11],[0,9,10]]
-tn_to :: Z12 -> [Z12] -> [Z12]
-tn_to = Z.z_tn_to id
+-- > sro_tn_to 5 [0,1,3] == [5,6,8]
+-- > map (sro_tn_to 0) [[0,1,3],[1,3,0],[3,0,1]] == [[0,1,3],[0,2,11],[0,9,10]]
+sro_tn_to :: Z12 -> [Z12] -> [Z12]
+sro_tn_to = Z.z_tn_to id
 
 -- | Variant of 'invert', inverse about /n/th element.
 --
--- > map (invert_ix 0) [[0,1,3],[3,4,6]] == [[0,11,9],[3,2,0]]
--- > map (invert_ix 1) [[0,1,3],[3,4,6]] == [[2,1,11],[5,4,2]]
-invert_ix :: Int -> [Z12] -> [Z12]
-invert_ix = Z.z_invert_ix id
+-- > map (sro_invert_ix 0) [[0,1,3],[3,4,6]] == [[0,11,9],[3,2,0]]
+-- > map (sro_invert_ix 1) [[0,1,3],[3,4,6]] == [[2,1,11],[5,4,2]]
+sro_invert_ix :: Int -> [Z12] -> [Z12]
+sro_invert_ix = Z.z_invert_ix id
 
 -- | The standard t-matrix of /p/.
 --

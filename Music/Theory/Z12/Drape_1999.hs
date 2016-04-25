@@ -8,14 +8,14 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
-import Music.Theory.Z12
-import qualified Music.Theory.Z12.Forte_1973 as T
-import qualified Music.Theory.Z12.Morris_1987 as T
-import qualified Music.Theory.Z12.TTO as TTO
-import qualified Music.Theory.Z12.SRO as SRO
 
 import qualified Music.Theory.Z.SRO as Z
 import qualified Music.Theory.Z.TTO as Z
+
+import Music.Theory.Z12
+import qualified Music.Theory.Z12.Forte_1973 as Z12
+import qualified Music.Theory.Z12.TTO as Z12
+import qualified Music.Theory.Z12.SRO as Z12
 
 -- | Cardinality filter
 --
@@ -70,7 +70,7 @@ cg_r n = cf [n] . cg
 chn_t0 :: Int -> [Z12] -> [[Z12]]
 chn_t0 n p =
     let f q = T.take_right n p == take n q
-    in filter f (SRO.rtmi_related p)
+    in filter f (Z12.sro_rtmi_related p)
 
 {- | Cyclic interval segment.
 
@@ -81,7 +81,7 @@ chn_t0 n p =
 
 -}
 ciseg :: [Z12] -> [Z12]
-ciseg = T.int . cyc
+ciseg = T.d_dx . cyc
 
 -- | Synonynm for 'complement'.
 --
@@ -117,7 +117,7 @@ d_nm x =
 -- | Diatonic implications.
 dim :: [Z12] -> [(Z12,[Z12])]
 dim p =
-    let g (i,q) = T.is_subset p (TTO.tn i q)
+    let g (i,q) = T.is_subset p (Z12.tto_tn i q)
         f = filter g . zip [0..11] . repeat
         d = [0,2,4,5,7,9,11]
         m = [0,2,3,5,7,9,11]
@@ -165,13 +165,13 @@ dis =
 -- > doi 2 (T.sc "7-35") [0,1,2,3,4] == [[1,3,5,6,8,10,11]]
 doi :: Int -> [Z12] -> [Z12] -> [[Z12]]
 doi n p q =
-    let f j = [TTO.tn j p,TTO.tni j p]
+    let f j = [Z12.tto_tn j p,Z12.tto_tni j p]
         xs = concatMap f [0..11]
     in T.set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Forte name.
 fn :: [Z12] -> String
-fn = T.sc_name
+fn = Z12.sc_name
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
 has_ess :: [Z12] -> [Z12] -> Bool
@@ -189,7 +189,7 @@ has_ess (p:ps) (q:qs) = if p == q
 --
 -- > ess [2,3,10] [0,1,6,4,3,2,5] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: [Z12] -> [Z12] -> [[Z12]]
-ess p = filter (`has_ess` p) . SRO.rtmi_related
+ess p = filter (`has_ess` p) . Z12.sro_rtmi_related
 
 -- | Can the set-class q (under prime form algorithm pf) be
 --   drawn from the pcset p.
@@ -203,7 +203,7 @@ has_sc_pf pf p q =
 -- > let d = [0,2,4,5,7,9,11] in has_sc d (complement d) == True
 -- > has_sc [] [] == True
 has_sc :: [Z12] -> [Z12] -> Bool
-has_sc = has_sc_pf T.forte_prime
+has_sc = has_sc_pf Z12.forte_prime
 
 -- | Interval cycle filter.
 --
@@ -243,11 +243,11 @@ ici_c (x:xs) = map (x:) (ici xs)
 --
 -- > icseg [0,1,3,2,6,5,11,4,9,7,10,8] == [1,2,1,4,1,6,5,5,2,3,2]
 icseg :: [Z12] -> [Z12]
-icseg = map T.ic . iseg
+icseg = map Z12.ic . iseg
 
 -- | Interval segment (INT).
 iseg :: [Z12] -> [Z12]
-iseg = T.int
+iseg = T.d_dx
 
 -- | Imbrications.
 imb :: (Integral n) => [n] -> [a] -> [[a]]
@@ -269,8 +269,8 @@ imb cs p =
 issb :: [Z12] -> [Z12] -> [String]
 issb p q =
     let k = length q - length p
-        f = any id . map (\x -> T.forte_prime (p ++ x) == q) . TTO.ti_related
-    in map T.sc_name (filter f (cf [k] T.scs))
+        f = any id . map (\x -> Z12.forte_prime (p ++ x) == q) . Z12.tto_ti_related
+    in map Z12.sc_name (filter f (cf [k] Z12.scs))
 
 -- | Matrix search.
 --
@@ -280,7 +280,7 @@ issb p q =
 --
 -- > T.set (mxs [0,2,4,5,7,9] [6,4,2]) == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 mxs :: [Z12] -> [Z12] -> [[Z12]]
-mxs p q = filter (q `isInfixOf`) (SRO.rti_related p)
+mxs p q = filter (q `isInfixOf`) (Z12.sro_rti_related p)
 
 -- | Normalize.
 --
@@ -307,7 +307,7 @@ nrm_r = sort
 pci :: [Z12] -> [Z12] -> [[Z12]]
 pci p i =
     let f q = T.set (map (q `genericIndex`) i)
-    in filter (\q -> f q == f p) (SRO.rti_related p)
+    in filter (\q -> f q == f p) (Z12.sro_rti_related p)
 
 -- | Relate sets (TnMI).
 --
@@ -352,7 +352,7 @@ rsg x y = filter (\o -> sro o x == y) (Z.z_sro_univ (length x) id)
 sb :: [[Z12]] -> [[Z12]]
 sb xs =
     let f p = all id (map (`has_sc` p) xs)
-    in filter f T.scs
+    in filter f Z12.scs
 
 {- | Super set-class.
 
@@ -377,7 +377,7 @@ spsc :: [[Z12]] -> [String]
 spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length
-    in (map T.sc_name . head . groupBy g . filter f) T.scs
+    in (map Z12.sc_name . head . groupBy g . filter f) Z12.scs
 
 {- | Serial operation.
 
@@ -416,5 +416,5 @@ sro o = Z.z_sro_apply 5 id o
 -- > tics [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
 tics :: [Z12] -> [Int]
 tics p =
-    let q = TTO.t_related (TTO.invert 0 p)
+    let q = Z12.tto_t_related (Z12.tto_invert 0 p)
     in map (length . intersect p) q
