@@ -89,9 +89,9 @@ ic z i = if i <= (z `div` 2) then i else z - i
 icv :: (Integral i, Num n) => i -> [i] -> [n]
 icv z s =
     let i = map (ic z . flip mod z . uncurry (-)) (S.pairs s)
+        f l = (head l,genericLength l)
         j = map f (group (sort i))
         k = map (`lookup` j) [1 .. z `div` 2]
-        f l = (head l,genericLength l)
     in map (fromMaybe 0) k
 
 -- * BIP Metric

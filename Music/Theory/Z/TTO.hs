@@ -5,7 +5,7 @@ import qualified Text.ParserCombinators.Parsec as P {- parsec -}
 import Music.Theory.Parse
 import Music.Theory.Z
 
--- | Twelve-tone operator,of the form TMI.
+-- | Twelve-tone operator, of the form TMI.
 data TTO t = TTO {tto_T :: t,tto_M :: Bool,tto_I :: Bool}
              deriving (Eq,Show)
 
@@ -41,3 +41,6 @@ z_tto_apply mn z (TTO t m i) =
         m_f = if m then map (z_mul z mn) else id
         t_f = if t > 0 then map (z_add z t) else id
     in t_f . m_f . i_f
+
+tto_apply :: Integral t => t -> TTO t -> [t] -> [t]
+tto_apply mn = z_tto_apply mn id

@@ -61,9 +61,15 @@ enumFromTo_cyc n m =
 to_Z12 :: Integral i => i -> Z12
 to_Z12 = toMod . fromIntegral
 
+int_to_Z12 :: Int -> Z12
+int_to_Z12 = to_Z12
+
 -- | Convert 'Z12' to integral.
 from_Z12 :: Integral i => Z12 -> i
 from_Z12 = fromIntegral . unMod
+
+int_from_Z12 :: Z12 -> Int
+int_from_Z12 = from_Z12
 
 -- | Z12 not in set.
 --

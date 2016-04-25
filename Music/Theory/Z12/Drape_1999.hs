@@ -8,12 +8,14 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
-import Music.Theory.Z.SRO (SRO(..))
 import Music.Theory.Z12
 import qualified Music.Theory.Z12.Forte_1973 as T
 import qualified Music.Theory.Z12.Morris_1987 as T
 import qualified Music.Theory.Z12.TTO as TTO
 import qualified Music.Theory.Z12.SRO as SRO
+
+import qualified Music.Theory.Z.SRO as Z
+import qualified Music.Theory.Z.TTO as Z
 
 -- | Cardinality filter
 --
@@ -312,12 +314,11 @@ pci p i =
 -- >>> pct rs 0123 641e
 -- T1M
 --
--- > import Music.Theory.Z12.Morris_1987.Parse
--- > rs [0,1,2,3] [6,4,1,11] == [(rnrtnmi "T1M",[1,6,11,4])
--- >                            ,(rnrtnmi "T4MI",[4,11,6,1])]
-rs :: [Z12] -> [Z12] -> [(SRO Z12, [Z12])]
+-- > rs [0,1,2,3] [6,4,1,11] == [(Z.tto_parse "T1M",[1,6,11,4])
+-- >                            ,(Z.tto_parse "T4MI",[4,11,6,1])]
+rs :: [Z12] -> [Z12] -> [(Z.TTO Z12, [Z12])]
 rs x y =
-    let xs = map (\o -> (o, o `T.sro` x)) T.sro_TnMI
+    let xs = map (\o -> (o,Z.z_tto_apply 5 id o x)) (Z.z_tto_univ id)
         q = T.set y
     in filter (\(_,p) -> T.set p == q) xs
 
@@ -326,26 +327,26 @@ rs x y =
 >>> pct rsg 156 3BA
 T4I
 
-> rsg [1,5,6] [3,11,10] == [rnrtnmi "T4I",rnrtnmi "r1RT4MI"]
+> rsg [1,5,6] [3,11,10] == [Z.sro_parse "T4I",Z.sro_parse "r1RT4MI"]
 
 >>> pct rsg 0123 05t3
 T0M
 
-> rsg [0,1,2,3] [0,5,10,3] == [rnrtnmi "T0M",rnrtnmi "RT3MI"]
+> rsg [0,1,2,3] [0,5,10,3] == [Z.sro_parse "T0M",Z.sro_parse "RT3MI"]
 
 >>> pct rsg 0123 4e61
 RT1M
 
-> rsg [0,1,2,3] [4,11,6,1] == [rnrtnmi "T4MI",rnrtnmi "RT1M"]
+> rsg [0,1,2,3] [4,11,6,1] == [Z.sro_parse "T4MI",Z.sro_parse "RT1M"]
 
 >>> echo e614 | pct rsg 0123
 r3RT1M
 
-> rsg [0,1,2,3] [11,6,1,4] == [rnrtnmi "r1T4MI",rnrtnmi "r1RT1M"]
+> rsg [0,1,2,3] [11,6,1,4] == [Z.sro_parse "r1T4MI",Z.sro_parse "r1RT1M"]
 
 -}
-rsg :: [Z12] -> [Z12] -> [SRO Z12]
-rsg x y = map fst (filter (\(_,x') -> x' == y) (T.sros x))
+rsg :: [Z12] -> [Z12] -> [Z.SRO Z12]
+rsg x y = filter (\o -> sro o x == y) (Z.z_sro_univ (length x) id)
 
 -- | Subsets.
 sb :: [[Z12]] -> [[Z12]]
@@ -377,6 +378,38 @@ spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length
     in (map T.sc_name . head . groupBy g . filter f) T.scs
+
+{- | Serial operation.
+
+>>> echo 156 | pct sro T4
+59A
+
+> sro (Z.sro_parse "T4") [1,5,6] == [5,9,10]
+
+>>> echo 024579 | pct sro RT4I
+79B024
+
+> sro (Z.SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
+
+>>> echo 156 | pct sro T4I
+3BA
+
+> sro (Z.sro_parse "T4I") [1,5,6] == [3,11,10]
+> sro (Z.SRO 0 False 4 False True) [1,5,6] == [3,11,10]
+
+>>> echo 156 | pct sro T4  | pct sro T0I
+732
+
+> (sro (Z.sro_parse "T0I") . sro (Z.sro_parse "T4")) [1,5,6] == [7,3,2]
+
+>>> echo 024579 | pct sro RT4I
+79B024
+
+> sro (Z.sro_parse "RT4I") [0,2,4,5,7,9] == [7,9,11,0,2,4]
+
+-}
+sro :: Z.SRO Z12 -> [Z12] -> [Z12]
+sro o = Z.z_sro_apply 5 id o
 
 -- | Vector indicating degree of intersection with inversion at each transposition.
 --

@@ -4,11 +4,12 @@ module Music.Theory.Z.SRO where
 import Data.List {- base -}
 import qualified Text.ParserCombinators.Parsec as P {- parsec -}
 
+import Music.Theory.List
 import Music.Theory.Parse
 import Music.Theory.Z
 
 -- | Serial operator,of the form rRTMI.
-data SRO t = SRO {sro_r :: t
+data SRO t = SRO {sro_r :: Int
                  ,sro_R :: Bool
                  ,sro_T :: t
                  ,sro_M :: Bool
@@ -43,9 +44,68 @@ sro_parse s =
          id
          (P.parse p "" s)
 
--- | Synonym for 'sro_parse'.
-rnrtnmi :: Integral i => String -> SRO i
-rnrtnmi = sro_parse
+-- | The total set of serial operations.
+--
+-- > let u = z_sro_univ 3 mod12
+-- > zip (map sro_pp u) (map (\o -> z_sro_apply 5 mod12 o [0,1,3]) u)
+z_sro_univ :: Integral i => Int -> Z i -> [SRO i]
+z_sro_univ n_rot z =
+    [SRO r r' t m i |
+     r <- [0 .. n_rot - 1],
+     r' <- [False,True],
+     t <- z_univ z,
+     m <- [False,True],
+     i <- [False,True]]
+
+-- | The set of transposition 'SRO's.
+z_sro_Tn :: Integral i => Z i -> [SRO i]
+z_sro_Tn z = [SRO 0 False n False False | n <- z_univ z]
+
+-- | The set of transposition and inversion 'SRO's.
+z_sro_TnI :: Integral i => Z i -> [SRO i]
+z_sro_TnI z =
+    [SRO 0 False n False i |
+     n <- z_univ z,
+     i <- [False,True]]
+
+-- | The set of retrograde and transposition and inversion 'SRO's.
+z_sro_RTnI :: Integral i => Z i -> [SRO i]
+z_sro_RTnI z =
+    [SRO 0 r n False i |
+     r <- [True,False],
+     n <- z_univ z,
+     i <- [False,True]]
+
+-- | The set of transposition, @M5@ and inversion 'SRO's.
+z_sro_TnMI :: Integral i => Z i -> [SRO i]
+z_sro_TnMI z =
+    [SRO 0 False n m i |
+     n <- z_univ z,
+     m <- [True,False],
+     i <- [True,False]]
+
+-- | The set of retrograde,transposition,@M5@ and inversion 'SRO's.
+z_sro_RTnMI :: Integral i => Z i -> [SRO i]
+z_sro_RTnMI z =
+    [SRO 0 r n m i |
+     r <- [True,False],
+     n <- z_univ z,
+     m <- [True,False],
+     i <- [True,False]]
+
+-- * Serial operations
+
+-- | Apply SRO.  M is ordinarily 5, but can be specified here.
+--
+-- > z_sro_apply 5 mod12 (SRO 1 True 1 True False) [0,1,2,3] == [11,6,1,4]
+-- > z_sro_apply 5 mod12 (SRO 1 False 4 True True) [0,1,2,3] == [11,6,1,4]
+z_sro_apply :: Integral i => i -> Z i -> SRO i -> [i] -> [i]
+z_sro_apply mn z (SRO r r' t m i) x =
+    let x1 = if i then z_invert z 0 x else x
+        x2 = if m then z_mn z mn x1 else x1
+        x3 = z_tn z t x2
+        x4 = if r' then reverse x3 else x3
+    in rotate_left r x4
 
 -- | Transpose /p/ by /n/.
 --
