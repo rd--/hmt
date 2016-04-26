@@ -35,17 +35,25 @@ z_tto_univ z = [TTO t m i | t <- z_univ z, m <- [False,True], i <- [False,True]]
 
 -- | M is ordinarily 5, but can be specified here.
 --
--- > z_tto_apply 5 mod12 (tto_parse "T1M") [0,1,2,3] == [1,6,11,4]
-z_tto_apply :: Integral t => t -> Z t -> TTO t -> [t] -> [t]
-z_tto_apply mn z (TTO t m i) =
-    let i_f = if i then map (z_negate z) else id
-        m_f = if m then map (z_mul z mn) else id
-        t_f = if t > 0 then map (z_add z t) else id
+-- > map (z_tto_f 5 mod12 (tto_parse "T1M")) [0,1,2,3] == [1,6,11,4]
+z_tto_f :: Integral t => t -> Z t -> TTO t -> (t -> t)
+z_tto_f mn z (TTO t m i) =
+    let i_f = if i then z_negate z else id
+        m_f = if m then z_mul z mn else id
+        t_f = if t > 0 then z_add z t else id
     in t_f . m_f . i_f
+
+-- | 'sort' of 'map' 'z_tto_f'.
+--
+-- > z_tto_apply 5 mod12 (tto_parse "T1M") [0,1,2,3] == [1,4,6,11]
+z_tto_apply :: Integral t => t -> Z t -> TTO t -> [t] -> [t]
+z_tto_apply mn z o = sort . map (z_tto_f mn z o)
 
 tto_apply :: Integral t => t -> TTO t -> [t] -> [t]
 tto_apply mn = z_tto_apply mn id
 
--- > map (z_pcset mod12) [[0,6],[6,12]]
+-- | 'nub' of 'sort' of 'map' /z/.
+--
+-- > map (z_pcset mod12) [[0,6],[6,12],[12,18]] == replicate 3 [0,6]
 z_pcset :: Ord t => Z t -> [t] -> [t]
 z_pcset z = nub . sort . map z
