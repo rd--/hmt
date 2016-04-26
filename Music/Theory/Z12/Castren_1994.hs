@@ -18,7 +18,7 @@ type Z12 = Int
 -- > map inv_sym (T.scs_n 2) == [True,True,True,True,True,True]
 -- > map (fromEnum.inv_sym) (T.scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
 inv_sym :: [Z12] -> Bool
-inv_sym x = x `elem` map (\i -> sort (T.z_tn mod12 i (T.z_invert mod12 0 x))) [0..11]
+inv_sym x = x `elem` map (\i -> sort (T.z_sro_tn mod12 i (T.z_sro_invert mod12 0 x))) [0..11]
 
 -- | If /p/ is not 'inv_sym' then @(p,invert 0 p)@ else 'Nothing'.
 --
@@ -28,7 +28,7 @@ sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
     if inv_sym p
     then Nothing
-    else Just (p,T.t_prime mod12 (T.z_invert mod12 0 p))
+    else Just (p,T.t_prime mod12 (T.z_sro_invert mod12 0 p))
 
 -- | Transpositional equivalence variant of Forte's 'sc_table'.  The
 -- inversionally related classes are distinguished by labels @A@ and
@@ -78,7 +78,7 @@ t_scs_n n = filter ((== n) . genericLength) t_scs
 -- > t_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4]]
 -- > t_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6]]
 t_subsets :: [Z12] -> [Z12] -> [[Z12]]
-t_subsets x a = filter (`T.is_subset` x) (map sort (T.z_t_related mod12 a))
+t_subsets x a = filter (`T.is_subset` x) (map sort (T.z_sro_t_related mod12 a))
 
 -- | T\/I-related /q/ that are subsets of /p/.
 --
@@ -86,7 +86,7 @@ t_subsets x a = filter (`T.is_subset` x) (map sort (T.z_t_related mod12 a))
 -- > ti_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4],[0,3,4]]
 -- > ti_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6],[3,6,7]]
 ti_subsets :: [Z12] -> [Z12] -> [[Z12]]
-ti_subsets x a = filter (`T.is_subset` x) (nub (map sort (T.z_ti_related mod12 a)))
+ti_subsets x a = filter (`T.is_subset` x) (nub (map sort (T.z_sro_ti_related mod12 a)))
 
 -- | Trivial run length encoder.
 --

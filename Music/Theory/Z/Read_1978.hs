@@ -9,8 +9,9 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Z as T {- hmt -}
-import qualified Music.Theory.Z.SRO as T {- hmt -}
+
+import qualified Music.Theory.Z as Z {- hmt -}
+import qualified Music.Theory.Z.SRO as Z {- hmt -}
 
 -- | Coding.
 type Code = Int
@@ -76,7 +77,7 @@ array_is_prime a =
         p = array_to_set a
         n = length a
         z = flip mod n
-        u = maximum (map (set_to_code n) (T.z_ti_related z p))
+        u = maximum (map (set_to_code n) (Z.z_sro_ti_related z p))
     in c == u
 
 -- | The augmentation rule adds @1@ in each empty slot at end of array.
@@ -137,10 +138,10 @@ decode z n =
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --
--- > encode_prime 12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
+-- > encode_prime Z.mod12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
 -- > Music.Theory.Z12.Rahn_1980.rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
-encode_prime :: Integral i => T.Z i -> [i] -> [i]
+encode_prime :: Integral i => Z.Z i -> [i] -> [i]
 encode_prime z s =
-    let t = map (\x -> T.z_tn z x s) (T.z_univ z)
-        c = t ++ map (T.z_invert z 0) t
-    in decode (T.z_modulus z) (minimum (map encode c))
+    let t = map (\x -> Z.z_sro_tn z x s) (Z.z_univ z)
+        c = t ++ map (Z.z_sro_invert z 0) t
+    in decode (Z.z_modulus z) (minimum (map encode c))

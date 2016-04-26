@@ -1,5 +1,6 @@
 module Music.Theory.Z.TTO where
 
+import Data.List {- base -}
 import qualified Text.ParserCombinators.Parsec as P {- parsec -}
 
 import Music.Theory.Parse
@@ -44,3 +45,7 @@ z_tto_apply mn z (TTO t m i) =
 
 tto_apply :: Integral t => t -> TTO t -> [t] -> [t]
 tto_apply mn = z_tto_apply mn id
+
+-- > map (z_pcset mod12) [[0,6],[6,12]]
+z_pcset :: Ord t => Z t -> [t] -> [t]
+z_pcset z = nub . sort . map z

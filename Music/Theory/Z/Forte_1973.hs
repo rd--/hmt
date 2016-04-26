@@ -7,6 +7,7 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Set.List as S {- hmt -}
+
 import Music.Theory.Z {- hmt -}
 import Music.Theory.Z.SRO {- hmt -}
 
@@ -18,7 +19,7 @@ import Music.Theory.Z.SRO {- hmt -}
 t_rotations :: Integral i => Z i -> [i] -> [[i]]
 t_rotations z p =
     let r = T.rotations (sort p)
-    in map (z_tn_to z 0) r
+    in map (z_sro_tn_to z 0) r
 
 -- | T\/I-related rotations of /p/.
 --
@@ -26,9 +27,9 @@ t_rotations z p =
 -- >                               ,[0,9,11],[0,2,3],[0,1,10]]
 ti_rotations :: Integral i => Z i -> [i] -> [[i]]
 ti_rotations z p =
-    let q = z_invert z 0 p
+    let q = z_sro_invert z 0 p
         r = T.rotations (sort p) ++ T.rotations (sort q)
-    in map (z_tn_to z 0) r
+    in map (z_sro_tn_to z 0) r
 
 -- | Variant with default value for empty input list case.
 minimumBy_or :: t -> (t -> t -> Ordering) -> [t] -> t
@@ -411,7 +412,7 @@ scs_n n = filter ((== n) . genericLength) scs
 -- > tics mod12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
 tics :: Integral i => Z i -> [i] -> [Int]
 tics z p =
-    let q = z_t_related z (z_invert z 0 p)
+    let q = z_sro_t_related z (z_sro_invert z 0 p)
     in map (length . intersect p) q
 
 -- * Z-relation
