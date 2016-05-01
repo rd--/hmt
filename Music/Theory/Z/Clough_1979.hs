@@ -14,31 +14,23 @@ transpose_to_zero p =
       [] -> []
       n:_ -> map (+ (negate n)) p
 
--- | Diatonic pitch class set to /chord/.
+-- | Diatonic pitch class (Z7) set to /chord/.
 --
 -- > map dpcset_to_chord [[0,1],[0,2,4],[2,3,4,5,6]] == [[1,6],[2,2,3],[1,1,1,1,3]]
 dpcset_to_chord :: Integral n => [n] -> [n]
 dpcset_to_chord = T.d_dx . (++ [7]) . transpose_to_zero . nub . sort
 
+-- | Inverse of 'dpcset_to_chord'.
+--
 -- > map chord_to_dpcset [[1,6],[2,2,3]] == [[0,1],[0,2,4]]
 chord_to_dpcset :: Integral n => [n] -> [n]
 chord_to_dpcset = T.dropRight 1 . T.dx_d 0
 
-dpcset_univ :: Integral n => [n]
-dpcset_univ = [0..6]
-
+-- | Complement, ie. in relation to 'z7_univ'.
+--
 -- > map dpcset_complement [[0,1],[0,2,4]] == [[2,3,4,5,6],[1,3,5,6]]
 dpcset_complement :: Integral n => [n] -> [n]
-dpcset_complement p = filter (`notElem` p) dpcset_univ
-
-is_z_n :: Integral n => n -> n -> Bool
-is_z_n m n = n >= 0 && n < m
-
-is_z7 :: Integral n => n -> Bool
-is_z7 = is_z_n 7
-
-is_z4 :: Integral n => n -> Bool
-is_z4 = is_z_n 4
+dpcset_complement p = filter (`notElem` p) z7_univ
 
 -- | Interval class predicate (ie. 'is_z4').
 is_ic :: Integral n => n -> Bool
@@ -76,13 +68,13 @@ inf_cmp p q =
 
 -- | Interval normal form.
 --
--- > map inf [[2,2,3],[1,2,4],[2,1,4]]
+-- > map inf [[2,2,3],[1,2,4],[2,1,4]] == [[2,2,3],[1,2,4],[2,1,4]]
 inf :: Integral n => [n] -> [n]
 inf = maximumBy inf_cmp . T.rotations
 
 -- | Inverse of chord (retrograde).
 --
--- > let p = [1,2,4] in (inf p,inf (invert p)) == ([1,2,4],[2,1,4])
+-- > let p = [1,2,4] in (inf p,invert p,inf (invert p)) == ([1,2,4],[4,2,1],[2,1,4])
 invert :: [n] -> [n]
 invert = reverse
 
@@ -92,3 +84,20 @@ invert = reverse
 -- > in map complement [[1,6],[2,5],[3,4],[1,1,5],[1,2,4],[1,3,3],[2,2,3]] == r
 complement :: Integral n => [n] -> [n]
 complement = inf . dpcset_to_chord . dpcset_complement . chord_to_dpcset
+
+-- * Z
+
+is_z_n :: Integral n => n -> n -> Bool
+is_z_n m n = n >= 0 && n < m
+
+is_z4 :: Integral n => n -> Bool
+is_z4 = is_z_n 4
+
+z_n_univ :: Integral n => n -> [n]
+z_n_univ m = [0 .. m - 1]
+
+z7_univ :: Integral n => [n]
+z7_univ = z_n_univ 7
+
+is_z7 :: Integral n => n -> Bool
+is_z7 = is_z_n 7
