@@ -1,0 +1,94 @@
+-- | John Clough. "Aspects of Diatonic Sets".
+-- _Journal of Music Theory_, 23(1):45--61, 1979.
+module Music.Theory.Z.Clough_1979 where
+
+import Data.List {- base -}
+
+import qualified Music.Theory.List as T {- hmt -}
+
+-- type Z7 = Int
+
+transpose_to_zero :: Num n => [n] -> [n]
+transpose_to_zero p =
+    case p of
+      [] -> []
+      n:_ -> map (+ (negate n)) p
+
+-- | Diatonic pitch class set to /chord/.
+--
+-- > map dpcset_to_chord [[0,1],[0,2,4],[2,3,4,5,6]] == [[1,6],[2,2,3],[1,1,1,1,3]]
+dpcset_to_chord :: Integral n => [n] -> [n]
+dpcset_to_chord = T.d_dx . (++ [7]) . transpose_to_zero . nub . sort
+
+-- > map chord_to_dpcset [[1,6],[2,2,3]] == [[0,1],[0,2,4]]
+chord_to_dpcset :: Integral n => [n] -> [n]
+chord_to_dpcset = T.dropRight 1 . T.dx_d 0
+
+dpcset_univ :: Integral n => [n]
+dpcset_univ = [0..6]
+
+-- > map dpcset_complement [[0,1],[0,2,4]] == [[2,3,4,5,6],[1,3,5,6]]
+dpcset_complement :: Integral n => [n] -> [n]
+dpcset_complement p = filter (`notElem` p) dpcset_univ
+
+is_z_n :: Integral n => n -> n -> Bool
+is_z_n m n = n >= 0 && n < m
+
+is_z7 :: Integral n => n -> Bool
+is_z7 = is_z_n 7
+
+is_z4 :: Integral n => n -> Bool
+is_z4 = is_z_n 4
+
+-- | Interval class predicate (ie. 'is_z4').
+is_ic :: Integral n => n -> Bool
+is_ic n = n >= 0 && n < 4
+
+-- | Interval to interval class.
+--
+-- > map i_to_ic [0..7] == [0,1,2,3,3,2,1,0]
+i_to_ic :: Integral n => n -> n
+i_to_ic n = if n > 3 then 7 - n else n
+
+-- | Is /chord/, ie. is 'sum' @7@.
+--
+-- > is_chord [2,2,3]
+is_chord :: Integral n => [n] -> Bool
+is_chord = (== 7) . sum
+
+-- | Interval vector.
+--
+-- > iv [2,2,3] == [0,2,1]
+iv :: Integral n => [n] -> [n]
+iv p =
+    let h = T.histogram p
+        f n = T.lookup_def n 0 h
+    in map f [1,2,3]
+
+-- | Comparison function for 'inv'.
+inf_cmp :: Ord a => [a] -> [a] -> Ordering
+inf_cmp p q =
+    if null p && null q
+    then EQ
+    else case compare (last p) (last q) of
+           EQ -> inf_cmp (T.dropRight 1 p) (T.dropRight 1 q)
+           r -> r
+
+-- | Interval normal form.
+--
+-- > map inf [[2,2,3],[1,2,4],[2,1,4]]
+inf :: Integral n => [n] -> [n]
+inf = maximumBy inf_cmp . T.rotations
+
+-- | Inverse of chord (retrograde).
+--
+-- > let p = [1,2,4] in (inf p,inf (invert p)) == ([1,2,4],[2,1,4])
+invert :: [n] -> [n]
+invert = reverse
+
+-- | Complement of /chord/.
+--
+-- > let r = [[1,1,1,1,3],[1,1,1,2,2],[1,1,2,1,2],[1,1,1,4],[2,1,1,3],[1,2,1,3],[1,2,2,2]]
+-- > in map complement [[1,6],[2,5],[3,4],[1,1,5],[1,2,4],[1,3,3],[2,2,3]] == r
+complement :: Integral n => [n] -> [n]
+complement = inf . dpcset_to_chord . dpcset_complement . chord_to_dpcset
