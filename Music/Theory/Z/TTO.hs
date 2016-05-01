@@ -10,9 +10,12 @@ import Music.Theory.Z
 data TTO t = TTO {tto_T :: t,tto_M :: Bool,tto_I :: Bool}
              deriving (Eq,Show)
 
+tto_identity :: Num t => TTO t
+tto_identity = TTO 0 False False
+
 -- | Pretty printer.
 tto_pp :: Show t => TTO t -> String
-tto_pp o = concat ["T",show (tto_T o),if tto_M o then "M" else "",if tto_I o then "I" else ""]
+tto_pp (TTO t m i) = concat ['T' : show t,if m then "M" else "",if i then "I" else ""]
 
 -- | Parser, transposition must be decimal.
 --
@@ -30,8 +33,9 @@ tto_parse s =
 -- | The set of all 'TTO', given 'Z' function.
 --
 -- > length (z_tto_univ mod12) == 48
+-- > map tto_pp (z_tto_univ mod12)
 z_tto_univ :: (Enum t, Integral t) => Z t -> [TTO t]
-z_tto_univ z = [TTO t m i | t <- z_univ z, m <- [False,True], i <- [False,True]]
+z_tto_univ z = [TTO t m i | m <- [False,True], i <- [False,True], t <- z_univ z]
 
 -- | M is ordinarily 5, but can be specified here.
 --

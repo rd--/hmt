@@ -2,6 +2,7 @@
 -- See <http://slavepianos.org/rd/t/pct>.
 module Music.Theory.Z12.Drape_1999 where
 
+import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
@@ -354,6 +355,57 @@ sb xs =
     let f p = all id (map (`has_sc` p) xs)
     in filter f Z12.scs
 
+z12_set_pp :: [Z12] -> String
+z12_set_pp = T.bracket ('{','}') . map z12_to_char
+
+z12_vec_pp :: [Z12] -> String
+z12_vec_pp = T.bracket ('[',']') . map z12_to_char
+
+is_z16 :: Integral t => t -> Bool
+is_z16 n = n >= 0 && n < 16
+
+integral_to_digit :: Integral t => t -> Char
+integral_to_digit = intToDigit . fromIntegral
+
+z16_to_char :: Integral t => t -> Char
+z16_to_char n = if is_z16 n then integral_to_digit n else error "z16_to_char"
+
+z16_vec_pp :: Integral t => [t] -> String
+z16_vec_pp = T.bracket ('[',']') . map z16_to_char
+
+si_hdr :: [String]
+si_hdr =
+    ["pitch-class-set"
+    ,"set-class"
+    ,"interval-class-vector"
+    ,"tics"
+    ,"complement"
+    ,"multiplication-by-five-transform"]
+
+si_raw :: [Z12] -> [String]
+si_raw p =
+    let p_f = Z12.forte_prime p
+        p_o = fst (head (rs p_f p))
+        n = length p_f
+        c = complement p
+        c_f = Z12.forte_prime c
+        c_o = fst (head (rs c_f c))
+        m = map (* 5) p
+        m_f = Z12.forte_prime m
+        m_o = fst (head (rs m_f m))
+    in [z12_set_pp (nub (sort p))
+       ,concat [Z.tto_pp p_o," ",Z12.sc_name p_f,z12_vec_pp p_f]
+       ,z12_vec_pp (to_Z12 n : Z12.icv p_f)
+       ,z16_vec_pp (tics p_f)
+       ,concat [z12_set_pp c," (",Z.tto_pp c_o," ",Z12.sc_name c_f,")"]
+       ,concat [z12_set_pp m," (",Z.tto_pp m_o," ",Z12.sc_name m_f,")"]]
+
+-- | Set information.
+--
+-- > putStrLn $ unlines $ si [2,3]
+si :: [Z12] -> [String]
+si p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_raw p)
+
 {- | Super set-class.
 
 >>> pct spsc 4-11 4-12
@@ -414,6 +466,7 @@ sro o = Z.z_sro_apply 5 id o
 -- | Vector indicating degree of intersection with inversion at each transposition.
 --
 -- > tics [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
+-- > map tics Z12.scs
 tics :: [Z12] -> [Int]
 tics p =
     let q = Z12.tto_t_related (Z12.tto_invert 0 p)

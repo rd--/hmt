@@ -18,6 +18,7 @@ Aspects of the 'Enum' instance are cyclic.
 -}
 module Music.Theory.Z12 where
 
+import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Modular {- modular-arithmetic -}
 import GHC.TypeLits {- base -}
@@ -79,6 +80,12 @@ complement = (\\) [0 .. 11]
 
 -- | Z12 to character (10 -> A, 11 -> B).
 --
--- > map z12_char [0 .. 11] == "0123456789AB"
-z12_char :: Z12 -> Char
-z12_char n = if n < 0 || n > 11 then error "z12_char" else "0123456789AB" !! (unMod n)
+-- > map z12_to_char [0 .. 11] == "0123456789AB"
+z12_to_char :: Z12 -> Char
+z12_to_char = toUpper . intToDigit . unMod
+
+-- | Z12 to character (10 -> A, 11 -> B).
+--
+-- > map char_to_z12 "0123456789AB" == [0..11]
+char_to_z12 :: Char -> Z12
+char_to_z12 = to_Z12 . digitToInt
