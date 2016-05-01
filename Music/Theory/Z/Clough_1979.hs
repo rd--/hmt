@@ -85,6 +85,16 @@ invert = reverse
 complement :: Integral n => [n] -> [n]
 complement = inf . dpcset_to_chord . dpcset_complement . chord_to_dpcset
 
+-- | Z7 pitch sequence to Z7 interval sequence, ie. 'mod7' of 'T.d_dx'.
+--
+-- > map iseq (permutations [0,1,2]) == [[1,1],[6,2],[6,6],[1,5],[5,1],[2,6]]
+-- > map iseq (permutations [0,1,3]) == [[1,2],[6,3],[5,6],[2,4],[4,1],[3,5]]
+-- > map iseq (permutations [0,2,3]) == [[2,1],[5,3],[6,5],[1,4],[4,2],[3,6]]
+-- > map iseq (permutations [0,1,4]) == [[1,3],[6,4],[4,6],[3,3],[3,1],[4,4]]
+-- > map iseq (permutations [0,2,4]) == [[2,2],[5,4],[5,5],[2,3],[3,2],[4,5]]
+iseq :: Integral n => [n] -> [n]
+iseq = map mod7 . T.d_dx
+
 -- * Z
 
 is_z_n :: Integral n => n -> n -> Bool
@@ -101,3 +111,6 @@ z7_univ = z_n_univ 7
 
 is_z7 :: Integral n => n -> Bool
 is_z7 = is_z_n 7
+
+mod7 :: Integral n => n -> n
+mod7 n = n `mod` 7
