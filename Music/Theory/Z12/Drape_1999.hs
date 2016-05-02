@@ -9,6 +9,7 @@ import Safe {- safe -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
+import qualified Music.Theory.Tuple as T
 
 import qualified Music.Theory.Z as Z
 import qualified Music.Theory.Z.SRO as Z
@@ -174,6 +175,57 @@ doi n p q =
 -- | Forte name.
 fn :: [Z12] -> String
 fn = Z12.sc_name
+
+frg_cyc :: T.T6 [[Z12]]
+frg_cyc =
+    let c1 = [[0..11]]
+        c2 = map (\n -> map (+ n) [0,2..10]) [0..1]
+        c3 = map (\n -> map (+ n) [0,3..9]) [0..2]
+        c4 = map (\n -> map (+ n) [0,4..8]) [0..3]
+        c5 = map (map (* 5)) c1
+        c6 = map (\n -> map (+ n) [0,6]) [0..5]
+    in (c1,c2,c3,c4,c5,c6)
+
+-- | Fragmentation of cycles.
+frg :: [Z12] -> T.T6 [String]
+frg p =
+    let f = map (\n -> if n `elem` p then z12_to_char n else '-')
+    in T.t6_map (map f) frg_cyc
+
+ic_cycle_vector :: [Z12] -> T.T6 [Int]
+ic_cycle_vector p =
+    let f str = let str' = if length str > 2 then T.close str else str
+                in length (filter (\(x,y) -> x /= '-' && y /= '-') (T.adj2 1 str'))
+    in T.t6_map (map f) (frg p)
+
+-- | Pretty printer for 'ic_cycle_vector'.
+--
+-- > let r = "IC cycle vector: <1> <22> <111> <1100> <5> <000000>"
+-- > in ic_cycle_vector_pp (ic_cycle_vector [0,2,4,5,7,9]) == r
+ic_cycle_vector_pp :: T.T6 [Int] -> String
+ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_list . T.t6_map Z.z16_seq_pp
+
+frg_hdr :: [String]
+frg_hdr = map (\n -> "Fragmentation of " ++ show n ++ "-cycle(s)") [1::Int .. 6]
+
+{-| Fragmentation of cycles.
+
+>>> pct frg 024579
+Fragmentation of 1-cycle(s):  [0-2-45-7-9--]
+Fragmentation of 2-cycle(s):  [024---] [--579-]
+Fragmentation of 3-cycle(s):  [0--9] [-47-] [25--]
+Fragmentation of 4-cycle(s):  [04-] [-59] [2--] [-7-]
+Fragmentation of 5-cycle(s):  [05------4927]
+Fragmentation of 6-cycle(s):  [0-] [-7] [2-] [-9] [4-] [5-]
+IC cycle vector: <1> <22> <111> <1100> <5> <000000>
+
+> putStrLn $ frg_pp [0,2,4,5,7,9]
+-}
+frg_pp :: [Z12] -> String
+frg_pp =
+    let f = unwords . map (\p -> T.bracket ('[',']') p)
+        g x y = x ++ ": " ++ y
+    in unlines . zipWith g frg_hdr . T.t6_list . T.t6_map f . frg
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
 has_ess :: [Z12] -> [Z12] -> Bool

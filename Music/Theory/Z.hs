@@ -119,5 +119,11 @@ is_z16 = is_z_n 16
 z16_to_char :: Integral t => t -> Char
 z16_to_char n = if is_z16 n then integral_to_digit n else error "z16_to_char"
 
+z16_set_pp :: Integral t => [t] -> String
+z16_set_pp = T.bracket ('{','}') . map z16_to_char
+
+z16_seq_pp :: Integral t => [t] -> String
+z16_seq_pp = T.bracket ('<','>') . map z16_to_char
+
 z16_vec_pp :: Integral t => [t] -> String
 z16_vec_pp = T.bracket ('[',']') . map z16_to_char
