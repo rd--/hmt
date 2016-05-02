@@ -1,10 +1,17 @@
 -- | Z-/n/ functions with modulo function as parameter.
 module Music.Theory.Z where
 
+import Data.Char {- base -}
 import Data.List {- base -}
+
+import qualified Music.Theory.List as T {- hmt -}
 
 -- | The modulo function for Z.
 type Z t = (t -> t)
+
+-- | Is /n/ in (0,/m/-1).
+is_z_n :: (Num a, Ord a) => a -> a -> Bool
+is_z_n m n = n >= 0 && n < m
 
 mod5 :: Integral i => Z i
 mod5 n = n `mod` 5
@@ -97,3 +104,20 @@ z_divMod z p q = (z_div z p q,z_mod z p q)
 
 z_toInteger :: Integral i => Z i -> i -> i
 z_toInteger z = to_Z z
+
+-- * Z16
+
+mod16 :: Integral i => Z i
+mod16 n = n `mod` 16
+
+integral_to_digit :: Integral t => t -> Char
+integral_to_digit = intToDigit . fromIntegral
+
+is_z16 :: Integral t => t -> Bool
+is_z16 = is_z_n 16
+
+z16_to_char :: Integral t => t -> Char
+z16_to_char n = if is_z16 n then integral_to_digit n else error "z16_to_char"
+
+z16_vec_pp :: Integral t => [t] -> String
+z16_vec_pp = T.bracket ('[',']') . map z16_to_char

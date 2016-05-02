@@ -23,6 +23,8 @@ import Data.List {- base -}
 import Data.Modular {- modular-arithmetic -}
 import GHC.TypeLits {- base -}
 
+import qualified Music.Theory.List as T {- hmt -}
+
 -- | 'Mod' 'Int'.
 type Z n = Mod Int n
 
@@ -89,3 +91,21 @@ z12_to_char = toUpper . intToDigit . unMod
 -- > map char_to_z12 "0123456789AB" == [0..11]
 char_to_z12 :: Char -> Z12
 char_to_z12 = to_Z12 . digitToInt
+
+-- | Unordered set notation (braces).
+--
+-- > z12_set_pp [0,1,3] == "{013}"
+z12_set_pp :: [Z12] -> String
+z12_set_pp = T.bracket ('{','}') . map z12_to_char
+
+-- | Ordered sequence notation (angle brackets).
+--
+-- > z12_seq_pp [0,1,3] == "<013>"
+z12_seq_pp :: [Z12] -> String
+z12_seq_pp = T.bracket ('<','>') . map z12_to_char
+
+-- | Ordered vector notation (square brackets).
+--
+-- > z12_vec_pp [0,1,3] == "[013]"
+z12_vec_pp :: [Z12] -> String
+z12_vec_pp = T.bracket ('[',']') . map z12_to_char

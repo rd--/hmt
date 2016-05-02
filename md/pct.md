@@ -1,5 +1,17 @@
 # pct
 
+## ess = embedded segment search
+
+~~~~
+$ echo 23A | pct ess 0164325
+2B013A9
+923507A
+$ echo 23A | hmt-pct ess 0164325
+923507A
+2B013A9
+$
+~~~~
+
 ## si = set information
 
 ~~~~
@@ -10,7 +22,7 @@ interval-class-vector: [4111111]
 tics: [222012202012]
 complement: {123479AB} (T4I 8-Z29)
 multiplication-by-five-transform: {0164} (T0  4-Z15)
-$ hmt-pct si 053B
+$ echo 053B | hmt-pct si
 pitch-class-set: {035B}
 set-class: T11 4-Z15[0146]
 interval-class-vector: [4111111]

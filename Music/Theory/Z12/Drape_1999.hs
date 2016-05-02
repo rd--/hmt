@@ -2,14 +2,15 @@
 -- See <http://slavepianos.org/rd/t/pct>.
 module Music.Theory.Z12.Drape_1999 where
 
-import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Safe {- safe -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
 
+import qualified Music.Theory.Z as Z
 import qualified Music.Theory.Z.SRO as Z
 import qualified Music.Theory.Z.TTO as Z
 
@@ -176,15 +177,15 @@ fn = Z12.sc_name
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
 has_ess :: [Z12] -> [Z12] -> Bool
-has_ess _ [] = True
-has_ess [] _ = False
-has_ess (p:ps) (q:qs) = if p == q
-                        then has_ess ps qs
-                        else has_ess ps (q:qs)
+has_ess p q =
+    case (p,q) of
+      (_,[]) -> True
+      ([],_) -> False
+      (x:p',y:q') -> has_ess p' (if x == y then q' else q)
 
 -- | Embedded segment search.
 --
--- >>> echo 23a | pct ess 0164325
+-- >>> echo 23A | pct ess 0164325
 -- 2B013A9
 -- 923507A
 --
@@ -323,6 +324,9 @@ rs x y =
         q = T.set y
     in filter (\(_,p) -> T.set p == q) xs
 
+rs1 :: [Z12] -> [Z12] -> Maybe (Z.TTO Z12)
+rs1 p = fmap fst . headMay . rs p
+
 {- | Relate segments.
 
 >>> pct rsg 156 3BA
@@ -355,24 +359,6 @@ sb xs =
     let f p = all id (map (`has_sc` p) xs)
     in filter f Z12.scs
 
-z12_set_pp :: [Z12] -> String
-z12_set_pp = T.bracket ('{','}') . map z12_to_char
-
-z12_vec_pp :: [Z12] -> String
-z12_vec_pp = T.bracket ('[',']') . map z12_to_char
-
-is_z16 :: Integral t => t -> Bool
-is_z16 n = n >= 0 && n < 16
-
-integral_to_digit :: Integral t => t -> Char
-integral_to_digit = intToDigit . fromIntegral
-
-z16_to_char :: Integral t => t -> Char
-z16_to_char n = if is_z16 n then integral_to_digit n else error "z16_to_char"
-
-z16_vec_pp :: Integral t => [t] -> String
-z16_vec_pp = T.bracket ('[',']') . map z16_to_char
-
 si_hdr :: [String]
 si_hdr =
     ["pitch-class-set"
@@ -382,29 +368,37 @@ si_hdr =
     ,"complement"
     ,"multiplication-by-five-transform"]
 
-si_raw :: [Z12] -> [String]
+type SI = ([Z12],Z.TTO Z12,[Z12])
+
+-- > si_raw [0,5,3,11]
+si_raw :: [Z12] -> (SI,[Z12],[Int],SI,SI)
 si_raw p =
-    let p_f = Z12.forte_prime p
-        p_o = fst (head (rs p_f p))
-        n = length p_f
-        c = complement p
-        c_f = Z12.forte_prime c
-        c_o = fst (head (rs c_f c))
-        m = map (* 5) p
-        m_f = Z12.forte_prime m
-        m_o = fst (head (rs m_f m))
-    in [z12_set_pp (nub (sort p))
-       ,concat [Z.tto_pp p_o," ",Z12.sc_name p_f,z12_vec_pp p_f]
-       ,z12_vec_pp (to_Z12 n : Z12.icv p_f)
-       ,z16_vec_pp (tics p_f)
-       ,concat [z12_set_pp c," (",Z.tto_pp c_o," ",Z12.sc_name c_f,")"]
-       ,concat [z12_set_pp m," (",Z.tto_pp m_o," ",Z12.sc_name m_f,")"]]
+    let n = length p
+        p_icv = to_Z12 n : Z12.icv p
+        gen_si x = let x_f = Z12.forte_prime x
+                       Just x_o = rs1 x_f x
+                   in (nub (sort x),x_o,x_f)
+    in (gen_si p,p_icv,tics p,gen_si (complement p),gen_si (map (* 5) p))
+
+si_raw_pp :: [Z12] -> [String]
+si_raw_pp p =
+    let pf_pp concise (x_o,x_f) =
+            concat [Z.tto_pp x_o," ",Z12.sc_name x_f
+                   ,if concise then "" else z12_vec_pp x_f]
+        si_pp (x,x_o,x_f) = concat [z12_set_pp x," (",pf_pp True (x_o,x_f),")"]
+        ((p',p_o,p_f),p_icv,p_tics,c,m) = si_raw p
+    in [z12_set_pp p'
+       ,pf_pp False (p_o,p_f)
+       ,z12_vec_pp p_icv
+       ,Z.z16_vec_pp p_tics
+       ,si_pp c
+       ,si_pp m]
 
 -- | Set information.
 --
--- > putStrLn $ unlines $ si [2,3]
+-- > putStr $ unlines $ si [0,5,3,11]
 si :: [Z12] -> [String]
-si p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_raw p)
+si p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_raw_pp p)
 
 {- | Super set-class.
 
