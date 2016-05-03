@@ -375,10 +375,14 @@ sc_table_utf8 =
     let f = map (\c -> if c == '-' then utf8_non_breaking_hypen else c)
     in map (\(nm,pc) -> (f nm,pc)) sc_table
 
+sc_tbl_lookup :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> Maybe (SC_Name,[i])
+sc_tbl_lookup z tbl p = find (\(_,q) -> forte_prime z p == q) tbl
+
+sc_tbl_lookup_err :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> (SC_Name,[i])
+sc_tbl_lookup_err z tbl = fromMaybe (error "sc_tbl_lookup") . sc_tbl_lookup z tbl
+
 sc_name' :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> SC_Name
-sc_name' z tbl p =
-    let n = find (\(_,q) -> forte_prime z p == q) tbl
-    in fst (fromMaybe (error "sc_name") n)
+sc_name' z tbl = fst . sc_tbl_lookup_err z tbl
 
 -- | Lookup a set-class name.  The input set is subject to
 -- 'forte_prime' before lookup.
@@ -387,6 +391,14 @@ sc_name' z tbl p =
 -- > sc_name mod12 [0,1,4,6,7,8] == "6-Z17"
 sc_name :: Integral i => Z i -> [i] -> SC_Name
 sc_name z = sc_name' z sc_table
+
+-- | Long name (ie. with enumeration of prime form).
+--
+-- > sc_name_long mod12 [0,1,4,6,7,8] == "6-Z17[012478]"
+sc_name_long :: Integral i => Z i -> [i] -> SC_Name
+sc_name_long z p =
+    let (nm,p') = sc_tbl_lookup_err z sc_table p
+    in nm ++ z16_vec_pp p'
 
 -- | UTF-8 (non-breaking hyphen) variant.
 sc_name_utf8 :: Integral i => Z i -> [i] -> SC_Name

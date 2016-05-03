@@ -458,25 +458,25 @@ si p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_raw_pp p)
 >>> pct spsc 4-11 4-12
 5-26[02458]
 
-> spsc [T.sc "4-11",T.sc "4-12"] == ["5-26"]
+> spsc [Z12.sc "4-11",Z12.sc "4-12"] == [[0,2,4,5,8]]
 
 >>> pct spsc 3-11 3-8
 4-27[0258]
 4-Z29[0137]
 
-> spsc [T.sc "3-11",T.sc "3-8"] == ["4-27","4-Z29"]
+> spsc [Z12.sc "3-11",Z12.sc "3-8"] == [[0,2,5,8],[0,1,3,7]]
 
 >>> pct spsc `pct fl 3`
 6-Z17[012478]
 
-> spsc (cf [3] T.scs) == ["6-Z17"]
+> spsc (cf [3] Z12.scs) == [[0,1,2,4,7,8]]
 
 -}
-spsc :: [[Z12]] -> [String]
+spsc :: [[Z12]] -> [[Z12]]
 spsc xs =
     let f y = all (y `has_sc`) xs
         g = (==) `on` length
-    in (map Z12.sc_name . head . groupBy g . filter f) Z12.scs
+    in (head . groupBy g . filter f) Z12.scs
 
 {- | sra = stravinsky rotational array
 

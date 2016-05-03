@@ -52,6 +52,10 @@ sc_table = Z.sc_table
 sc_name :: [Z12] -> SC_Name
 sc_name = Z.sc_name id
 
+-- > sc_name_long [0,1,4,6,7,8] == "6-Z17[012478]"
+sc_name_long :: [Z12] -> SC_Name
+sc_name_long = Z.sc_name_long id
+
 -- | Lookup a set-class given a set-class name.
 --
 -- > sc "6-Z17" == [0,1,2,4,7,8]

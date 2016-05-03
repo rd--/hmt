@@ -35,7 +35,6 @@ IC cycle vector: <1> <22> <111> <1100> <5> <000000>
 $
 ~~~~
 
-
 ## si = set information
 
 ~~~~
@@ -53,6 +52,22 @@ interval-class-vector: [4111111]
 tics: [221022221020]
 complement: {1246789A} (T10I 8-Z15)
 multiplication-by-five-transform: {0137} (T0 4-Z29)
+$
+~~~~
+
+## spsc
+
+~~~~
+$ hmt-pct spsc 4-11 4-12
+5-26[02458]
+$ hmt-pct spsc 3-11 3-8
+4-27[0258]
+4-Z29[0137]
+$ hmt-pct spsc `hmt-pct fl -c 3`
+6-Z17[012478]
+$ hmt-pct spsc `hmt-pct fl -c 4`
+8-Z15[01234689]
+8-Z29[01235679]
 $
 ~~~~
 
