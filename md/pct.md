@@ -35,6 +35,17 @@ IC cycle vector: <1> <22> <111> <1100> <5> <000000>
 $
 ~~~~
 
+## scc = set class completion
+
+~~~~
+$ hmt-pct scc 6-32 168
+35A
+49B
+3AB
+34B
+$
+~~~~
+
 ## si = set information
 
 ~~~~

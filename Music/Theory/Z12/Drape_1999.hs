@@ -305,11 +305,15 @@ iseg :: [Z12] -> [Z12]
 iseg = T.d_dx
 
 -- | Imbrications.
-imb :: (Integral n) => [n] -> [a] -> [[a]]
+--
+-- > let r = [[[0,2,4],[2,4,5],[4,5,7],[5,7,9]]
+-- >         ,[[0,2,4,5],[2,4,5,7],[4,5,7,9]]]
+-- > in imb [3,4] [0,2,4,5,7,9] == r
+imb :: (Integral n) => [n] -> [a] -> [[[a]]]
 imb cs p =
     let g n = (== n) . genericLength
         f ps n = filter (g n) (map (genericTake n) ps)
-    in concatMap (f (tails p)) cs
+    in map (f (tails p)) cs
 
 {- | 'issb' gives the set-classes that can append to 'p' to give 'q'.
 
@@ -411,6 +415,20 @@ sb :: [[Z12]] -> [[Z12]]
 sb xs =
     let f p = all id (map (`has_sc` p) xs)
     in filter f Z12.scs
+
+{- | scc = set class completion
+
+>>> pct scc 6-32 168
+35A
+49B
+3AB
+34B
+
+> scc (Z12.sc "6-32") [1,6,8] == [[3,5,10],[4,9,11],[3,10,11],[3,4,11]]
+
+-}
+scc :: [Z12] -> [Z12] -> [[Z12]]
+scc r p = map (\\ p) (filter (T.is_subset p) (Z12.tto_ti_related r))
 
 si_hdr :: [String]
 si_hdr =
