@@ -176,6 +176,7 @@ doi n p q =
 fn :: [Z12] -> String
 fn = Z12.sc_name
 
+-- | Z12 cycles.
 frg_cyc :: T.T6 [[Z12]]
 frg_cyc =
     let c1 = [[0..11]]
@@ -517,3 +518,22 @@ tics :: [Z12] -> [Int]
 tics p =
     let q = Z12.tto_t_related (Z12.tto_invert 0 p)
     in map (length . intersect p) q
+
+{- | trs = transformations search.  Search all RTnMI of /p/ for /q/.
+
+>>> echo 642 | pct trs 024579 | sort -u
+531642
+6421B9
+642753
+B97642
+
+> let r = [[5,3,1,6,4,2],[6,4,2,1,11,9],[6,4,2,7,5,3],[11,9,7,6,4,2]]
+> in sort (trs [0,2,4,5,7,9] [6,4,2]) == r
+
+-}
+trs :: [Z12] -> [Z12] -> [[Z12]]
+trs p q = filter (q `isInfixOf`) (Z12.sro_rtmi_related p)
+
+-- > trs_m [0,2,4,5,7,9] [6,4,2] == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
+trs_m :: [Z12] -> [Z12] -> [[Z12]]
+trs_m p q = filter (q `isInfixOf`) (Z12.sro_rti_related p)

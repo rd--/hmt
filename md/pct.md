@@ -55,3 +55,19 @@ complement: {1246789A} (T10I 8-Z15)
 multiplication-by-five-transform: {0137} (T0 4-Z29)
 $
 ~~~~
+
+## trs = transformations search
+
+~~~~
+$ echo 642 | pct trs 024579 | sort -u
+531642
+6421B9
+642753
+B97642
+$ echo 642 | hmt-pct trs 024579
+6421B9
+B97642
+531642
+642753
+$
+~~~~

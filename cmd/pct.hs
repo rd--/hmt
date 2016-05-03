@@ -7,7 +7,8 @@ help :: [String]
 help =
     ["pct ess pcset"
     ,"pct frg pcset"
-    ,"pct si [pcset]"]
+    ,"pct si [pcset]"
+    ,"pct trs [-m] pcseg"]
 
 pco_parse :: String -> [Z12]
 pco_parse = map char_to_z12
@@ -28,6 +29,11 @@ frg_cmd p =
 si_cmd :: CMD
 si_cmd = unlines . si . pco_parse
 
+trs_cmd :: ([Z12] -> [Z12] -> [[Z12]]) -> String -> CMD
+trs_cmd f p =
+    let p' = pco_parse p
+    in unlines . concatMap (map pco_pp . f p' . pco_parse) . lines
+
 interact_ln :: CMD -> IO ()
 interact_ln f = interact (unlines . map f . lines)
 
@@ -39,4 +45,6 @@ main = do
     ["frg",p] -> putStr (frg_cmd p)
     ["si"] -> interact_ln si_cmd
     ["si",p] -> putStr (si_cmd p)
+    ["trs",p] -> interact_ln (trs_cmd trs p)
+    ["trs","-m",p] -> interact_ln (trs_cmd trs_m p)
     _ -> putStrLn (unlines help)
