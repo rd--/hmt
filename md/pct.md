@@ -56,6 +56,22 @@ multiplication-by-five-transform: {0137} (T0 4-Z29)
 $
 ~~~~
 
+## tmatrix = transposition matrix
+
+~~~~
+$ pct tmatrix 1258
+1258
+0147
+9A14
+67A1
+$ hmt-pct tmatrix 1258
+1258
+0147
+9A14
+67A1
+$
+~~~~
+
 ## trs = transformations search
 
 ~~~~

@@ -242,9 +242,9 @@ has_ess p q =
 -- 2B013A9
 -- 923507A
 --
--- > ess [2,3,10] [0,1,6,4,3,2,5] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
+-- > ess [0,1,6,4,3,2,5] [2,3,10] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: [Z12] -> [Z12] -> [[Z12]]
-ess p = filter (`has_ess` p) . Z12.sro_rtmi_related
+ess p q = filter (`has_ess` q) (Z12.sro_rtmi_related p)
 
 -- | Can the set-class q (under prime form algorithm pf) be
 --   drawn from the pcset p.
@@ -518,6 +518,24 @@ tics :: [Z12] -> [Int]
 tics p =
     let q = Z12.tto_t_related (Z12.tto_invert 0 p)
     in map (length . intersect p) q
+
+{- | tmatrix
+
+>>> pct tmatrix 1258
+
+1258
+0147
+9A14
+67A1
+
+> tmatrix [1,2,5,8] == [[1,2,5,8],[0,1,4,7],[9,10,1,4],[6,7,10,1]]
+
+-}
+tmatrix :: [Z12] -> [[Z12]]
+tmatrix p =
+    let i = map negate (T.d_dx p)
+    in map (\n -> map (+ n) p) (T.dx_d 0 i)
+
 
 {- | trs = transformations search.  Search all RTnMI of /p/ for /q/.
 
