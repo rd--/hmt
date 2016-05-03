@@ -35,6 +35,17 @@ IC cycle vector: <1> <22> <111> <1100> <5> <000000>
 $
 ~~~~
 
+## pi = pitch-class invariances
+
+~~~~
+$ hmt-pct pi 0236 12
+0236
+532B
+6320
+B235
+$
+~~~~
+
 ## scc = set class completion
 
 ~~~~

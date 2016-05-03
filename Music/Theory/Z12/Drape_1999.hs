@@ -354,18 +354,20 @@ nrm = T.set
 nrm_r :: (Ord a) => [a] -> [a]
 nrm_r = sort
 
--- | Pitch-class invariances (called @pi@ at @pct@).
---
--- >>> pct pi 0236 12
--- pcseg 0236
--- pcseg 6320
--- pcseg 532B
--- pcseg B235
---
--- > pci [0,2,3,6] [1,2] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
-pci :: [Z12] -> [Z12] -> [[Z12]]
-pci p i =
-    let f q = T.set (map (q `genericIndex`) i)
+{- | Pitch-class invariances (called @pi@ at @pct@).
+
+>>> pct pi 0236 12
+pcseg 0236
+pcseg 6320
+pcseg 532B
+pcseg B235
+
+> pci [1,2] [0,2,3,6] == [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
+
+-}
+pci :: [Int] -> [Z12] -> [[Z12]]
+pci i p =
+    let f q = T.set (map (q !!) i)
     in filter (\q -> f q == f p) (Z12.sro_rti_related p)
 
 -- | Relate sets (TnMI).

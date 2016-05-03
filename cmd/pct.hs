@@ -25,9 +25,12 @@ pco_parse = map char_to_z12
 pco_pp :: [Z12] -> String
 pco_pp = map z12_to_char
 
+z16_seq_parse :: String -> [Int]
+z16_seq_parse = map digitToInt
+
 -- > cset_parse "34" == [3,4]
 cset_parse :: String -> [Int]
-cset_parse = map digitToInt
+cset_parse = z16_seq_parse
 
 type CMD = String -> String
 
@@ -48,6 +51,9 @@ frg_cmd :: CMD
 frg_cmd p =
     let p' = pco_parse p
     in unlines [frg_pp p',ic_cycle_vector_pp (ic_cycle_vector p')]
+
+pi_cmd :: String -> CMD
+pi_cmd p = mk_cmd_many (pci (z16_seq_parse p))
 
 scc_cmd :: String -> CMD
 scc_cmd p = mk_cmd_many (scc (Z12.sc p))
@@ -83,6 +89,7 @@ main = do
     ["ess",p] -> interact_ln (ess_cmd p)
     ["fl","-c",c] -> putStr (fl_c_cmd c)
     ["frg",p] -> putStr (frg_cmd p)
+    ["pi",p,q] -> putStr (pi_cmd q p)
     ["scc",p] -> interact_ln (scc_cmd p)
     ["scc",p,q] -> putStr (scc_cmd p q)
     ["si"] -> interact_ln si_cmd
