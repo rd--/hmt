@@ -478,6 +478,24 @@ spsc xs =
         g = (==) `on` length
     in (map Z12.sc_name . head . groupBy g . filter f) Z12.scs
 
+{- | sra = stravinsky rotational array
+
+>>> echo 019BA7 | pct sra
+019BA7
+08A96B
+021A34
+0B812A
+0923B1
+056243
+
+> let r = [[0,1,9,11,10,7],[0,8,10,9,6,11],[0,2,1,10,3,4]
+>        ,[0,11,8,1,2,10],[0,9,2,3,11,1],[0,5,6,2,4,3]]
+> in sra [0,1,9,11,10,7] == r
+
+-}
+sra :: [Z12] -> [[Z12]]
+sra = map (Z12.sro_tn_to 0) . T.rotations
+
 {- | Serial operation.
 
 >>> echo 156 | pct sro T4

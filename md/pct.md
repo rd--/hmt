@@ -56,6 +56,52 @@ multiplication-by-five-transform: {0137} (T0 4-Z29)
 $
 ~~~~
 
+## sra = stravinsky rotational array
+
+~~~~
+$ echo 019BA7 | pct sra
+019BA7
+08A96B
+021A34
+0B812A
+0923B1
+056243
+$ echo 019BA7 | hmt-pct sra
+019BA7
+08A96B
+021A34
+0B812A
+0923B1
+056243
+$
+~~~~
+
+## sro = serial operator
+
+~~~~
+$ echo 156 | pct sro T4
+59A
+$ echo 156 | hmt-pct sro T4
+59A
+$ echo 024579 | pct sro RT4I
+79B024
+$ echo 024579 | hmt-pct sro RT4I
+79B024
+$ echo 156 | pct sro T4I
+3BA
+$ echo 156 | hmt-pct sro T4I
+3BA
+$ echo 156 | pct sro T4  | pct sro T0I
+732
+$ echo 156 | hmt-pct sro T4  | hmt-pct sro T0I
+732
+$ echo 024579 | pct sro RT4I
+79B024
+$ echo 024579 | hmt-pct sro RT4I
+79B024
+$
+~~~~
+
 ## tmatrix = transposition matrix
 
 ~~~~

@@ -1,5 +1,7 @@
 import System.Environment {- base -}
 
+import qualified Music.Theory.Z.SRO as Z
+
 import Music.Theory.Z12
 import Music.Theory.Z12.Drape_1999
 
@@ -8,6 +10,9 @@ help =
     ["pct ess pcset"
     ,"pct frg pcset"
     ,"pct si [pcset]"
+    ,"pct sra"
+    ,"pct sro sro"
+    ,"pct tmatrix pcseg"
     ,"pct trs [-m] pcseg"]
 
 pco_parse :: String -> [Z12]
@@ -36,6 +41,12 @@ frg_cmd p =
 si_cmd :: CMD
 si_cmd = unlines . si . pco_parse
 
+sra_cmd :: CMD
+sra_cmd = mk_cmd_many sra
+
+sro_cmd :: String -> CMD
+sro_cmd o = mk_cmd (sro (Z.sro_parse o))
+
 -- > tmatrix_cmd "1258"
 tmatrix_cmd :: CMD
 tmatrix_cmd = mk_cmd_many tmatrix
@@ -55,6 +66,8 @@ main = do
     ["frg",p] -> putStr (frg_cmd p)
     ["si"] -> interact_ln si_cmd
     ["si",p] -> putStr (si_cmd p)
+    ["sra"] -> interact_ln sra_cmd
+    ["sro",o] -> interact_ln (sro_cmd o)
     ["tmatrix",p] -> putStr (tmatrix_cmd p)
     ["trs",p] -> interact_ln (trs_cmd trs p)
     ["trs","-m",p] -> interact_ln (trs_cmd trs_m p)
