@@ -8,6 +8,18 @@ import Data.List.Split {- split -}
 import Data.List.Split.Internals {- split -}
 import Data.Maybe {- base -}
 
+-- | Data.Vector.slice, ie. starting index (zero-indexed) and number of elements.
+--
+-- > slice 4 5 [1..] == [5,6,7,8,9]
+slice :: Int -> Int -> [a] -> [a]
+slice i n = take n . drop i
+
+-- | Variant of slice with start and end indices (zero-indexed).
+--
+-- > section 4 8 [1..] == [5,6,7,8,9]
+section :: Int -> Int -> [a] -> [a]
+section l r = take (r - l + 1) . drop l
+
 -- | Bracket sequence with left and right values.
 --
 -- > bracket ('<','>') "1,2,3" == "<1,2,3>"

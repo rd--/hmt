@@ -14,7 +14,8 @@ type SEP = (String,String,String)
 
 type Key = String
 type Value = String
-type Record = [(Key,[Value])]
+type Entry = (Key,[Value])
+type Record = [Entry]
 type DB = [Record]
 
 sep_plain :: SEP
