@@ -1,26 +1,35 @@
 module Music.Theory.Z.Drape_1999 where
 
-import qualified Music.Theory.Set.List as T
 import Music.Theory.Z
 import Music.Theory.Z.SRO
 import Music.Theory.Z.TTO
 
--- | Relate sets (TnMI).
---
--- > let r = [("T1M",[1,6,11,4]),("T4MI",[4,11,6,1])]
--- > map (\(o,s) -> (tto_pp o,s)) (rs 5 mod12 [0,1,2,3] [6,4,1,11]) == r
-rs :: (Eq t,Ord t,Enum t,Integral t) => t -> Z t -> [t] -> [t] -> [(TTO t, [t])]
-rs m z x y =
-    let xs = map (\o -> (o,z_tto_apply m z o x)) (z_tto_univ z)
-        q = T.set y
-    in filter (\(_,p) -> T.set p == q) xs
+{- | Relate sets (TnMI).
+
+>>> $ pct rs 0123 641B
+>>> T1M
+
+> map tto_pp (rs 5 mod12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
+-}
+rs :: (Eq t,Ord t,Enum t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
+rs = z_tto_rel
 
 {- | Relate segments.
 
-> rsg 5 mod12 [1,5,6] [3,11,10] == [sro_parse "T4I",sro_parse "r1RT4MI"]
-> rsg 5 mod12 [0,1,2,3] [0,5,10,3] == [sro_parse "T0M",sro_parse "RT3MI"]
-> rsg 5 mod12 [0,1,2,3] [4,11,6,1] == [sro_parse "T4MI",sro_parse "RT1M"]
-> rsg 5 mod12 [0,1,2,3] [11,6,1,4] == [sro_parse "r1T4MI",sro_parse "r1RT1M"]
+>>> $ pct rsg 156 3BA
+>>> T4I
+>>> $ pct rsg 0123 05A3
+>>> T0M
+>>> $ pct rsg 0123 4B61
+>>> RT1M
+>>> $ pct rsg 0123 B614
+>>> r3RT1M
+
+> let sros = map sro_parse . words
+> rsg 5 mod12 [1,5,6] [3,11,10] == sros "T4I r1RT4MI"
+> rsg 5 mod12 [0,1,2,3] [0,5,10,3] == sros "T0M RT3MI"
+> rsg 5 mod12 [0,1,2,3] [4,11,6,1] == sros "T4MI RT1M"
+> rsg 5 mod12 [0,1,2,3] [11,6,1,4] == sros "r1T4MI r1RT1M"
 
 -}
 rsg :: Integral i => i -> Z i -> [i] -> [i] -> [SRO i]

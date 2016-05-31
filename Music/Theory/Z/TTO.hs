@@ -1,9 +1,11 @@
 module Music.Theory.Z.TTO where
 
 import Data.List {- base -}
+import Data.Maybe {- base -}
 import qualified Text.ParserCombinators.Parsec as P {- parsec -}
 
-import Music.Theory.Parse
+import qualified Music.Theory.Parse as T
+import qualified Music.Theory.Set.List as T
 import Music.Theory.Z
 
 -- | Twelve-tone operator, of the form TMI.
@@ -23,9 +25,9 @@ tto_pp (TTO t m i) = concat ['T' : show t,if m then "M" else "",if i then "I" el
 tto_parse :: Integral i => String -> TTO i
 tto_parse s =
   let p = do _ <- P.char 'T'
-             t <- get_int
-             m <- is_char 'M'
-             i <- is_char 'I'
+             t <- T.get_int
+             m <- T.is_char 'M'
+             i <- T.is_char 'I'
              P.eof
              return (TTO t m i)
   in either (\e -> error ("tto_parse failed\n" ++ show e)) id (P.parse p "" s)
@@ -55,6 +57,14 @@ z_tto_apply mn z o = sort . map (z_tto_f mn z o)
 
 tto_apply :: Integral t => t -> TTO t -> [t] -> [t]
 tto_apply mn = z_tto_apply mn id
+
+-- | Find 'TTO' that that map /x/ to /y/ given /m/ and /z/.
+--
+-- > map tto_pp (z_tto_rel 5 mod12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
+z_tto_rel :: (Eq t,Ord t,Enum t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
+z_tto_rel m z x y =
+    let q = T.set y
+    in mapMaybe (\o -> if z_tto_apply m z o x == q then Just o else Nothing) (z_tto_univ z)
 
 -- | 'nub' of 'sort' of 'map' /z/.
 --
