@@ -204,7 +204,7 @@ ic_cycle_vector p =
 -- > let r = "IC cycle vector: <1> <22> <111> <1100> <5> <000000>"
 -- > in ic_cycle_vector_pp (ic_cycle_vector [0,2,4,5,7,9]) == r
 ic_cycle_vector_pp :: T.T6 [Int] -> String
-ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_list . T.t6_map Z.z16_seq_pp
+ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_to_list . T.t6_map Z.z16_seq_pp
 
 frg_hdr :: [String]
 frg_hdr = map (\n -> "Fragmentation of " ++ show n ++ "-cycle(s)") [1::Int .. 6]
@@ -226,7 +226,7 @@ frg_pp :: [Z12] -> String
 frg_pp =
     let f = unwords . map (\p -> T.bracket ('[',']') p)
         g x y = x ++ ": " ++ y
-    in unlines . zipWith g frg_hdr . T.t6_list . T.t6_map f . frg
+    in unlines . zipWith g frg_hdr . T.t6_to_list . T.t6_map f . frg
 
 -- | p `has_ess` q is true iff p can embed q in sequence.
 has_ess :: [Z12] -> [Z12] -> Bool

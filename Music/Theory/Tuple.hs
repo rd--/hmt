@@ -6,7 +6,7 @@
 -- Heterogenous tuples (products) are prefixed @p2_@ etc.
 module Music.Theory.Tuple where
 
--- * P2 (2 product)
+-- * P2 (2-product)
 
 p2_swap :: (s,t) -> (t,s)
 p2_swap (i,j) = (j,i)
@@ -16,11 +16,11 @@ p2_swap (i,j) = (j,i)
 -- | Uniform two-tuple.
 type T2 a = (a,a)
 
-t2 :: [t] -> T2 t
-t2 l = case l of {[p,q] -> (p,q);_ -> error "t2"}
+t2_from_list :: [t] -> T2 t
+t2_from_list l = case l of {[p,q] -> (p,q);_ -> error "t2"}
 
-t2_list :: T2 a -> [a]
-t2_list (i,j) = [i,j]
+t2_to_list :: T2 a -> [a]
+t2_to_list (i,j) = [i,j]
 
 t2_swap :: T2 t -> T2 t
 t2_swap = p2_swap
@@ -46,7 +46,7 @@ t2_concat = t2_map mconcat . unzip
 t2_sort :: Ord t => (t,t) -> (t,t)
 t2_sort (p,q) = (min p q,max p q)
 
--- * P3 (3 product)
+-- * P3 (3-product)
 
 -- | Left rotation.
 --
@@ -67,11 +67,11 @@ p3_third (_,_,c) = c
 
 type T3 a = (a,a,a)
 
-t3 :: [t] -> T3 t
-t3 l = case l of {[p,q,r] -> (p,q,r);_ -> error "t3"}
+t3_from_list :: [t] -> T3 t
+t3_from_list l = case l of {[p,q,r] -> (p,q,r);_ -> error "t3"}
 
-t3_list :: T3 a -> [a]
-t3_list (i,j,k) = [i,j,k]
+t3_to_list :: T3 a -> [a]
+t3_to_list (i,j,k) = [i,j,k]
 
 t3_rotate_left :: T3 t -> T3 t
 t3_rotate_left = p3_rotate_left
@@ -97,7 +97,7 @@ t3_infix f (i,j,k) = (i `f` j) `f` k
 t3_join :: T3 [a] -> [a]
 t3_join = t3_infix (++)
 
--- * P4 (4 product)
+-- * P4 (4-product)
 
 p4_fst :: (a,b,c,d) -> a
 p4_fst (a,_,_,_) = a
@@ -115,11 +115,11 @@ p4_fourth (_,_,_,d) = d
 
 type T4 a = (a,a,a,a)
 
-t4 :: [t] -> T4 t
-t4 l = case l of {[p,q,r,s] -> (p,q,r,s); _ -> error "t4"}
+t4_from_list :: [t] -> T4 t
+t4_from_list l = case l of {[p,q,r,s] -> (p,q,r,s); _ -> error "t4"}
 
-t4_list :: T4 t -> [t]
-t4_list (p,q,r,s) = [p,q,r,s]
+t4_to_list :: T4 t -> [t]
+t4_to_list (p,q,r,s) = [p,q,r,s]
 
 t4_fst :: T4 t -> t
 t4_fst = p4_fst
@@ -145,7 +145,7 @@ t4_infix f (i,j,k,l) = ((i `f` j) `f` k) `f` l
 t4_join :: T4 [a] -> [a]
 t4_join = t4_infix (++)
 
--- * P5 (5 product)
+-- * P5 (5-product)
 
 p5_fst :: (a,b,c,d,e) -> a
 p5_fst (a,_,_,_,_) = a
@@ -166,11 +166,11 @@ p5_fifth (_,_,_,_,e) = e
 
 type T5 a = (a,a,a,a,a)
 
-t5 :: [t] -> T5 t
-t5 l = case l of {[p,q,r,s,t] -> (p,q,r,s,t); _ -> error "t5"}
+t5_from_list :: [t] -> T5 t
+t5_from_list l = case l of {[p,q,r,s,t] -> (p,q,r,s,t); _ -> error "t5"}
 
-t5_list :: T5 t -> [t]
-t5_list (p,q,r,s,t) = [p,q,r,s,t]
+t5_to_list :: T5 t -> [t]
+t5_to_list (p,q,r,s,t) = [p,q,r,s,t]
 
 t5_map :: (p -> q) -> T5 p -> T5 q
 t5_map f (p,q,r,s,t) = (f p,f q,f r,f s,f t)
@@ -193,7 +193,7 @@ t5_infix f (i,j,k,l,m) = (((i `f` j) `f` k) `f` l) `f` m
 t5_join :: T5 [a] -> [a]
 t5_join = t5_infix (++)
 
--- * P6 (6 product)
+-- * P6 (6-product)
 
 p6_fst :: (a,b,c,d,e,f) -> a
 p6_fst (a,_,_,_,_,_) = a
@@ -217,11 +217,11 @@ p6_sixth (_,_,_,_,_,f) = f
 
 type T6 a = (a,a,a,a,a,a)
 
-t6 :: [t] -> T6 t
-t6 l = case l of {[p,q,r,s,t,u] -> (p,q,r,s,t,u);_ -> error "t6"}
+t6_from_list :: [t] -> T6 t
+t6_from_list l = case l of {[p,q,r,s,t,u] -> (p,q,r,s,t,u);_ -> error "t6"}
 
-t6_list :: T6 t -> [t]
-t6_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
+t6_to_list :: T6 t -> [t]
+t6_to_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
 
 t6_map :: (p -> q) -> T6 p -> T6 q
 t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
@@ -230,8 +230,8 @@ t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
 
 type T7 a = (a,a,a,a,a,a,a)
 
-t7_list :: T7 t -> [t]
-t7_list (p,q,r,s,t,u,v) = [p,q,r,s,t,u,v]
+t7_to_list :: T7 t -> [t]
+t7_to_list (p,q,r,s,t,u,v) = [p,q,r,s,t,u,v]
 
 t7_map :: (p -> q) -> T7 p -> T7 q
 t7_map f (p,q,r,s,t,u,v) = (f p,f q,f r,f s,f t,f u,f v)
@@ -240,8 +240,8 @@ t7_map f (p,q,r,s,t,u,v) = (f p,f q,f r,f s,f t,f u,f v)
 
 type T8 a = (a,a,a,a,a,a,a,a)
 
-t8_list :: T8 t -> [t]
-t8_list (p,q,r,s,t,u,v,w) = [p,q,r,s,t,u,v,w]
+t8_to_list :: T8 t -> [t]
+t8_to_list (p,q,r,s,t,u,v,w) = [p,q,r,s,t,u,v,w]
 
 t8_map :: (p -> q) -> T8 p -> T8 q
 t8_map f (p,q,r,s,t,u,v,w) = (f p,f q,f r,f s,f t,f u,f v,f w)
@@ -250,8 +250,8 @@ t8_map f (p,q,r,s,t,u,v,w) = (f p,f q,f r,f s,f t,f u,f v,f w)
 
 type T9 a = (a,a,a,a,a,a,a,a,a)
 
-t9_list :: T9 t -> [t]
-t9_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
+t9_to_list :: T9 t -> [t]
+t9_to_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
 
 t9_map :: (p -> q) -> T9 p -> T9 q
 t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)

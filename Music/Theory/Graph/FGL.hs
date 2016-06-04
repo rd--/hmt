@@ -30,7 +30,7 @@ g_node_lookup gr l = fmap fst (find ((== l) . snd) (G.labNodes gr))
 g_node_lookup_err :: (Eq v,G.Graph gr) => gr v e -> v -> G.Node
 g_node_lookup_err gr = fromMaybe (error "g_node_lookup") . g_node_lookup gr
 
--- | Set of nodes with given lables, plus all neighbours of these nodes.
+-- | Set of nodes with given labels, plus all neighbours of these nodes.
 ug_node_set_impl :: (Eq v,G.DynGraph gr) => gr v e -> [v] -> [G.Node]
 ug_node_set_impl gr nl =
     let n = map (g_node_lookup_err gr) nl
