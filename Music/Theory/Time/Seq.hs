@@ -580,6 +580,13 @@ wseq_accumulate =
 -- | Container for values that have /on/ and /off/ modes.
 data On_Off a = On a | Off a deriving (Eq,Show)
 
+-- | Functor instance.
+on_off_map :: (t -> u) -> On_Off t -> On_Off u
+on_off_map f x =
+    case x of
+      On a -> On (f a)
+      Off a -> Off (f a)
+
 -- | Structural comparison at 'On_Off', 'On' compares less than 'Off'.
 cmp_on_off :: On_Off a -> On_Off b -> Ordering
 cmp_on_off p q =

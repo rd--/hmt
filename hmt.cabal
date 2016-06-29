@@ -96,6 +96,7 @@ Library
                    Music.Theory.Pitch.Note
                    Music.Theory.Pitch.Spelling
                    Music.Theory.Pitch.Spelling.Cluster
+                   Music.Theory.Random.I_Ching
                    Music.Theory.Read
                    Music.Theory.Set.List
                    Music.Theory.Set.Set
