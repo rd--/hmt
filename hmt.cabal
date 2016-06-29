@@ -34,6 +34,7 @@ Library
                    parsec,
                    permutation,
                    primes,
+                   random,
                    safe,
                    split,
                    text

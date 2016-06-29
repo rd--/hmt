@@ -2,7 +2,7 @@ module Music.Theory.Random.I_Ching where
 
 import Control.Monad {- base -}
 import Data.Maybe {- base -}
-import System.Random {- base -}
+import System.Random {- random -}
 
 import Music.Theory.Tuple {- hmt -}
 
