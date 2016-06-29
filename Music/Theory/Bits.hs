@@ -16,6 +16,19 @@ gen_bitseq n x =
     then error "gen_bitseq"
     else map (testBit x) (reverse [0 .. n - 1])
 
+-- | Given bit sequence (most to least significant) generate 'Bits' value.
+--
+-- > :set -XBinaryLiterals
+-- > pack_bitseq [True,False,True,False] == 0b1010
+-- > pack_bitseq [True,False,False,True,False,False] == 0b100100
+-- > 0b100100 == 36
+pack_bitseq :: Bits i => [Bool] -> i
+pack_bitseq =
+    last .
+    scanl (\n (k,b) -> if b then setBit n k else n) zeroBits .
+    zip [0..] .
+    reverse
+
 -- | 'bits_pp' of 'gen_bitseq'.
 --
 -- > :set -XBinaryLiterals

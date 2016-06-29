@@ -246,6 +246,11 @@ t8_to_list (p,q,r,s,t,u,v,w) = [p,q,r,s,t,u,v,w]
 t8_map :: (p -> q) -> T8 p -> T8 q
 t8_map f (p,q,r,s,t,u,v,w) = (f p,f q,f r,f s,f t,f u,f v,f w)
 
+-- * P8 (8-product)
+
+p8_third :: (a,b,c,d,e,f,g,h) -> c
+p8_third (_,_,c,_,_,_,_,_) = c
+
 -- * T9 (9-tuple, regular)
 
 type T9 a = (a,a,a,a,a,a,a,a,a)
