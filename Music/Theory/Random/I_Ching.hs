@@ -6,8 +6,8 @@ import Control.Monad {- base -}
 import Data.Maybe {- base -}
 import System.Random {- random -}
 
-import Music.Theory.Bits {- hmt -}
-import Music.Theory.Tuple {- hmt -}
+import qualified Music.Theory.Bits as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- | Line, indicated as sum.
 data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
@@ -17,9 +17,9 @@ data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
       three-coin probablity={2,6}/16,
       name,signification,symbol))
 -}
-type Line_Stat r = (Line,(r,r,String,String,String))
+type Line_Stat = (Line,(Rational,Rational,String,String,String))
 
-i_ching_chart :: Fractional r => [Line_Stat r]
+i_ching_chart :: [Line_Stat]
 i_ching_chart =
     [(L6,(1/16,2/16,"old yin","yin changing into yang","---x---"))
     ,(L8,(7/16,6/16,"young yin","yin unchanging","--- ---"))
@@ -35,7 +35,7 @@ line_from_bit b = if b then L7 else L8
 
 -- | Seven character ASCII string for line.
 line_ascii_pp :: Line -> String
-line_ascii_pp n = fromMaybe (error "line_ascii_pp") (fmap p5_fifth (lookup n i_ching_chart))
+line_ascii_pp n = fromMaybe (error "line_ascii_pp") (fmap T.p5_fifth (lookup n i_ching_chart))
 
 -- | Is line (ie. sum) moving (ie. 6 or 9).
 line_is_moving :: Line -> Bool
@@ -160,19 +160,19 @@ hexagram_names =
 
 -- | Unicode hexagram characters, in King Wen order.
 --
--- > import Data.List.Split
+-- > import Data.List.Split {- split -}
 -- > mapM_ putStrLn (chunksOf 8 hexagram_unicode_sequence)
 hexagram_unicode_sequence :: [Char]
 hexagram_unicode_sequence = map toEnum [0x4DC0 .. 0x4DFF]
 
 hexagram_to_binary :: Hexagram -> Int
-hexagram_to_binary = pack_bitseq . map line_unbroken
+hexagram_to_binary = T.pack_bitseq . map line_unbroken
 
 -- > let h = hexagram_from_binary 0b100010
 -- > putStrLn (hexagram_pp h)
 -- > gen_bitseq_pp 6 (hexagram_to_binary h) == "100010"
 hexagram_from_binary :: Int -> Hexagram
-hexagram_from_binary = map line_from_bit . gen_bitseq 6
+hexagram_from_binary = map line_from_bit . T.gen_bitseq 6
 
 -- > import Data.List {- base -}
 -- > putStrLn (intersperse ' ' trigram_unicode_sequence)

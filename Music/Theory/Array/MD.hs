@@ -3,15 +3,9 @@ module Music.Theory.Array.MD where
 
 import Data.List {- base -}
 
+import qualified Music.Theory.Array as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
-
--- | Append /k/ to each row of /tbl/ as required to be regular (all
--- rows equal length).
-make_regular :: a -> [[a]] -> [[a]]
-make_regular k tbl =
-    let z = maximum (map length tbl)
-    in map (T.pad_right k z) tbl
 
 -- | Optional header row then data rows.
 type MD_Table t = (Maybe [String],[[t]])
@@ -37,7 +31,7 @@ md_number_rows (hdr,tbl) =
 md_table_opt :: Bool -> MD_Table String -> [String]
 md_table_opt pleft (hdr,t) =
     let t' = maybe t (:t) hdr
-        c = transpose (make_regular "" t')
+        c = transpose (T.make_regular "" t')
         n = map (maximum . map length) c
         ext k s = if pleft then T.pad_left ' ' k s else s
         m = unwords (map (flip replicate '-') n)

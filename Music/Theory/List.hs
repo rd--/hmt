@@ -139,6 +139,26 @@ rotate_starting_from_err x =
     fromMaybe (error "rotate_starting_from: non-element") .
     rotate_starting_from x
 
+-- | Sequence of /n/ adjacent elements, moving forward by /k/ places.
+-- The last element may have fewer than /n/ places, but will reach the
+-- end of the input sequence.
+--
+-- > adj 3 2 "adjacent" == ["adj","jac","cen","nt"]
+adj :: Int -> Int -> [a] -> [[a]]
+adj n k l =
+    case take n l of
+      [] -> []
+      r -> r : adj n k (drop k l)
+
+-- | Variant of 'adj' where the last element has /n/ places but may
+-- not reach the end of the input sequence.
+--
+-- > adj' 3 2 "adjacent" == ["adj","jac","cen"]
+adj' :: Int -> Int -> [a] -> [[a]]
+adj' n k l =
+    let r = take n l
+    in if length r == n then r : adj' n k (drop k l) else []
+
 -- | Generic form of 'adj2'.
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
 genericAdj2 n l =
