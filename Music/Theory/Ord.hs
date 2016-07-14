@@ -19,3 +19,20 @@ ord_invert x =
       EQ -> EQ
       GT -> LT
 
+-- | Given 'Ordering', re-order pair,
+order_pair :: Ordering -> (t,t) -> (t,t)
+order_pair o (x,y) =
+    case o of
+      LT -> (x,y)
+      EQ -> (x,y)
+      GT -> (y,x)
+
+-- | Sort a pair of equal type values using given comparison function.
+--
+-- > sort_pair compare ('b','a') == ('a','b')
+sort_pair :: (t -> t -> Ordering) -> (t,t) -> (t,t)
+sort_pair fn (x,y) = order_pair (fn x y) (x,y)
+
+-- | Variant where the comparison function may not compute a value.
+sort_pair_m :: (t -> t -> Maybe Ordering) -> (t,t) -> Maybe (t,t)
+sort_pair_m fn (x,y) = fmap (`order_pair` (x,y)) (fn x y)

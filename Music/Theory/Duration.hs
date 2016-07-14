@@ -6,6 +6,8 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.Ord as T {- hmt -}
+
 -- | Common music notation durational model
 data Duration = Duration {division :: Integer -- ^ division of whole note
                          ,dots :: Integer -- ^ number of dots
@@ -39,22 +41,6 @@ duration_compare_meq_err p =
 -- | 'Ord' instance in terms of 'duration_compare_meq_err'.
 instance Ord Duration where
     compare = duration_compare_meq_err
-
-order_pair :: Ordering -> (t,t) -> (t,t)
-order_pair o (x,y) =
-    case o of
-      LT -> (x,y)
-      EQ -> (x,y)
-      GT -> (y,x)
-
--- | Sort a pair of equal type values using given comparison function.
---
--- > sort_pair compare ('b','a') == ('a','b')
-sort_pair :: (t -> t -> Ordering) -> (t,t) -> (t,t)
-sort_pair fn (x,y) = order_pair (fn x y) (x,y)
-
-sort_pair_m :: (t -> t -> Maybe Ordering) -> (t,t) -> Maybe (t,t)
-sort_pair_m fn (x,y) = fmap (`order_pair` (x,y)) (fn x y)
 
 -- | True if neither duration is dotted.
 no_dots :: (Duration, Duration) -> Bool
@@ -102,11 +88,11 @@ sum_dur y0 y1 =
                     then sum_dur_undotted (division x0, division x1)
                     else sum_dur_dotted (division x0, dots x0
                                         ,division x1, dots x1)
-    in join (fmap f (sort_pair_m duration_compare_meq (y0,y1)))
+    in join (fmap f (T.sort_pair_m duration_compare_meq (y0,y1)))
 
 -- | Erroring variant of 'sum_dur'.
-sum_dur' :: Duration -> Duration -> Duration
-sum_dur' y0 y1 =
+sum_dur_err :: Duration -> Duration -> Duration
+sum_dur_err y0 y1 =
     let y2 = sum_dur y0 y1
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2

@@ -633,14 +633,6 @@ n_stage_compare l p q =
                 EQ -> n_stage_compare l' p q
                 r -> r
 
--- | Invert 'Ordering'.
-ordering_invert :: Ordering -> Ordering
-ordering_invert o =
-    case o of
-      LT -> GT
-      EQ -> EQ
-      GT -> LT
-
 -- | Sort sequence /a/ based on ordering of sequence /b/.
 --
 -- > sort_to "abc" [1,3,2] == "acb"

@@ -12,6 +12,7 @@ import Safe {- safe -}
 import Music.Theory.Function {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Ord as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
@@ -629,7 +630,7 @@ wseq_on_off sq =
         g l =
             case l of
               [] -> []
-              e:l' -> tseq_merge_by (T.ordering_invert .: cmp_on_off) e (g l')
+              e:l' -> tseq_merge_by (T.ord_invert .: cmp_on_off) e (g l')
     in g (map f sq)
 
 -- | 'on_off_to_either' of 'wseq_on_off'.

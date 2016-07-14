@@ -222,8 +222,10 @@ cell_range_row_order ((c1,r1),(c2,r2)) =
 -- | When reading a CSV file is the first row a header?
 type CSV_Has_Header = Bool
 
+-- | Alias for 'Char', allow characters other than @,@ as delimiter.
 type CSV_Delimiter = Char
 
+-- | Alias for 'Bool', allow linebreaks in fields.
 type CSV_Allow_Linebreaks = Bool
 
 -- | When writing a CSV file should the delimiters be aligned,
@@ -243,7 +245,7 @@ def_csv_opt = (False,',',False,CSV_No_Align)
 -- columns.
 type Table a = [[a]]
 
--- | CSV table, ie. a table with perhaps a header.
+-- | CSV table, ie. a 'Table' with 'Maybe' a header.
 type CSV_Table a = (Maybe [String],Table a)
 
 -- | Read 'CSV_Table' from @CSV@ file.
