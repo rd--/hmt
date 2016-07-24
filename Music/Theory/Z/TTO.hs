@@ -25,7 +25,7 @@ tto_pp (TTO t m i) = concat ['T' : show t,if m then "M" else "",if i then "I" el
 tto_parse :: Integral i => String -> TTO i
 tto_parse s =
   let p = do _ <- P.char 'T'
-             t <- T.get_int
+             t <- T.parse_int
              m <- T.is_char 'M'
              i <- T.is_char 'I'
              P.eof

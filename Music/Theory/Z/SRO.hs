@@ -31,11 +31,11 @@ sro_pp (SRO rN r tN m i) =
 -- > sro_parse "r2RT3MI" == SRO 2 True 3 True True
 sro_parse :: Integral i => String -> SRO i
 sro_parse s =
-  let rot = P.option 0 (P.char 'r' >> T.get_int)
+  let rot = P.option 0 (P.char 'r' >> T.parse_int)
       p = do r <- rot
              r' <- T.is_char 'R'
              _ <- P.char 'T'
-             t <- T.get_int
+             t <- T.parse_int
              m <- T.is_char 'M'
              i <- T.is_char 'I'
              P.eof

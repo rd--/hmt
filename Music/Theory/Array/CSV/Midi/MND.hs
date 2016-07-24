@@ -114,6 +114,7 @@ csv_mnd_write_tseq r_prec nm sq =
 
 -- * MNDD (simplifies cases where overlaps on the same channel are allowed).
 
+-- | Message should be @note@ for note data.
 csv_mndd_hdr :: [String]
 csv_mndd_hdr = ["time","duration","message","note","velocity","channel"]
 
