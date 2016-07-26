@@ -106,7 +106,7 @@ key_identifier_pp (n,a,m) = map toLower (intercalate "_" [show n,show a,mode_pp 
 note_char_to_key :: Char -> Maybe Key
 note_char_to_key c =
     let m = if isUpper c then Major_Mode else Minor_Mode
-    in fmap (\n -> (n,T.Natural,m)) (T.parse_note True c)
+    in fmap (\n -> (n,T.Natural,m)) (T.parse_note_t True c)
 
 -- | Parse 'Key' from /lc-uc/ string.
 --

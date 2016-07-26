@@ -19,18 +19,20 @@ tto_identity = TTO 0 False False
 tto_pp :: Show t => TTO t -> String
 tto_pp (TTO t m i) = concat ['T' : show t,if m then "M" else "",if i then "I" else ""]
 
+p_tto :: Integral t => P.GenParser Char () (TTO t)
+p_tto = do
+  _ <- P.char 'T'
+  t <- T.parse_int
+  m <- T.is_char 'M'
+  i <- T.is_char 'I'
+  P.eof
+  return (TTO t m i)
+
 -- | Parser, transposition must be decimal.
 --
 -- > map (tto_pp . tto_parse) (words "T5 T3I T11M T9MI")
 tto_parse :: Integral i => String -> TTO i
-tto_parse s =
-  let p = do _ <- P.char 'T'
-             t <- T.parse_int
-             m <- T.is_char 'M'
-             i <- T.is_char 'I'
-             P.eof
-             return (TTO t m i)
-  in either (\e -> error ("tto_parse failed\n" ++ show e)) id (P.parse p "" s)
+tto_parse = either (\e -> error ("tto_parse failed\n" ++ show e)) id . P.parse p_tto ""
 
 -- | The set of all 'TTO', given 'Z' function.
 --

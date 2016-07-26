@@ -93,6 +93,7 @@ Library
                    Music.Theory.Permutations.List
                    Music.Theory.Permutations.Morris_1984
                    Music.Theory.Pitch
+                   Music.Theory.Pitch.Chord
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Note
                    Music.Theory.Pitch.Spelling

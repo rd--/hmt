@@ -6,28 +6,30 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- * Note
+-- * Note_T
 
 -- | Enumeration of common music notation note names (@C@ to @B@).
 data Note_T = C | D | E | F | G | A | B
               deriving (Eq,Enum,Bounded,Ord,Read,Show)
 
+-- | Note sequence as usually understood, ie. 'C' - 'B'.
 note_seq :: [Note_T]
 note_seq = [C .. B]
 
+-- | Char variant of 'show'.
 note_pp :: Note_T -> Char
 note_pp = head . show
 
-note_pc_tbl :: Integral i => [(Note_T,i)]
+note_pc_tbl :: Num i => [(Note_T,i)]
 note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
 
 -- | Transform 'Note_T' to pitch-class number.
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
-note_to_pc :: Integral i => Note_T -> i
+note_to_pc :: Num i => Note_T -> i
 note_to_pc n = fromMaybe (error "note_to_pc") (lookup n note_pc_tbl)
 
-pc_to_note :: Integral i => i -> Maybe Note_T
+pc_to_note :: (Eq i,Num i) => i -> Maybe Note_T
 pc_to_note i = T.reverse_lookup i note_pc_tbl
 
 -- | Modal transposition of 'Note_T' value.
@@ -42,8 +44,8 @@ note_t_transpose x n =
 -- | Parser from 'Char', case insensitive flag.
 --
 -- > mapMaybe (parse_note True) "CDEFGab" == [C,D,E,F,G,A,B]
-parse_note :: Bool -> Char -> Maybe Note_T
-parse_note ci c =
+parse_note_t :: Bool -> Char -> Maybe Note_T
+parse_note_t ci c =
     let tbl = zip "CDEFGAB" [C,D,E,F,G,A,B]
     in lookup (if ci then toUpper c else c) tbl
 
@@ -189,12 +191,13 @@ symbol_to_alteration :: Char -> Maybe Alteration_T
 symbol_to_alteration c = T.reverse_lookup c alteration_symbol_tbl
 
 -- | Variant of 'symbol_to_alteration' that /also/ recognises @b@ for 'Flat'
--- and @#@ for 'Sharp'.
+-- and @#@ for 'Sharp' and 'x' for double sharp.
 symbol_to_alteration_iso :: Char -> Maybe Alteration_T
 symbol_to_alteration_iso c =
     case c of
       'b' -> Just Flat
       '#' -> Just Sharp
+      'x' -> Just DoubleSharp
       _ -> symbol_to_alteration c
 
 alteration_iso_tbl :: [(Alteration_T,String)]

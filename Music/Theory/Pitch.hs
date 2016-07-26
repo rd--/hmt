@@ -9,7 +9,7 @@ import Text.Printf {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
-import Music.Theory.Pitch.Note {- hmt -}
+import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling as T {- hmt -}
 
 -- | Pitch classes are modulo twelve integers.
@@ -23,8 +23,8 @@ type Octave_PitchClass i = (i,i)
 type OctPC = (Octave,PitchClass)
 
 -- | Common music notation pitch value.
-data Pitch = Pitch {note :: Note_T
-                   ,alteration :: Alteration_T
+data Pitch = Pitch {note :: T.Note_T
+                   ,alteration :: T.Alteration_T
                    ,octave :: Octave}
            deriving (Eq,Show)
 
@@ -32,7 +32,7 @@ instance Ord Pitch where
     compare = pitch_compare
 
 -- | Generalised pitch, given by a generalised alteration.
-data Pitch' = Pitch' Note_T Alteration_T' Octave
+data Pitch' = Pitch' T.Note_T T.Alteration_T' Octave
             deriving (Eq,Show)
 
 -- | Pretty printer for 'Pitch''.
@@ -50,7 +50,7 @@ pitch'_class_pp = T.dropWhileRight isDigit . pitch'_pp
 pitch_clear_quarter_tone :: Pitch -> Pitch
 pitch_clear_quarter_tone p =
     let Pitch n a o = p
-    in Pitch n (alteration_clear_quarter_tone a) o
+    in Pitch n (T.alteration_clear_quarter_tone a) o
 
 -- | 'Pitch' to 'Octave' and 'PitchClass' notation.
 --
@@ -60,15 +60,15 @@ pitch_to_octpc = midi_to_octpc . pitch_to_midi
 
 -- | Is 'Pitch' 12-ET.
 pitch_is_12et :: Pitch -> Bool
-pitch_is_12et = alteration_is_12et . alteration
+pitch_is_12et = T.alteration_is_12et . alteration
 
 -- | 'Pitch' to midi note number notation.
 --
 -- > pitch_to_midi (Pitch A Natural 4) == 69
 pitch_to_midi :: Integral i => Pitch -> i
 pitch_to_midi (Pitch n a o) =
-    let a' = alteration_to_diff_err a
-        n' = note_to_pc n
+    let a' = T.alteration_to_diff_err a
+        n' = T.note_to_pc n
         o' = fromIntegral o
     in 12 + o' * 12 + n' + a'
 
@@ -77,9 +77,9 @@ pitch_to_midi (Pitch n a o) =
 -- > pitch_to_fmidi (Pitch A QuarterToneSharp 4) == 69.5
 pitch_to_fmidi :: Fractional n => Pitch -> n
 pitch_to_fmidi (Pitch n a o) =
-    let a' = alteration_to_fdiff a
+    let a' = T.alteration_to_fdiff a
         o' = fromIntegral o
-        n' = fromInteger (note_to_pc n)
+        n' = fromInteger (T.note_to_pc n)
     in 12 + o' * 12 + n' + a'
 
 -- | Extract 'PitchClass' of 'Pitch'
@@ -87,7 +87,7 @@ pitch_to_fmidi (Pitch n a o) =
 -- > map pitch_to_pc [Pitch A Natural 4,Pitch F Sharp 4] == [9,6]
 -- > map pitch_to_pc [Pitch C Flat 4,Pitch B Sharp 5] == [11,0]
 pitch_to_pc :: Pitch -> PitchClass
-pitch_to_pc (Pitch n a _) = (note_to_pc n + alteration_to_diff_err a) `mod` 12
+pitch_to_pc (Pitch n a _) = (T.note_to_pc n + T.alteration_to_diff_err a) `mod` 12
 
 -- | 'Pitch' comparison, implemented via 'pitch_to_fmidi'.
 --
@@ -99,7 +99,7 @@ pitch_compare =
 
 -- | Given 'Spelling' function translate from 'OctPC' notation to
 -- 'Pitch'.
-octpc_to_pitch :: Integral i => Spelling i -> Octave_PitchClass i -> Pitch
+octpc_to_pitch :: Integral i => T.Spelling i -> Octave_PitchClass i -> Pitch
 octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc
     in Pitch n a (fromIntegral o)
@@ -176,7 +176,7 @@ octpc_range (l,r) =
 --
 -- > let r = ["C4","E♭4","F♯4"]
 -- > in map (pitch_pp . midi_to_pitch pc_spell_ks) [60,63,66] == r
-midi_to_pitch :: Integral i => Spelling i -> i -> Pitch
+midi_to_pitch :: Integral i => T.Spelling i -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 
 -- | 'midi_to_pitch' 'T.pc_spell_ks'.
@@ -186,12 +186,12 @@ midi_to_pitch_ks = midi_to_pitch T.pc_spell_ks
 -- | Fractional midi note number to 'Pitch'.
 --
 -- > fmidi_to_pitch' pc_spell_ks 69.25 == Nothing
-fmidi_to_pitch' :: RealFrac n => Spelling Int -> n -> Maybe Pitch
+fmidi_to_pitch' :: RealFrac n => T.Spelling Int -> n -> Maybe Pitch
 fmidi_to_pitch' sp m =
     let m' = round m
         (Pitch n a o) = midi_to_pitch sp m'
         q = m - fromIntegral m'
-    in case alteration_edit_quarter_tone q a of
+    in case T.alteration_edit_quarter_tone q a of
          Nothing -> Nothing
          Just a' -> Just (Pitch n a' o)
 
@@ -202,7 +202,7 @@ fmidi_to_pitch' sp m =
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 66.5) == "F𝄰4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 67.5) == "A𝄭4"
 -- > pitch_pp (fmidi_to_pitch pc_spell_ks 69.5) == "B𝄭4"
-fmidi_to_pitch :: (Show n,RealFrac n) => Spelling Int -> n -> Pitch
+fmidi_to_pitch :: (Show n,RealFrac n) => T.Spelling Int -> n -> Pitch
 fmidi_to_pitch sp m = fromMaybe (error (show ("fmidi_to_pitch",m))) (fmidi_to_pitch' sp m)
 
 fmidi_to_pitch_ks :: (Show n,RealFrac n) => n -> Pitch
@@ -214,7 +214,7 @@ fmidi_to_pitch_ks = fmidi_to_pitch T.pc_spell_ks
 -- > import Music.Theory.Pitch.Spelling as T
 --
 -- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
-pitch_tranpose :: (RealFrac n,Show n) => Spelling Int -> n -> Pitch -> Pitch
+pitch_tranpose :: (RealFrac n,Show n) => T.Spelling Int -> n -> Pitch -> Pitch
 pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch sp (m + n)
@@ -316,8 +316,8 @@ pitch_note_lower (Pitch n a o) =
 pitch_rewrite_threequarter_alteration :: Pitch -> Pitch
 pitch_rewrite_threequarter_alteration (Pitch n a o) =
     case a of
-      ThreeQuarterToneFlat -> pitch_note_lower (Pitch n QuarterToneSharp o)
-      ThreeQuarterToneSharp -> pitch_note_raise (Pitch n QuarterToneFlat o)
+      T.ThreeQuarterToneFlat -> pitch_note_lower (Pitch n T.QuarterToneSharp o)
+      T.ThreeQuarterToneSharp -> pitch_note_raise (Pitch n T.QuarterToneFlat o)
       _ -> Pitch n a o
 
 -- | Apply function to 'octave' of 'PitchClass'.
@@ -438,7 +438,7 @@ midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (realToFrac c / 100)
 --
 -- > let p = Pitch {note = C, alteration = QuarterToneSharp, octave = 4}
 -- > in midi_detune_to_pitch T.pc_spell_ks (midi_detune_nearest_24et (60,35)) == p
-midi_detune_to_pitch :: Real c => Spelling Int -> Midi_Detune' c -> Pitch
+midi_detune_to_pitch :: Real c => T.Spelling Int -> Midi_Detune' c -> Pitch
 midi_detune_to_pitch sp = fmidi_to_pitch sp . cps_to_fmidi . midi_detune_to_cps
 
 midi_detune_to_pitch_ks :: Real c => Midi_Detune' c -> Pitch
@@ -505,17 +505,17 @@ parse_octave def_o o =
 -- > in mapMaybe (parse_iso_pitch_oct 4) ["C","Ab5","f##6",""] == r
 parse_iso_pitch_oct :: Octave -> String -> Maybe Pitch
 parse_iso_pitch_oct def_o s =
-    let mk n a o = case parse_note True n of
+    let mk n a o = case T.parse_note_t True n of
                    Nothing -> Nothing
                    Just n' -> fmap (Pitch n' a) (parse_octave def_o o)
     in case s of
          [] -> Nothing
-         n:'b':'b':o -> mk n DoubleFlat o
-         n:'#':'#':o -> mk n DoubleSharp o
-         n:'x':o -> mk n DoubleSharp o
-         n:'b':o -> mk n Flat o
-         n:'#':o -> mk n Sharp o
-         n:o -> mk n Natural o
+         n:'b':'b':o -> mk n T.DoubleFlat o
+         n:'#':'#':o -> mk n T.DoubleSharp o
+         n:'x':o -> mk n T.DoubleSharp o
+         n:'b':o -> mk n T.Flat o
+         n:'#':o -> mk n T.Sharp o
+         n:o -> mk n T.Natural o
 
 -- | Variant of 'parse_iso_pitch_oct' requiring octave.
 parse_iso_pitch :: String -> Maybe Pitch
@@ -533,7 +533,7 @@ parse_iso_pitch_err = fromMaybe (error "parse_iso_pitch") . parse_iso_pitch
 -- > pitch_pp' True (Pitch E Natural 4) == "E♮4"
 pitch_pp' :: Bool -> Pitch -> String
 pitch_pp' show_nat (Pitch n a o) =
-    let a' = if a == Natural && not show_nat then "" else [alteration_symbol a]
+    let a' = if a == T.Natural && not show_nat then "" else [T.alteration_symbol a]
     in show n ++ a' ++ show o
 
 -- | 'pitch_pp'' 'False'.
@@ -570,7 +570,7 @@ pitch_class_names_12et k n =
 -- > pitch_pp_iso (Pitch F DoubleSharp 3) == "Fx3"
 -- > pitch_pp_iso (Pitch C ThreeQuarterToneSharp 4) -- error
 pitch_pp_iso :: Pitch -> String
-pitch_pp_iso (Pitch n a o) = show n ++ alteration_iso a ++ show o
+pitch_pp_iso (Pitch n a o) = show n ++ T.alteration_iso a ++ show o
 
 -- | Pretty printer for 'Pitch' (ASCII, see 'alteration_tonh').
 --
@@ -580,7 +580,7 @@ pitch_pp_iso (Pitch n a o) = show n ++ alteration_iso a ++ show o
 pitch_pp_hly :: Pitch -> String
 pitch_pp_hly (Pitch n a o) =
     let n' = map toLower (show n)
-    in n' ++ alteration_tonh a ++ show o
+    in n' ++ T.alteration_tonh a ++ show o
 
 -- | Pretty printer for 'Pitch' (Tonhöhe, see 'alteration_tonh').
 --
@@ -591,12 +591,12 @@ pitch_pp_tonh :: Pitch -> String
 pitch_pp_tonh (Pitch n a o) =
     let o' = show o
     in case (n,a) of
-         (B,Natural) -> "H" ++ o'
-         (B,Flat) -> "B" ++ o'
-         (B,DoubleFlat) -> "Heses" ++ o'
-         (A,Flat) -> "As" ++ o'
-         (E,Flat) -> "Es" ++ o'
-         _ -> show n ++ alteration_tonh a ++ o'
+         (T.B,T.Natural) -> "H" ++ o'
+         (T.B,T.Flat) -> "B" ++ o'
+         (T.B,T.DoubleFlat) -> "Heses" ++ o'
+         (T.A,T.Flat) -> "As" ++ o'
+         (T.E,T.Flat) -> "Es" ++ o'
+         _ -> show n ++ T.alteration_tonh a ++ o'
 
 -- * 24ET
 
@@ -610,9 +610,9 @@ pitch_pp_tonh (Pitch n a o) =
 -}
 pc24et_univ :: [Pitch]
 pc24et_univ =
-    let a = [Natural,QuarterToneSharp,Sharp,ThreeQuarterToneSharp]
+    let a = [T.Natural,T.QuarterToneSharp,T.Sharp,T.ThreeQuarterToneSharp]
         f (n,k) = map (\i -> Pitch n (a !! i) 4) [0 .. k - 1]
-    in concatMap f (zip [C,D,E,F,G,A,B] [4,4,2,4,4,4,2])
+    in concatMap f (zip T.note_seq [4,4,2,4,4,4,2])
 
 -- | 'genericIndex' into 'pc24et_univ'.
 --

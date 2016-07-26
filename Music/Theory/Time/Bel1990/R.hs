@@ -335,7 +335,7 @@ p_rest = liftM (const Rest) (P.char '-')
 --
 -- > P.parse p_nrests "" "3"
 p_nrests :: P (Bel a)
-p_nrests = liftM nrests p_integer
+p_nrests = liftM nrests p_non_negative_integer
 
 -- | Parse 'Continue' 'Term'.
 --
@@ -361,40 +361,41 @@ p_char_term = P.choice [p_rest,p_continue,p_char_value]
 p_char_node :: P (Bel Char)
 p_char_node = liftM Node p_char_term
 
--- | Parse positive 'Integer'.
+-- | Parse non-negative 'Integer'.
 --
--- > P.parse p_integer "" "3"
-p_integer :: P Integer
-p_integer = liftM read (P.many1 P.digit)
+-- > P.parse p_non_negative_integer "" "3"
+p_non_negative_integer :: P Integer
+p_non_negative_integer = liftM read (P.many1 P.digit)
 
--- | Parse positive 'Rational'.
+-- | Parse non-negative 'Rational'.
 --
--- > P.parse (p_rational `P.sepBy` (P.char ',')) "" "3%5,2/3"
-p_rational :: P Rational
-p_rational = do
-  n <- p_integer
+-- > P.parse (p_non_negative_rational `P.sepBy` (P.char ',')) "" "3%5,2/3"
+p_non_negative_rational :: P Rational
+p_non_negative_rational = do
+  n <- p_non_negative_integer
   _ <- P.oneOf "%/"
-  d <- p_integer
+  d <- p_non_negative_integer
   return (n % d)
 
--- | Parse positive 'Double'.
+-- | Parse non-negative 'Double'.
 --
--- > P.parse p_double "" "3.5"
--- > P.parse (p_double `P.sepBy` (P.char ',')) "" "3.5,7.2,1.0"
-p_double :: P Double
-p_double = do
+-- > P.parse p_non_negative_double "" "3.5"
+-- > P.parse (p_non_negative_double `P.sepBy` (P.char ',')) "" "3.5,7.2,1.0"
+p_non_negative_double :: P Double
+p_non_negative_double = do
   a <- P.many1 P.digit
   _ <- P.char '.'
   b <- P.many1 P.digit
   return (read (a ++ "." ++ b))
 
--- | Parse positive number as 'Rational'.
+-- | Parse non-negative number as 'Rational'.
 --
--- > P.parse (p_number `P.sepBy` (P.char ',')) "" "7%2,3.5,3"
-p_number :: P Rational
-p_number = P.choice [P.try p_rational
-                    ,P.try (liftM toRational p_double)
-                    ,P.try (liftM toRational p_integer)]
+-- > P.parse (p_non_negative_number `P.sepBy` (P.char ',')) "" "7%2,3.5,3"
+p_non_negative_number :: P Rational
+p_non_negative_number =
+    P.choice [P.try p_non_negative_rational
+             ,P.try (liftM toRational p_non_negative_double)
+             ,P.try (liftM toRational p_non_negative_integer)]
 
 -- | Parse 'Mul'.
 --
@@ -402,7 +403,7 @@ p_number = P.choice [P.try p_rational
 p_mul :: P (Bel a)
 p_mul = do
   op <- P.oneOf "*/"
-  n <- p_number
+  n <- p_non_negative_number
   let n' = case op of
              '*' -> n
              '/' -> recip n

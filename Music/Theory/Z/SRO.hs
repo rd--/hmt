@@ -26,21 +26,23 @@ sro_pp (SRO rN r tN m i) =
            ,if m then "M" else ""
            ,if i then "I" else ""]
 
+p_sro :: Integral t => P.GenParser Char () (SRO t)
+p_sro = do
+  let rot = P.option 0 (P.char 'r' >> T.parse_int)
+  r <- rot
+  r' <- T.is_char 'R'
+  _ <- P.char 'T'
+  t <- T.parse_int
+  m <- T.is_char 'M'
+  i <- T.is_char 'I'
+  P.eof
+  return (SRO r r' t m i)
+
 -- | Parse a Morris format serial operator descriptor.
 --
 -- > sro_parse "r2RT3MI" == SRO 2 True 3 True True
 sro_parse :: Integral i => String -> SRO i
-sro_parse s =
-  let rot = P.option 0 (P.char 'r' >> T.parse_int)
-      p = do r <- rot
-             r' <- T.is_char 'R'
-             _ <- P.char 'T'
-             t <- T.parse_int
-             m <- T.is_char 'M'
-             i <- T.is_char 'I'
-             P.eof
-             return (SRO r r' t m i)
-  in either (\e -> error ("sro_parse failed\n" ++ show e)) id (P.parse p "" s)
+sro_parse = either (\e -> error ("sro_parse failed\n" ++ show e)) id . P.parse p_sro ""
 
 -- | The total set of serial operations.
 --
