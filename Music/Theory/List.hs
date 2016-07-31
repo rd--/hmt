@@ -69,15 +69,15 @@ seperate_at x =
 on_elem :: Eq a => a -> Splitter a
 on_elem e = defaultSplitter { delimiter = Delimiter [(==) e] }
 
--- | Split at (before) the indicated element.
+-- | Split before the indicated element.
 --
--- > split_at 'x' "axbcxdefx" == ["a","xbc","xdef","x"]
--- > split_at 'x' "xa" == ["","xa"]
+-- > split_before 'x' "axbcxdefx" == ["a","xbc","xdef","x"]
+-- > split_before 'x' "xa" == ["","xa"]
 --
--- > map (flip split_at "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
+-- > map (flip split_before "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
 -- > map (flip break "abcde" . (==)) "ae_" == [("","abcde"),("abcd","e"),("abcde","")]
-split_at :: Eq a => a -> [a] -> [[a]]
-split_at = split . keepDelimsL . on_elem
+split_before :: Eq a => a -> [a] -> [[a]]
+split_before = split . keepDelimsL . on_elem
 
 -- | Generic form of 'rotate_left'.
 genericRotate_left :: Integral i => i -> [a] -> [a]
