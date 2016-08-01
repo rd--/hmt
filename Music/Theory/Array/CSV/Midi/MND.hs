@@ -23,8 +23,8 @@ reads_exact s =
       _ -> Nothing
 
 -- | Variant of 'reads_exact' that errors on failure.
-reads_err :: Read a => String -> a
-reads_err str = fromMaybe (error ("reads_err: " ++ str)) (reads_exact str)
+reads_err :: Read a => String -> String -> a
+reads_err err str = fromMaybe (error ("reads: " ++ err ++ ": " ++ str)) (reads_exact str)
 
 -- | Show /r/ as float to /k/ places.
 real_pp :: Real t => Int -> t -> String
@@ -52,11 +52,11 @@ csv_mnd_parse (hdr,dat) =
     let err x = error ("csv_mnd_read: " ++ x)
         f m = case m of
                 [st,msg,mnn,vel,ch] ->
-                    (reads_err st
+                    (reads_err "time:real" st
                     ,msg
-                    ,reads_err mnn
-                    ,reads_err vel
-                    ,reads_err ch)
+                    ,reads_err "note:real" mnn
+                    ,reads_err "velocity:real" vel
+                    ,reads_err "channel:int" ch)
                 _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
@@ -127,12 +127,12 @@ csv_mndd_parse (hdr,dat) =
         f m =
             case m of
               [st,du,msg,mnn,vel,ch] ->
-                  (reads_err st
-                  ,reads_err du
+                  (reads_err "time" st
+                  ,reads_err "duration" du
                   ,msg
-                  ,reads_err mnn
-                  ,reads_err vel
-                  ,reads_err ch)
+                  ,reads_err "note" mnn
+                  ,reads_err "velocity" vel
+                  ,reads_err "channel" ch)
               _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
