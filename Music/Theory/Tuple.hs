@@ -17,7 +17,7 @@ p2_swap (i,j) = (j,i)
 type T2 a = (a,a)
 
 t2_from_list :: [t] -> T2 t
-t2_from_list l = case l of {[p,q] -> (p,q);_ -> error "t2"}
+t2_from_list l = case l of {[p,q] -> (p,q);_ -> error "t2_from_list"}
 
 t2_to_list :: T2 a -> [a]
 t2_to_list (i,j) = [i,j]
@@ -68,7 +68,7 @@ p3_third (_,_,c) = c
 type T3 a = (a,a,a)
 
 t3_from_list :: [t] -> T3 t
-t3_from_list l = case l of {[p,q,r] -> (p,q,r);_ -> error "t3"}
+t3_from_list l = case l of {[p,q,r] -> (p,q,r);_ -> error "t3_from_list"}
 
 t3_to_list :: T3 a -> [a]
 t3_to_list (i,j,k) = [i,j,k]
@@ -116,7 +116,7 @@ p4_fourth (_,_,_,d) = d
 type T4 a = (a,a,a,a)
 
 t4_from_list :: [t] -> T4 t
-t4_from_list l = case l of {[p,q,r,s] -> (p,q,r,s); _ -> error "t4"}
+t4_from_list l = case l of {[p,q,r,s] -> (p,q,r,s); _ -> error "t4_from_list"}
 
 t4_to_list :: T4 t -> [t]
 t4_to_list (p,q,r,s) = [p,q,r,s]
@@ -167,7 +167,7 @@ p5_fifth (_,_,_,_,e) = e
 type T5 a = (a,a,a,a,a)
 
 t5_from_list :: [t] -> T5 t
-t5_from_list l = case l of {[p,q,r,s,t] -> (p,q,r,s,t); _ -> error "t5"}
+t5_from_list l = case l of {[p,q,r,s,t] -> (p,q,r,s,t); _ -> error "t5_from_list"}
 
 t5_to_list :: T5 t -> [t]
 t5_to_list (p,q,r,s,t) = [p,q,r,s,t]
@@ -218,7 +218,7 @@ p6_sixth (_,_,_,_,_,f) = f
 type T6 a = (a,a,a,a,a,a)
 
 t6_from_list :: [t] -> T6 t
-t6_from_list l = case l of {[p,q,r,s,t,u] -> (p,q,r,s,t,u);_ -> error "t6"}
+t6_from_list l = case l of {[p,q,r,s,t,u] -> (p,q,r,s,t,u);_ -> error "t6_from_list"}
 
 t6_to_list :: T6 t -> [t]
 t6_to_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
@@ -260,3 +260,30 @@ t9_to_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
 
 t9_map :: (p -> q) -> T9 p -> T9 q
 t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)
+
+-- * T12 (12-tuple, regular)
+
+type T12 t = (t,t,t,t,t,t,t,t,t,t,t,t)
+
+t12_to_list :: T12 t -> [t]
+t12_to_list (p,q,r,s,t,u,v,w,x,y,z,a) = [p,q,r,s,t,u,v,w,x,y,z,a]
+
+t12_from_list :: [t] -> T12 t
+t12_from_list l =
+    case l of
+      [p,q,r,s,t,u,v,w,x,y,z,a] -> (p,q,r,s,t,u,v,w,x,y,z,a)
+      _ -> error "t12_from_list"
+
+-- | 'foldr1' of 't12_to_list'.
+--
+-- > t12_foldr1 (+) (1,2,3,4,5,6,7,8,9,10,11,12) == 78
+t12_foldr1 :: (t -> t -> t) -> T12 t -> t
+t12_foldr1 f = foldr1 f . t12_to_list
+
+-- | 'sum' of 't12_to_list'.
+--
+-- > t12_sum (1,2,3,4,5,6,7,8,9,10,11,12) == 78
+t12_sum :: Num n => T12 n -> n
+t12_sum t =
+    let (n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12) = t
+    in n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8 + n9 + n10 + n11 + n12
