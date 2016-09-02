@@ -375,6 +375,13 @@ sc_table_utf8 =
     let f = map (\c -> if c == '-' then utf8_non_breaking_hypen else c)
     in map (\(nm,pc) -> (f nm,pc)) sc_table
 
+-- | Lookup name of prime form of set class.  It is an error for the
+-- input not to be a forte prime form.
+--
+-- > forte_prime_name [0,1,4,6] == ("4-Z15",[0,1,4,6])
+forte_prime_name :: (Num n,Eq n) => [n] -> (SC_Name,[n])
+forte_prime_name p = fromMaybe (error "forte_prime_name") (find (\(_,q) -> p == q) sc_table)
+
 sc_tbl_lookup :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> Maybe (SC_Name,[i])
 sc_tbl_lookup z tbl p = find (\(_,q) -> forte_prime z p == q) tbl
 

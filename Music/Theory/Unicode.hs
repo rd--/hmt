@@ -1,6 +1,6 @@
 -- | <http://www.unicode.org/charts/PDF/U1D100.pdf>
 --
--- <http://unicode.org/Public/8.0.0/ucd/UnicodeData.txt>
+-- These symbols are in <http://www.gnu.org/software/freefont/>, debian=ttf-freefont.
 module Music.Theory.Unicode where
 
 import Data.List {- base -}
@@ -152,6 +152,8 @@ unicode_blocks =
 
 -- * Table
 
+-- | <http://unicode.org/Public/8.0.0/ucd/UnicodeData.txt>
+--
 -- > let fn = "/home/rohan/data/unicode.org/Public/8.0.0/ucd/UnicodeData.txt"
 -- > tbl <- unicode_data_table_read fn
 -- > length tbl == 29215
