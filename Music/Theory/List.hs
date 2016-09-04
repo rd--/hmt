@@ -404,6 +404,9 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
+lookup_err' :: (Eq k,Show k) => String -> k -> [(k,v)] -> v
+lookup_err' err k = fromMaybe (error (err ++ ": " ++ show k)) . lookup k
+
 -- | Error variant.
 lookup_err :: Eq k => k -> [(k,v)] -> v
 lookup_err n = fromMaybe (error "lookup") . lookup n

@@ -6,11 +6,14 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import Music.Theory.Duration
-import Music.Theory.Duration.Name
+import Music.Theory.Duration {- hmt -}
 
 -- | Rational Quarter-Note
 type RQ = Rational
+
+-- > rq_duration_tbl 2
+rq_duration_tbl :: Integer -> [(Rational,Duration)]
+rq_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
 
 -- | Rational quarter note to duration value.  It is a mistake to hope
 -- this could handle tuplets directly since, for instance, a @3:2@
@@ -18,24 +21,7 @@ type RQ = Rational
 --
 -- > rq_to_duration (3/4) == Just dotted_eighth_note
 rq_to_duration :: RQ -> Maybe Duration
-rq_to_duration x =
-    case (numerator x,denominator x) of
-      (1,8) -> Just thirtysecond_note
-      (3,16) -> Just dotted_thirtysecond_note
-      (1,4) -> Just sixteenth_note
-      (3,8) -> Just dotted_sixteenth_note
-      (1,2) -> Just eighth_note
-      (3,4) -> Just dotted_eighth_note
-      (1,1) -> Just quarter_note
-      (3,2) -> Just dotted_quarter_note
-      (2,1) -> Just half_note
-      (3,1) -> Just dotted_half_note
-      (7,2) -> Just double_dotted_half_note
-      (4,1) -> Just whole_note
-      (6,1) -> Just dotted_whole_note
-      (8,1) -> Just breve
-      (12,1) -> Just dotted_breve
-      _ -> Nothing
+rq_to_duration x = lookup x (rq_duration_tbl 2)
 
 -- | Is 'RQ' a /cmn/ duration.
 --

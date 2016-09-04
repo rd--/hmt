@@ -2,7 +2,8 @@
 -- There are /letter/ names where 'w' is 'whole_note' and so on, and
 -- /numerical/ names where '_4' is 'quarter_note' and so on.  In both
 -- cases a @'@ extension means a @dot@ so that 'e''' is a double
--- dotted 'eighth_note'.
+-- dotted 'eighth_note'.  The prefix is @_@ not @d@ since @d4@ etc. are
+-- also note names.
 --
 -- > zipWith duration_compare_meq [e,e,e,e'] [e,s,q,e] == [EQ,GT,LT,GT]
 -- > zipWith sum_dur [e,q,q'] [e,e,e] == [Just q,Just q',Just h]

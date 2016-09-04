@@ -1,6 +1,7 @@
 -- | <http://www.unicode.org/charts/PDF/U1D100.pdf>
 --
--- These symbols are in <http://www.gnu.org/software/freefont/>, debian=ttf-freefont.
+-- These symbols are in <http://www.gnu.org/software/freefont/>,
+-- debian=ttf-freefont.
 module Music.Theory.Unicode where
 
 import Data.List {- base -}
@@ -78,6 +79,10 @@ rests =
     ,(0x1D141,"MUSICAL SYMBOL SIXTY-FOURTH REST")
     ,(0x1D142,"MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH REST")]
 
+-- > map toEnum [0x1D15F,0x1D16D,0x1D16D] == "𝅘𝅥𝅭𝅭"
+augmentation_dot :: Unicode_Point
+augmentation_dot = (0x1D16D, "MUSICAL SYMBOL COMBINING AUGMENTATION DOT")
+
 -- > putStrLn$ unicode_table_hs (unicode_table_block clefs_rng tbl)
 clefs_rng :: Unicode_Range
 clefs_rng = (0x1D11E,0x1D126)
@@ -132,9 +137,9 @@ noteheads =
     ,(0x1d15a,"MUSICAL SYMBOL CLUSTER NOTEHEAD WHITE")
     ,(0x1d15b,"MUSICAL SYMBOL CLUSTER NOTEHEAD BLACK")]
 
--- > putStrLn$ map toEnum [0x1D15F,0x1D16D]
-augmentation_dot :: Unicode_Point
-augmentation_dot = (0x1D16D, "MUSICAL SYMBOL COMBINING AUGMENTATION DOT")
+-- > map toEnum [0x1D143,0x1D165] == "𝅃𝅥"
+stem :: Unicode_Point
+stem = (0x1D165, "MUSICAL SYMBOL COMBINING STEM")
 
 -- * Blocks
 

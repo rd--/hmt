@@ -6,6 +6,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Ord as T {- hmt -}
 
 -- | Common music notation durational model
@@ -18,6 +19,10 @@ data Duration = Duration {division :: Integer -- ^ division of whole note
 -- | Are multipliers equal?
 duration_meq :: Duration -> Duration -> Bool
 duration_meq p q = multiplier p == multiplier q
+
+-- | Is multiplier the identity (ie. @1@)?
+duration_m1 :: Duration -> Bool
+duration_m1 = (== 1) . multiplier
 
 -- | Compare durations with equal multipliers.
 duration_compare_meq :: Duration -> Duration -> Maybe Ordering
@@ -97,87 +102,101 @@ sum_dur_err y0 y1 =
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2
 
--- | Give @MusicXML@ type for division.
---
--- > map whole_note_division_to_musicxml_type [2,4] == ["half","quarter"]
-whole_note_division_to_musicxml_type :: Integer -> String
-whole_note_division_to_musicxml_type x =
-    case x of
-      256 -> "256th"
-      128 -> "128th"
-      64 -> "64th"
-      32 -> "32nd"
-      16 -> "16th"
-      8 -> "eighth"
-      4 -> "quarter"
-      2 -> "half"
-      1 -> "whole"
-      0 -> "breve"
-      -1 -> "long"
-      _ -> error ("whole_note_division_to_musicxml_type: " ++ show x)
+-- | Standard divisions (from 0 to 256).  MusicXML allows @-1@ as a division (for @long@).
+divisions_set :: [Integer]
+divisions_set = [0,1,2,4,8,16,32,64,128,256]
 
--- | Variant of 'whole_note_division_to_musicxml_type' extracting
--- 'division' from 'Duration'.
---
--- > duration_to_musicxml_type quarter_note == "quarter"
-duration_to_musicxml_type :: Duration -> String
-duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
+-- | Durations set derived from 'divisions_set' with up to /k/ dots.  Multiplier of @1@.
+duration_set :: Integer -> [Duration]
+duration_set k = [Duration dv dt 1 | dv <- divisions_set, dt <- [0..k]]
 
--- | Give /Lilypond/ notation for 'Duration'.  Note that the duration
--- multiplier is /not/ written.
---
--- > import Music.Theory.Duration.Name
--- > map duration_to_lilypond_type [half_note,dotted_quarter_note] == ["2","4."]
-duration_to_lilypond_type :: Duration -> String
-duration_to_lilypond_type (Duration dv d _) =
-    let dv' = if dv == 0 then "\\breve" else show dv
-    in dv' ++ replicate (fromIntegral d) '.'
+-- | Table of number of beams at notated division.
+beam_count_tbl :: [(Integer,Integer)]
+beam_count_tbl = zip (-1 : divisions_set) [0,0,0,0,0,1,2,3,4,5,6]
 
--- | Calculate number of beams at notated division.
+-- | Lookup 'beam_count_tbl'.
 --
 -- > whole_note_division_to_beam_count 32 == Just 3
 whole_note_division_to_beam_count :: Integer -> Maybe Integer
-whole_note_division_to_beam_count x =
-    let t = [(256,6),(128,5),(64,4),(32,3),(16,2),(8,1)
-            ,(4,0),(2,0),(1,0),(0,0),(-1,0)]
-    in lookup x t
+whole_note_division_to_beam_count x = lookup x beam_count_tbl
 
 -- | Calculate number of beams at 'Duration'.
 --
--- > map duration_beam_count [half_note,sixteenth_note] == [0,2]
+-- > map duration_beam_count [Duration 2 0 1,Duration 16 0 1] == [0,2]
 duration_beam_count :: Duration -> Integer
 duration_beam_count (Duration x _ _) =
     let err = error "duration_beam_count"
         bc = whole_note_division_to_beam_count x
     in fromMaybe err bc
 
-whole_note_division_pp :: Integer -> Maybe Char
-whole_note_division_pp x =
-    let t = [(16,'s'),(8,'e'),(4,'q'),(2,'h'),(1,'w')]
-    in lookup x t
+-- * MusicXML
 
--- > import Music.Theory.Duration.Name.Abbreviation
--- > map duration_pp [q,h',e''] == [Just "q",Just "h'",Just "e''"]
-duration_pp :: Duration -> Maybe String
-duration_pp (Duration x d m) =
-    let d' = genericReplicate d '\''
-        m' = case (numerator m,denominator m) of
-               (1,1) -> ""
-               (1,i) -> '/' : show i
-               (i,j) -> '*' : show i ++ "/" ++ show j
-    in case whole_note_division_pp x of
-         Just x' -> Just (x' : d' ++ m')
-         _ -> Nothing
+-- | Table giving @MusicXML@ types for divisions.
+division_musicxml_tbl :: [(Integer,String)]
+division_musicxml_tbl =
+    let nm = ["long","breve","whole","half","quarter","eighth"
+             ,"16th","32nd","64th","128th","256th"]
+    in zip (-1 : divisions_set) nm
 
--- | Duration to @**recip@ notation.
+-- | Lookup 'division_musicxml_tbl'.
 --
--- http://humdrum.org/Humdrum/representations/recip.rep.html
+-- > map whole_note_division_to_musicxml_type [2,4] == ["half","quarter"]
+whole_note_division_to_musicxml_type :: Integer -> String
+whole_note_division_to_musicxml_type x =
+    T.lookup_err' "division_musicxml_tbl" x division_musicxml_tbl
+
+-- | Variant of 'whole_note_division_to_musicxml_type' extracting
+-- 'division' from 'Duration', dots & multipler are ignored.
 --
--- > let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
--- > in map duration_recip_pp d == ["0","1","2","4","8","16","32"]
+-- > duration_to_musicxml_type (Duration 4 0 1) == "quarter"
+duration_to_musicxml_type :: Duration -> String
+duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
+
+-- * Unicode
+
+-- | Table giving @Unicode@ symbols for divisions.
+division_unicode_tbl :: [(Integer,Char)]
+division_unicode_tbl = zip [0,1,2,4,8,16,32,64,128,256] "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅥𝅲"
+
+-- | Lookup 'division_unicode_tbl'.
 --
--- > let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
--- > in map duration_recip_pp d == ["3.","4.","6."]
+-- > map whole_note_division_to_unicode_symbol [1,2,4,8] == "𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮"
+whole_note_division_to_unicode_symbol :: Integer -> Char
+whole_note_division_to_unicode_symbol x =
+    T.lookup_err' "division_unicode_tbl" x division_unicode_tbl
+
+-- | Give Unicode string for 'Duration'. The duration multiplier is /not/ written.
+--
+-- > map duration_to_unicode [Duration 1 2 1,Duration 4 1 1] == ["𝅝𝅭𝅭","𝅘𝅥𝅭"]
+duration_to_unicode :: Duration -> String
+duration_to_unicode (Duration dv d _) =
+    let dv' = whole_note_division_to_unicode_symbol dv
+    in dv' : replicate (fromIntegral d) '𝅭'
+
+-- * Lilypond
+
+-- | Give /Lilypond/ notation for 'Duration'.  Note that the duration
+-- multiplier is /not/ written.
+--
+-- > map duration_to_lilypond_type [Duration 2 0 1,Duration 4 1 1] == ["2","4."]
+duration_to_lilypond_type :: Duration -> String
+duration_to_lilypond_type (Duration dv d _) =
+    let dv' = if dv == 0 then "\\breve" else show dv
+    in dv' ++ replicate (fromIntegral d) '.'
+
+-- * Humdrum
+
+{- | Duration to @**recip@ notation.
+
+<http://humdrum.org/Humdrum/representations/recip.rep.html>
+
+> let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
+> in map duration_recip_pp d == ["0","1","2","4","8","16","32"]
+
+> let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
+> in map duration_recip_pp d == ["3.","4.","6."]
+
+-}
 duration_recip_pp :: Duration -> String
 duration_recip_pp (Duration x d m) =
     let (mn,md) = (numerator m,denominator m)
@@ -185,3 +204,23 @@ duration_recip_pp (Duration x d m) =
     in if denominator r == 1
        then show (numerator r) ++ genericReplicate d '.'
        else error (show ("duration_recip_pp",x,d,m,r))
+
+-- * Letter
+
+whole_note_division_letter_pp :: Integer -> Maybe Char
+whole_note_division_letter_pp x =
+    let t = [(16,'s'),(8,'e'),(4,'q'),(2,'h'),(1,'w')]
+    in lookup x t
+
+-- > mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1] == ["q","h'","e''"]
+-- > duration_letter_pp
+duration_letter_pp :: Duration -> Maybe String
+duration_letter_pp (Duration x d m) =
+    let d' = genericReplicate d '\''
+        m' = case (numerator m,denominator m) of
+               (1,1) -> ""
+               (1,i) -> '/' : show i
+               (i,j) -> '*' : show i ++ "/" ++ show j
+    in case whole_note_division_letter_pp x of
+         Just x' -> Just (x' : d' ++ m')
+         _ -> Nothing
