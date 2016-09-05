@@ -22,16 +22,19 @@ type Unicode_Table = [Unicode_Point]
 unicode :: [Unicode_Table]
 unicode = [accidentals,notes,rests,clefs]
 
--- > putStrLn$ unicode_table_hs (unicode_table_block accidentals_rng tbl)
-accidentals_rng :: Unicode_Range
-accidentals_rng = (0x1D12A,0x1D133)
+-- > putStrLn$ concatMap (unicode_table_hs . flip unicode_table_block tbl) accidentals_rng_set
+accidentals_rng_set :: [Unicode_Range]
+accidentals_rng_set = [(0x266D,0x266F),(0x1D12A,0x1D133)]
 
 -- | UNICODE accidental symbols.
 --
--- > let r = "𝄪𝄫𝄬𝄭𝄮𝄯𝄰𝄱𝄲𝄳" in map (toEnum . fst) accidentals == r
+-- > let r = "♭♮♯𝄪𝄫𝄬𝄭𝄮𝄯𝄰𝄱𝄲𝄳" in map (toEnum . fst) accidentals == r
 accidentals :: Unicode_Table
 accidentals =
-    [(0x1D12A,"MUSICAL SYMBOL DOUBLE SHARP")
+    [(0x266D,"MUSIC FLAT SIGN")
+    ,(0x266E,"MUSIC NATURAL SIGN")
+    ,(0x266F,"MUSIC SHARP SIGN")
+    ,(0x1D12A,"MUSICAL SYMBOL DOUBLE SHARP")
     ,(0x1D12B,"MUSICAL SYMBOL DOUBLE FLAT")
     ,(0x1D12C,"MUSICAL SYMBOL FLAT UP")
     ,(0x1D12D,"MUSICAL SYMBOL FLAT DOWN")
@@ -79,7 +82,7 @@ rests =
     ,(0x1D141,"MUSICAL SYMBOL SIXTY-FOURTH REST")
     ,(0x1D142,"MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH REST")]
 
--- > map toEnum [0x1D15F,0x1D16D,0x1D16D] == "𝅘𝅥𝅭𝅭"
+-- > map toEnum [0x1D15E,0x1D16D,0x1D16D] == "𝅗𝅥𝅭𝅭"
 augmentation_dot :: Unicode_Point
 augmentation_dot = (0x1D16D, "MUSICAL SYMBOL COMBINING AUGMENTATION DOT")
 
@@ -102,7 +105,7 @@ clefs =
     ,(0x1D125,"MUSICAL SYMBOL DRUM CLEF-1")
     ,(0x1D126,"MUSICAL SYMBOL DRUM CLEF-2")]
 
--- > putStrLn$ unicode_table_hs (unicode_table_block notehead_rng tbl)
+-- > putStrLn$ unicode_table_hs (unicode_table_block tbl notehead_rng)
 notehead_rng :: Unicode_Range
 notehead_rng = (0x1D143,0x1D15B)
 
