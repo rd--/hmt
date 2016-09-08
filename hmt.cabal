@@ -71,6 +71,7 @@ Library
                    Music.Theory.Function
                    Music.Theory.Graph.FGL
                    Music.Theory.Instrument.Choir
+                   Music.Theory.Instrument.Names
                    Music.Theory.Interval
                    Music.Theory.Interval.Barlow_1987
                    Music.Theory.Interval.Name
