@@ -13,6 +13,22 @@ import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 
+-- * Non-music
+
+-- | Unicode non breaking hypen character.
+--
+-- > non_breaking_hypen == '‑'
+non_breaking_hypen :: Char
+non_breaking_hypen = toEnum 0x2011
+
+-- | Unicode non breaking space character.
+--
+-- > non_breaking_space == ' '
+non_breaking_space :: Char
+non_breaking_space = toEnum 0x00A0
+
+-- * Music
+
 type Unicode_Index = Int
 type Unicode_Range = (Unicode_Index,Unicode_Index)
 type Unicode_Point = (Unicode_Index,String)

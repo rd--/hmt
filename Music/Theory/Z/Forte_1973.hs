@@ -8,6 +8,7 @@ import Data.Maybe {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Set.List as S {- hmt -}
 
+import Music.Theory.Unicode {- hmt -}
 import Music.Theory.Z {- hmt -}
 import Music.Theory.Z.SRO {- hmt -}
 
@@ -366,13 +367,10 @@ sc_table =
     ,("11-1",[0,1,2,3,4,5,6,7,8,9,10])
     ,("12-1",[0,1,2,3,4,5,6,7,8,9,10,11])]
 
-utf8_non_breaking_hypen :: Char
-utf8_non_breaking_hypen = '‑'
-
--- | UTF-8 (non-breaking hyphen) variant.
-sc_table_utf8 :: Num n => [(SC_Name,[n])]
-sc_table_utf8 =
-    let f = map (\c -> if c == '-' then utf8_non_breaking_hypen else c)
+-- | Unicode (non-breaking hyphen) variant.
+sc_table_unicode :: Num n => [(SC_Name,[n])]
+sc_table_unicode =
+    let f = map (\c -> if c == '-' then non_breaking_hypen else c)
     in map (\(nm,pc) -> (f nm,pc)) sc_table
 
 -- | Lookup name of prime form of set class.  It is an error for the
@@ -407,9 +405,9 @@ sc_name_long z p =
     let (nm,p') = sc_tbl_lookup_err z sc_table p
     in nm ++ z16_vec_pp p'
 
--- | UTF-8 (non-breaking hyphen) variant.
-sc_name_utf8 :: Integral i => Z i -> [i] -> SC_Name
-sc_name_utf8 z = sc_name' z sc_table_utf8
+-- | Unicode (non-breaking hyphen) variant.
+sc_name_unicode :: Integral i => Z i -> [i] -> SC_Name
+sc_name_unicode z = sc_name' z sc_table_unicode
 
 -- | Lookup a set-class given a set-class name.
 --
