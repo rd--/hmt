@@ -645,6 +645,14 @@ m_simplify p ts =
         z i (j,_) = i + duration_to_rq j
     in coalesce_sum z 0 f
 
+-- | Run simplifier until it reaches a fix-point, or for at most 'limit' passes.
+m_simplify_fix :: Int -> Simplify_P -> Time_Signature -> [Duration_A] -> [Duration_A]
+m_simplify_fix limit p ts d =
+    let d' = m_simplify p ts d
+    in if d == d' || limit == 1
+       then d'
+       else m_simplify_fix (limit - 1) p ts d'
+
 -- | Pulse simplifier predicate, which is 'const' 'True'.
 p_simplify_rule :: Simplify_P
 p_simplify_rule = const True
@@ -676,20 +684,20 @@ p_simplify = m_simplify p_simplify_rule undefined
 >  in T.notate_rqp sr ts (Just ts_p) rq
 
 -}
-notate_rqp :: Simplify_P -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] ->
+notate_rqp :: Int -> Simplify_P -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] ->
               Either String [[Duration_A]]
-notate_rqp r ts ts_p x = do
+notate_rqp limit r ts ts_p x = do
   let ts_p' = fromMaybe (map ts_divisions ts) ts_p
   mm <- to_divisions_rq ts_p' x
   dd <- mm_notate mm
-  return (zipWith (m_simplify r) ts dd)
+  return (zipWith (m_simplify_fix limit r) ts dd)
 
 -- | Variant of 'notate_rqp' without pulse divisions (derive).
 --
 -- > notate (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
-notate :: Simplify_P -> [Time_Signature] -> [RQ] ->
+notate :: Int -> Simplify_P -> [Time_Signature] -> [RQ] ->
           Either String [[Duration_A]]
-notate r ts x = notate_rqp r ts Nothing x
+notate limit r ts x = notate_rqp limit r ts Nothing x
 
 -- * Ascribe
 
@@ -771,17 +779,17 @@ mm_ascribe mm x =
                in r : mm_ascribe mm' x'
 
 -- | 'mm_ascribe of 'notate'.
-notate_mm_ascribe :: Show a => [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
+notate_mm_ascribe :: Show a => Int -> [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
                      Either String [[(Duration_A,a)]]
-notate_mm_ascribe r ts rqp d p =
-    let n = notate_rqp (default_rule r) ts rqp d
+notate_mm_ascribe limit r ts rqp d p =
+    let n = notate_rqp limit (default_rule r) ts rqp d
         f = flip mm_ascribe p
         err str = show ("notate_ascribe",str,ts,d,p)
     in either (Left . err) (Right . f) n
 
-notate_mm_ascribe_err :: Show a => [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
+notate_mm_ascribe_err :: Show a => Int -> [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
                          [[(Duration_A,a)]]
-notate_mm_ascribe_err = either error id .:::: notate_mm_ascribe
+notate_mm_ascribe_err = either error id .::::: notate_mm_ascribe
 
 -- | Group elements as /chords/ where a chord element is indicated by
 -- the given predicate.
