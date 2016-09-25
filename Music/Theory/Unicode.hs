@@ -160,6 +160,47 @@ noteheads =
 stem :: Unicode_Point
 stem = (0x1D165, "MUSICAL SYMBOL COMBINING STEM")
 
+-- > putStrLn$ unicode_table_hs (unicode_table_block dynamics_rng tbl)
+dynamics_rng :: Unicode_Range
+dynamics_rng = (0x1D18C,0x1D193)
+
+-- > map (toEnum . fst) dynamics == "𝆌𝆍𝆎𝆏𝆐𝆑𝆒𝆓"
+dynamics :: Unicode_Table
+dynamics =
+    [(0x1d18c,"MUSICAL SYMBOL RINFORZANDO")
+    ,(0x1d18d,"MUSICAL SYMBOL SUBITO")
+    ,(0x1d18e,"MUSICAL SYMBOL Z")
+    ,(0x1d18f,"MUSICAL SYMBOL PIANO")
+    ,(0x1d190,"MUSICAL SYMBOL MEZZO")
+    ,(0x1d191,"MUSICAL SYMBOL FORTE")
+    ,(0x1d192,"MUSICAL SYMBOL CRESCENDO")
+    ,(0x1d193,"MUSICAL SYMBOL DECRESCENDO")]
+
+-- > putStrLn$ unicode_table_hs (unicode_table_block articulations_rng tbl)
+articulations_rng :: Unicode_Range
+articulations_rng = (0x1D17B,0x1D18B)
+
+-- > putStrLn (map (toEnum . fst) articulations :: String)
+articulations :: Unicode_Table
+articulations =
+    [(0x1d17b,"MUSICAL SYMBOL COMBINING ACCENT")
+    ,(0x1d17c,"MUSICAL SYMBOL COMBINING STACCATO")
+    ,(0x1d17d,"MUSICAL SYMBOL COMBINING TENUTO")
+    ,(0x1d17e,"MUSICAL SYMBOL COMBINING STACCATISSIMO")
+    ,(0x1d17f,"MUSICAL SYMBOL COMBINING MARCATO")
+    ,(0x1d180,"MUSICAL SYMBOL COMBINING MARCATO-STACCATO")
+    ,(0x1d181,"MUSICAL SYMBOL COMBINING ACCENT-STACCATO")
+    ,(0x1d182,"MUSICAL SYMBOL COMBINING LOURE")
+    ,(0x1d183,"MUSICAL SYMBOL ARPEGGIATO UP")
+    ,(0x1d184,"MUSICAL SYMBOL ARPEGGIATO DOWN")
+    ,(0x1d185,"MUSICAL SYMBOL COMBINING DOIT")
+    ,(0x1d186,"MUSICAL SYMBOL COMBINING RIP")
+    ,(0x1d187,"MUSICAL SYMBOL COMBINING FLIP")
+    ,(0x1d188,"MUSICAL SYMBOL COMBINING SMEAR")
+    ,(0x1d189,"MUSICAL SYMBOL COMBINING BEND")
+    ,(0x1d18a,"MUSICAL SYMBOL COMBINING DOUBLE TONGUE")
+    ,(0x1d18b,"MUSICAL SYMBOL COMBINING TRIPLE TONGUE")]
+
 -- * Blocks
 
 type Unicode_Block = (Unicode_Range,String)

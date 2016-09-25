@@ -155,4 +155,8 @@ let r = permutation [1..5] [2,4,5,1,3] -- [[0,1,3],[2,4]]
 map P.cycles (permutations_n 3)
 map P.cycles (permutations_n 4)
 partition not (map non_invertible (permutations_n 4))
+
+import Data.List {- base -}
+putStrLn $ unlines $ map unwords $ permutations ["A0","A1","B0"]
+
 -}
