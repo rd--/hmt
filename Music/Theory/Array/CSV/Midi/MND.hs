@@ -67,13 +67,13 @@ csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n
 csv_mnd_parse (hdr,dat) =
     let err x = error ("csv_mnd_read: " ++ x)
         f m = case m of
-                [st,msg,mnn,vel,ch] ->
+                [st,msg,mnn,vel,ch,pm] ->
                     (reads_err "time:real" st
                     ,msg
                     ,reads_err "note:real" mnn
                     ,reads_err "velocity:real" vel
                     ,reads_err "channel:int" ch
-                    ,[])
+                    ,param_parse pm)
                 _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
