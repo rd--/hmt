@@ -4,6 +4,8 @@
 -- Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
+import Data.List.Split {- split -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 import Numeric {- base -}
@@ -39,13 +41,27 @@ type Channel = Word8
 
 -- | The required header field.
 csv_mnd_hdr :: [String]
-csv_mnd_hdr = ["time","on/off","note","velocity","channel"]
+csv_mnd_hdr = ["time","on/off","note","velocity","channel","param"]
+
+type Param = (String,Double)
+
+param_parse :: String -> [Param]
+param_parse =
+    let f x = case splitOn "=" x of
+                [lhs,rhs] -> (lhs,read rhs)
+                _ -> error ("param_parse: " ++ x)
+    in map f . splitOn ";"
+
+param_pp :: Int -> [Param] -> String
+param_pp k =
+    let f (lhs,rhs) = concat [lhs,"=",real_pp k rhs]
+    in intercalate ";" . map f
 
 -- | Midi note data, the type parameters are to allow for fractional note & velocity values.
 -- The command is a string, @on@ and @off@ are standard, other commands may be present.
 --
--- > unwords csv_mnd_hdr == "time on/off note velocity channel"
-type MND t n = (t,String,n,n,Channel)
+-- > unwords csv_mnd_hdr == "time on/off note velocity channel param"
+type MND t n = (t,String,n,n,Channel,[Param])
 
 csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n]
 csv_mnd_parse (hdr,dat) =
@@ -56,7 +72,8 @@ csv_mnd_parse (hdr,dat) =
                     ,msg
                     ,reads_err "note:real" mnn
                     ,reads_err "velocity:real" vel
-                    ,reads_err "channel:int" ch)
+                    ,reads_err "channel:int" ch
+                    ,[])
                 _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
@@ -76,9 +93,11 @@ csv_mnd_read = fmap csv_mnd_parse . load_csv
 -- | Writer.
 csv_mnd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MND t n] -> IO ()
 csv_mnd_write r_prec nm =
-    let un_node (st,msg,mnn,vel,ch) = [real_pp r_prec st,msg
-                                      ,data_value_pp r_prec mnn,data_value_pp r_prec vel
-                                      ,show ch]
+    let un_node (st,msg,mnn,vel,ch,pm) =
+            [real_pp r_prec st,msg
+            ,data_value_pp r_prec mnn,data_value_pp r_prec vel
+            ,show ch
+            ,param_pp r_prec pm]
         with_hdr dat = (Just csv_mnd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
@@ -91,9 +110,10 @@ midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq (\(n0,_,c0) (n1,_,c1) -> c0 == c1
 midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
 midi_wseq_to_midi_tseq = T.wseq_on_off
 
+-- | Ignores non on/off messages, also all 'Param'.
 mnd_to_tseq :: Num n => [MND t n] -> T.Tseq t (T.On_Off (n,n,Channel))
 mnd_to_tseq =
-    let mk_node (st,msg,mnn,vel,ch) =
+    let mk_node (st,msg,mnn,vel,ch,_pm) =
             case msg of
               "on" -> Just (st,T.On (mnn,vel,ch))
               "off" -> Just (st,T.Off (mnn,0,ch))
@@ -108,31 +128,32 @@ csv_mnd_read_tseq = fmap mnd_to_tseq . csv_mnd_read
 csv_mnd_write_tseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (n,n,Channel)) -> IO ()
 csv_mnd_write_tseq r_prec nm sq =
     let f (t,e) = case e of
-                    T.On (n,v,c) -> (t,"on",n,v,c)
-                    T.Off (n,_,c) -> (t,"off",n,0,c)
+                    T.On (n,v,c) -> (t,"on",n,v,c,[])
+                    T.Off (n,_,c) -> (t,"off",n,0,c,[])
     in csv_mnd_write r_prec nm (map f sq)
 
 -- * MNDD (simplifies cases where overlaps on the same channel are allowed).
 
 -- | Message should be @note@ for note data.
 csv_mndd_hdr :: [String]
-csv_mndd_hdr = ["time","duration","message","note","velocity","channel"]
+csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 
--- > unwords csv_mndd_hdr == "time duration message note velocity channel"
-type MNDD t n = (t,t,String,n,n,Channel)
+-- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
+type MNDD t n = (t,t,String,n,n,Channel,[Param])
 
 csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
 csv_mndd_parse (hdr,dat) =
     let err x = error ("csv_mndd_read: " ++ x)
         f m =
             case m of
-              [st,du,msg,mnn,vel,ch] ->
+              [st,du,msg,mnn,vel,ch,pm] ->
                   (reads_err "time" st
                   ,reads_err "duration" du
                   ,msg
                   ,reads_err "note" mnn
                   ,reads_err "velocity" vel
-                  ,reads_err "channel" ch)
+                  ,reads_err "channel" ch
+                  ,param_parse pm)
               _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
@@ -145,17 +166,20 @@ csv_mndd_read = fmap csv_mndd_parse . load_csv
 -- | Writer.
 csv_mndd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
 csv_mndd_write r_prec nm =
-    let un_node (st,du,msg,mnn,vel,ch) = [real_pp r_prec st,real_pp r_prec du,msg
-                                        ,data_value_pp r_prec mnn,data_value_pp r_prec vel
-                                        ,show ch]
+    let un_node (st,du,msg,mnn,vel,ch,pm) =
+            [real_pp r_prec st,real_pp r_prec du,msg
+            ,data_value_pp r_prec mnn,data_value_pp r_prec vel
+            ,show ch
+            ,param_pp r_prec pm]
         with_hdr dat = (Just csv_mndd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
 -- * MNDD Seq forms
 
+-- | Ignores non note messages, also all Param.
 mndd_to_wseq :: [MNDD t n] -> T.Wseq t (n,n,Channel)
 mndd_to_wseq =
-    let mk_node (st,du,msg,mnn,vel,ch) =
+    let mk_node (st,du,msg,mnn,vel,ch,_pm) =
             case msg of
               "note" -> Just ((st,du),(mnn,vel,ch))
               _ -> Nothing
@@ -168,7 +192,7 @@ csv_mndd_read_wseq = fmap mndd_to_wseq . csv_mndd_read
 -- | 'Wseq' form of 'csv_mndd_write'.
 csv_mndd_write_wseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Wseq t (n,n,Channel) -> IO ()
 csv_mndd_write_wseq r_prec nm =
-    let f ((st,du),(mnn,vel,ch)) = (st,du,"note",mnn,vel,ch)
+    let f ((st,du),(mnn,vel,ch)) = (st,du,"note",mnn,vel,ch,[])
     in csv_mndd_write r_prec nm . map f
 
 -- * Composite

@@ -90,7 +90,7 @@ csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   t <- T.scl_load_tuning 0.01 nm
   let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
   m <- T.csv_mnd_read in_fn :: IO [T.MND Double Int]
-  let f (tm,ty,mnn,vel,ch) = (tm,ty,retune_f mnn,fromIntegral vel,ch)
+  let f (tm,ty,mnn,vel,ch,pm) = (tm,ty,retune_f mnn,fromIntegral vel,ch,pm)
   T.csv_mnd_write 4 out_fn (map f m)
 
 help :: [String]
