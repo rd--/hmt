@@ -6,7 +6,7 @@ import qualified Music.Theory.Time.Seq as T {- hmt -}
 usage :: [String]
 usage = ["csv-mnd-to-csv-mndd {i|r} precision:int csv-mnd-file csv-mndd-file"]
 
-read_wseq_i :: FilePath -> IO (T.Wseq Double (Int,Int,T.Channel))
+read_wseq_i :: FilePath -> IO (T.Wseq Double (Int,Int,T.Channel,[T.Param]))
 read_wseq_i = T.csv_midi_read_wseq
 
 -- > csv_mnd_to_csv_mndd 4 "/home/rohan/uc/invisible/heliotrope/csv/rough/00.csv" "/tmp/t.csv"

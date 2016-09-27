@@ -1,10 +1,12 @@
-# scala
+# env
 
 ~~~~
 $ hmt-scala env
 SCALA_SCL_DIR = /home/rohan/data/scala/83/scl
 $
 ~~~~
+
+# db-stat
 
 ~~~~
 $ hmt-scala db-stat
@@ -13,6 +15,8 @@ $ hmt-scala db-stat
 # scale-uniform  : 2723
 $
 ~~~~
+
+# search scale
 
 ~~~~
 $ hmt-scala search scale ci 75 la monte young
@@ -33,6 +37,8 @@ scale-cents-i     : [0,177,204,240,444,471,675,702,738,942,969,1173,1200]
 scale-ratios      : 1,567/512,9/8,147/128,1323/1024,21/16,189/128,3/2,49/32
 $
 ~~~~
+
+# search mode
 
 ~~~~
 $ hmt-scala search mode ci nil xenakis

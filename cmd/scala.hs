@@ -9,6 +9,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
@@ -85,13 +86,15 @@ cps_tbl_cps (nm,f0,k,n) (l,r) = do
   let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
   cps_tbl tbl (l,r)
 
+type R = Double
+
 csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   t <- T.scl_load_tuning 0.01 nm
   let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
-  m <- T.csv_mnd_read in_fn :: IO [T.MND Double Int]
-  let f (tm,ty,mnn,vel,ch,pm) = (tm,ty,retune_f mnn,fromIntegral vel,ch,pm)
-  T.csv_mnd_write 4 out_fn (map f m)
+  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,[T.Param]))
+  let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
+  T.csv_mndd_write_wseq 4 out_fn (map f m)
 
 help :: [String]
 help =
