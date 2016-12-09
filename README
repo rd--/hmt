@@ -8,6 +8,8 @@ theory' and 'common music notation'.
 
 ## cli
 
+[db](?t=hmt&e=md/db.md),
+[pct](?t=hmt&e=md/pct.md),
 [scala](?t=hmt&e=md/scala.md)
 
 [hs]: http://haskell.org/

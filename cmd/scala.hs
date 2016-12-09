@@ -15,6 +15,8 @@ import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
 
+type R = Double
+
 db_stat :: IO ()
 db_stat = do
   db <- T.scl_load_db :: IO [T.Scale Integer]
@@ -80,13 +82,11 @@ cps_tbl_d12 (nm,c,k) (l,r) = do
   cps_tbl tbl (l,r)
 
 -- > cps_tbl_cps ("cet111",27.5,9,127-9) (69,69+25)
-cps_tbl_cps :: (String,Double,Int,Int) -> (Int,Int) -> IO ()
+cps_tbl_cps :: (String,R,Int,Int) -> (Int,Int) -> IO ()
 cps_tbl_cps (nm,f0,k,n) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm
   let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
   cps_tbl tbl (l,r)
-
-type R = Double
 
 csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
@@ -98,9 +98,9 @@ csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
 
 help :: [String]
 help =
-    ["cps-tbl cps name:string f0:double mnn0:int gamut:int mnn-l:int mnn-r:int"
-    ,"cps-tbl d12 name:string cents:double mnn:int mnn-l:int mnn-r:int"
-    ,"csv-mnd-retune d12 name:string cents:double mnn:int input-file output-file"
+    ["cps-tbl cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
+    ,"cps-tbl d12 name:string cents:real mnn:int mnn-l:int mnn-r:int"
+    ,"csv-mnd-retune d12 name:string cents:real mnn:int input-file output-file"
     ,"db-stat"
     ,"env"
     ,"search scale|mode ci|cs lm|nil text:string..."
