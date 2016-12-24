@@ -29,8 +29,14 @@ extension_pp = fst . (extension_dat :: Extension -> (String,Int))
 extension_to_pc :: Num n => Extension -> n
 extension_to_pc = snd . extension_dat
 
-data Chord_Type = Major | Minor | Augmented | Diminished | Diminished_7 | Half_Diminished
+data Chord_Type = Major | Minor
+                | Augmented | Diminished
+                | Diminished_7 | Half_Diminished
+                | Suspended_2 | Suspended_4
                   deriving (Eq,Show)
+
+is_suspended :: Chord_Type -> Bool
+is_suspended ty = ty `elem` [Suspended_2,Suspended_4]
 
 -- | Names and pc-sets for chord types.
 -- The name used here is in the first position, alternates follow.
@@ -41,7 +47,9 @@ chord_type_tbl =
     ,(Augmented,(["+","aug"],[0,4,8]))
     ,(Diminished,(["o","dim"],[0,3,6]))
     ,(Diminished_7,(["o7","dim7"],[0,3,6,9]))
-    ,(Half_Diminished,(["Ø","halfdim","m7(b5)"],[0,3,6,10]))]
+    ,(Half_Diminished,(["Ø","halfdim","m7(b5)"],[0,3,6,10]))
+    ,(Suspended_2,(["sus2"],[0,2,7]))
+    ,(Suspended_4,(["sus4"],[0,5,7]))]
 
 chord_type_dat :: Num n => Chord_Type -> ([String],[n])
 chord_type_dat = flip T.lookup_err chord_type_tbl
@@ -58,7 +66,7 @@ data Chord = CH PC Chord_Type (Maybe Extension) (Maybe PC)
 
 chord_pcset :: Chord -> (Maybe Int,[Int])
 chord_pcset (CH pc ty ex bs) =
-    let get = fromJust . T.note_alteration_to_pc
+    let get = m_error "chord_pcset" . T.note_alteration_to_pc
         pc' = get pc
         ty' = chord_type_pcset ty
         ex' = fmap extension_to_pc ex
@@ -71,15 +79,32 @@ bass_pp :: PC -> String
 bass_pp = ('/' :) . pc_pp
 
 chord_pp :: Chord -> String
-chord_pp (CH pc ty ex bs) = concat [pc_pp pc,chord_type_pp ty,maybe "" extension_pp ex,maybe "" bass_pp bs]
+chord_pp (CH pc ty ex bs) =
+    let (pre_ty,post_ty) = if is_suspended ty
+                           then (Nothing,Just ty)
+                           else (Just ty,Nothing)
+    in concat [pc_pp pc
+              ,maybe "" chord_type_pp pre_ty
+              ,maybe "" extension_pp ex
+              ,maybe "" chord_type_pp post_ty
+              ,maybe "" bass_pp bs]
 
 type P a = P.GenParser Char () a
 
+m_error :: String -> Maybe a -> a
+m_error txt = fromMaybe (error txt)
+
 p_note_t :: P T.Note_T
-p_note_t = fmap (fromMaybe (error "p_note_t") . T.parse_note_t False) (P.oneOf "ABCDEFG")
+p_note_t =
+    fmap
+    (m_error "p_note_t" . T.parse_note_t False)
+    (P.oneOf "ABCDEFG")
 
 p_alteration_t_iso :: P T.Alteration_T
-p_alteration_t_iso = fmap (fromJust . T.symbol_to_alteration_iso) (P.oneOf "b#x")
+p_alteration_t_iso =
+    fmap
+    (m_error "p_alteration_t_iso" . T.symbol_to_alteration_iso)
+    (P.oneOf "b#x")
 
 p_pc :: P PC
 p_pc = do
@@ -97,7 +122,9 @@ p_chord_type =
         dm = P.char 'o' >> return Diminished
         dm7 = P.try (P.string "o7" >> return Diminished_7)
         hdm = P.char 'Ø' >> return Half_Diminished
-    in P.option Major (P.choice [dm7,dm,hdm,au,m])
+        sus2 = P.try (P.string "sus2" >> return Suspended_2)
+        sus4 = P.try (P.string "sus4" >> return Suspended_4)
+    in P.option Major (P.choice [dm7,dm,hdm,au,sus2,sus4,m])
 
 p_extension :: P Extension
 p_extension =
@@ -114,15 +141,19 @@ p_chord = do
   ty <- p_chord_type
   ex <- P.optionMaybe p_extension
   b <- p_bass
-  return (CH pc ty ex b)
+  ty' <- p_chord_type
+  let ty'' = case (ty,ty') of
+               (Major,Suspended_2) -> Suspended_2
+               (Major,Suspended_4) -> Suspended_4
+               (_,Major) -> ty -- ie. nothing
+               _ -> error ("trailing type not sus2 or sus4: " ++ show ty')
+  return (CH pc ty'' ex b)
 
--- > let ch = words "CmM7 C#o EbM7 Fo7 Gx/D C/E GØ/F"
+-- > let ch = words "CmM7 C#o EbM7 Fo7 Gx/D C/E GØ/F Bbsus4/C E7sus2"
 -- > let c = map parse_chord ch
 -- > map chord_pp c == ch
 -- > map chord_pcset c
---
--- > let ch = concat [ch_a,ch_b,ch_c,ch_d]
--- > let c = map parse_chord ch
 parse_chord :: String -> Chord
-parse_chord = either (\e -> error ("parse_chord failed\n" ++ show e)) id . P.parse p_chord ""
-
+parse_chord =
+    either (\e -> error ("parse_chord failed\n" ++ show e)) id .
+    P.parse p_chord ""
