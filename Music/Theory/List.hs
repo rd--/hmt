@@ -577,9 +577,10 @@ adjacent_groupBy f p =
                    then (x:r0) : r'
                    else [x] : r
 
--- | Given an ascending sequence, indicate ranges of consecutive values.
+-- | Reduce sequences of consecutive values to ranges.
 --
 -- > group_ranges [-1,0,3,4,5,8,9,12] == [(-1,0),(3,5),(8,9),(12,12)]
+-- > group_ranges [3,2,3,4,3] == [(3,3),(2,4),(3,3)]
 group_ranges :: (Num t, Eq t) => [t] -> [(t,t)]
 group_ranges =
     let f l = (head l,last l)
