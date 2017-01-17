@@ -7,15 +7,15 @@ import qualified Data.Aeson as A {- aeson -}
 import qualified Data.ByteString.Lazy as B {- bytestring -}
 import qualified Data.Map as M {- containers -}
 
-import Music.Theory.DB.Common
+import qualified Music.Theory.DB.Common as DB
 
 -- | Load 'DB' from 'FilePath'.
-db_load_utf8 :: FilePath -> IO DB'
+db_load_utf8 :: FilePath -> IO DB.DB'
 db_load_utf8 fn = do
   b <- B.readFile fn
   case A.decode b of
     Just m ->
-        let f = record_uncollate .
+        let f = DB.record_uncollate .
                 map (fmap maybe_list_to_list) .
                 M.toList
         in return (map f m)
@@ -27,9 +27,9 @@ db_load_utf8 fn = do
 -- > db <- db_load_utf8 fn
 -- > length db == 1334
 -- > db_store_utf8 "/tmp/sp.js" db
-db_store_utf8 :: FilePath -> DB' -> IO ()
+db_store_utf8 :: FilePath -> DB.DB' -> IO ()
 db_store_utf8 fn db = do
-  let db' = let f = map (fmap list_to_maybe_list) . record_collate
+  let db' = let f = map (fmap list_to_maybe_list) . DB.record_collate
             in map f db
       b = A.encode (map M.fromList db')
   B.writeFile fn b

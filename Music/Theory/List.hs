@@ -323,7 +323,7 @@ collate_adjacent = collate_on_adjacent fst snd
 --
 -- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
 -- > in collate_on fst snd (zip "ABCBCD" "abcdef") == r
-collate_on :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
+collate_on :: Ord k => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
 collate_on f g = collate_on_adjacent f g . sortOn f
 
 -- | 'collate_on' of 'fst' and 'snd'.
@@ -336,7 +336,7 @@ collate = collate_on fst snd
 -- | Reverse of 'collate', inverse if order is not considered.
 --
 -- > uncollate [(1,"ac"),(2,"b")] == zip [1,1,2] "acb"
-uncollate :: Eq k => [(k,[v])] -> [(k,v)]
+uncollate :: [(k,[v])] -> [(k,v)]
 uncollate = concatMap (\(k,v) -> zip (repeat k) v)
 
 -- | Make /assoc/ list with given /key/.
@@ -576,6 +576,14 @@ adjacent_groupBy f p =
                 in if f x y
                    then (x:r0) : r'
                    else [x] : r
+
+-- | Given an ascending sequence, indicate ranges of consecutive values.
+--
+-- > group_ranges [-1,0,3,4,5,8,9,12] == [(-1,0),(3,5),(8,9),(12,12)]
+group_ranges :: (Num t, Eq t) => [t] -> [(t,t)]
+group_ranges =
+    let f l = (head l,last l)
+    in map f . adjacent_groupBy (\p q -> p + 1 == q)
 
 -- | 'groupBy' on /structure/ of 'Maybe', ie. all 'Just' compare equal.
 --
