@@ -416,14 +416,15 @@ d12_midi_tuning_f (t,c_diff,k) n =
        then error "d12_midi_tuning_f: not d12"
        else (n,(dt `at` pc) + c_diff)
 
--- | (t,f0,k) where t=tuning, f0=fundamental frequency, k=midi note
--- number for f0, n=gamut
+-- | (t,f0,k,g) where t=tuning, f0=fundamental frequency, k=midi note
+-- number for f0, g=gamut
 type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 
--- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.
+-- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is only
+-- valid for values from /k/ to /g/.
 --
 -- > let f = cps_midi_tuning_f (equal_temperament 72,T.midi_to_cps 59,59,72 * 4)
--- > map f [59 .. 131]
+-- > map f [59 .. 59 + 72]
 cps_midi_tuning_f :: CPS_Midi_Tuning -> Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
     let r = approximate_ratios_cyclic t

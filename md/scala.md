@@ -116,3 +116,26 @@ MNN PITCH     CPS NEAR    ET12    -/+
  92   Ab6 1934.22   B6 1661.22 273.00
  93    A6 2062.83   C7 1760.00 302.83
 --- ----- ------- ---- ------- ------
+
+# fluidsynth
+
+Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
+
+~~~~
+$ hmt-scala fluidsynth d12 young-lm_piano -74.7 3 "La Monte Young, The Well Tuned Piano" 0 0
+tuning "La Monte Young, The Well Tuned Piano" 0 0
+tune 0 0 0 -135.09
+tune 0 0 1 96.08
+tune 0 0 2 68.82
+tune 0 0 3 299.99
+tune 0 0 4 327.26
+tune 0 0 5 362.95
+tune 0 0 6 594.13
+tune 0 0 7 566.86
+tune 0 0 8 798.04
+tune 0 0 9 825.30
+tune 0 0 10 1001.95
+tune 0 0 11 1029.21
+...
+$
+~~~~

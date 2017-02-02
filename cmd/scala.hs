@@ -1,6 +1,7 @@
 import Data.Char {- base -}
 import Data.List {- base -}
 import System.Environment {- base -}
+import Text.Printf {- base -}
 
 import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 import qualified Music.Theory.Array.MD as T {- hmt -}
@@ -96,6 +97,17 @@ csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
   T.csv_mndd_write_wseq 4 out_fn (map f m)
 
+-- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,3)
+fluidsynth_tuning_d12 :: (String,Int,Int) -> (String,T.Cents,Int) -> IO ()
+fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
+  t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
+  let tun_f = T.d12_midi_tuning_f (t,c,k)
+      pp_f n = let (mnn,dt) = tun_f n
+                   cents = fromIntegral mnn * 100 + dt
+               in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents
+      l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
+  putStrLn (unlines l)
+
 help :: [String]
 help =
     ["cps-tbl cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
@@ -103,6 +115,7 @@ help =
     ,"csv-mnd-retune d12 name:string cents:real mnn:int input-file output-file"
     ,"db-stat"
     ,"env"
+    ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
@@ -117,16 +130,25 @@ main = do
   a <- getArgs
   let usage = putStrLn (unlines help)
   case a of
-    ["cps-tbl","cps",nm,f0,k,n,l,r] -> cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
-    ["cps-tbl","d12",nm,c,k,l,r] -> cps_tbl_d12 (nm,read c,read k) (read l,read r)
-    ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] -> csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
-    ["db-stat"] -> db_stat
-    ["env"] -> env
+    ["cps-tbl","cps",nm,f0,k,n,l,r] ->
+        cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
+    ["cps-tbl","d12",nm,c,k,l,r] ->
+        cps_tbl_d12 (nm,read c,read k) (read l,read r)
+    ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] ->
+        csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
+    ["db-stat"] ->
+        db_stat
+    ["env"] ->
+        env
+    ["fluidsynth","d12",scl_nm,c,k,fs_nm,fs_bank,fs_prog] ->
+        fluidsynth_tuning_d12 (fs_nm,read fs_bank,read fs_prog) (scl_nm,read c,read k)
     "search":ty:ci:lm:txt ->
         case ty of
           "scale" -> search_scale (ci == "ci",nil_or_read lm) txt
           "mode" -> search_mode (ci == "ci",nil_or_read lm) txt
           _ -> usage
-    ["stat","all",lm] -> stat_all (nil_or_read lm)
-    ["stat","scale",lm,nm] -> stat_by_name (nil_or_read lm) nm
+    ["stat","all",lm] ->
+        stat_all (nil_or_read lm)
+    ["stat","scale",lm,nm] ->
+        stat_by_name (nil_or_read lm) nm
     _ -> usage
