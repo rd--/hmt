@@ -39,7 +39,7 @@ permutation p q =
 --
 -- > let p = permutation [1..4] [4,3,2,1]
 -- > in apply_permutation p [1..4] == [4,3,2,1]
-apply_permutation :: (Eq a) => P.Permute -> [a] -> [a]
+apply_permutation :: P.Permute -> [a] -> [a]
 apply_permutation f p = map (p !!) (P.elems f)
 
 -- | Composition of 'apply_permutation' and 'from_cycles'.
@@ -48,7 +48,7 @@ apply_permutation f p = map (p !!) (P.elems f)
 -- > apply_permutation_c [[0,2],[1],[3,4]] [1..5] == [3,2,1,5,4]
 -- > apply_permutation_c [[0,1,4],[2,3]] [1..5] == [2,5,4,3,1]
 -- > apply_permutation_c [[0,1,3],[2,4]] [1..5] == [2,4,5,1,3]
-apply_permutation_c :: (Eq a) => [[Int]] -> [a] -> [a]
+apply_permutation_c :: [[Int]] -> [a] -> [a]
 apply_permutation_c = apply_permutation . from_cycles
 
 -- | True if the inverse of /p/ is /p/.

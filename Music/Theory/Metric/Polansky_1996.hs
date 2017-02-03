@@ -116,7 +116,7 @@ olm_no_delta' p q =
 --
 -- > olm_general (abs_dif (-)) [0,2,4,1,0] [2,3,0,4,1] == 1.25
 -- > olm_general (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 4.6
-olm_general :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
+olm_general :: Fractional n => Interval a n -> [a] -> [a] -> n
 olm_general f p q =
     let r = zipWith (-) (d_dx f p) (d_dx f q)
         z = sum (map abs r)
@@ -151,7 +151,7 @@ type Psi a = (a -> a -> a)
 --
 -- > olm (abs_dif dif_r) (abs_ix_dif dif_r) (const 1) [1,5,12,2,9,6] [7,6,4,9,8,1] == 4.6
 -- > olm (abs_dif dif_r) (abs_ix_dif dif_r) maximum [1,5,12,2,9,6] [7,6,4,9,8,1] == 0.46
-olm :: (Fractional a,Enum a) => Psi a -> Delta n a  -> ([a] -> a) -> [n] -> [n] -> a
+olm :: Fractional a => Psi a -> Delta n a  -> ([a] -> a) -> [n] -> [n] -> a
 olm psi delta maxint m n =
     let l = length m
         l' = fromIntegral l - 1
@@ -162,23 +162,23 @@ olm psi delta maxint m n =
 
 -- > olm_no_delta [0,2,4,1,0] [2,3,0,4,1] == 1.25
 -- > olm_no_delta [1,6,2,5,11] [3,15,13,2,9] == 4.5
-olm_no_delta :: (Real a,Real n,Enum n,Fractional n) => [a] -> [a] -> n
+olm_no_delta :: (Real a,Real n,Fractional n) => [a] -> [a] -> n
 olm_no_delta = olm (abs_dif dif_r) (abs_ix_dif dif_r) (const 1)
 
 -- > olm_no_delta_squared [0,2,4,1,0] [2,3,0,4,1] == sum (map sqrt [3,5,7,8]) / 4
-olm_no_delta_squared :: (Enum a,Floating a) => [a] -> [a] -> a
+olm_no_delta_squared :: Floating a => [a] -> [a] -> a
 olm_no_delta_squared = olm (sqrt_abs_dif (-)) (sqr_abs_ix_dif (-)) (const 1)
 
 second_order :: (Num n) => ([n] -> [n] -> t) -> [n] -> [n] -> t
 second_order f p q = f (d_dx_abs (-) p) (d_dx_abs (-) q)
 
 -- > olm_no_delta_second_order [0,2,4,1,0] [2,3,0,4,1] == 1.0
-olm_no_delta_second_order :: (Real a,Enum a,Fractional a) => [a] -> [a] -> a
+olm_no_delta_second_order :: (Real a,Fractional a) => [a] -> [a] -> a
 olm_no_delta_second_order = second_order olm_no_delta
 
 -- p.301 erroneously gives this as sum (map sqrt [2,0,1]) / 3
 -- > olm_no_delta_squared_second_order [0,2,4,1,0] [2,3,0,4,1] == sum (map sqrt [4,0,3]) / 3
-olm_no_delta_squared_second_order :: (Enum a,Floating a) => [a] -> [a] -> a
+olm_no_delta_squared_second_order :: Floating a => [a] -> [a] -> a
 olm_no_delta_squared_second_order = second_order olm_no_delta_squared
 
 -- | Second order binomial coefficient, p.307
@@ -279,7 +279,7 @@ ulm_simplified f p q =
     let g = abs . sum . d_dx f
     in abs (g p - g q) / fromIntegral (length p - 1)
 
-ocm_zcm :: (Fractional n, Num a) => Interval a n -> [a] -> [a] -> (n, n, [n])
+ocm_zcm :: Fractional n => Interval a n -> [a] -> [a] -> (n, n, [n])
 ocm_zcm f p q =
     let p' = concat (C.half_matrix_f f p)
         q' = concat (C.half_matrix_f f q)
@@ -293,7 +293,7 @@ ocm_zcm f p q =
 --
 -- > ocm (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == 5.2
 -- > ocm (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 3.6
-ocm :: (Fractional a,Enum a,Fractional n) => Interval a n -> [a] -> [a] -> n
+ocm :: Fractional n => Interval a n -> [a] -> [a] -> n
 ocm f p q =
     let (z,c,_) = ocm_zcm f p q
     in z / c
@@ -302,7 +302,7 @@ ocm f p q =
 --
 -- > ocm_absolute_scaled (abs_dif (-)) [1,6,2,5,11] [3,15,13,2,9] == 0.4
 -- > ocm_absolute_scaled (abs_dif (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 54/(15*11)
-ocm_absolute_scaled :: (Ord a,Fractional a,Enum a,Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
+ocm_absolute_scaled :: (Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm_absolute_scaled f p q =
     let (z,c,m) = ocm_zcm f p q
     in z / (c * maximum m)

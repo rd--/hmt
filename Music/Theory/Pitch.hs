@@ -227,7 +227,7 @@ fmidi_in_octave_of p = fmidi_in_octave (fmidi_octave p)
 --
 -- > let {p = octpc_to_fmidi (2,1);q = map octpc_to_fmidi [(4,11),(4,0),(4,1)]}
 -- > in map (fmidi_in_octave_nearest p) q == [35,36,37]
-fmidi_in_octave_nearest :: (RealFrac n,Ord n) => n -> n -> n
+fmidi_in_octave_nearest :: RealFrac n => n -> n -> n
 fmidi_in_octave_nearest m1 m2 =
     let m2' = fmidi_in_octave (fmidi_octave m1) m2
         m2'' = [m2' - 12,m2',m2' + 12]
@@ -251,7 +251,7 @@ fmidi_in_octave_above p q = let r = fmidi_in_octave_nearest p q in if r < p then
 fmidi_in_octave_below :: RealFrac a => a -> a -> a
 fmidi_in_octave_below p q = let r = fmidi_in_octave_nearest p q in if r > p then r - 12 else r
 
-cps_in_octave' :: (Floating f,RealFrac f) => (f -> f -> f) -> f -> f -> f
+cps_in_octave' :: Floating f => (f -> f -> f) -> f -> f -> f
 cps_in_octave' f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
 
 -- | CPS form of 'fmidi_in_octave_nearest'.

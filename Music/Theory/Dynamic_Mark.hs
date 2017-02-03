@@ -33,7 +33,7 @@ dynamic_mark_midi_err = fromMaybe (error "dynamic_mark_midi") . dynamic_mark_mid
 -- | Map midi velocity (0-127) to dynamic mark.
 --
 -- > histogram (mapMaybe midi_dynamic_mark [0 .. 127])
-midi_dynamic_mark :: (Ord n,Eq n,Num n,Enum n) => n -> Maybe Dynamic_Mark_T
+midi_dynamic_mark :: (Ord n,Num n,Enum n) => n -> Maybe Dynamic_Mark_T
 midi_dynamic_mark m =
     let r = zip (0 : [12,24 .. 132]) [0..]
     in fmap (toEnum . snd) (find ((>= m) . fst) r)

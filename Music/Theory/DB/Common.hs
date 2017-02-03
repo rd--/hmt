@@ -126,5 +126,5 @@ record_collate r =
       [] -> error "record_collate: nil"
       (k,v):r' -> record_collate' (k,[v]) r'
 
-record_uncollate :: Eq k => Record k [v] -> Record k v
+record_uncollate :: Record k [v] -> Record k v
 record_uncollate = concatMap (\(k,v) -> zip (repeat k) v)

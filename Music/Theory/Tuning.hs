@@ -6,7 +6,7 @@ import Data.List {- base -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
-import Safe (at) {- safe -}
+import Safe {- safe -}
 
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
@@ -399,6 +399,9 @@ cents_diff_html = cents_diff_br ("<SUP>","</SUP>")
 -- which may be distant from the note sounded.
 type Midi_Tuning_F = Int -> T.Midi_Detune
 
+-- | Variant for tunings that are incomplete.
+type Sparse_Midi_Tuning_F = Int -> Maybe T.Midi_Detune
+
 -- | (t,c,k) where t=tuning (must have 12 divisions of octave),
 -- c=cents deviation (ie. constant detune offset), k=midi offset
 -- (ie. value to be added to incoming midi note number).
@@ -420,16 +423,16 @@ d12_midi_tuning_f (t,c_diff,k) n =
 -- number for f0, g=gamut
 type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 
--- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is only
+-- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function sparse, it is only
 -- valid for values from /k/ to /g/.
 --
 -- > let f = cps_midi_tuning_f (equal_temperament 72,T.midi_to_cps 59,59,72 * 4)
 -- > map f [59 .. 59 + 72]
-cps_midi_tuning_f :: CPS_Midi_Tuning -> Midi_Tuning_F
+cps_midi_tuning_f :: CPS_Midi_Tuning -> Sparse_Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
     let r = approximate_ratios_cyclic t
         m = take g (map (T.cps_to_midi_detune . (* f0)) r)
-    in m `at` (n - k)
+    in m `atMay` (n - k)
 
 -- * Midi tuning tables.
 
