@@ -417,14 +417,16 @@ d12_midi_tuning_f (t,c_diff,k) n =
         dt = zipWith (-) (cents t) [0,100 .. 1200]
     in if divisions t /= 12
        then error "d12_midi_tuning_f: not d12"
-       else (n,(dt `at` pc) + c_diff)
+       else case dt `atMay` pc of
+              Nothing -> error "d12_midi_tuning_f: pc?"
+              Just c -> (n,c + c_diff)
 
 -- | (t,f0,k,g) where t=tuning, f0=fundamental frequency, k=midi note
 -- number for f0, g=gamut
 type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 
--- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function sparse, it is only
--- valid for values from /k/ to /g/.
+-- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is sparse, it is only
+-- valid for /g/ values from /k/.
 --
 -- > let f = cps_midi_tuning_f (equal_temperament 72,T.midi_to_cps 59,59,72 * 4)
 -- > map f [59 .. 59 + 72]
