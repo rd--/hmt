@@ -124,7 +124,7 @@ Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthe
 ~~~~
 $ hmt-scala fluidsynth d12 young-lm_piano -74.7 3 "La Monte Young, The Well Tuned Piano" 0 0
 tuning "La Monte Young, The Well Tuned Piano" 0 0
-tune 0 0 0 -135.09
+tune 0 0 0 0.00
 tune 0 0 1 96.08
 tune 0 0 2 68.82
 tune 0 0 3 299.99

@@ -104,7 +104,8 @@ fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n = let (mnn,dt) = tun_f n
                    cents = fromIntegral mnn * 100 + dt
-               in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents
+                   cents' = if cents < 0 then 0 else cents
+               in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents'
       l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
   putStrLn (unlines l)
 
