@@ -1,8 +1,11 @@
 # env
 
+Print environment variable names, and values if set.
+
 ~~~~
 $ hmt-scala env
-SCALA_SCL_DIR = /home/rohan/data/scala/83/scl
+SCALA_SCL_DIR = /home/rohan/data/scala/84/scl
+SCALA_DIST_DIR = /home/rohan/opt/build/scala-22-pc64-linux
 $
 ~~~~
 
@@ -10,9 +13,9 @@ $
 
 ~~~~
 $ hmt-scala db-stat
-# entries        : 4557
-# perfect-octave : 3911
-# scale-uniform  : 2723
+# entries        : 4590
+# perfect-octave : 3937
+# scale-uniform  : 2761
 $
 ~~~~
 

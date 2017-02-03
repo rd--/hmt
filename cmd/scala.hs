@@ -30,8 +30,10 @@ db_stat = do
 
 env :: IO ()
 env = do
-  dir <- T.scl_get_dir
-  putStrLn ("SCALA_SCL_DIR = " ++ if null dir then "NOT SET" else intercalate ":" dir)
+  scl_dir <- T.scl_get_dir
+  dist_dir <- getEnv "SCALA_DIST_DIR"
+  putStrLn ("SCALA_SCL_DIR = " ++ if null scl_dir then "NOT SET" else intercalate ":" scl_dir)
+  putStrLn ("SCALA_DIST_DIR = " ++ if null dist_dir then "NOT SET" else dist_dir)
 
 cut :: Maybe Int -> [a] -> [a]
 cut lm s = maybe s (\n -> take n s) lm

@@ -343,11 +343,14 @@ scale_pp (nm,dsc,k,p) =
 
 -- * DIST
 
+dist_get_dir :: IO String
+dist_get_dir = getEnv "SCALA_DIST_DIR"
+
 -- | Load file from @scala@ distribution directory, given at @SCALA_DIST_DIR@.
 --
 -- > s <- load_dist_file "intnam.par"
 -- > length s == 473
 load_dist_file :: FilePath -> IO [String]
 load_dist_file nm = do
-  d <- getEnv "SCALA_DIST_DIR"
+  d <- dist_get_dir
   fmap lines (readFile (d </> nm))
