@@ -89,12 +89,14 @@ hs_r_pp pp n (f,p,pf,fd,c) =
 hs_r_pitch_pp :: Int -> HS_R Pitch -> [String]
 hs_r_pitch_pp = hs_r_pp pitch_pp
 
--- | Form 'HS_R' for /frequency/ by consulting table.
---
--- > let {f = 256
--- >     ;f' = octpc_to_cps (4,0)
--- >     ;r = (f,Pitch C Natural 4,f',f-f',fratio_to_cents (f/f'))}
--- > in nearest_et_table_tone tbl_12et 256 == r
+{- | Form 'HS_R' for /frequency/ by consulting table.
+
+> let {f = 256
+>     ;f' = octpc_to_cps (4,0)
+>     ;r = (f,Pitch C Natural 4,f',f-f',fratio_to_cents (f/f'))}
+> in nearest_et_table_tone tbl_12et 256 == r
+
+-}
 nearest_et_table_tone :: [(p,Double)] -> Double -> HS_R p
 nearest_et_table_tone tbl f =
     case bounds_et_table tbl f of

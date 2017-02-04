@@ -4,7 +4,7 @@ Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
 Category:          Music
-Copyright:         Rohan Drape, 2006-2016
+Copyright:         Rohan Drape, 2006-2017
 Author:            Rohan Drape
 Maintainer:        rd@slavepianos.org
 Stability:         Experimental
@@ -116,25 +116,25 @@ Library
                    Music.Theory.Time_Signature
                    Music.Theory.Tuple
                    Music.Theory.Tuning
-                   Music.Theory.Tuning.Alves
                    Music.Theory.Tuning.Alves_1997
                    Music.Theory.Tuning.DB
+                   Music.Theory.Tuning.DB.Alves
+                   Music.Theory.Tuning.DB.Gann
+                   Music.Theory.Tuning.DB.Microtonal_Synthesis
+                   Music.Theory.Tuning.DB.Riley
+                   Music.Theory.Tuning.DB.Werckmeister
                    Music.Theory.Tuning.ET
                    Music.Theory.Tuning.Euler
-                   Music.Theory.Tuning.Gann
                    Music.Theory.Tuning.Meyer_1929
-                   Music.Theory.Tuning.Microtonal_Synthesis
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984
                    Music.Theory.Tuning.Polansky_1985c
                    Music.Theory.Tuning.Polansky_1990
-                   Music.Theory.Tuning.Riley
                    Music.Theory.Tuning.Scala
                    Music.Theory.Tuning.Scala.Interval
                    Music.Theory.Tuning.Scala.Mode
-                   Music.Theory.Tuning.Sethares1994
+                   Music.Theory.Tuning.Sethares_1994
                    Music.Theory.Tuning.Syntonic
-                   Music.Theory.Tuning.Werckmeister
                    Music.Theory.Unicode
                    Music.Theory.Wyschnegradsky
                    Music.Theory.Xenakis.S4

@@ -28,6 +28,7 @@ type MODENAM = (Int,Int,[MODE])
 modenam_modes :: MODENAM -> [MODE]
 modenam_modes (_,_,m) = m
 
+-- > mn <- load_modenam
 -- > let sq = mapM_ (putStrLn . unlines . mode_stat) . modenam_search_seq mn
 -- > sq [2,2,1,2,2,2,1]
 -- > sq [2,1,2,2,1,2,2]

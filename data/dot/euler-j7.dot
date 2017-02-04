@@ -1,0 +1,29 @@
+graph g {
+graph [layout="dot",rankdir="TB",nodesep=0.5];
+edge [fontsize="8",fontname="century schoolbook"];
+node [shape="plaintext",fontsize="10",fontname="century schoolbook"];
+R_5_4 [label="E♮\n5:4"];
+R_15_8 [label="B♮\n15:8"];
+R_45_32 [label="F♯\n45:32"];
+R_135_128 [label="C♯\n135:128"];
+R_4_3 [label="F♮\n4:3"];
+R_1_1 [label="C♮\n1:1"];
+R_3_2 [label="G♮\n3:2"];
+R_9_8 [label="D♮\n9:8"];
+R_27_16 [label="A♮\n27:16"];
+R_14_9 [label="A♭\n14:9"];
+R_7_6 [label="E♭\n7:6"];
+R_7_4 [label="B♭\n7:4"];
+R_5_4 -- R_15_8 -- R_45_32 -- R_135_128;
+R_4_3 -- R_1_1 -- R_3_2 -- R_9_8 -- R_27_16;
+R_14_9 -- R_7_6 -- R_7_4;
+R_1_1 -- R_5_4 [label="   (8:5)"];
+R_3_2 -- R_15_8 [label="   (8:5)"];
+R_9_8 -- R_45_32 [label="   (8:5)"];
+R_27_16 -- R_135_128 [label="   (8:5)"];
+R_7_6 -- R_4_3 [label="   (7:4)"];
+R_7_4 -- R_1_1 [label="   (7:4)"];
+{rank=min; R_5_4 R_15_8 R_45_32 R_135_128}
+{rank=same; R_4_3 R_1_1 R_3_2 R_9_8 R_27_16}
+{rank=max; R_14_9 R_7_6 R_7_4}
+}

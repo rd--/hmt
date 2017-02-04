@@ -3,7 +3,7 @@
 -- /Journal of the Acoustical Society of America/, 96(1), July 1994.
 --
 -- <http://sethares.engr.wisc.edu/consemi.html>
-module Music.Theory.Tuning.Sethares1994 where
+module Music.Theory.Tuning.Sethares_1994 where
 
 import qualified Music.Theory.Tuning as T
 

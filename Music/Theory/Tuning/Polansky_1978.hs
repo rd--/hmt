@@ -4,7 +4,7 @@ module Music.Theory.Tuning.Polansky_1978 where
 
 import Data.List {- base -}
 
-import Music.Theory.Tuning
+import qualified Music.Theory.Tuning as T
 
 {- | Three interlocking harmonic series on 1:5:3, by Larry Polansky in \"Psaltery\".
 
@@ -29,7 +29,7 @@ psaltery_r =
 
 -}
 psaltery_o_r :: [Rational]
-psaltery_o_r = nub (sort (map fold_ratio_to_octave psaltery_r))
+psaltery_o_r = nub (sort (map T.fold_ratio_to_octave psaltery_r))
 
 {- | 'Tuning' derived from 'psaltery_o' with 'octave_ratio' of @2@.
 
@@ -42,5 +42,5 @@ psaltery_o_r = nub (sort (map fold_ratio_to_octave psaltery_r))
 > in cents_i (T.scale_tuning 0.01 scl) == r
 
 -}
-psaltery_o :: Tuning
-psaltery_o = Tuning (Left psaltery_o_r) 2
+psaltery_o :: T.Tuning
+psaltery_o = T.Tuning (Left psaltery_o_r) 2

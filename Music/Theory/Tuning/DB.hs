@@ -4,14 +4,16 @@ module Music.Theory.Tuning.DB where
 import Data.List {- base -}
 
 import Music.Theory.Tuning
-import Music.Theory.Tuning.Alves
+
 import Music.Theory.Tuning.Alves_1997
-import Music.Theory.Tuning.Gann
-import Music.Theory.Tuning.Microtonal_Synthesis
 import Music.Theory.Tuning.Polansky_1978
 import Music.Theory.Tuning.Polansky_1985c
-import Music.Theory.Tuning.Riley
-import Music.Theory.Tuning.Werckmeister
+
+import Music.Theory.Tuning.DB.Alves
+import Music.Theory.Tuning.DB.Gann
+import Music.Theory.Tuning.DB.Microtonal_Synthesis
+import Music.Theory.Tuning.DB.Riley
+import Music.Theory.Tuning.DB.Werckmeister
 
 -- | (last-name,first-name,title,year,hmt/tuning,scala/name)
 type Named_Tuning = (String,String,String,String,Tuning,String)

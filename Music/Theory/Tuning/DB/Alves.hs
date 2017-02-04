@@ -1,5 +1,5 @@
 -- | Bill Alves.
-module Music.Theory.Tuning.Alves where
+module Music.Theory.Tuning.DB.Alves where
 
 import Music.Theory.Tuning {- hmt -}
 

@@ -309,7 +309,7 @@ harmonic_series_cps_derived k f1 =
 
 -- | Harmonic series to /n/th harmonic (folded, duplicated removed).
 --
--- > harmonic_series_folded 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
+-- > harmonic_series_folded_r 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
 --
 -- > let r = [0,105,204,386,551,702,841,969,1088]
 -- > in map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r

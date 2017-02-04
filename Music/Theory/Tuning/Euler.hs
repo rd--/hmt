@@ -1,3 +1,4 @@
+-- | Euler plane diagrams as /dot/ language graph.
 module Music.Theory.Tuning.Euler where
 
 import Data.List {- base -}
@@ -99,8 +100,9 @@ let j7 =
         ;(c1,c2) = euler_align_rat (5%4,4%7) (l1,l2,l3)}
     in ([l1,l2,l3],c1 ++ c2)
 
-writeFile "/tmp/g.dot" (unlines (euler_plane_to_dot (rat_id,rat_label,edge_label) j5))
-writeFile "/tmp/g.dot" (unlines (euler_plane_to_dot (rat_id,rat_label,edge_label) j7))
+let dir = "/home/rohan/sw/hmt/data/dot/"
+let f = unlines . euler_plane_to_dot (rat_id,rat_label,edge_label)
+writeFile (dir ++ "euler-j5.dot") (f j5)
+writeFile (dir ++ "euler-j7.dot") (f j7)
 
 -}
-
