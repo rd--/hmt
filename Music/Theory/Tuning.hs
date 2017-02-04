@@ -136,6 +136,8 @@ approximate_ratio :: Rational -> Approximate_Ratio
 approximate_ratio = fromRational
 
 -- | 'approximate_ratio_to_cents' '.' 'approximate_ratio'.
+--
+-- > map (\n -> (n,round (ratio_to_cents (fold_ratio_to_octave (n % 1))))) [1..21]
 ratio_to_cents :: Integral i => Ratio i -> Cents
 ratio_to_cents = approximate_ratio_to_cents . realToFrac
 
