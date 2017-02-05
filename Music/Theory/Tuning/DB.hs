@@ -6,6 +6,7 @@ import Data.List {- base -}
 import Music.Theory.Tuning
 
 import Music.Theory.Tuning.Alves_1997
+import Music.Theory.Tuning.Gann_1993
 import Music.Theory.Tuning.Polansky_1978
 import Music.Theory.Tuning.Polansky_1985c
 
@@ -44,7 +45,7 @@ tuning_db =
     ,("Werckmeister","Andreas","Werckmeister IV","",werckmeister_iv,"werck4")
     ,("Werckmeister","Andreas","Werckmeister V","",werckmeister_v,"werck5")
     ,("Werckmeister","Andreas","Werckmeister VI","",werckmeister_vi,"werck6")
-    ,("Young","La Monte","The Well-Tuned Piano","",la_monte_young_wtp,"young-lm_piano")
+    ,("Young","La Monte","The Well-Tuned Piano","",lmy_wtp,"young-lm_piano")
     ,("Young","Thomas","","1799",thomas_young_1799,"young2")
     ,("Zarlino","Gioseffo","","1588",zarlino_1588,"zarlino2")
     ,("","","JI/12 7-limit","",septimal_tritone_just_intonation,"ji_12")

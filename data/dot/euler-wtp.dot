@@ -1,0 +1,30 @@
+graph g {
+graph [layout="dot",rankdir="TB",nodesep=0.5];
+edge [fontsize="8",fontname="century schoolbook"];
+node [shape="plaintext",fontsize="10",fontname="century schoolbook"];
+R_49_32 [label="B♭=738\n49:32"];
+R_147_128 [label="F♮=240\n147:128"];
+R_441_256 [label="C♮=942\n441:256"];
+R_1323_1024 [label="G♮=444\n1323:1024"];
+R_7_4 [label="C♯=969\n7:4"];
+R_21_16 [label="A♭=471\n21:16"];
+R_63_32 [label="E♭=1173\n63:32"];
+R_189_128 [label="B♭=675\n189:128"];
+R_567_512 [label="F♮=177\n567:512"];
+R_1_1 [label="E♭=0\n1:1"];
+R_3_2 [label="B♭=702\n3:2"];
+R_9_8 [label="F♮=204\n9:8"];
+R_49_32 -- R_147_128 -- R_441_256 -- R_1323_1024;
+R_7_4 -- R_21_16 -- R_63_32 -- R_189_128 -- R_567_512;
+R_1_1 -- R_3_2 -- R_9_8;
+R_7_4 -- R_49_32 [label="   (8:7)"];
+R_21_16 -- R_147_128 [label="   (8:7)"];
+R_63_32 -- R_441_256 [label="   (8:7)"];
+R_189_128 -- R_1323_1024 [label="   (8:7)"];
+R_1_1 -- R_7_4 [label="   (8:7)"];
+R_3_2 -- R_21_16 [label="   (8:7)"];
+R_9_8 -- R_63_32 [label="   (8:7)"];
+{rank=min; R_49_32 R_147_128 R_441_256 R_1323_1024}
+{rank=same; R_7_4 R_21_16 R_63_32 R_189_128 R_567_512}
+{rank=max; R_1_1 R_3_2 R_9_8}
+}

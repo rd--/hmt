@@ -1,5 +1,6 @@
 import Data.Char {- base -}
 import Data.List {- base -}
+import Data.Maybe {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
@@ -14,6 +15,7 @@ import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
+--import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
 
 type R = Double
@@ -69,15 +71,16 @@ stat_by_name lm nm = do
 cps_tbl :: T.MNN_CPS_Table -> (Int,Int) -> IO ()
 cps_tbl tbl (l,r) = do
   let cps_pp = T.double_pp 2
+      cents_pp = T.double_pp 1
       gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
       t_pp (i,p,cps) = let ref = T.midi_to_cps i
                            (_,nr,_,_,_) = T.nearest_12et_tone cps
                        in [show i,T.pitch_pp_iso p,cps_pp cps,T.pitch_pp_iso nr
-                          ,cps_pp ref,cps_pp (cps - ref)]
-      hdr = Just ["MNN","PITCH","CPS","NEAR","ET12","-/+"]
+                          ,cps_pp ref,cents_pp (T.cps_difference_cents ref cps)]
+      hdr = Just ["MNN","PITCH","CPS","NEAR","ET12","CENTS-/+"]
   putStr (unlines (T.md_table hdr (map (t_pp . gen_t) [l .. r])))
 
--- > cps_tbl_d12 ("young-lm_piano",-74.7,3) (60,72)
+-- > cps_tbl_d12 ("young-lm_piano",-74.7,-3) (60,72)
 cps_tbl_d12 :: (String,T.Cents,Int) -> (Int,Int) -> IO ()
 cps_tbl_d12 (nm,c,k) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
@@ -88,7 +91,7 @@ cps_tbl_d12 (nm,c,k) (l,r) = do
 cps_tbl_cps :: (String,R,Int,Int) -> (Int,Int) -> IO ()
 cps_tbl_cps (nm,f0,k,n) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm
-  let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
+  let tbl = T.gen_cps_tuning_tbl (fmap fromJust (T.cps_midi_tuning_f (t,f0,k,n)))
   cps_tbl tbl (l,r)
 
 csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
@@ -99,7 +102,7 @@ csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
   T.csv_mndd_write_wseq 4 out_fn (map f m)
 
--- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,3)
+-- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,-3)
 fluidsynth_tuning_d12 :: (String,Int,Int) -> (String,T.Cents,Int) -> IO ()
 fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning

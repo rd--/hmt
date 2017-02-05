@@ -10,9 +10,12 @@ type INTERVAL = (Rational,String)
 
 type INTNAM = (Int,[INTERVAL])
 
+-- > intnam <- load_intnam
 -- > intnam_search_ratio intnam (3/2) == Just (3/2,"perfect fifth")
 -- > intnam_search_ratio intnam (2/3) == Nothing
 -- > intnam_search_ratio intnam (4/3) == Just (4/3,"perfect fourth")
+-- > map (intnam_search_ratio intnam) [3/2,4/3,7/4,7/6,9/7,12/7,14/9]
+-- > intnam_search_ratio intnam (31/16) == Just (31/16,"31st harmonic")
 intnam_search_ratio :: INTNAM -> Rational -> Maybe INTERVAL
 intnam_search_ratio (_,i) x = find ((== x) . fst) i
 
@@ -38,7 +41,6 @@ parse_intnam l =
 
 -- * IO
 
--- > intnam <- load_intnam
 load_intnam :: IO INTNAM
 load_intnam = do
   l <- T.load_dist_file "intnam.par"
