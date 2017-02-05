@@ -322,7 +322,7 @@ scale_stat s =
         else ""]
 
 -- | Pretty print 'Pitch' in @Scala@ format.
-pitch_pp :: (Integral i,Show i) => Pitch i -> String
+pitch_pp :: Show i => Pitch i -> String
 pitch_pp p =
     case p of
       Left c -> show c
@@ -333,7 +333,7 @@ pitch_pp p =
 -- > s <- scl_load "et19"
 -- > s <- scl_load "young-lm_piano"
 -- > putStr $ unlines $ scale_pp s
-scale_pp :: (Integral i,Show i) => Scale i -> [String]
+scale_pp :: Show i => Scale i -> [String]
 scale_pp (nm,dsc,k,p) =
     ["! " ++ nm ++ ".scl"
     ,"!"

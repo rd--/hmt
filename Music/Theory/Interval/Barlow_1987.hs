@@ -5,11 +5,12 @@ module Music.Theory.Interval.Barlow_1987 where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import Data.Numbers.Primes {- primes -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import Music.Theory.Tuning
+import qualified Data.Numbers.Primes as P {- primes -}
+
+import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- | Barlow's /indigestibility/ function for prime numbers.
 --
@@ -37,7 +38,7 @@ factor x n =
 --
 -- > prime_factors 315 == [3,3,5,7]
 prime_factors :: Integral a => a -> [a]
-prime_factors = factor primes
+prime_factors = factor P.primes
 
 -- | Collect number of occurences of each element of a sorted list.
 --
@@ -91,10 +92,11 @@ rational_prime_factors_m (n,m) =
 -- up to the /n/th prime.
 --
 -- > rational_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
+-- > rational_prime_factors_t 6 (32,9) == [5,-2,0,0,0,0]
 rational_prime_factors_t :: Integral b => Int -> (b,b) -> [b]
 rational_prime_factors_t n x =
     let r = rational_prime_factors_m x
-    in map (\i -> fromMaybe 0 (lookup i r)) (take n primes)
+    in map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
 
 -- | Compute the disharmonicity of the interval /(p,q)/ using the
 -- prime valuation function /pv/.
@@ -136,7 +138,7 @@ table_2 z =
         r = nub (sort (filter g [p % q | p <- [1..81],q <- [1..81]]))
         h = map (harmonicity_r barlow) r
         f = (> z) . snd
-        k (i,j) = (fratio_to_cents i,rational_prime_factors_t 6 (from_rational i),i,j)
+        k (i,j) = (T.fratio_to_cents i,rational_prime_factors_t 6 (from_rational i),i,j)
     in map k (filter f (zip r h))
 
 -- | Pretty printer for 'Table_2_Row' values.

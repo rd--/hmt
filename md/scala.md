@@ -150,3 +150,36 @@ tune 0 0 11 962.95
 ...
 $
 ~~~~
+
+# intnam lookup
+
+Lookup name of interval given by ratio, print also the cents value of the interval.
+
+~~~~
+$ hmt-scala intnam lookup 7/4 7/6 9/8 13/8 21/16 35/32 16/9
+7:4 = harmonic seventh = 969
+7:6 = septimal minor third = 267
+9:8 = major whole tone = 204
+13:8 = tridecimal neutral sixth = 841
+21:16 = narrow fourth = 471
+35:32 = septimal neutral second = 155
+16:9 = Pythagorean minor seventh = 996
+$ hmt-scala intnam lookup 256/243 264/256 288/264 294/288 324/294 4/3
+256:243 = limma, Pythagorean minor second = 90
+33:32 = undecimal comma, al-Farabi's 1/4-tone = 53
+12:11 = 3/4-tone, undecimal neutral second = 151
+49:48 = slendro diesis, septimal 1/6-tone = 36
+54:49 = Zalzal's mujannab = 168
+4:3 = perfect fourth = 498
+$
+~~~~
+
+# intnam search
+
+Lookup intervals with names that, case insenstively, include the indicated text.
+
+~~~~
+$ hmt-scala intnam search didymus
+81:80 = syntonic comma, Didymus comma = 22
+$
+~~~~

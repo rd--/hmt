@@ -15,7 +15,7 @@ import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
---import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
 
 type R = Double
@@ -114,6 +114,24 @@ fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
       l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
   putStrLn (unlines l)
 
+ratio_cents_pp :: Rational -> String
+ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
+
+-- > intnam_lookup [7/4,7/6,9/8,13/8]
+intnam_lookup :: [Rational] -> IO ()
+intnam_lookup r_sq = do
+  let f db r = let nm = maybe "*UNKNOWN*" snd (T.intnam_search_ratio db r)
+               in concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
+  db <- T.load_intnam
+  mapM_ (putStrLn . f db) r_sq
+
+-- > intnam_search "didymus"
+intnam_search :: String -> IO ()
+intnam_search txt = do
+  db <- T.load_intnam
+  let f (r,nm) = concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
+  mapM_ (putStrLn . f) (T.intnam_search_description_ci db txt)
+
 help :: [String]
 help =
     ["cps-tbl cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
@@ -122,6 +140,8 @@ help =
     ,"db-stat"
     ,"env"
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
+    ,"intname lookup interval:rational..."
+    ,"intname search text:string"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
@@ -148,6 +168,10 @@ main = do
         env
     ["fluidsynth","d12",scl_nm,c,k,fs_nm,fs_bank,fs_prog] ->
         fluidsynth_tuning_d12 (fs_nm,read fs_bank,read fs_prog) (scl_nm,read c,read k)
+    "intnam":"lookup":r_sq ->
+        intnam_lookup (map T.read_ratio_with_div_err r_sq)
+    ["intnam","search",txt] ->
+        intnam_search txt
     "search":ty:ci:lm:txt ->
         case ty of
           "scale" -> search_scale (ci == "ci",nil_or_read lm) txt

@@ -286,16 +286,24 @@ fold_ratio_to_octave n =
          then fold_ratio_to_octave (n * 2)
          else n
 
+-- | Sun of numerator & denominator.
+ratio_nd_sum :: Num a => Ratio a -> a
+ratio_nd_sum r = numerator r + denominator r
+
+min_by :: Ord a => (t -> a) -> t -> t -> t
+min_by f p q = if f p <= f q then p else q
+
 -- | The interval between two pitches /p/ and /q/ given as ratio
 -- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
 -- intervals consider the 'fold_ratio_to_octave' of both /p/ to /q/
 -- and /q/ to /p/.
 --
 -- > map ratio_interval_class [2/3,3/2,3/4,4/3] == [3/2,3/2,3/2,3/2]
+-- > map ratio_interval_class [7/6,12/7] == [7/6,7/6]
 ratio_interval_class :: Integral i => Ratio i -> Ratio i
 ratio_interval_class i =
     let f = fold_ratio_to_octave
-    in max (f i) (f (recip i))
+    in min_by ratio_nd_sum (f i) (f (recip i))
 
 -- | Derivative harmonic series, based on /k/th partial of /f1/.
 --

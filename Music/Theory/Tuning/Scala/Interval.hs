@@ -1,6 +1,7 @@
 -- | Parser for the @intnam.par@ file.
 module Music.Theory.Tuning.Scala.Interval where
 
+import Data.Char {- base -}
 import Data.List {- base -}
 
 import qualified Music.Theory.Read as T {- hmt -}
@@ -19,9 +20,15 @@ type INTNAM = (Int,[INTERVAL])
 intnam_search_ratio :: INTNAM -> Rational -> Maybe INTERVAL
 intnam_search_ratio (_,i) x = find ((== x) . fst) i
 
--- > intnam_search_description intnam "perfect"
-intnam_search_description :: INTNAM -> String -> [INTERVAL]
-intnam_search_description (_,i) x = filter (isInfixOf x . snd) i
+downcase :: String -> String
+downcase = map toLower
+
+-- > intnam <- load_intnam
+-- > intnam_search_description intnam "didymus"
+intnam_search_description_ci :: INTNAM -> String -> [INTERVAL]
+intnam_search_description_ci (_,i) x =
+    let x' = downcase x
+    in filter (isInfixOf x' . downcase . snd) i
 
 -- * Parser
 

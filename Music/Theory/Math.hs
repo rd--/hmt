@@ -85,7 +85,7 @@ rational_simplifies :: Integral a => (a,a) -> Bool
 rational_simplifies (n,d) = gcd n d /= 1
 
 -- | 'numerator' and 'denominator' of rational.
-rational_nd :: Integral t => Ratio t -> (t,t)
+rational_nd :: Ratio t -> (t,t)
 rational_nd r = (numerator r,denominator r)
 
 -- | Rational as a whole number, or 'Nothing'.
