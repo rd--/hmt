@@ -122,7 +122,7 @@ to_rational :: Integral a => (a,a) -> Ratio a
 to_rational = uncurry (%)
 
 -- | Make 'numerator' 'denominator' pair of /n/.
-from_rational :: Integral t => Ratio t -> (t, t)
+from_rational :: Ratio t -> (t, t)
 from_rational n = (numerator n,denominator n)
 
 -- | Set of 1. interval size (cents), 2. intervals as product of
@@ -132,6 +132,7 @@ type Table_2_Row = (Double,[Integer],Rational,Double)
 -- | Table 2 (p.45)
 --
 -- > length (table_2 0.06) == 24
+-- > length (table_2 0.04) == 66
 table_2 :: Double -> [Table_2_Row]
 table_2 z =
     let g n = n <= 2 && n >= 1
