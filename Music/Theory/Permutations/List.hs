@@ -10,7 +10,7 @@ import qualified Music.Theory.Permutations as P {- hmt -}
 --
 -- > permutations [0,3] == [[0,3],[3,0]]
 -- > length (permutations [1..5]) == P.n_permutations 5
-permutations :: (Eq a) => [a] -> [[a]]
+permutations :: [a] -> [[a]]
 permutations i =
     let f p = P.apply_permutation p i
     in map f (P.permutations_n (length i))

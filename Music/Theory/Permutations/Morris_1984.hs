@@ -129,14 +129,14 @@ to_zero_indexed = map (map pred)
 -- | Apply abbreviated 'Hold' notation, given cardinality.
 --
 -- > swap_abbrev 8 [3,8] [2,1,4,3,6,5,8,7] == [1,2,4,6,3,8,5,7]
-swap_abbrev :: Eq a => Int -> [Int] -> [a] -> [a]
+swap_abbrev :: Int -> [Int] -> [a] -> [a]
 swap_abbrev k a =
     let c = to_zero_indexed (swaps_to_cycles (gen_swaps k a))
         p = T.from_cycles c
     in T.apply_permutation p
 
 -- | Apply a 'Change'.
-apply_change :: Eq a => Int -> Change -> [a] -> [a]
+apply_change :: Int -> Change -> [a] -> [a]
 apply_change k p l =
     case p of
       Swap_All -> swap_all l
@@ -149,7 +149,7 @@ apply_change k p l =
 -- >         ,[[1,2,3,4,5],[2,1,3,4,5],[2,3,1,4,5],[3,2,4,1,5],[3,4,2,5,1]
 -- >          ,[4,3,2,5,1],[4,2,3,1,5],[2,4,1,3,5],[2,1,4,3,5],[1,2,4,3,5]])
 -- > in apply_method cambridgeshire_slow_course_doubles [1..5] == r
-apply_method :: Eq a => Method -> [a] -> ([a],[[a]])
+apply_method :: Method -> [a] -> ([a],[[a]])
 apply_method m l =
     let k = length l
         f z e = (apply_change k e z,z)

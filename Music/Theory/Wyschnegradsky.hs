@@ -181,7 +181,7 @@ u3_clr_hex :: [String]
 u3_clr_hex = words "#e14630 #e06e30 #e2c48e #498b43 #2a5a64 #cb7b74"
 
 -- | RGB form of 'u3_clr_hex'.
-u3_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
+u3_clr_rgb :: Fractional n => [(n,n,n)]
 u3_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u3_clr_hex
 
 -- | Notated radial color sequence, transcribed from drawing.
@@ -265,7 +265,7 @@ dc9_clr_hex =
     in map snd (sort (zip n c))
 
 -- | RGB form of colours.
-dc9_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
+dc9_clr_rgb :: Fractional n => [(n,n,n)]
 dc9_clr_rgb = map (clr_normalise 255 . parse_hex_clr_int) dc9_clr_hex
 
 -- * U11
@@ -325,5 +325,5 @@ u11_clr_hex =
         n = reverse ([4..11] ++ [0..3]) :: [Int]
     in map snd (sort (zip n c))
 
-u11_clr_rgb :: (Read n,Fractional n) => [(n,n,n)]
+u11_clr_rgb :: Fractional n => [(n,n,n)]
 u11_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u11_clr_hex

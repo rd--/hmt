@@ -79,7 +79,7 @@ metronome_table_nikko =
 -- | Lookup metronome mark in table.
 --
 -- > mm_name metronome_table_nikko 72 == Just "Andante"
-mm_name :: (Num a, Ord a) => [(String,(a,a))] -> a -> Maybe String
+mm_name :: Ord a => [(String,(a,a))] -> a -> Maybe String
 mm_name tbl x =
     let f (_,(p,q)) = x >= p && x < q
     in fmap fst (find f tbl)

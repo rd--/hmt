@@ -42,7 +42,7 @@ mod' a b =
        else r
 
 -- | Specialised variant of 'fromIntegral'.
-to_r :: (Integral n,Show n) => n -> R
+to_r :: Integral n => n -> R
 to_r = fromIntegral
 
 -- | Variant on 'div' with input constraints.
@@ -91,7 +91,7 @@ lower_psi q z n =
 -- | The first /n/th primes, reversed.
 --
 -- > reverse_primes 14 == [43,41,37,31,29,23,19,17,13,11,7,5,3,2]
-reverse_primes :: (Integral n,Show n) => n -> [n]
+reverse_primes :: Integral n => n -> [n]
 reverse_primes n = reverse (genericTake n primes)
 
 -- | Generate prime stratification for /n/.

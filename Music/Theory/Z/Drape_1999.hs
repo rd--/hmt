@@ -11,7 +11,7 @@ import Music.Theory.Z.TTO
 
 > map tto_pp (rs 5 mod12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
 -}
-rs :: (Eq t,Ord t,Enum t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
+rs :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
 rs = z_tto_rel
 
 {- | Relate segments.

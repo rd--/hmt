@@ -92,7 +92,7 @@ csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MND t n]
 csv_mnd_read = fmap csv_mnd_parse . load_csv
 
 -- | Writer.
-csv_mnd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MND t n] -> IO ()
+csv_mnd_write :: (Real t,Real n) => Int -> FilePath -> [MND t n] -> IO ()
 csv_mnd_write r_prec nm =
     let un_node (st,msg,mnn,vel,ch,pm) =
             [real_pp r_prec st
@@ -131,7 +131,7 @@ csv_mnd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (
 csv_mnd_read_tseq = fmap mnd_to_tseq . csv_mnd_read
 
 -- | 'Tseq' form of 'csv_mnd_write', data is .
-csv_mnd_write_tseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (Event n)) -> IO ()
+csv_mnd_write_tseq :: (Real t,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (Event n)) -> IO ()
 csv_mnd_write_tseq r_prec nm sq =
     let f (t,e) = case e of
                     T.On (n,v,c,p) -> (t,"on",n,v,c,p)
@@ -170,7 +170,7 @@ csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
 csv_mndd_read = fmap csv_mndd_parse . load_csv
 
 -- | Writer.
-csv_mndd_write :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
+csv_mndd_write :: (Real t,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
 csv_mndd_write r_prec nm =
     let un_node (st,du,msg,mnn,vel,ch,pm) =
             [real_pp r_prec st,real_pp r_prec du,msg
@@ -196,7 +196,7 @@ csv_mndd_read_wseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t 
 csv_mndd_read_wseq = fmap mndd_to_wseq . csv_mndd_read
 
 -- | 'Wseq' form of 'csv_mndd_write'.
-csv_mndd_write_wseq :: (Show t,Real t,Show n,Real n) => Int -> FilePath -> T.Wseq t (Event n) -> IO ()
+csv_mndd_write_wseq :: (Real t,Real n) => Int -> FilePath -> T.Wseq t (Event n) -> IO ()
 csv_mndd_write_wseq r_prec nm =
     let f ((st,du),(mnn,vel,ch,pm)) = (st,du,"note",mnn,vel,ch,pm)
     in csv_mndd_write r_prec nm . map f
