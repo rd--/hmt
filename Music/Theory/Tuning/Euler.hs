@@ -52,7 +52,7 @@ pc_pp x =
       Nothing -> error (show ("pc_pp",x))
 
 cents_pp :: Rational -> String
-cents_pp = show . round . T.ratio_to_cents
+cents_pp = show . (round :: Double -> Integer) . T.ratio_to_cents
 
 -- > rat_label (0,False) 1 == "C♮\\n1:1"
 -- > rat_label (3,True) (7/4) == "C♯=969\\n7:4"

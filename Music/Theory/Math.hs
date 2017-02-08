@@ -116,6 +116,10 @@ show_rational_decimal n r =
 realfloat_pp :: RealFloat a => Int -> a -> String
 realfloat_pp k n = showFFloat (Just k) n ""
 
+-- | Show /r/ as float to /k/ places.
+real_pp :: Real t => Int -> t -> String
+real_pp k t = showFFloat (Just k) (T.real_to_double t) ""
+
 -- | Type specialised 'realfloat_pp'.
 float_pp :: Int -> Float -> String
 float_pp = realfloat_pp

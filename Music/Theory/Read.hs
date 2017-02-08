@@ -38,6 +38,21 @@ read_def x s = maybe x id (read_maybe s)
 read_err :: Read a => String -> a
 read_err s = maybe (error ("read_err: " ++ s)) id (read_maybe s)
 
+-- | Variant of 'reads' requiring exact match, no trailing white space.
+--
+-- > map reads_exact ["1.5","2,5"] == [Just 1.5,Nothing]
+reads_exact :: Read a => String -> Maybe a
+reads_exact s =
+    case reads s of
+      [(r,"")] -> Just r
+      _ -> Nothing
+
+-- | Variant of 'reads_exact' that errors on failure.
+reads_exact_err :: Read a => String -> String -> a
+reads_exact_err err_txt str =
+    let err = error ("reads: " ++ err_txt ++ ": " ++ str)
+    in fromMaybe err (reads_exact str)
+
 -- * Type specific variants
 
 -- | Allow commas as thousand separators.

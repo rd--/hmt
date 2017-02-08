@@ -8,33 +8,18 @@ import Data.List.Split {- split -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
-import Numeric {- base -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
-import qualified Music.Theory.Math.Convert as T {- hmt -}
+import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
-
--- | Variant of 'reads' requiring exact match.
---
--- > map reads_exact ["1.5","2,5"] == [Just 1.5,Nothing]
-reads_exact :: Read a => String -> Maybe a
-reads_exact s =
-    case reads s of
-      [(r,"")] -> Just r
-      _ -> Nothing
-
--- | Variant of 'reads_exact' that errors on failure.
-reads_err :: Read a => String -> String -> a
-reads_err err str = fromMaybe (error ("reads: " ++ err ++ ": " ++ str)) (reads_exact str)
-
--- | Show /r/ as float to /k/ places.
-real_pp :: Real t => Int -> t -> String
-real_pp k t = showFFloat (Just k) (T.real_to_double t) ""
 
 -- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
 data_value_pp :: Real t => Int -> t -> String
-data_value_pp k r = if T.whole_to_precision k r then show (T.real_floor_int r) else real_pp k r
+data_value_pp k r =
+    if T.whole_to_precision k r
+    then show (T.real_floor_int r)
+    else T.real_pp k r
 
 -- | Channel values are 4-bit (0-15).
 type Channel = Word8
@@ -54,7 +39,7 @@ param_parse str =
 
 param_pp :: Int -> [Param] -> String
 param_pp k =
-    let f (lhs,rhs) = concat [lhs,"=",real_pp k rhs]
+    let f (lhs,rhs) = concat [lhs,"=",T.real_pp k rhs]
     in intercalate ";" . map f
 
 -- | Midi note data, the type parameters are to allow for fractional note & velocity values.
@@ -68,11 +53,11 @@ csv_mnd_parse (hdr,dat) =
     let err x = error ("csv_mnd_read: " ++ x)
         f m = case m of
                 [st,msg,mnn,vel,ch,pm] ->
-                    (reads_err "time:real" st
+                    (T.reads_exact_err "time:real" st
                     ,msg
-                    ,reads_err "note:real" mnn
-                    ,reads_err "velocity:real" vel
-                    ,reads_err "channel:int" ch
+                    ,T.reads_exact_err "note:real" mnn
+                    ,T.reads_exact_err "velocity:real" vel
+                    ,T.reads_exact_err "channel:int" ch
                     ,param_parse pm)
                 _ -> err "entry?"
     in case hdr of
@@ -95,7 +80,7 @@ csv_mnd_read = fmap csv_mnd_parse . load_csv
 csv_mnd_write :: (Real t,Real n) => Int -> FilePath -> [MND t n] -> IO ()
 csv_mnd_write r_prec nm =
     let un_node (st,msg,mnn,vel,ch,pm) =
-            [real_pp r_prec st
+            [T.real_pp r_prec st
             ,msg
             ,data_value_pp r_prec mnn
             ,data_value_pp r_prec vel
@@ -153,12 +138,12 @@ csv_mndd_parse (hdr,dat) =
         f m =
             case m of
               [st,du,msg,mnn,vel,ch,pm] ->
-                  (reads_err "time" st
-                  ,reads_err "duration" du
+                  (T.reads_exact_err "time" st
+                  ,T.reads_exact_err "duration" du
                   ,msg
-                  ,reads_err "note" mnn
-                  ,reads_err "velocity" vel
-                  ,reads_err "channel" ch
+                  ,T.reads_exact_err "note" mnn
+                  ,T.reads_exact_err "velocity" vel
+                  ,T.reads_exact_err "channel" ch
                   ,param_parse pm)
               _ -> err "entry?"
     in case hdr of
@@ -173,7 +158,7 @@ csv_mndd_read = fmap csv_mndd_parse . load_csv
 csv_mndd_write :: (Real t,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
 csv_mndd_write r_prec nm =
     let un_node (st,du,msg,mnn,vel,ch,pm) =
-            [real_pp r_prec st,real_pp r_prec du,msg
+            [T.real_pp r_prec st,T.real_pp r_prec du,msg
             ,data_value_pp r_prec mnn,data_value_pp r_prec vel
             ,show ch
             ,param_pp r_prec pm]
