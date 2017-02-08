@@ -18,7 +18,7 @@ data SRO t = SRO {sro_r :: Int
              deriving (Eq,Show)
 
 -- | Printer in 'rnRTnMI' form.
-sro_pp :: (Num t,Eq t,Show t) => SRO t -> String
+sro_pp :: Show t => SRO t -> String
 sro_pp (SRO rN r tN m i) =
     concat [if rN /= 0 then 'r' : show rN else ""
            ,if r then "R" else ""
@@ -42,7 +42,9 @@ p_sro = do
 --
 -- > sro_parse "r2RT3MI" == SRO 2 True 3 True True
 sro_parse :: Integral i => String -> SRO i
-sro_parse = either (\e -> error ("sro_parse failed\n" ++ show e)) id . P.parse p_sro ""
+sro_parse =
+    either (\e -> error ("sro_parse failed\n" ++ show e)) id .
+    P.parse p_sro ""
 
 -- | The total set of serial operations.
 --
