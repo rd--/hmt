@@ -479,3 +479,66 @@ gen_dtt_lookup_f :: MNN_CPS_Table -> MNN_CPS_Table -> Midi_Tuning_F
 gen_dtt_lookup_f t0 t1 =
     let m = M.fromList (gen_dtt_lookup_tbl t0 t1)
     in T.cps_to_midi_detune . T.map_ix_err m
+
+-- * Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html>
+
+-- | Normal form, value with occurences cound (ie. exponent in notation above).
+type EFG i = [(i,Int)]
+
+-- | Degree of EFG, ie. sum of exponents.
+--
+-- > efg_degree [(3,3),(7,2)] == 3 + 2
+efg_degree :: EFG i -> Int
+efg_degree = sum . map snd
+
+-- | Number of tones of EFG, ie. product of increment of exponents.
+--
+-- > efg_tones [(3,3),(7,2)] == (3 + 1) * (2 + 1)
+efg_tones :: EFG i -> Int
+efg_tones = product . map ((+ 1) . snd)
+
+-- | Collate a genus given as a multiset into standard form, ie. histogram.
+--
+-- > efg_collate [3,3,3,7,7] == [(3,3),(7,2)]
+efg_collate :: Ord i => [i] -> EFG i
+efg_collate = T.histogram . sort
+
+-- | Factors of EFG given with co-ordinate of grid locaton.
+--
+-- > efg_factors [(3,3),(7,2)]
+efg_factors :: EFG i -> [((Int,Int),[i])]
+efg_factors efg =
+    case efg of
+      [(p,n),(q,m)] -> [((x,y),replicate x p ++ replicate y q) | x <- [0 .. n], y <- [0 .. m]]
+      _ -> error "efg_factors"
+
+{- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
+
+> let r = sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
+> sort r == [1/1,9/8,8/7,9/7,21/16,189/128,3/2,27/16,12/7,7/4,27/14,63/32]
+> map (round . ratio_to_cents) (sort r) == [0,204,231,435,471,675,702,906,933,969,1137,1173]
+
+      0:         1/1          C          0.000 cents
+      1:         9/8          D        203.910 cents
+      2:         8/7          D+       231.174 cents
+      3:         9/7          E+       435.084 cents
+      4:        21/16         F-       470.781 cents
+      5:       189/128        G-       674.691 cents
+      6:         3/2          G        701.955 cents
+      7:        27/16         A        905.865 cents
+      8:        12/7          A+       933.129 cents
+      9:         7/4          Bb-      968.826 cents
+     10:        27/14         B+      1137.039 cents
+     11:        63/32         C-      1172.736 cents
+     12:         2/1          C       1200.000 cents
+
+> let r' = sort $ map snd $ efg_ratios 5 [(5,2),(7,3)]
+> sort r' == [1/1,343/320,35/32,49/40,5/4,343/256,7/5,49/32,8/5,1715/1024,7/4,245/128]
+> map (round . ratio_to_cents) (sort r') == [0,120,155,351,386,506,583,738,814,893,969,1124]
+
+-}
+efg_ratios :: Real r => Rational -> EFG r -> [((Int,Int),Rational)]
+efg_ratios n =
+    let to_r = fold_ratio_to_octave . (/ n) . toRational . product
+        f (ix,i) = (ix,to_r i)
+    in map f . efg_factors

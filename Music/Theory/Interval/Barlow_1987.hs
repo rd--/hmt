@@ -21,9 +21,12 @@ barlow p =
         square n = n * n
     in 2 * (square (p' - 1) / p')
 
+{-
+
 -- | Generate list of factors of /n/ from /x/.
 --
--- > factor primes 315 == [3,3,5,7]
+-- > factor P.primes 315 == [3,3,5,7]
+-- > P.primeFactors 315 == [3,3,5,7]
 factor :: Integral a => [a] -> a -> [a]
 factor x n =
     case x of
@@ -37,8 +40,11 @@ factor x n =
 -- | 'factor' /n/ from 'primes'.
 --
 -- > prime_factors 315 == [3,3,5,7]
+-- > P.primeFactors 315 == [3,3,5,7]
 prime_factors :: Integral a => a -> [a]
 prime_factors = factor P.primes
+
+-}
 
 -- | Collect number of occurences of each element of a sorted list.
 --
@@ -50,11 +56,11 @@ multiplicities =
                 e:_ -> (e,genericLength x)
     in map f . group
 
--- | 'multiplicities' '.' 'prime_factors'.
+-- | 'multiplicities' '.' 'P.primeFactors'.
 --
 -- > prime_factors_m 315 == [(3,2),(5,1),(7,1)]
 prime_factors_m :: Integral a => a -> [(a,a)]
-prime_factors_m = multiplicities . prime_factors
+prime_factors_m = multiplicities . P.primeFactors
 
 -- | Merging function for 'rational_prime_factors_m'.
 merge :: (Ord a,Num b,Eq b) => [(a,b)] -> [(a,b)] -> [(a,b)]
