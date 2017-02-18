@@ -21,8 +21,6 @@ barlow p =
         square n = n * n
     in 2 * (square (p' - 1) / p')
 
-{-
-
 -- | Generate list of factors of /n/ from /x/.
 --
 -- > factor P.primes 315 == [3,3,5,7]
@@ -31,20 +29,20 @@ factor :: Integral a => [a] -> a -> [a]
 factor x n =
     case x of
       [] -> undefined
-      i:x' -> if i * i > n
-              then [n]
-              else if rem n i == 0
-                   then i : factor x (quot n i)
-                   else factor x' n
+      i:x' -> if n < i
+              then [] -- ie. prime factors of 1...
+              else if i * i > n
+                   then [n]
+                   else if rem n i == 0
+                        then i : factor x (quot n i)
+                        else factor x' n
 
 -- | 'factor' /n/ from 'primes'.
 --
--- > prime_factors 315 == [3,3,5,7]
--- > P.primeFactors 315 == [3,3,5,7]
+-- > map prime_factors [1,4,315] == [[],[2,2],[3,3,5,7]]
+-- > map P.primeFactors [1,4,315] == [[],[2,2],[3,3,5,7]]
 prime_factors :: Integral a => a -> [a]
 prime_factors = factor P.primes
-
--}
 
 -- | Collect number of occurences of each element of a sorted list.
 --

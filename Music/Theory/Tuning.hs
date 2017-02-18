@@ -29,35 +29,35 @@ type Cents = Double
 --
 -- In both cases, the values are given in relation to the first degree
 -- of the scale, which for ratios is 1 and for cents 0.
-data Tuning = Tuning {ratios_or_cents :: Either [Rational] [Cents]
-                     ,octave_ratio :: Rational}
+data Tuning = Tuning {tn_ratios_or_cents :: Either [Rational] [Cents]
+                     ,tn_octave_ratio :: Rational}
               deriving (Eq,Show)
 
 -- | Divisions of octave.
 --
--- > divisions ditone == 12
-divisions :: Tuning -> Int
-divisions = either length length . ratios_or_cents
+-- > tn_divisions (equal_temperament 12) == 12
+tn_divisions :: Tuning -> Int
+tn_divisions = either length length . tn_ratios_or_cents
 
 -- | 'Maybe' exact ratios of 'Tuning'.
-ratios :: Tuning -> Maybe [Rational]
-ratios = T.fromLeft . ratios_or_cents
+tn_ratios :: Tuning -> Maybe [Rational]
+tn_ratios = T.fromLeft . tn_ratios_or_cents
 
 -- | 'error'ing variant.
-ratios_err :: Tuning -> [Rational]
-ratios_err = fromMaybe (error "ratios") . ratios
+tn_ratios_err :: Tuning -> [Rational]
+tn_ratios_err = fromMaybe (error "ratios") . tn_ratios
 
 -- | Possibly inexact 'Cents' of tuning.
-cents :: Tuning -> [Cents]
-cents = either (map ratio_to_cents) id . ratios_or_cents
+tn_cents :: Tuning -> [Cents]
+tn_cents = either (map ratio_to_cents) id . tn_ratios_or_cents
 
 -- | 'map' 'round' '.' 'cents'.
-cents_i :: Integral i => Tuning -> [i]
-cents_i = map round . cents
+tn_cents_i :: Integral i => Tuning -> [i]
+tn_cents_i = map round . tn_cents
 
 -- | Variant of 'cents' that includes octave at right.
-cents_octave :: Tuning -> [Cents]
-cents_octave t = cents t ++ [ratio_to_cents (octave_ratio t)]
+tn_cents_octave :: Tuning -> [Cents]
+tn_cents_octave t = tn_cents t ++ [ratio_to_cents (tn_octave_ratio t)]
 
 -- | Convert from interval in cents to frequency ratio.
 --
@@ -66,16 +66,16 @@ cents_to_ratio :: Floating a => a -> a
 cents_to_ratio n = 2 ** (n / 1200)
 
 -- | Possibly inexact 'Approximate_Ratio's of tuning.
-approximate_ratios :: Tuning -> [Approximate_Ratio]
-approximate_ratios =
+tn_approximate_ratios :: Tuning -> [Approximate_Ratio]
+tn_approximate_ratios =
     either (map approximate_ratio) (map cents_to_ratio) .
-    ratios_or_cents
+    tn_ratios_or_cents
 
 -- | Cyclic form, taking into consideration 'octave_ratio'.
-approximate_ratios_cyclic :: Tuning -> [Approximate_Ratio]
-approximate_ratios_cyclic t =
-    let r = approximate_ratios t
-        m = realToFrac (octave_ratio t)
+tn_approximate_ratios_cyclic :: Tuning -> [Approximate_Ratio]
+tn_approximate_ratios_cyclic t =
+    let r = tn_approximate_ratios t
+        m = realToFrac (tn_octave_ratio t)
         g = iterate (* m) 1
         f n = map (* n) r
     in concatMap f g
@@ -97,33 +97,33 @@ oct_diff_to_ratio r n = if n >= 0 then recur_n n (* r) 1 else recur_n (negate n)
 -- | Lookup function that allows both negative & multiple octave indices.
 --
 -- > let map_zip f l = zip l (map f l)
--- > map_zip (ratios_lookup werckmeister_vi) [-24 .. 24]
-ratios_lookup :: Tuning -> Int -> Maybe Rational
-ratios_lookup t n =
-    let (o,pc) = n `divMod` divisions t
-        o_ratio = oct_diff_to_ratio (octave_ratio t) o
-    in fmap (\r -> o_ratio * (r !! pc)) (ratios t)
+-- > map_zip (tn_ratios_lookup werckmeister_vi) [-24 .. 24]
+tn_ratios_lookup :: Tuning -> Int -> Maybe Rational
+tn_ratios_lookup t n =
+    let (o,pc) = n `divMod` tn_divisions t
+        o_ratio = oct_diff_to_ratio (tn_octave_ratio t) o
+    in fmap (\r -> o_ratio * (r !! pc)) (tn_ratios t)
 
 -- | Lookup function that allows both negative & multiple octave indices.
 --
--- > map_zip (approximate_ratios_lookup werckmeister_v) [-24 .. 24]
-approximate_ratios_lookup :: Tuning -> Int -> Approximate_Ratio
-approximate_ratios_lookup t n =
-    let (o,pc) = n `divMod` divisions t
-        o_ratio = fromRational (oct_diff_to_ratio (octave_ratio t) o)
-    in o_ratio * ((approximate_ratios t) !! pc)
+-- > map_zip (tn_approximate_ratios_lookup werckmeister_v) [-24 .. 24]
+tn_approximate_ratios_lookup :: Tuning -> Int -> Approximate_Ratio
+tn_approximate_ratios_lookup t n =
+    let (o,pc) = n `divMod` tn_divisions t
+        o_ratio = fromRational (oct_diff_to_ratio (tn_octave_ratio t) o)
+    in o_ratio * ((tn_approximate_ratios t) !! pc)
 
 -- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.
 --
 -- > :l Music.Theory.Tuning.Werckmeister
 -- > let r = [1,17/16,9/8,13/11,5/4,4/3,7/5,3/2,11/7,5/3,16/9,15/8]
--- > reconstructed_ratios 1e-2 werckmeister_iii == Just r
-reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
-reconstructed_ratios epsilon =
+-- > tn_reconstructed_ratios 1e-2 werckmeister_iii == Just r
+tn_reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
+tn_reconstructed_ratios epsilon =
     fmap (map (reconstructed_ratio epsilon)) .
     T.fromRight .
-    ratios_or_cents
+    tn_ratios_or_cents
 
 -- | Convert from a 'Floating' ratio to /cents/.
 --
@@ -151,7 +151,7 @@ ratio_to_cents = approximate_ratio_to_cents . realToFrac
 --
 -- > map (reconstructed_ratio 1e-5) [0,700,1200] == [1,442/295,2]
 --
--- > ratio_to_cents (442/295) == 699.9976981706734
+-- > ratio_to_cents (442/295) == 699.9976981706735
 reconstructed_ratio :: Double -> Cents -> Rational
 reconstructed_ratio epsilon c = approxRational (cents_to_ratio c) epsilon
 
@@ -429,8 +429,8 @@ type D12_Midi_Tuning = (Tuning,Cents,Int)
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_F
 d12_midi_tuning_f (t,c_diff,k) n =
     let (_,pc) = T.midi_to_octpc (n + k)
-        dt = zipWith (-) (cents t) [0,100 .. 1200]
-    in if divisions t /= 12
+        dt = zipWith (-) (tn_cents t) [0,100 .. 1200]
+    in if tn_divisions t /= 12
        then error "d12_midi_tuning_f: not d12"
        else case dt `atMay` pc of
               Nothing -> error "d12_midi_tuning_f: pc?"
@@ -447,7 +447,7 @@ type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 -- > map f [59 .. 59 + 72]
 cps_midi_tuning_f :: CPS_Midi_Tuning -> Sparse_Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
-    let r = approximate_ratios_cyclic t
+    let r = tn_approximate_ratios_cyclic t
         m = take g (map (T.cps_to_midi_detune . (* f0)) r)
     in m `atMay` (n - k)
 
@@ -510,6 +510,8 @@ efg_collate = T.histogram . sort
 
 {- | Factors of EFG given with co-ordinate of grid location.
 
+> efg_factors [(3,3)]
+
 > let r = [([0,0],[]),([0,1],[7]),([0,2],[7,7])
 >         ,([1,0],[3]),([1,1],[3,7]),([1,2],[3,7,7])
 >         ,([2,0],[3,3]),([2,1],[3,3,7]),([2,2],[3,3,7,7])
@@ -520,9 +522,12 @@ efg_collate = T.histogram . sort
 efg_factors :: EFG i -> [([Int],[i])]
 efg_factors efg =
     let k = map (\(_,n) -> [0 .. n]) efg
+        k' = if length efg == 1
+             then concatMap (map return) k
+             else T.nfold_cartesian_product k
         z = map fst efg
         f ix = (ix,concat (zipWith (\n m -> replicate n (z !! m)) ix [0..]))
-    in map f (T.nfold_cartesian_product k)
+    in map f k'
 
 {- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
@@ -555,14 +560,8 @@ efg_factors efg =
 > let c0 = [0,204,231,435,471,675,702,906,933,969,1137,1173,1200]
 > let c1 = [0,120,155,351,386,506,583,738,814,893,969,1124,1200]
 > let c2 = [0,155,267,386,498,653,884,969,1200]
-> map (\(c,y) -> map (\x -> (x,y,x,y + 10)) c) (zip [c0,c1,c2] [0,20,40])
-
-> let e = [[3,3,3],[3,3,5],[3,5,5],[3,5,7],[3,7,7],[5,5,5],[5,5,7],[3,3,7],[5,7,7],[7,7,7]]
-> let e = [[3,3,3],[5,5,5],[7,7,7],[3,3,5],[3,5,5],[5,5,7],[5,7,7],[3,7,7],[3,3,7],[3,5,7]]
-> let e' = map efg_collate e
-> let f = (++ [1200]) . sort . map (round . ratio_to_cents . snd) . efg_ratios 1
-> let c = map f e'
-> concatMap (\(c',y) -> map (\x -> (x,y,x,y + 10)) c') (zip c [0,30 ..])
+> let f (c',y) = map (\x -> (x,y,x,y + 10)) c'
+> map f (zip [c0,c1,c2] [0,20,40])
 
 -}
 efg_ratios :: Real r => Rational -> EFG r -> [([Int],Rational)]
@@ -570,3 +569,20 @@ efg_ratios n =
     let to_r = fold_ratio_to_octave . (/ n) . toRational . product
         f (ix,i) = (ix,to_r i)
     in map f . efg_factors
+
+{- | Generate a line drawing, as a set of (x0,y0,x1,y1) 4-tuples.
+     h=row height, m=distance of vertical mark from row edge, k=distance between rows
+
+> let e = [[3,3,3],[3,3,5],[3,5,5],[3,5,7],[3,7,7],[5,5,5],[5,5,7],[3,3,7],[5,7,7],[7,7,7]]
+> let e = [[3,3,3],[5,5,5],[7,7,7],[3,3,5],[3,5,5],[5,5,7],[5,7,7],[3,7,7],[3,3,7],[3,5,7]]
+> let e' = map efg_collate e
+> efg_diagram_set (round,25,4,75) e'
+
+-}
+efg_diagram_set :: (Enum n,Real n) => (Cents -> n,n,n,n) -> [EFG n] -> [(n,n,n,n)]
+efg_diagram_set (to_f,h,m,k) e =
+    let f = (++ [1200]) . sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
+        g (c,y) = let y' = y + h
+                      b = [(0,y,1200,y),(0,y',1200,y')]
+                  in b ++ map (\x -> (x,y + m,x,y' - m)) c
+    in concatMap g (zip (map f e) [0,k ..])
