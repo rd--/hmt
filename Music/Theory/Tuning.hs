@@ -482,7 +482,7 @@ gen_dtt_lookup_f t0 t1 =
 
 -- * Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html>
 
--- | Normal form, value with occurences cound (ie. exponent in notation above).
+-- | Normal form, value with occurences count (ie. exponent in notation above).
 type EFG i = [(i,Int)]
 
 -- | Degree of EFG, ie. sum of exponents.
@@ -503,13 +503,18 @@ efg_tones = product . map ((+ 1) . snd)
 efg_collate :: Ord i => [i] -> EFG i
 efg_collate = T.histogram . sort
 
--- | Factors of EFG given with co-ordinate of grid locaton.
+-- | Factors of EFG given with co-ordinate of grid location.
 --
 -- > efg_factors [(3,3),(7,2)]
-efg_factors :: EFG i -> [((Int,Int),[i])]
+efg_factors :: EFG i -> [([Int],[i])]
 efg_factors efg =
     case efg of
-      [(p,n),(q,m)] -> [((x,y),replicate x p ++ replicate y q) | x <- [0 .. n], y <- [0 .. m]]
+      [(p,n),(q,m)] ->
+          [([x,y],replicate x p ++ replicate y q) |
+           x <- [0 .. n], y <- [0 .. m]]
+      [(p,n),(q,m),(r,o)] ->
+          [([x,y,z],replicate x p ++ replicate y q ++ replicate z r) |
+           x <- [0 .. n], y <- [0 .. m], z <- [0 .. o]]
       _ -> error "efg_factors"
 
 {- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
@@ -536,8 +541,17 @@ efg_factors efg =
 > sort r' == [1/1,343/320,35/32,49/40,5/4,343/256,7/5,49/32,8/5,1715/1024,7/4,245/128]
 > map (round . ratio_to_cents) (sort r') == [0,120,155,351,386,506,583,738,814,893,969,1124]
 
+> let r'' = sort $ map snd $ efg_ratios 3 [(3,1),(5,1),(7,1)]
+> sort r'' == [1/1,35/32,7/6,5/4,4/3,35/24,5/3,7/4]
+> map (round . ratio_to_cents) (sort r'') == [0,155,267,386,498,653,884,969]
+
+> let c0 = [0,204,231,435,471,675,702,906,933,969,1137,1173,1200]
+> let c1 = [0,120,155,351,386,506,583,738,814,893,969,1124,1200]
+> let c2 = [0,155,267,386,498,653,884,969,1200]
+> map (\(c,y) -> map (\x -> (x,y,x,y + 10)) c) (zip [c0,c1,c2] [0,20,40])
+
 -}
-efg_ratios :: Real r => Rational -> EFG r -> [((Int,Int),Rational)]
+efg_ratios :: Real r => Rational -> EFG r -> [([Int],Rational)]
 efg_ratios n =
     let to_r = fold_ratio_to_octave . (/ n) . toRational . product
         f (ix,i) = (ix,to_r i)
