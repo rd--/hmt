@@ -38,7 +38,7 @@ tto_parse = either (\e -> error ("tto_parse failed\n" ++ show e)) id . P.parse p
 --
 -- > length (z_tto_univ mod12) == 48
 -- > map tto_pp (z_tto_univ mod12)
-z_tto_univ :: (Enum t, Integral t) => Z t -> [TTO t]
+z_tto_univ :: Integral t => Z t -> [TTO t]
 z_tto_univ z = [TTO t m i | m <- [False,True], i <- [False,True], t <- z_univ z]
 
 -- | M is ordinarily 5, but can be specified here.
@@ -63,7 +63,7 @@ tto_apply mn = z_tto_apply mn id
 -- | Find 'TTO' that that map /x/ to /y/ given /m/ and /z/.
 --
 -- > map tto_pp (z_tto_rel 5 mod12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
-z_tto_rel :: (Eq t,Ord t,Enum t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
+z_tto_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
 z_tto_rel m z x y =
     let q = T.set y
     in mapMaybe (\o -> if z_tto_apply m z o x == q then Just o else Nothing) (z_tto_univ z)

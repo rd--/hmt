@@ -22,10 +22,10 @@ mod7 n = n `mod` 7
 mod12 :: Integral i => Z i
 mod12 n = n `mod` 12
 
-lift_unary_Z :: Integral i => Z i -> (t -> i) -> t -> i
+lift_unary_Z :: Z i -> (t -> i) -> t -> i
 lift_unary_Z z f n = z (f n)
 
-lift_binary_Z :: Integral i => Z i -> (s -> t -> i) -> s -> t -> i
+lift_binary_Z :: Z i -> (s -> t -> i) -> s -> t -> i
 lift_binary_Z z f n1 n2 = z (n1 `f` n2)
 
 -- > import Music.Theory.Z
@@ -77,7 +77,7 @@ z_univ z = 0 : takeWhile ((> 0) . z) [1..]
 --
 -- > z_complement mod5 [0,2,3] == [1,4]
 -- > z_complement mod12 [0,2,4,5,7,9,11] == [1,3,6,8,10]
-z_complement :: (Enum i, Eq i, Integral i) => Z i -> [i] -> [i]
+z_complement :: Integral i => Z i -> [i] -> [i]
 z_complement z = (\\) (z_univ z)
 
 z_quot :: Integral i => Z i -> i -> i -> i

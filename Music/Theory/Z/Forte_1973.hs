@@ -127,7 +127,7 @@ bip z = sort . map (ic z . flip mod z) . T.d_dx
 > zipWith (\p q -> (p == q,p,q)) (sc_univ mod12) (map snd sc_table)
 
 -}
-sc_univ :: (Integral i,Ord i,Enum i) => Z i -> [[i]]
+sc_univ :: Integral i => Z i -> [[i]]
 sc_univ z =
     T.sort_by_two_stage length id $
     nub $
