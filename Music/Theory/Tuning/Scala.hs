@@ -23,24 +23,13 @@ import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
--- * Types
-
--- | A @.scl@ pitch is either in 'Cents' or is a 'Ratio'.
-data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq,Show)
+-- * Pitch
 
 -- | A @.scl@ pitch is either in 'Cents' or is a 'Ratio'.
 type Pitch i = Either T.Cents (Ratio i)
 
--- | A scale has a name, a description, a degree, and a list of 'Pitch'es.
-type Scale i = (String,String,Int,[Pitch i])
-
--- | Ensure degree and number of pitches align.
-scale_verify :: Scale i -> Bool
-scale_verify (_,_,n,p) = n == length p
-
--- | Raise error if scale doesn't verify, else 'id'.
-scale_verify_err :: Scale i -> Scale i
-scale_verify_err scl = if scale_verify scl then scl else error "invalid scale"
+-- | An enumeration type for @.scl@ pitch classification.
+data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq,Show)
 
 -- | A nearness value for deriving approximate rationals.
 type Epsilon = Double
@@ -49,32 +38,20 @@ type Epsilon = Double
 pitch_type :: Pitch i -> Pitch_Type
 pitch_type = either (const Pitch_Cents) (const Pitch_Ratio)
 
-scale_name :: Scale i -> String
-scale_name (nm,_,_,_) = nm
+-- | Pitch as 'T.Cents', conversion by 'T.ratio_to_cents' if necessary.
+pitch_cents :: Integral i => Pitch i -> T.Cents
+pitch_cents p =
+    case p of
+      Left c -> c
+      Right r -> T.ratio_to_cents r
 
--- | Text description of scale.
-scale_description :: Scale i -> String
-scale_description (_,d,_,_) = d
-
--- | The degree of the scale (number of 'Pitch'es).
-scale_degree :: Scale i -> Int
-scale_degree (_,_,n,_) = n
-
--- | The 'Pitch'es at 'Scale'.
-scale_pitches :: Scale i -> [Pitch i]
-scale_pitches (_,_,_,p) = p
-
--- | The last 'Pitch' element of the scale (ie. the /ocatve/).
-scale_octave :: Scale i -> Maybe (Pitch i)
-scale_octave (_,_,_,s) =
-    case s of
-      [] -> Nothing
-      _ -> Just (last s)
-
--- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of
--- @1200@.
-perfect_octave :: Integral i => Scale i -> Bool
-perfect_octave s = scale_octave s `elem` [Just (Right 2),Just (Left 1200)]
+-- | Pitch as 'Rational', conversion by 'T.reconstructed_ratio' if
+-- necessary, hence /epsilon/.
+pitch_ratio :: Epsilon -> Pitch Integer -> Rational
+pitch_ratio epsilon p =
+    case p of
+      Left c -> T.reconstructed_ratio epsilon c
+      Right r -> r
 
 -- | A pair giving the number of 'Cents' and number of 'Ratio' pitches.
 pitch_representations :: Integral t => [Pitch i] -> (t,t)
@@ -98,24 +75,50 @@ pitch_type_predominant p =
     let (c,r) = pitch_representations p :: (Int,Int)
     in if c >= r then Pitch_Cents else Pitch_Ratio
 
+-- * Scale
+
+-- | A scale has a name, a description, a degree, and a list of 'Pitch'es.
+type Scale i = (String,String,Int,[Pitch i])
+
+-- | The name of a scale.
+scale_name :: Scale i -> String
+scale_name (nm,_,_,_) = nm
+
+-- | Text description of a scale.
+scale_description :: Scale i -> String
+scale_description (_,d,_,_) = d
+
+-- | The degree of the scale (number of 'Pitch'es).
+scale_degree :: Scale i -> Int
+scale_degree (_,_,n,_) = n
+
+-- | The 'Pitch'es at 'Scale'.
+scale_pitches :: Scale i -> [Pitch i]
+scale_pitches (_,_,_,p) = p
+
+-- | Ensure degree and number of pitches align.
+scale_verify :: Scale i -> Bool
+scale_verify (_,_,n,p) = n == length p
+
+-- | Raise error if scale doesn't verify, else 'id'.
+scale_verify_err :: Scale i -> Scale i
+scale_verify_err scl = if scale_verify scl then scl else error "invalid scale"
+
+-- | The last 'Pitch' element of the scale (ie. the /ocatve/).
+scale_octave :: Scale i -> Maybe (Pitch i)
+scale_octave (_,_,_,s) =
+    case s of
+      [] -> Nothing
+      _ -> Just (last s)
+
+-- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of
+-- @1200@.
+perfect_octave :: Integral i => Scale i -> Bool
+perfect_octave s = scale_octave s `elem` [Just (Right 2),Just (Left 1200)]
+
 -- | Are all pitches of the same type.
 is_scale_uniform :: Scale i -> Bool
 is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
-
--- | Pitch as 'T.Cents', conversion by 'T.ratio_to_cents' if necessary.
-pitch_cents :: Integral i => Pitch i -> T.Cents
-pitch_cents p =
-    case p of
-      Left c -> c
-      Right r -> T.ratio_to_cents r
-
--- | Pitch as 'Rational', conversion by 'T.reconstructed_ratio' if
--- necessary, hence /epsilon/.
-pitch_ratio :: Epsilon -> Pitch Integer -> Rational
-pitch_ratio epsilon p =
-    case p of
-      Left c -> T.reconstructed_ratio epsilon c
-      Right r -> r
 
 -- | Make scale pitches uniform, conforming to the most promininent
 -- pitch type.
@@ -268,6 +271,8 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 > db <- scl_load_dir scl_84_dir
 > length db == 4579
 > length (filter ((== 0) . scale_degree) db) == 0
+> length (filter ((/= 1) . head . scale_ratios 1e-3) db) == 0
+> length (filter ((/= 0) . head . scale_cents) db) == 0
 > length (filter (== Just (Right 2)) (map scale_octave db)) == 3927
 > length (filter is_scale_uniform db) == 2756
 

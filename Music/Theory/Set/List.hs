@@ -72,9 +72,25 @@ expand_set n xs =
 partitions :: Eq a => [a] -> [[[a]]]
 partitions = map (map M.toList . M.toList) . M.partitions . M.fromListEq
 
--- | Cartesian product of two sets.
---
--- > let r = [('a',1),('a',2),('b',1),('b',2),('c',1),('c',2)]
--- > in cartesian_product "abc" [1,2] == r
+{- | Cartesian product of two sets.
+
+> let r = [('a',1),('a',2),('b',1),('b',2),('c',1),('c',2)]
+> in cartesian_product "abc" [1,2] == r
+
+> cartesian_product "abc" "" == []
+
+-}
 cartesian_product :: [a] -> [b] -> [(a,b)]
 cartesian_product p q = [(i,j) | i <- p, j <- q]
+
+-- | List form of n-fold cartesian product.
+--
+-- > length (nfold_cartesian_product [[1..13],[1..4]]) == 52
+-- > length (nfold_cartesian_product ["abc","de","fgh"]) == 3 * 2 * 3
+nfold_cartesian_product :: [[a]] -> [[a]]
+nfold_cartesian_product l =
+    case l of
+      [] -> []
+      [_] -> []
+      [x,y] -> [[i,j] | i <- x, j <- y]
+      x:l' -> concatMap (\e -> map (e :) (nfold_cartesian_product l')) x

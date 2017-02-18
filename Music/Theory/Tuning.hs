@@ -12,6 +12,7 @@ import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Map as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * Types
@@ -25,6 +26,9 @@ type Cents = Double
 
 -- | A tuning specified 'Either' as a sequence of exact ratios, or as
 -- a sequence of possibly inexact 'Cents'.
+--
+-- In both cases, the values are given in relation to the first degree
+-- of the scale, which for ratios is 1 and for cents 0.
 data Tuning = Tuning {ratios_or_cents :: Either [Rational] [Cents]
                      ,octave_ratio :: Rational}
               deriving (Eq,Show)
@@ -79,6 +83,7 @@ approximate_ratios_cyclic t =
 -- | Iterate the function /f/ /n/ times, the inital value is /x/.
 --
 -- > recur_n 5 (* 2) 1 == 32
+-- > take (5 + 1) (iterate (* 2) 1) == [1,2,4,8,16,32]
 recur_n :: Integral n => n -> (t -> t) -> t -> t
 recur_n n f x = if n < 1 then x else recur_n (n - 1) f (f x)
 
@@ -503,25 +508,27 @@ efg_tones = product . map ((+ 1) . snd)
 efg_collate :: Ord i => [i] -> EFG i
 efg_collate = T.histogram . sort
 
--- | Factors of EFG given with co-ordinate of grid location.
---
--- > efg_factors [(3,3),(7,2)]
+{- | Factors of EFG given with co-ordinate of grid location.
+
+> let r = [([0,0],[]),([0,1],[7]),([0,2],[7,7])
+>         ,([1,0],[3]),([1,1],[3,7]),([1,2],[3,7,7])
+>         ,([2,0],[3,3]),([2,1],[3,3,7]),([2,2],[3,3,7,7])
+>         ,([3,0],[3,3,3]),([3,1],[3,3,3,7]),([3,2],[3,3,3,7,7])]
+> in efg_factors [(3,3),(7,2)] == r
+
+-}
 efg_factors :: EFG i -> [([Int],[i])]
 efg_factors efg =
-    case efg of
-      [(p,n),(q,m)] ->
-          [([x,y],replicate x p ++ replicate y q) |
-           x <- [0 .. n], y <- [0 .. m]]
-      [(p,n),(q,m),(r,o)] ->
-          [([x,y,z],replicate x p ++ replicate y q ++ replicate z r) |
-           x <- [0 .. n], y <- [0 .. m], z <- [0 .. o]]
-      _ -> error "efg_factors"
+    let k = map (\(_,n) -> [0 .. n]) efg
+        z = map fst efg
+        f ix = (ix,concat (zipWith (\n m -> replicate n (z !! m)) ix [0..]))
+    in map f (T.nfold_cartesian_product k)
 
 {- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
 > let r = sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
-> sort r == [1/1,9/8,8/7,9/7,21/16,189/128,3/2,27/16,12/7,7/4,27/14,63/32]
-> map (round . ratio_to_cents) (sort r) == [0,204,231,435,471,675,702,906,933,969,1137,1173]
+> r == [1/1,9/8,8/7,9/7,21/16,189/128,3/2,27/16,12/7,7/4,27/14,63/32]
+> map (round . ratio_to_cents) r == [0,204,231,435,471,675,702,906,933,969,1137,1173]
 
       0:         1/1          C          0.000 cents
       1:         9/8          D        203.910 cents
@@ -538,17 +545,24 @@ efg_factors efg =
      12:         2/1          C       1200.000 cents
 
 > let r' = sort $ map snd $ efg_ratios 5 [(5,2),(7,3)]
-> sort r' == [1/1,343/320,35/32,49/40,5/4,343/256,7/5,49/32,8/5,1715/1024,7/4,245/128]
-> map (round . ratio_to_cents) (sort r') == [0,120,155,351,386,506,583,738,814,893,969,1124]
+> r' == [1/1,343/320,35/32,49/40,5/4,343/256,7/5,49/32,8/5,1715/1024,7/4,245/128]
+> map (round . ratio_to_cents) r' == [0,120,155,351,386,506,583,738,814,893,969,1124]
 
 > let r'' = sort $ map snd $ efg_ratios 3 [(3,1),(5,1),(7,1)]
-> sort r'' == [1/1,35/32,7/6,5/4,4/3,35/24,5/3,7/4]
-> map (round . ratio_to_cents) (sort r'') == [0,155,267,386,498,653,884,969]
+> r'' == [1/1,35/32,7/6,5/4,4/3,35/24,5/3,7/4]
+> map (round . ratio_to_cents) r'' == [0,155,267,386,498,653,884,969]
 
 > let c0 = [0,204,231,435,471,675,702,906,933,969,1137,1173,1200]
 > let c1 = [0,120,155,351,386,506,583,738,814,893,969,1124,1200]
 > let c2 = [0,155,267,386,498,653,884,969,1200]
 > map (\(c,y) -> map (\x -> (x,y,x,y + 10)) c) (zip [c0,c1,c2] [0,20,40])
+
+> let e = [[3,3,3],[3,3,5],[3,5,5],[3,5,7],[3,7,7],[5,5,5],[5,5,7],[3,3,7],[5,7,7],[7,7,7]]
+> let e = [[3,3,3],[5,5,5],[7,7,7],[3,3,5],[3,5,5],[5,5,7],[5,7,7],[3,7,7],[3,3,7],[3,5,7]]
+> let e' = map efg_collate e
+> let f = (++ [1200]) . sort . map (round . ratio_to_cents . snd) . efg_ratios 1
+> let c = map f e'
+> concatMap (\(c',y) -> map (\x -> (x,y,x,y + 10)) c') (zip c [0,30 ..])
 
 -}
 efg_ratios :: Real r => Rational -> EFG r -> [([Int],Rational)]

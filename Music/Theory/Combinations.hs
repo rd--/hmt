@@ -1,13 +1,13 @@
 -- | Combination functions.
 module Music.Theory.Combinations where
 
-import Music.Theory.Permutations
+import qualified Music.Theory.Permutations as T
 
 -- | Number of /k/ element combinations of a set of /n/ elements.
 --
 -- > (nk_combinations 6 3,nk_combinations 13 3) == (20,286)
 nk_combinations :: Integral a => a -> a -> a
-nk_combinations n k = nk_permutations n k `div` factorial k
+nk_combinations n k = T.nk_permutations n k `div` T.factorial k
 
 -- | /k/ element subsets of /s/.
 --
