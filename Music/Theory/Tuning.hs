@@ -142,7 +142,7 @@ approximate_ratio = fromRational
 
 -- | 'approximate_ratio_to_cents' '.' 'approximate_ratio'.
 --
--- > map (\n -> (n,round (ratio_to_cents (fold_ratio_to_octave (n % 1))))) [1..21]
+-- > map (\n -> (n,round (ratio_to_cents (fold_ratio_to_octave_err (n % 1))))) [1..21]
 ratio_to_cents :: Integral i => Ratio i -> Cents
 ratio_to_cents = approximate_ratio_to_cents . realToFrac
 
@@ -280,16 +280,25 @@ subharmonic_series_cps_n n = take n . subharmonic_series_cps
 partial :: (Num a, Enum a) => a -> Int -> a
 partial f1 k = harmonic_series_cps f1 `at` (k - 1)
 
+fold_ratio_to_octave' :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave' =
+    let rec_f n = if n >= 2 then rec_f (n / 2) else if n < 1 then rec_f (n * 2) else n
+    in rec_f
+
+-- | Error if input is less than or equal to zero.
+--
+-- > map fold_ratio_to_octave_err [2/3,3/4] == [4/3,3/2]
+fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave_err n =
+    if n <= 0
+    then error "fold_ratio_to_octave"
+    else fold_ratio_to_octave' n
+
 -- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
 --
--- > map fold_ratio_to_octave [2/3,3/4] == [4/3,3/2]
-fold_ratio_to_octave :: Integral i => Ratio i -> Ratio i
-fold_ratio_to_octave n =
-    if n >= 2
-    then fold_ratio_to_octave (n / 2)
-    else if n < 1
-         then fold_ratio_to_octave (n * 2)
-         else n
+-- > map fold_ratio_to_octave [0,1] == [Nothing,Just 1]
+fold_ratio_to_octave :: Integral i => Ratio i -> Maybe (Ratio i)
+fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave' n)
 
 -- | Sun of numerator & denominator.
 ratio_nd_sum :: Num a => Ratio a -> a
@@ -307,7 +316,7 @@ min_by f p q = if f p <= f q then p else q
 -- > map ratio_interval_class [7/6,12/7] == [7/6,7/6]
 ratio_interval_class :: Integral i => Ratio i -> Ratio i
 ratio_interval_class i =
-    let f = fold_ratio_to_octave
+    let f = fold_ratio_to_octave_err
     in min_by ratio_nd_sum (f i) (f (recip i))
 
 -- | Derivative harmonic series, based on /k/th partial of /f1/.
@@ -329,7 +338,7 @@ harmonic_series_cps_derived k f1 =
 -- > let r = [0,105,204,386,551,702,841,969,1088]
 -- > in map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
 harmonic_series_folded_r :: Integer -> [Rational]
-harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave [1 .. n%1]))
+harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n%1]))
 
 -- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
 harmonic_series_folded_c :: Integer -> [Cents]
@@ -566,7 +575,7 @@ efg_factors efg =
 -}
 efg_ratios :: Real r => Rational -> EFG r -> [([Int],Rational)]
 efg_ratios n =
-    let to_r = fold_ratio_to_octave . (/ n) . toRational . product
+    let to_r = fold_ratio_to_octave_err . (/ n) . toRational . product
         f (ix,i) = (ix,to_r i)
     in map f . efg_factors
 

@@ -183,6 +183,15 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octpc
 midi_to_pitch_ks :: Integral i => i -> Pitch
 midi_to_pitch_ks = midi_to_pitch T.pc_spell_ks
 
+-- | Print fractional midi note number as ET12 pitch with cents detune in parentheses.
+fmidi_et12_cents_pp :: Double -> String
+fmidi_et12_cents_pp =
+    let f (m,c) =
+            let d = T.num_diff_str (round c :: Int)
+                d' = if null d then "" else "(" ++ d ++ ")"
+            in pitch_pp (midi_to_pitch T.pc_spell_ks m) ++ d'
+    in f . midi_detune_normalise . fmidi_to_midi_detune
+
 -- | Fractional midi note number to 'Pitch'.
 --
 -- > fmidi_to_pitch' pc_spell_ks 69.25 == Nothing

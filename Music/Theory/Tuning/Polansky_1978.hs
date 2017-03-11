@@ -19,7 +19,7 @@ psaltery_r =
     let sq_at n = map (* n) [1..17]
     in concat [sq_at 1,sq_at (5/4),sq_at (3/2)]
 
-{- | 'T.fold_ratio_to_octave' of 'psaltery'.
+{- | 'T.fold_ratio_to_octave'' of 'psaltery'.
 
 > length psaltery_r == 51 && length psaltery_o_r == 21
 
@@ -29,7 +29,7 @@ psaltery_r =
 
 -}
 psaltery_o_r :: [Rational]
-psaltery_o_r = nub (sort (map T.fold_ratio_to_octave psaltery_r))
+psaltery_o_r = nub (sort (map T.fold_ratio_to_octave' psaltery_r))
 
 {- | 'Tuning' derived from 'psaltery_o' with 'octave_ratio' of @2@.
 
