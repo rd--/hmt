@@ -18,17 +18,17 @@ odd_to n = [1,3 .. n]
 --
 -- > row 7 == [1,5/4,3/2,7/4]
 row :: Integral i => i -> [Ratio i]
-row = sort . map T.fold_ratio_to_octave' . odd_to . (% 1)
+row = sort . map T.fold_ratio_to_octave_err . odd_to . (% 1)
 
 -- | Generate initial column for /n/.
 --
 -- > column 7 == [1,8/5,4/3,8/7]
 column :: Integral i => i -> [Ratio i]
-column = map (T.fold_ratio_to_octave' . recip) . row
+column = map (T.fold_ratio_to_octave_err . recip) . row
 
 -- | 'T.fold_to_octave' '.' '*'.
 in_oct_mul :: Integral i => Ratio i -> Ratio i -> Ratio i
-in_oct_mul i j = T.fold_ratio_to_octave' (i * j)
+in_oct_mul i j = T.fold_ratio_to_octave_err (i * j)
 
 -- | Given /row/ and /column/ generate matrix value at /(i,j)/.
 --

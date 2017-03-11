@@ -12,11 +12,11 @@ import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- | 'T.fold_ratio_to_octave' of '*'.
 rat_mul :: Rational -> Rational -> Rational
-rat_mul r = T.fold_ratio_to_octave' . (* r)
+rat_mul r = T.fold_ratio_to_octave_err . (* r)
 
 -- | 'T.fold_ratio_to_octave' of '/'.
 rat_div :: Rational -> Rational -> Rational
-rat_div p q = T.fold_ratio_to_octave' (p / q)
+rat_div p q = T.fold_ratio_to_octave_err (p / q)
 
 -- | /n/ = length, /m/ equals multiplier, /r/ = initial ratio.
 --

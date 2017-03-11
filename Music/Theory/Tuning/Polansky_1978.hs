@@ -29,7 +29,7 @@ psaltery_r =
 
 -}
 psaltery_o_r :: [Rational]
-psaltery_o_r = nub (sort (map T.fold_ratio_to_octave' psaltery_r))
+psaltery_o_r = nub (sort (map T.fold_ratio_to_octave_err psaltery_r))
 
 {- | 'Tuning' derived from 'psaltery_o' with 'octave_ratio' of @2@.
 
