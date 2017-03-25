@@ -143,6 +143,7 @@ Library
                    Music.Theory.Xenakis.S4
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z
+                   Music.Theory.Z.Boros_1990
                    Music.Theory.Z.Clough_1979
                    Music.Theory.Z.Drape_1999
                    Music.Theory.Z.Forte_1973
