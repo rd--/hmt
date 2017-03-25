@@ -64,11 +64,17 @@ ug_hamiltonian_path_ml_0 gr = g_hamiltonian_path_ml G.neighbors gr (G.nodes gr !
 -- | Edge, no label.
 type EDGE v = (v,v)
 
+-- | Graph as set of edges.
+type GRAPH v = [EDGE v]
+
 -- | Edge, with label.
 type EDGE_L v l = (v,v,l)
 
+-- | Graph as set of labeled edges.
+type GRAPH_L v l = [EDGE_L v l]
+
 -- | Generate a graph given a set of labelled edges.
-g_from_edges :: (Eq v,Ord v) => [EDGE_L v e] -> G.Gr v e
+g_from_edges :: (Eq v,Ord v) => GRAPH_L v e -> G.Gr v e
 g_from_edges e =
     let n = nub (concatMap (\(lhs,rhs,_) -> [lhs,rhs]) e)
         n_deg = length n
@@ -82,5 +88,5 @@ g_from_edges e =
 --
 -- > let g = G.mkGraph [(0,'a'),(1,'b'),(2,'c')] [(0,1,()),(1,2,())]
 -- > in g_from_edges_ul [('a','b'),('b','c')] == g
-g_from_edges_ul :: Ord v => [EDGE v] -> G.Gr v ()
+g_from_edges_ul :: Ord v => GRAPH v -> G.Gr v ()
 g_from_edges_ul = let f (p,q) = (p,q,()) in g_from_edges . map f
