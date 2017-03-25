@@ -12,6 +12,7 @@ import qualified Data.Graph.Inductive.Basic as G {- fgl -}
 import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 import qualified Data.Graph.Inductive.Query.BFS as G {- fgl -}
 
+import qualified Music.Theory.Array.MD as T
 import qualified Music.Theory.Combinations as T
 import qualified Music.Theory.Graph.FGL as T
 import qualified Music.Theory.List as T
@@ -68,9 +69,15 @@ trichords = filter ((== 3) . length) (T.sc_univ T.mod12)
 self_inv :: PCSET -> Bool
 self_inv p = elem_by set_eq (map (T.z_negate T.mod12) p) (all_tn p)
 
+-- | Pretty printer, comma separated.
+--
+-- > pcset_pp [0,3,7,10] == "0,3,7,10"
 pcset_pp :: PCSET -> String
 pcset_pp = intercalate "," . map show
 
+-- | Pretty printer, hexadecimal, no separator.
+--
+-- > pcset_pp_hex [0,3,7,10] == "037A"
 pcset_pp_hex :: PCSET -> String
 pcset_pp_hex = map toUpper . concat . map (flip showHex "")
 
@@ -148,24 +155,52 @@ gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 -- * TABLES
 
 -- > length table_3 == 20
-table_3 :: [((PCSET,PCSET,T.SC_Name),(PCSET,PCSET,T.SC_Name))]
+table_3 :: [((PCSET,SC,T.SC_Name),(PCSET,SC,T.SC_Name))]
 table_3 =
     let f p = let q = ath_complement p
                   i x = (x,T.forte_prime T.mod12 x,T.sc_name T.mod12 x)
               in (i p,i q)
     in map f ath_trichords
 
+-- > putStrLn $ unlines $ table_3_md
+table_3_md :: [String]
+table_3_md =
+    let pp = pcset_pp_hex
+        f ((p,q,r),(s,t,u)) = [pp p,pp q,r,pp s,pp t,u]
+        hdr = ["P","P/SC","P/F","Q=H0-P","Q/SC","Q/F"]
+    in T.md_table_opt True (Just hdr,map f table_3)
+
 -- > length table_4 == 10
 table_4 :: [((PCSET,PCSET,T.SC_Name),(PCSET,PCSET,T.SC_Name))]
 table_4 = nub (map T.t2_sort table_3)
 
+-- > putStrLn $ unlines $ table_4_md
+table_4_md :: [String]
+table_4_md =
+    let pp = pcset_pp_hex
+        f ((p,q,r),(s,t,u)) = [pp p ++ "/" ++ pp s,pp q ++ "/" ++ pp t,r ++ "/" ++ u]
+        hdr = ["Trichords","Prime Forms","Forte Numbers"]
+    in T.md_table_opt True (Just hdr,map f table_4)
+
 table_5 :: [(PCSET,Int)]
 table_5 = T.histogram (map (T.forte_prime T.mod12) ath_trichords)
+
+-- > putStrLn $ unlines $ table_5_md
+table_5_md :: [String]
+table_5_md =
+    let f (p,q) = [pcset_pp_hex p,show q]
+    in T.md_table_opt True (Just ["SC","#ATH"],map f table_5)
 
 table_6 :: [(PCSET,Int,Int)]
 table_6 =
     let f (p,n) = (p,n,length (filter (\q -> p `T.is_subset` q) ath_univ))
     in map f table_5
+
+-- > putStrLn $ unlines $ table_6_md
+table_6_md :: [String]
+table_6_md =
+    let f (p,q,r) = [pcset_pp_hex p,show q,show r]
+    in T.md_table_opt True (Just ["SC","#H0","#Hn"],map f table_6)
 
 -- * FIGURES
 
