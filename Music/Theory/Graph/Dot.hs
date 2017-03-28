@@ -74,11 +74,21 @@ dot_attr_def =
 
 -- * GRAPH
 
--- | (node->shape,node->label,edge->label)
+-- | Graph pretty-printer, (node->shape,node->label,edge->label)
 type GR_PP v e = (v -> Maybe String,v -> Maybe String,e -> Maybe String)
 
-pp_id_show :: Show e => GR_PP String e
-pp_id_show = (const Nothing,Just . id,Just . show)
+gr_pp_id_show :: Show e => GR_PP String e
+gr_pp_id_show = (const Nothing,Just . id,Just . show)
+
+-- | br = brace, csl = comma separated list
+br_csl_pp :: Show t => [t] -> String
+br_csl_pp l =
+    case l of
+      [e] -> show e
+      _ -> T.bracket ('{','}') (intercalate "," (map show l))
+
+gr_pp_id_br_csl :: Show e => GR_PP String [e]
+gr_pp_id_br_csl = (const Nothing,Just . id,Just . br_csl_pp)
 
 -- | Graph type, directed or un-directed.
 data G_TYPE = G_DIGRAPH | G_UGRAPH
