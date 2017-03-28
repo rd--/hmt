@@ -208,7 +208,7 @@ fig_1 :: T.GRAPH PCSET
 fig_1 = map (T.t2_map T.p3_snd) table_4
 
 fig_1_gr :: G.Gr PCSET ()
-fig_1_gr = T.g_from_edges_ul fig_1
+fig_1_gr = T.g_from_edges fig_1
 
 -- > putStrLn $ unlines $ map (unwords . map pcset_pp) fig_2
 fig_2 :: [[PCSET]]
@@ -225,7 +225,7 @@ fig_3 :: [T.GRAPH PCSET]
 fig_3 = map (concatMap (T.adj2 1) . realise_ath_seq) fig_2
 
 fig_3_gr :: [G.Gr PCSET ()]
-fig_3_gr = map T.g_from_edges_ul fig_3
+fig_3_gr = map T.g_from_edges fig_3
 
 fig_4 :: [T.GRAPH PCSET]
 fig_4 =

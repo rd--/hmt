@@ -12,6 +12,8 @@ import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
+import qualified Music.Theory.List as T {- hmt -}
+
 -- | 'L.msum' '.' 'map' 'return'.
 ml_from_list :: L.MonadLogic m => [t] -> m t
 ml_from_list = L.msum . map return
@@ -68,25 +70,43 @@ type EDGE v = (v,v)
 type GRAPH v = [EDGE v]
 
 -- | Edge, with label.
-type EDGE_L v l = (v,v,l)
+type EDGE_L v l = (EDGE v,l)
 
 -- | Graph as set of labeled edges.
 type GRAPH_L v l = [EDGE_L v l]
 
 -- | Generate a graph given a set of labelled edges.
-g_from_edges :: (Eq v,Ord v) => GRAPH_L v e -> G.Gr v e
-g_from_edges e =
-    let n = nub (concatMap (\(lhs,rhs,_) -> [lhs,rhs]) e)
+g_from_edges_l :: (Eq v,Ord v) => GRAPH_L v e -> G.Gr v e
+g_from_edges_l e =
+    let n = nub (concatMap (\((lhs,rhs),_) -> [lhs,rhs]) e)
         n_deg = length n
         n_id = [0 .. n_deg - 1]
         m = M.fromList (zip n n_id)
         m_get k = M.findWithDefault (error "g_from_edges: m_get") k m
-        e' = map (\(lhs,rhs,label) -> (m_get lhs,m_get rhs,label)) e
+        e' = map (\((lhs,rhs),label) -> (m_get lhs,m_get rhs,label)) e
     in G.mkGraph (zip n_id n) e'
 
 -- | Variant that supplies '()' as the (constant) edge label.
 --
 -- > let g = G.mkGraph [(0,'a'),(1,'b'),(2,'c')] [(0,1,()),(1,2,())]
 -- > in g_from_edges_ul [('a','b'),('b','c')] == g
-g_from_edges_ul :: Ord v => GRAPH v -> G.Gr v ()
-g_from_edges_ul = let f (p,q) = (p,q,()) in g_from_edges . map f
+g_from_edges :: Ord v => GRAPH v -> G.Gr v ()
+g_from_edges = let f e = (e,()) in g_from_edges_l . map f
+
+-- * Edges
+
+-- | Label sequence of edges starting at one.
+e_label_seq :: Integral i => [EDGE v] -> [EDGE_L v i]
+e_label_seq = map (\(k,e) -> (e,k)) . zip [1..]
+
+-- | Normalised undirected labeled edge (ie. order nodes).
+e_normalise_l :: Ord v => EDGE_L v l -> EDGE_L v l
+e_normalise_l ((p,q),r) = ((min p q,max p q),r)
+
+-- | Collate labels for edges that are otherwise equal.
+e_collate_l :: Ord v => [EDGE_L v l] -> [EDGE_L v [l]]
+e_collate_l = T.collate
+
+-- | 'e_collate_l' of 'e_normalise_l'.
+e_collate_normalised_l :: Ord v => [EDGE_L v l] -> [EDGE_L v [l]]
+e_collate_normalised_l = e_collate_l . map e_normalise_l

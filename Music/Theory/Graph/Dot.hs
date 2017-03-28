@@ -1,0 +1,118 @@
+-- | Graph (dot) functions.
+module Music.Theory.Graph.Dot where
+
+import Data.Char {- base -}
+import Data.List {- base -}
+
+import qualified Data.Graph.Inductive.Graph as G {- fgl -}
+import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
+
+import qualified Music.Theory.List as T {- hmt -}
+
+-- * UTIL
+
+-- | Separate at element.
+--
+-- > sep1 ':' "graph:layout"
+sep1 :: Eq t => t -> [t] -> ([t],[t])
+sep1 e l =
+    case break (== e) l of
+      (p,_:q) -> (p,q)
+      _ -> error "sep1"
+
+-- | Quote /s/ if it includes white space.
+--
+-- > map maybe_quote ["abc","a b c"] == ["abc","\"a b c\""]
+maybe_quote :: String -> String
+maybe_quote s = if any isSpace s then concat ["\"",s,"\""] else s
+
+-- | Left biased union of association lists /p/ and /q/.
+--
+-- > assoc_union [(5,"a"),(3,"b")] [(5,"A"),(7,"C")] == [(5,"a"),(3,"b"),(7,"C")]
+assoc_union :: Eq k => [(k,v)] -> [(k,v)] -> [(k,v)]
+assoc_union p q =
+    let p_k = map fst p
+        q' = filter ((`notElem` p_k) . fst) q
+    in p ++ q'
+
+-- * ATTR
+
+-- | area:opt (area = graph|node|edge)
+type DOT_KEY = String
+type DOT_OPT = String
+type DOT_VALUE = String
+type DOT_ATTR = (DOT_OPT,DOT_VALUE)
+type DOT_ATTR_SET = (String,[DOT_ATTR])
+
+-- > dot_key_sep "graph:layout"
+dot_key_sep :: String -> (String,String)
+dot_key_sep = sep1 ':'
+
+dot_attr_pp :: DOT_ATTR -> String
+dot_attr_pp (lhs,rhs) = concat [lhs,"=",maybe_quote rhs]
+
+dot_attr_set_pp :: DOT_ATTR_SET -> String
+dot_attr_set_pp (ty,opt) = concat [ty," [",intercalate "," (map dot_attr_pp opt),"];"]
+
+dot_attr_collate :: [DOT_ATTR] -> [DOT_ATTR_SET]
+dot_attr_collate opt =
+    let f (k,v) = let (ty,nm) = dot_key_sep k in (ty,(nm,v))
+        c = map f opt
+    in T.collate c
+
+dot_attr_ext :: [DOT_ATTR] -> [DOT_ATTR] -> [DOT_ATTR]
+dot_attr_ext = assoc_union
+
+-- > map dot_attr_set_pp (dot_attr_collate dot_attr_def)
+dot_attr_def :: [DOT_ATTR]
+dot_attr_def =
+    [("graph:layout","neato")
+    ,("graph:epsilon","0.000001")
+    ,("node:shape","plaintext")
+    ,("node:fontsize","10")
+    ,("node:fontname","century schoolbook")]
+
+-- * GRAPH
+
+-- | (node->shape,node->label,edge->label)
+type GR_PP v e = (v -> Maybe String,v -> Maybe String,e -> Maybe String)
+
+pp_id_show :: Show e => GR_PP String e
+pp_id_show = (const Nothing,Just . id,Just . show)
+
+-- | Graph type, directed or un-directed.
+data G_TYPE = G_DIGRAPH | G_UGRAPH
+
+g_type_to_string :: G_TYPE -> String
+g_type_to_string ty =
+    case ty of
+      G_DIGRAPH -> "digraph"
+      G_UGRAPH -> "graph"
+
+g_type_to_edge_symbol :: G_TYPE -> String
+g_type_to_edge_symbol ty =
+    case ty of
+      G_DIGRAPH -> " -> "
+      G_UGRAPH -> " -- "
+
+-- | Vertex position function.
+type POS_FN v = (v -> (Int,Int))
+
+g_to_dot :: G_TYPE -> [DOT_ATTR] -> GR_PP v e -> Maybe (POS_FN v) -> G.Gr v e -> [String]
+g_to_dot g_typ opt (n_sh,n_pp,e_pp) pos_f gr =
+    let p_f (c,r) = concat [",pos=\"",show (c * 100),",",show (r * 100),"\""]
+        l_f p x = concat [" [label=\"",x,"\"",p,"]"]
+        n_f (k,n) = let p = maybe "" (\f -> p_f (f n)) pos_f
+                        p' = maybe p (\z -> p ++ ",shape=\"" ++ z ++ "\"") (n_sh n)
+                        a = maybe "" (l_f p') (n_pp n)
+                    in concat [show k,a,";"]
+        e_f (lhs,rhs,e) = let l = maybe "" (l_f "") (e_pp e)
+                          in concat [show lhs,g_type_to_edge_symbol g_typ,show rhs,l,";"]
+    in concat [[g_type_to_string g_typ," g {"]
+              ,map dot_attr_set_pp (dot_attr_collate (assoc_union opt dot_attr_def))
+              ,map n_f (G.labNodes gr)
+              ,map e_f (G.labEdges gr)
+              ,["}"]]
+
+g_to_udot :: [DOT_ATTR] -> GR_PP v e -> G.Gr v e -> [String]
+g_to_udot o pp = g_to_dot G_UGRAPH o pp Nothing

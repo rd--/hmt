@@ -71,6 +71,7 @@ Library
                    Music.Theory.Either
                    Music.Theory.Enum
                    Music.Theory.Function
+                   Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
