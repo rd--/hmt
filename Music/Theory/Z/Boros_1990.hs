@@ -14,6 +14,7 @@ import qualified Data.Graph.Inductive.Query.BFS as G {- fgl -}
 
 import qualified Music.Theory.Array.MD as T
 import qualified Music.Theory.Combinations as T
+import qualified Music.Theory.Graph.Dot as T
 import qualified Music.Theory.Graph.FGL as T
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
@@ -241,3 +242,55 @@ fig_5 =
                  r -> Just (gr ++ r)
         g0 = concat fig_4
     in mapMaybe (\n -> f (gr_trs n g0)) [0 .. 11]
+
+-- * Drawing
+
+uedge_set :: Ord v => [T.EDGE v] -> [T.EDGE v]
+uedge_set = nub . map T.t2_sort
+
+-- | Self-inversional pcsets are drawn in a double circle, other pcsets in a circle.
+set_shape :: PCSET -> String
+set_shape v = if self_inv v then "doublecircle" else "circle"
+
+type GR = G.Gr PCSET ()
+
+gr_pp' :: (PCSET -> String) -> T.GR_PP PCSET ()
+gr_pp' f = (Just . set_shape,Just . f,const Nothing)
+
+gr_pp :: T.GR_PP PCSET ()
+gr_pp = gr_pp' pcset_pp
+
+d_fig_1 :: [String]
+d_fig_1 = T.g_to_udot [] gr_pp fig_1_gr
+
+d_fig_3_g :: GR
+d_fig_3_g = T.g_from_edges (uedge_set (concat fig_3))
+
+d_fig_3 :: [String]
+d_fig_3 = T.g_to_udot [] gr_pp d_fig_3_g
+
+d_fig_3' :: [[String]]
+d_fig_3' = map (T.g_to_udot [("node:shape","circle")] gr_pp) fig_3_gr
+
+d_fig_4_g :: GR
+d_fig_4_g = T.g_from_edges (uedge_set (concat fig_4))
+
+d_fig_4 :: [String]
+d_fig_4 = T.g_to_udot [] gr_pp d_fig_4_g
+
+d_fig_5_g :: GR
+d_fig_5_g = T.g_from_edges (uedge_set (concat fig_5))
+
+d_fig_5 :: [String]
+d_fig_5 = T.g_to_udot [("edge:len","1.5")] (gr_pp' pcset_pp_hex) d_fig_5_g
+
+d_fig_5_e :: [T.EDGE_L PCSET PCSET]
+d_fig_5_e = map (\(p,q) -> ((p,q),p++q)) (uedge_set (concat fig_5))
+
+d_fig_5_g' :: G.Gr PCSET PCSET
+d_fig_5_g' = T.g_from_edges_l d_fig_5_e
+
+d_fig_5' :: [String]
+d_fig_5' =
+    let pp = (const (Just ""),const Nothing,Just . ath_pp)
+    in T.g_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'
