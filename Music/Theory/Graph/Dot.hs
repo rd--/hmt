@@ -77,6 +77,9 @@ dot_attr_def =
 -- | Graph pretty-printer, (node->shape,node->label,edge->label)
 type GR_PP v e = (v -> Maybe String,v -> Maybe String,e -> Maybe String)
 
+gr_pp_lift_node_f :: (v -> String) -> GR_PP v e
+gr_pp_lift_node_f f = (const Nothing, Just . f, const Nothing)
+
 gr_pp_id_show :: Show e => GR_PP String e
 gr_pp_id_show = (const Nothing,Just . id,Just . show)
 
