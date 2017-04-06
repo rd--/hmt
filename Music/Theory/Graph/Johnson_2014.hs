@@ -3,6 +3,7 @@ module Music.Theory.Graph.Johnson_2014 where
 
 import Control.Monad {- base -}
 import Data.List {- base -}
+import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.Combinations as T {- hmt -}
@@ -27,6 +28,10 @@ dif = uncurry (-)
 
 absdif :: Num a => (a, a) -> a
 absdif = abs . dif
+
+-- | interval (0,11) to interval class (0,6)
+i_to_ic :: (Num a, Ord a) => a -> a
+i_to_ic n = if n > 6 then 12 - n else n
 
 p2_and :: (t -> u -> Bool) -> (t -> u -> Bool) -> t -> u -> Bool
 p2_and p q i j = p i j && q i j
@@ -71,8 +76,20 @@ min_vl_of n p q = min_vl p q == n
 min_vl_in :: (Num a, Ord a) => [a] -> [a] -> [a] -> Bool
 min_vl_in n p q = min_vl p q `elem` n
 
+combinations2 :: Ord t => [t] -> [(t, t)]
+combinations2 p = [(i,j) | i <- p, j <- p, i < j]
+
 set_pp :: Show t => [t] -> String
 set_pp = intercalate "," . map show
+
+-- * Map
+
+m_get :: Ord k => M.Map k v -> k -> v
+m_get m i = fromMaybe (error "get") (M.lookup i m)
+
+-- | degree of intersection
+m_doi_of :: M.Map Int [Z12] -> Int -> Int -> Int -> Bool
+m_doi_of m n p q = doi_of n (m_get m p) (m_get m q)
 
 -- * Graph
 
@@ -86,8 +103,17 @@ gen_u_edges f = let g p q = p < q && f p q in gen_edges g
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul opt pp es = T.g_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edges es)
 
+gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
+gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
+
 gen_flt_graph :: (Ord t, Show t) => [T.DOT_ATTR] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
 gen_flt_graph o f p = gen_graph_ul o set_pp (gen_u_edges f p)
+
+path_to_edges :: [t] -> [(t, t)]
+path_to_edges xs =
+    case xs of
+      p:q:xs' -> (p,q) : path_to_edges (q:xs')
+      _ -> []
 
 -- * P.12
 
@@ -207,6 +233,58 @@ p148_gr_set =
   ,("p148.6.dot",p148_mk_gr (loc_dif_of 1))
   ]
 
+-- * P.162
+
+p162_gr :: [String]
+p162_gr =
+    let n = [0,1,2,3,4,5,6,7,8]
+        c = T.combinations 4 n
+        ch = filter ((== 1) . (`mod` 4) . sum) c
+        opt = [("graph:layout","neato")
+              ,("edge:len","1.75")]
+    in gen_graph_ul opt set_pp (gen_u_edges (doi_of 3) ch)
+
+-- * P.172
+
+p172_nd_map :: M.Map Int [Z12]
+p172_nd_map =
+    let nd_exp = map sort (T.z_sro_ti_related mod12 [0,1,3,7])
+    in M.fromList (zip [0..] nd_exp)
+
+p172_set_pp :: Int -> String
+p172_set_pp = set_pp . m_get p172_nd_map
+
+p172_gr_set :: [(String,[String])]
+p172_gr_set =
+    [("p172.0.dot"
+     ,let nd_e_set = gen_u_edges (m_doi_of p172_nd_map 0) [0..23]
+      in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)
+    ,("p172.1.dot"
+     ,let nd_e_set = concatMap path_to_edges
+                     [[22,11,20,9,18,7,16,5,14,3,12,1,22]
+                     ,[23,2,13,8,19,10,21,4,15,6,17,0,23]]
+      in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)]
+
+-- * P.177
+
+-- > map (partition_ic 4) p_set
+-- > map (partition_ic 6) p_set
+partition_ic :: (Num t, Ord t, Show t) => t -> [t] -> ([t], [t])
+partition_ic n p =
+    case find ((== n) . i_to_ic . absdif) (combinations2 p) of
+      Just (i,j) -> let q = sort [i,j] in (q,sort (p \\ q))
+      Nothing -> error (show ("partition_ic",n,p))
+
+p177_gr_set :: [(String,[String])]
+p177_gr_set =
+    let p_set = concatMap (T.z_sro_ti_related mod12) [[0,1,4,6],[0,1,3,7]]
+    in [("p177.0.dot",gen_graph_ul [] set_pp (map (partition_ic 4) p_set))
+       ,("p177.1.dot",gen_graph_ul_ty "circo" set_pp (map (partition_ic 6) p_set))
+       ,("p177.2.dot"
+        ,let gr_pp = T.gr_pp_lift_node_f set_pp
+             gr = T.g_from_edges (map (partition_ic 6) p_set)
+         in T.g_to_udot [("edge:len","1.5")] gr_pp gr)]
+
 -- * IO
 
 wr_graphs :: IO ()
@@ -219,3 +297,6 @@ wr_graphs = do
   f ("p125.dot",p125_gr)
   f ("p131.dot",p131_gr)
   mapM_ f p148_gr_set
+  f ("p162.dot",p162_gr)
+  mapM_ f p172_gr_set
+  mapM_ f p177_gr_set
