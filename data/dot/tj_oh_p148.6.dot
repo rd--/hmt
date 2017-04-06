@@ -1,0 +1,46 @@
+graph
+ g {
+edge [len=1.75];
+graph [layout=neato,epsilon=0.000001];
+node [shape=plaintext,fontsize=10,fontname="century schoolbook"];
+0 [label="136"];
+1 [label="137"];
+2 [label="146"];
+3 [label="236"];
+4 [label="237"];
+5 [label="148"];
+6 [label="158"];
+7 [label="157"];
+8 [label="256"];
+9 [label="356"];
+10 [label="259"];
+11 [label="269"];
+12 [label="359"];
+13 [label="346"];
+14 [label="378"];
+15 [label="379"];
+16 [label="478"];
+17 [label="479"];
+18 [label="457"];
+19 [label="458"];
+20 [label="467"];
+21 [label="469"];
+0 -- 1;
+0 -- 2;
+0 -- 3;
+1 -- 4;
+3 -- 4;
+5 -- 6;
+7 -- 6;
+8 -- 9;
+10 -- 11;
+10 -- 12;
+13 -- 9;
+14 -- 15;
+14 -- 16;
+15 -- 17;
+16 -- 17;
+18 -- 19;
+18 -- 20;
+21 -- 17;
+}

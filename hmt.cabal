@@ -73,6 +73,7 @@ Library
                    Music.Theory.Function
                    Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
+                   Music.Theory.Graph.Johnson_2014
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
                    Music.Theory.Interval
