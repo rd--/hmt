@@ -36,6 +36,7 @@ ratio_to_pc n = mod12 . (+ n) . round . (/ 100) . T.ratio_to_cents
 all_pairs :: [t] -> [u] -> [(t,u)]
 all_pairs p q = [(x,y) | x <- p, y <- q]
 
+-- | Give all pairs from (l2,l1) and (l3,l2) that are at interval ratios r1 and r2 respectively.
 euler_align_rat :: T.T2 Rational -> T.T3 [Rational] -> T.T2 [T.T2 Rational]
 euler_align_rat (r1,r2) (l1,l2,l3) =
     let f r (p,q) = rat_mul p r == q
@@ -113,6 +114,14 @@ let j5 =
         ;(c1,c2) = euler_align_rat (5%8,5%4) (l1,l2,l3)}
     in ([l1,l2,l3],c1 ++ c2)
 
+let j5' =
+    let {f = T.fold_ratio_to_octave_err
+        ;l1 = tun_seq 4 (3/2) (f (1 * 2/3 * 5/4))
+        ;l2 = tun_seq 5 (3/2) (f (1 * 2/3 * 2/3))
+        ;l3 = tun_seq 3 (3/2) (f (1 * 2/3 * 4/5))
+        ;(c1,c2) = euler_align_rat (5/4,5/4) (l1,l2,l3)}
+    in ([l1,l2,l3],c1 ++ c2)
+
 let j7 =
     let {l1 = tun_seq 4 (3%2) (5%4)
         ;l2 = tun_seq 5 (3%2) (4%3)
@@ -122,7 +131,8 @@ let j7 =
 
 let dir = "/home/rohan/sw/hmt/data/dot/"
 let f = unlines . euler_plane_to_dot_rat (0,False)
-writeFile (dir ++ "euler-j5.dot") (f j5)
+writeFile (dir ++ "euler-j5-a.dot") (f j5)
+writeFile (dir ++ "euler-j5-b.dot") (f j5')
 writeFile (dir ++ "euler-j7.dot") (f j7)
 
 -}
