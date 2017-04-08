@@ -61,7 +61,7 @@ loc_dif_n p q =
     let f i j = if i == j then 0 else 1
     in sum (zipWith f p q)
 
-loc_dif_n_of :: (Eq t, Eq i, Num i) => i -> [t] -> [t] -> Bool
+loc_dif_n_of :: Eq t => Int -> [t] -> [t] -> Bool
 loc_dif_n_of n p q = loc_dif_n p q == n
 
 -- > min_vl [6,11,13] [6,10,14] == 2
@@ -134,7 +134,7 @@ p12_euler_plane_gr = T.euler_plane_to_dot_rat (0,True) p12_euler_plane
 
 p14_edges :: [(T.Key,T.Key)]
 p14_edges =
-    let univ = [0..11]
+    let univ = [0::Int .. 11]
         trs n = map (mod12 . (+ n))
         e_par = zip univ univ
         e_rel = zip univ (trs 9 univ)
@@ -171,7 +171,7 @@ p31_gr = gen_graph_ul [] set_pp p31_e_set
 p114_f_3_7 :: [Z12]
 p114_f_3_7 = [0,2,5]
 
-p114_mk_gr :: Show t => t -> ([Z12] -> [Z12] -> Bool) -> [String]
+p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
     let o = [("node:shape","box")
             ,("edge:len",show el)]
@@ -182,7 +182,7 @@ p114_gr_set =
   [("p114.1.dot",p114_mk_gr 2.5 (doi_of 2))
   ,("p114.2.dot"
    ,let o = [("edge:len","1.25")]
-    in gen_flt_graph o (loc_dif_of 1) (T.combinations 3 [1..6]))
+    in gen_flt_graph o (loc_dif_of 1) (T.combinations 3 [1::Int .. 6]))
   ,("p114.3.dot",p114_mk_gr 1.5 (loc_dif_n_of 1))
   ,("p114.4.dot",p114_mk_gr 1.5 (loc_dif_of 1))
   ,("p114.5.dot",p114_mk_gr 1.5 (loc_dif_of 2))
@@ -196,7 +196,8 @@ p114_gr_set =
 
 p125_gr :: [String]
 p125_gr =
-    let t = [[p,q,r] | p <- [0 .. 11], q <- [0 .. 11], r <- [0 ..11], q > p, r > q]
+    let t :: [[Int]]
+        t = [[p,q,r] | p <- [0 .. 11], q <- [0 .. 11], r <- [0 ..11], q > p, r > q]
         c = T.collate (zip (map sum t) t)
         with_h n = lookup n c
         ch = fromJust (liftM2 (++) (with_h 15) (with_h 16))
@@ -206,7 +207,7 @@ p125_gr =
 
 p131_gr :: [String]
 p131_gr =
-    let c = let u = [6..14]
+    let c = let u = [6::Int .. 14]
             in [[p,q,r] | p <- u, q <- u, r <- u, q > p, r > q, p + q + r == 30]
     in gen_graph_ul [] set_pp (gen_u_edges (min_vl_of 2) c)
 
@@ -237,7 +238,7 @@ p148_gr_set =
 
 p162_gr :: [String]
 p162_gr =
-    let n = [0,1,2,3,4,5,6,7,8]
+    let n = [0::Int,1,2,3,4,5,6,7,8]
         c = T.combinations 4 n
         ch = filter ((== 1) . (`mod` 4) . sum) c
         opt = [("graph:layout","neato")
@@ -277,7 +278,7 @@ partition_ic n p =
 
 p177_gr_set :: [(String,[String])]
 p177_gr_set =
-    let p_set = concatMap (T.z_sro_ti_related mod12) [[0,1,4,6],[0,1,3,7]]
+    let p_set = concatMap (T.z_sro_ti_related mod12) [[0::Int,1,4,6],[0,1,3,7]]
     in [("p177.0.dot",gen_graph_ul [] set_pp (map (partition_ic 4) p_set))
        ,("p177.1.dot",gen_graph_ul_ty "circo" set_pp (map (partition_ic 6) p_set))
        ,("p177.2.dot"
