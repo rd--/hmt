@@ -4,6 +4,7 @@ module Music.Theory.Array.Cell_Ref where
 import qualified Data.Array as A {- array -}
 import Data.Char {- base -}
 import Data.Function {- base -}
+import Data.Maybe {- base -}
 import Data.String {- base -}
 
 -- | @A@ indexed case-insensitive column references.  The column
@@ -169,6 +170,12 @@ parse_cell_ref s =
                  (n,[]) -> Just (Column_Ref c,read n)
                  _ -> Nothing
 
+is_cell_ref :: String -> Bool
+is_cell_ref = isJust . parse_cell_ref
+
+parse_cell_ref_err :: String -> Cell_Ref
+parse_cell_ref_err = fromMaybe (error "parse_cell_ref") . parse_cell_ref
+
 -- | Cell reference pretty printer.
 --
 -- > cell_ref_pp ("CC",348) == "CC348"
@@ -181,6 +188,16 @@ cell_ref_pp (Column_Ref c,r) = c ++ show r
 -- > Data.Ix.index (("AA",1),("ZZ",999)) ("CC",348) == 54293
 cell_index :: Cell_Ref -> (Int,Int)
 cell_index (c,r) = (column_index c,row_index r)
+
+-- | Inverse of cell_index.
+--
+-- > index_to_cell (80,347) == (Column_Ref "CC",348)
+-- > index_to_cell (4,5) == (Column_Ref "E",6)
+index_to_cell :: (Int,Int) -> Cell_Ref
+index_to_cell (c,r) = (column_ref c,r + 1)
+
+parse_cell_index :: String -> (Int,Int)
+parse_cell_index = cell_index . parse_cell_ref_err
 
 -- | Type specialised 'Data.Ix.range', cells are in column-order.
 --
