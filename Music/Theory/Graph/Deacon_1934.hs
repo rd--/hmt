@@ -24,7 +24,7 @@ gen_graph_ul opt pp es = T.g_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edge
 gen_digraph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
 gen_digraph opt pp es = T.g_to_dot T.G_DIGRAPH opt pp Nothing (T.g_from_edges_l es)
 
-type G = ([(String,String)],[T.DOT_ATTR],FilePath)
+type G = (T.GRAPH String,[T.DOT_ATTR],FilePath)
 
 -- * E
 g1 :: G
@@ -110,6 +110,9 @@ g13 =
 g_all :: [G]
 g_all = [g1,g2,g4,g6,g8,g9,g10,g11,g12,g13]
 
+-- G = unlabeled, GL = labeled
+-- GC = collated, GF = filtered (unique edges)
+-- GD = directed
 wr :: G -> IO ()
 wr (e,o,nm) = do
   let mk_nm ty = "/home/rohan/sw/hmt/data/dot/deacon/" ++ nm ++ "_" ++ ty ++ ".dot"
@@ -119,6 +122,10 @@ wr (e,o,nm) = do
   wr_f "GC" (gen_graph o T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))
   wr_f "GF" (gen_graph_ul o id (nub (map T.t2_sort e)))
   wr_f "GD" (gen_digraph o T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))
+{-
+  let o' = ("graph:layout","fdp") : o
+  wr_f "GC_" (gen_graph o' T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))
+-}
 
 wr_all :: IO ()
 wr_all = mapM_ wr g_all
