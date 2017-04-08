@@ -124,3 +124,18 @@ e_univ_select_u_edges f = let g p q = p < q && f p q in e_univ_select_edges g
 -- > e_path_to_edges "abcd" == [('a','b'),('b','c'),('c','d')]
 e_path_to_edges :: [t] -> [EDGE t]
 e_path_to_edges = T.adj2 1
+
+-- | Undirected edge equality.
+e_undirected_eq :: Eq t => EDGE t -> EDGE t -> Bool
+e_undirected_eq (a,b) (c,d) = (a == c && b == d) || (a == d && b == c)
+
+elem_by :: (p -> q -> Bool) -> p -> [q] -> Bool
+elem_by f = any . f
+
+-- | Is the sequence of vertices a path at the graph, ie. are all
+-- adjacencies in the sequence edges.
+e_is_path :: Eq t => GRAPH t -> [t] -> Bool
+e_is_path e sq =
+    case sq of
+      p:q:sq' -> elem_by e_undirected_eq (p,q) e && e_is_path e (q:sq')
+      _ -> True
