@@ -1,0 +1,46 @@
+graph
+ g {
+edge [len=1.5,fontsize=7];
+graph [layout=neato,epsilon=0.000001];
+node [shape=circle,fontsize=10,fontname="century schoolbook"];
+0 [label="A1"];
+1 [label="B2"];
+2 [label="A3"];
+3 [label="B4"];
+4 [label="C3"];
+5 [label="C1"];
+6 [label="D2"];
+7 [label="D4"];
+8 [label="D3"];
+9 [label="D1"];
+10 [label="C2"];
+11 [label="C4"];
+12 [label="B3"];
+13 [label="B1"];
+14 [label="A2"];
+15 [label="A4"];
+0 -- 1;
+1 -- 2;
+1 -- 5;
+2 -- 3;
+2 -- 14;
+3 -- 4;
+4 -- 1;
+4 -- 7;
+5 -- 6;
+6 -- 4;
+6 -- 9;
+7 -- 8;
+8 -- 6;
+8 -- 11;
+9 -- 10;
+10 -- 8;
+10 -- 13;
+11 -- 12;
+12 -- 10;
+12 -- 15;
+13 -- 14;
+14 -- 0;
+14 -- 12;
+15 -- 2;
+}

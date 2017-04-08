@@ -1,0 +1,31 @@
+graph
+ g {
+edge [len=3,fontsize=7];
+graph [layout=neato,epsilon=0.000001];
+node [shape=circle,fontsize=10,fontname="century schoolbook"];
+0 [label="B1"];
+1 [label="C2"];
+2 [label="B2"];
+3 [label="C1"];
+4 [label="A2"];
+5 [label="A1"];
+6 [label="B3"];
+7 [label="B0"];
+0 -- 0;
+0 -- 1;
+0 -- 2;
+0 -- 3;
+2 -- 1;
+2 -- 2;
+2 -- 3;
+2 -- 6;
+3 -- 1;
+4 -- 0;
+4 -- 2;
+5 -- 0;
+5 -- 2;
+5 -- 4;
+6 -- 6;
+7 -- 0;
+7 -- 7;
+}

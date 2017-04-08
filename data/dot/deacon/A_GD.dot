@@ -1,0 +1,35 @@
+digraph
+ g {
+edge [len=3,fontsize=7];
+graph [layout=neato,epsilon=0.000001];
+node [shape=circle,fontsize=10,fontname="century schoolbook"];
+0 [label="A1"];
+1 [label="A2"];
+2 [label="B1"];
+3 [label="A3"];
+4 [label="B2"];
+5 [label="B3"];
+6 [label="C1"];
+7 [label="C2"];
+8 [label="C3"];
+0 -> 1 [label="{22,26,27}"];
+0 -> 2 [label="{23,38,39}"];
+1 -> 1 [label="30"];
+1 -> 2 [label="31"];
+1 -> 3 [label="{13,28,29}"];
+1 -> 4 [label="{14,25}"];
+1 -> 5 [label="21"];
+2 -> 2 [label="40"];
+2 -> 4 [label="{24,35}"];
+2 -> 6 [label="{32,36,37}"];
+2 -> 7 [label="1"];
+3 -> 5 [label="{12,16,17}"];
+4 -> 5 [label="{4,15}"];
+4 -> 7 [label="{5,34}"];
+5 -> 5 [label="20"];
+5 -> 7 [label="11"];
+5 -> 8 [label="{3,18,19}"];
+6 -> 7 [label="{8,9,33}"];
+7 -> 7 [label="10"];
+7 -> 8 [label="{2,6,7}"];
+}
