@@ -110,3 +110,17 @@ e_collate_l = T.collate
 -- | 'e_collate_l' of 'e_normalise_l'.
 e_collate_normalised_l :: Ord v => [EDGE_L v l] -> [EDGE_L v [l]]
 e_collate_normalised_l = e_collate_l . map e_normalise_l
+
+-- | Apply predicate to universe of possible edges.
+e_univ_select_edges :: (t -> t -> Bool) -> [t] -> [EDGE t]
+e_univ_select_edges f l = [(p,q) | p <- l, q <- l, f p q]
+
+-- | Consider only edges (p,q) where p < q.
+e_univ_select_u_edges :: Ord t => (t -> t -> Bool) -> [t] -> [EDGE t]
+e_univ_select_u_edges f = let g p q = p < q && f p q in e_univ_select_edges g
+
+-- | Sequence of connected vertices to edges.
+--
+-- > e_path_to_edges "abcd" == [('a','b'),('b','c'),('c','d')]
+e_path_to_edges :: [t] -> [EDGE t]
+e_path_to_edges = T.adj2 1

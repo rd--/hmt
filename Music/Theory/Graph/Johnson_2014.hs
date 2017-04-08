@@ -93,13 +93,6 @@ m_doi_of m n p q = doi_of n (m_get m p) (m_get m q)
 
 -- * Graph
 
--- | Apply predicate to universe of possible edges.
-gen_edges :: (t -> t -> Bool) -> [t] -> [T.EDGE t]
-gen_edges f l = [(p,q) | p <- l, q <- l, f p q]
-
-gen_u_edges :: Ord t => (t -> t -> Bool) -> [t] -> [T.EDGE t]
-gen_u_edges f = let g p q = p < q && f p q in gen_edges g
-
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul opt pp es = T.g_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edges es)
 
@@ -107,13 +100,7 @@ gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
 
 gen_flt_graph :: (Ord t, Show t) => [T.DOT_ATTR] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
-gen_flt_graph o f p = gen_graph_ul o set_pp (gen_u_edges f p)
-
-path_to_edges :: [t] -> [(t, t)]
-path_to_edges xs =
-    case xs of
-      p:q:xs' -> (p,q) : path_to_edges (q:xs')
-      _ -> []
+gen_flt_graph o f p = gen_graph_ul o set_pp (T.e_univ_select_u_edges f p)
 
 -- * P.12
 
@@ -161,7 +148,7 @@ p31_f_4_22 :: [Z12]
 p31_f_4_22 = [0,2,4,7]
 
 p31_e_set :: [([Z12],[Z12])]
-p31_e_set = gen_u_edges (doi_of 3) (map sort (T.z_sro_ti_related mod12 p31_f_4_22))
+p31_e_set = T.e_univ_select_u_edges (doi_of 3) (map sort (T.z_sro_ti_related mod12 p31_f_4_22))
 
 p31_gr :: [String]
 p31_gr = gen_graph_ul [] set_pp p31_e_set
@@ -201,7 +188,7 @@ p125_gr =
         c = T.collate (zip (map sum t) t)
         with_h n = lookup n c
         ch = fromJust (liftM2 (++) (with_h 15) (with_h 16))
-    in gen_graph_ul [] set_pp (gen_u_edges (doi_of 2) ch)
+    in gen_graph_ul [] set_pp (T.e_univ_select_u_edges (doi_of 2) ch)
 
 -- * P.131
 
@@ -209,7 +196,7 @@ p131_gr :: [String]
 p131_gr =
     let c = let u = [6::Int .. 14]
             in [[p,q,r] | p <- u, q <- u, r <- u, q > p, r > q, p + q + r == 30]
-    in gen_graph_ul [] set_pp (gen_u_edges (min_vl_of 2) c)
+    in gen_graph_ul [] set_pp (T.e_univ_select_u_edges (min_vl_of 2) c)
 
 -- * P.148
 
@@ -221,7 +208,7 @@ p148_mk_gr f =
         i_seq = permutations [1,2,3,4]
         p_seq :: (Ord i,Num i) => [[i]]
         p_seq = sort (map (T.dx_d 0) i_seq)
-    in gen_graph_ul [("edge:len","1.75")] mid_set_pp (gen_u_edges f p_seq)
+    in gen_graph_ul [("edge:len","1.75")] mid_set_pp (T.e_univ_select_u_edges f p_seq)
 
 p148_gr_set :: [(String,[String])]
 p148_gr_set =
@@ -243,7 +230,7 @@ p162_gr =
         ch = filter ((== 1) . (`mod` 4) . sum) c
         opt = [("graph:layout","neato")
               ,("edge:len","1.75")]
-    in gen_graph_ul opt set_pp (gen_u_edges (doi_of 3) ch)
+    in gen_graph_ul opt set_pp (T.e_univ_select_u_edges (doi_of 3) ch)
 
 -- * P.172
 
@@ -258,10 +245,10 @@ p172_set_pp = set_pp . m_get p172_nd_map
 p172_gr_set :: [(String,[String])]
 p172_gr_set =
     [("p172.0.dot"
-     ,let nd_e_set = gen_u_edges (m_doi_of p172_nd_map 0) [0..23]
+     ,let nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
       in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)
     ,("p172.1.dot"
-     ,let nd_e_set = concatMap path_to_edges
+     ,let nd_e_set = concatMap T.e_path_to_edges
                      [[22,11,20,9,18,7,16,5,14,3,12,1,22]
                      ,[23,2,13,8,19,10,21,4,15,6,17,0,23]]
       in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)]
