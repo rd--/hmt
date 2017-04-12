@@ -15,7 +15,8 @@ import qualified Music.Theory.Z as Z
 import qualified Music.Theory.Z.SRO as Z
 import qualified Music.Theory.Z.TTO as Z
 
-import Music.Theory.Z12
+import Music.Theory.Z12 (Z12)
+import qualified Music.Theory.Z12 as Z12
 import qualified Music.Theory.Z12.Forte_1973 as Z12
 import qualified Music.Theory.Z12.TTO as Z12
 import qualified Music.Theory.Z12.SRO as Z12
@@ -93,7 +94,7 @@ ciseg = T.d_dx . cyc
 --
 -- > cmpl [0,2,4,6,8,10] == [1,3,5,7,9,11]
 cmpl :: [Z12] -> [Z12]
-cmpl = complement
+cmpl = Z12.complement
 
 -- | Form cycle.
 --
@@ -190,7 +191,7 @@ frg_cyc =
 -- | Fragmentation of cycles.
 frg :: [Z12] -> T.T6 [String]
 frg p =
-    let f = map (\n -> if n `elem` p then z12_to_char n else '-')
+    let f = map (\n -> if n `elem` p then Z12.z12_to_char n else '-')
     in T.t6_map (map f) frg_cyc
 
 ic_cycle_vector :: [Z12] -> T.T6 [Int]
@@ -228,14 +229,6 @@ frg_pp =
         g x y = x ++ ": " ++ y
     in unlines . zipWith g frg_hdr . T.t6_to_list . T.t6_map f . frg
 
--- | p `has_ess` q is true iff p can embed q in sequence.
-has_ess :: [Z12] -> [Z12] -> Bool
-has_ess p q =
-    case (p,q) of
-      (_,[]) -> True
-      ([],_) -> False
-      (x:p',y:q') -> has_ess p' (if x == y then q' else q)
-
 -- | Embedded segment search.
 --
 -- >>> echo 23A | pct ess 0164325
@@ -244,7 +237,7 @@ has_ess p q =
 --
 -- > ess [0,1,6,4,3,2,5] [2,3,10] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: [Z12] -> [Z12] -> [[Z12]]
-ess p q = filter (`has_ess` q) (Z12.sro_rtmi_related p)
+ess p q = filter (`T.is_embedding` q) (Z12.sro_rtmi_related p)
 
 -- | Can the set-class q (under prime form algorithm pf) be
 --   drawn from the pcset p.
@@ -447,22 +440,22 @@ type SI = ([Z12],Z.TTO Z12,[Z12])
 si_raw :: [Z12] -> (SI,[Z12],[Int],SI,SI)
 si_raw p =
     let n = length p
-        p_icv = to_Z12 n : Z12.icv p
+        p_icv = Z12.to_Z12 n : Z12.icv p
         gen_si x = let x_f = Z12.forte_prime x
                        Just x_o = rs1 x_f x
                    in (nub (sort x),x_o,x_f)
-    in (gen_si p,p_icv,tics p,gen_si (complement p),gen_si (map (* 5) p))
+    in (gen_si p,p_icv,tics p,gen_si (Z12.complement p),gen_si (map (* 5) p))
 
 si_raw_pp :: [Z12] -> [String]
 si_raw_pp p =
     let pf_pp concise (x_o,x_f) =
             concat [Z.tto_pp x_o," ",Z12.sc_name x_f
-                   ,if concise then "" else z12_vec_pp x_f]
-        si_pp (x,x_o,x_f) = concat [z12_set_pp x," (",pf_pp True (x_o,x_f),")"]
+                   ,if concise then "" else Z12.z12_vec_pp x_f]
+        si_pp (x,x_o,x_f) = concat [Z12.z12_set_pp x," (",pf_pp True (x_o,x_f),")"]
         ((p',p_o,p_f),p_icv,p_tics,c,m) = si_raw p
-    in [z12_set_pp p'
+    in [Z12.z12_set_pp p'
        ,pf_pp False (p_o,p_f)
-       ,z12_vec_pp p_icv
+       ,Z12.z12_vec_pp p_icv
        ,Z.z16_vec_pp p_tics
        ,si_pp c
        ,si_pp m]

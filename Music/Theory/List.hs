@@ -395,6 +395,17 @@ is_superset = flip is_subset
 subsequence :: (Eq a) => [a] -> [a] -> Bool
 subsequence = isInfixOf
 
+-- | Does /q/ occur in sequence, though not necessarily adjacently, in /p/.
+--
+-- > is_embedding [1 .. 9] [1,3,7] == True
+-- > is_embedding "embedding" "ming" == True
+is_embedding :: Eq t => [t] -> [t] -> Bool
+is_embedding p q =
+    case (p,q) of
+      (_,[]) -> True
+      ([],_) -> False
+      (x:p',y:q') -> is_embedding p' (if x == y then q' else q)
+
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
 --
 -- > elem_index_unique 'a' "abcda" == undefined
