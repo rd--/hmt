@@ -14,10 +14,6 @@ import qualified Control.Monad.Logic as L {- logict -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- | 'L.msum' '.' 'map' 'return'.
-ml_from_list :: L.MonadLogic m => [t] -> m t
-ml_from_list = L.msum . map return
-
 -- | Synonym for 'G.noNodes'.
 g_degree :: G.Gr v e -> Int
 g_degree = G.noNodes
@@ -44,6 +40,10 @@ ug_node_set_impl gr nl =
 -- * Hamiltonian
 
 type G_NODE_SEL_F v e = G.Gr v e -> G.Node -> [G.Node]
+
+-- | 'L.msum' '.' 'map' 'return'.
+ml_from_list :: L.MonadLogic m => [t] -> m t
+ml_from_list = L.msum . map return
 
 -- | Use /sel_f/ of 'G.pre' for directed graphs and 'G.neighbors' for undirected.
 g_hamiltonian_path_ml :: L.MonadLogic m => G_NODE_SEL_F v e -> G.Gr v e -> G.Node -> m [G.Node]
@@ -96,7 +96,7 @@ g_from_edges = let f e = (e,()) in g_from_edges_l . map f
 -- * Edges
 
 -- | Label sequence of edges starting at one.
-e_label_seq :: Integral i => [EDGE v] -> [EDGE_L v i]
+e_label_seq :: [EDGE v] -> [EDGE_L v Int]
 e_label_seq = map (\(k,e) -> (e,k)) . zip [1..]
 
 -- | Normalised undirected labeled edge (ie. order nodes).

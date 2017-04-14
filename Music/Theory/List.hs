@@ -1,12 +1,16 @@
 -- | List functions.
 module Music.Theory.List where
 
+import Data.Either {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
-import qualified Data.List.Ordered as O {- data-ordlist -}
-import Data.List.Split {- split -}
-import Data.List.Split.Internals {- split -}
 import Data.Maybe {- base -}
+
+import qualified Data.List.Ordered as O {- data-ordlist -}
+import qualified Data.List.Split as S {- split -}
+import qualified Data.List.Split.Internals as S {- split -}
+
+import qualified Control.Monad.Logic as L {- logict -}
 
 -- | Data.Vector.slice, ie. starting index (zero-indexed) and number of elements.
 --
@@ -50,6 +54,8 @@ unbracket_err = fromMaybe (error "unbracket") . unbracket
 bracket_l :: ([a],[a]) -> [a] -> [a]
 bracket_l (l,r) s = l ++ s ++ r
 
+-- * Split
+
 -- | Relative of 'splitOn', but only makes first separation.
 --
 -- > splitOn "//" "lhs//rhs//rem" == ["lhs","rhs","rem"]
@@ -66,8 +72,8 @@ seperate_at x =
     in f []
 
 -- | 'Splitter' comparing single element.
-on_elem :: Eq a => a -> Splitter a
-on_elem e = defaultSplitter { delimiter = Delimiter [(==) e] }
+on_elem :: Eq a => a -> S.Splitter a
+on_elem e = S.defaultSplitter { S.delimiter = S.Delimiter [(==) e] }
 
 -- | Split before the indicated element.
 --
@@ -77,7 +83,9 @@ on_elem e = defaultSplitter { delimiter = Delimiter [(==) e] }
 -- > map (flip split_before "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
 -- > map (flip break "abcde" . (==)) "ae_" == [("","abcde"),("abcd","e"),("abcde","")]
 split_before :: Eq a => a -> [a] -> [[a]]
-split_before = split . keepDelimsL . on_elem
+split_before = S.split . S.keepDelimsL . on_elem
+
+-- * Rotate
 
 -- | Generic form of 'rotate_left'.
 genericRotate_left :: Integral i => i -> [a] -> [a]
@@ -266,7 +274,7 @@ adj_intersect n = map intersect_l . segments 2 n
 -- > cycles 3 [1..9] == [[1,4,7],[2,5,8],[3,6,9]]
 -- > cycles 4 [1..8] == [[1,5],[2,6],[3,7],[4,8]]
 cycles :: Int -> [a] -> [[a]]
-cycles n = transpose . chunksOf n
+cycles n = transpose . S.chunksOf n
 
 -- | Variant of 'filter' that has a predicate to halt processing,
 -- ie. 'filter' of 'takeWhile'.
@@ -394,17 +402,6 @@ is_superset = flip is_subset
 -- > subsequence [1,2] [1,2,3] == True
 subsequence :: (Eq a) => [a] -> [a] -> Bool
 subsequence = isInfixOf
-
--- | Does /q/ occur in sequence, though not necessarily adjacently, in /p/.
---
--- > is_embedding [1 .. 9] [1,3,7] == True
--- > is_embedding "embedding" "ming" == True
-is_embedding :: Eq t => [t] -> [t] -> Bool
-is_embedding p q =
-    case (p,q) of
-      (_,[]) -> True
-      ([],_) -> False
-      (x:p',y:q') -> is_embedding p' (if x == y then q' else q)
 
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
 --
@@ -811,3 +808,51 @@ pad_right k n l = take n (l ++ repeat k)
 -- > map (pad_left '0' 2 . return) ['0' .. '9']
 pad_left :: a -> Int -> [a] -> [a]
 pad_left k n l = replicate (n - length l) k ++ l
+
+-- * Embedding
+
+-- | Locate first (leftmost) embedding of /q/ in /p/.
+-- Return partial indices for failure at 'Left'.
+--
+-- > embedding ("embedding","ming") == Right [1,6,7,8]
+-- > embedding ("embedding","mind") == Left [1,6,7]
+embedding :: Eq t => ([t],[t]) -> Either [Int] [Int]
+embedding =
+    let recur n r (p,q) =
+            case (p,q) of
+              (_,[]) -> Right (reverse r)
+              ([],_) -> Left (reverse r)
+              (x:p',y:q') ->
+                  let n' = n + 1
+                      r' = if x == y then n : r else r
+                  in recur n' r' (p',if x == y then q' else q)
+    in recur 0 []
+
+-- | Does /q/ occur in sequence, though not necessarily adjacently, in /p/.
+--
+-- > is_embedding [1 .. 9] [1,3,7] == True
+-- > is_embedding "embedding" "ming" == True
+-- > is_embedding "embedding" "mind" == False
+is_embedding :: Eq t => [t] -> [t] -> Bool
+is_embedding p q = isRight (embedding (p,q))
+
+all_embeddings_m :: (Eq t,L.MonadLogic m) => [t] -> [t] -> m [Int]
+all_embeddings_m p q =
+    let q_n = length q
+        recur p' q' n k = -- n = length k
+            if n == q_n
+            then return (reverse k)
+            else do (m,c) <- L.msum (map return p')
+                    let k0:_ = k
+                        c':_ = q'
+                    L.guard (c == c' && (null k || m > k0))
+                    let _:p'' = p'
+                        _:q'' = q'
+                    recur p'' q'' (n + 1) (m : k)
+    in recur (zip [0..] p) q 0 []
+
+-- | Enumerate indices for all embeddings of /q/ in /p/.
+--
+-- > all_embeddings "all_embeddings" "leg" == [[1,4,12],[1,7,12],[2,4,12],[2,7,12]]
+all_embeddings :: Eq t => [t] -> [t] -> [[Int]]
+all_embeddings p = L.observeAll . all_embeddings_m p

@@ -4,7 +4,7 @@ module Music.Theory.Z12.Morris_1974 where
 
 import qualified Control.Monad.Logic as L {- logict -}
 
--- | 'msum' '.' 'map' 'return'.
+-- | 'L.msum' '.' 'map' 'return'.
 --
 -- > L.observeAll (fromList [1..7]) == [1..7]
 fromList :: L.MonadPlus m => [a] -> m a
@@ -12,21 +12,21 @@ fromList = L.msum . map return
 
 -- | 'L.MonadLogic' all-interval series.
 --
+-- > map (length . L.observeAll . all_interval_m) [4,6,8,10] == [2,4,24,288]
 -- > [0,1,3,2,9,5,10,4,7,11,8,6] `elem` L.observeAll (all_interval_m 12)
 -- > length (L.observeAll (all_interval_m 12)) == 3856
--- > map (length . L.observeAll . all_interval_m) [4,6,8,10] == [2,4,24,288]
 all_interval_m :: L.MonadLogic m => Int -> m [Int]
 all_interval_m n =
-    let recur p q =
-            if length p == n
+    let recur k p q = -- k = length p
+            if k == n
             then return (reverse p)
             else do i <- fromList [1 .. n - 1]
                     L.guard (i `notElem` p)
                     let j:_ = p
                         m = abs ((i - j) `mod` n)
                     L.guard (m `notElem` q)
-                    recur (i:p) (m:q)
-    in recur [0] []
+                    recur (k + 1) (i : p) (m : q)
+    in recur 1 [0] []
 
 -- | 'L.observeAll' of 'all_interval_m'.
 --
