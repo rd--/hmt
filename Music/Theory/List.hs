@@ -828,6 +828,9 @@ embedding =
                   in recur n' r' (p',if x == y then q' else q)
     in recur 0 []
 
+embedding_err :: Eq t => ([t],[t]) -> [Int]
+embedding_err = either (error "embedding_err") id . embedding
+
 -- | Does /q/ occur in sequence, though not necessarily adjacently, in /p/.
 --
 -- > is_embedding [1 .. 9] [1,3,7] == True
