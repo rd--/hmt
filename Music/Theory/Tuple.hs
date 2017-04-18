@@ -261,6 +261,26 @@ t9_to_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
 t9_map :: (p -> q) -> T9 p -> T9 q
 t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)
 
+-- * T10 (10-tuple, regular)
+
+type T10 a = (a,a,a,a,a,a,a,a,a,a)
+
+t10_to_list :: T10 t -> [t]
+t10_to_list (p,q,r,s,t,u,v,w,x,y) = [p,q,r,s,t,u,v,w,x,y]
+
+t10_map :: (p -> q) -> T10 p -> T10 q
+t10_map f (p,q,r,s,t,u,v,w,x,y) = (f p,f q,f r,f s,f t,f u,f v,f w,f x,f y)
+
+-- * T11 (11-tuple, regular)
+
+type T11 a = (a,a,a,a,a,a,a,a,a,a,a)
+
+t11_to_list :: T11 t -> [t]
+t11_to_list (p,q,r,s,t,u,v,w,x,y,z) = [p,q,r,s,t,u,v,w,x,y,z]
+
+t11_map :: (p -> q) -> T11 p -> T11 q
+t11_map f (p,q,r,s,t,u,v,w,x,y,z) = (f p,f q,f r,f s,f t,f u,f v,f w,f x,f y,f z)
+
 -- * T12 (12-tuple, regular)
 
 type T12 t = (t,t,t,t,t,t,t,t,t,t,t,t)
