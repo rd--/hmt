@@ -5,7 +5,7 @@ import Data.List {- base -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Z.SRO as Z
-import Music.Theory.Z12
+import           Music.Theory.Z12
 
 -- | Transpose /p/ by /n/.
 --

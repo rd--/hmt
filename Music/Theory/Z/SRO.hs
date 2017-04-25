@@ -121,6 +121,9 @@ z_sro_tn z n = fmap (z_add z n)
 -- > z_sro_invert mod5 0 [0,1,4] == [0,4,1]
 -- > z_sro_invert mod12 6 [4,5,6] == [8,7,6]
 -- > z_sro_invert mod12 0 [0,1,3] == [0,11,9]
+--
+-- > import Data.Word {- base -}
+-- > z_sro_invert mod12 (0::Word8) [1,4,8]
 z_sro_invert :: (Integral i, Functor f) => Z i -> i -> f i -> f i
 z_sro_invert z n = fmap (\p -> z_sub z n (z_sub z p  n))
 

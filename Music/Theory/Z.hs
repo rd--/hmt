@@ -36,14 +36,31 @@ lift_binary_Z z f n1 n2 = z (n1 `f` n2)
 z_add :: Integral i => Z i -> i -> i -> i
 z_add z = lift_binary_Z z (+)
 
+-- | The underlying type /i/ is presumed to be signed...
+--
+-- > z_sub mod12 0 8 == 4
+--
+-- > import Data.Word
+-- > z_sub mod12 (0::Word8) 8 == 8
+-- > (0 - 8) :: Word8 == 248
+-- > 248 `mod` 12 == 8
 z_sub :: Integral i => Z i -> i -> i -> i
 z_sub z = lift_binary_Z z (-)
+
+{- | Allowing unsigned /i/ is rather inefficient...
+z_sub :: Integral i => Z i -> i -> i -> i
+z_sub z p q =
+    if p > q
+    then z (p - q)
+    else let m = z_modulus z
+         in z (p + m - q)
+-}
 
 z_mul :: Integral i => Z i -> i -> i -> i
 z_mul z = lift_binary_Z z (*)
 
 z_negate :: Integral i => Z i -> i -> i
-z_negate z = lift_unary_Z z negate
+z_negate _ = error "Z numbers are not signed"
 
 z_fromInteger :: Integral i => Z i -> Integer -> i
 z_fromInteger z i = z (fromInteger i)
