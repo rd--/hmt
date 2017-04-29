@@ -9,6 +9,7 @@ import qualified Music.Theory.Function as T
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Tuning.Scala as T
 
+-- | (start-degree,intervals,description)
 type MODE = (Int,[Int],String)
 
 mode_starting_degree :: MODE -> Int
@@ -23,13 +24,20 @@ mode_description (_,_,d) = d
 mode_degree :: MODE -> Int
 mode_degree = sum . mode_intervals
 
+-- | (mode-count,_,mode-list)
 type MODENAM = (Int,Int,[MODE])
 
 modenam_modes :: MODENAM -> [MODE]
 modenam_modes (_,_,m) = m
 
+-- | Search for mode by interval list.
+modenam_search_seq :: MODENAM -> [Int] -> [MODE]
+modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
+
+-- | Expect /one/ result.
+--
 -- > mn <- load_modenam
--- > let sq = mapM_ (putStrLn . unlines . mode_stat) . modenam_search_seq mn
+-- > let sq = putStrLn . unlines . mode_stat . fromJust . modenam_search_seq1 mn
 -- > sq [2,2,1,2,2,2,1]
 -- > sq [2,1,2,2,1,2,2]
 -- > sq [2,1,2,2,1,3,1]
@@ -37,13 +45,16 @@ modenam_modes (_,_,m) = m
 -- > sq [1,2,1,2,1,2,1,2]
 -- > sq [2,1,2,1,2,1,2,1]
 -- > sq (replicate 12 1)
-modenam_search_seq :: MODENAM -> [Int] -> [MODE]
-modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
+modenam_search_seq1 :: MODENAM -> [Int] -> Maybe MODE
+modenam_search_seq1 mn = T.unlist1 . modenam_search_seq mn
 
+-- | Search for mode by description text.
+--
 -- > map (modenam_search_description mn) ["Messiaen","Xenakis","Raga"]
 modenam_search_description :: MODENAM -> String -> [MODE]
 modenam_search_description (_,_,m) x = filter (isInfixOf x . mode_description) m
 
+-- | Pretty printer.
 mode_stat :: MODE -> [String]
 mode_stat (d,i,s) =
     ["mode-start-degree : " ++ show d
@@ -95,8 +106,11 @@ parse_modenam l =
 
 -- * IO
 
+-- | 'parse_modenam' of 'T.load_dist_file' of @modenam.par@.
+--
 -- > mn <- load_modenam
 -- > let (n,x,m) = mn
+-- > n == 2125 && x == 15 && length m == n
 load_modenam :: IO MODENAM
 load_modenam = do
   l <- T.load_dist_file "modenam.par"

@@ -859,3 +859,17 @@ all_embeddings_m p q =
 -- > all_embeddings "all_embeddings" "leg" == [[1,4,12],[1,7,12],[2,4,12],[2,7,12]]
 all_embeddings :: Eq t => [t] -> [t] -> [[Int]]
 all_embeddings p = L.observeAll . all_embeddings_m p
+
+-- * Un-list
+
+-- | Unpack one element list.
+unlist1 :: [t] -> Maybe t
+unlist1 l =
+    case l of
+      [e] -> Just e
+      _ -> Nothing
+
+-- | Erroring variant.
+unlist1_err :: [t] -> t
+unlist1_err = fromMaybe (error "unlist1") . unlist1
+
