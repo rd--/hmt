@@ -168,6 +168,26 @@ tuning_to_scale (nm,dsc) (T.Tuning p o) =
         p' = either (map Right . tail) (map Left . tail) p ++ [Right o]
     in (nm,dsc,n,p')
 
+{- | Are scales equal ('==') at degree and tuning data.
+
+> db <- scl_load_db
+> let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
+> let Just py = find (scale_eq ("","",12,map Right r)) db
+> scale_name py == "pyth_12"
+
+> let c = map T.ratio_to_cents r
+> let Just py' = find (scale_eqv ("","",12,map Left c)) db
+> scale_name py' == "pyth_12"
+-}
+scale_eq :: Eq n => Scale n -> Scale n -> Bool
+scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
+
+-- | Are scales equal ('==') at degree and tuning data after 'pitch_cents'.
+scale_eqv :: Integral n => Scale n -> Scale n -> Bool
+scale_eqv (_,_,d0,p0) (_,_,d1,p1) =
+    let f = map pitch_cents
+    in d0 == d1 && f p0 == f p1
+
 -- * Parser
 
 -- | Comment lines begin with @!@.
