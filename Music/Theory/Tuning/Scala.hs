@@ -1,6 +1,6 @@
 -- | Parser for the Scala scale file format.  See
 -- <http://www.huygens-fokker.org/scala/scl_format.html> for details.
--- This module succesfully parses all 4579 scales in v.84 of the scale
+-- This module succesfully parses all 4671 scales in v.85 of the scale
 -- library.
 module Music.Theory.Tuning.Scala where
 
@@ -240,7 +240,7 @@ parse_scl nm s =
 -- | Read the environment variable @SCALA_SCL_DIR@, which is a
 -- sequence of directories used to locate scala files on.
 --
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/data/scala/84/scl"
+-- > setEnv "SCALA_DIST_DIR" "/home/rohan/data/scala/85/scl"
 scl_get_dir :: IO [String]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
@@ -259,8 +259,8 @@ scl_derive_filename nm = do
 -- then return it, else run 'scl_derive_filename'.
 --
 -- > scl_resolve_name "young-lm_piano"
--- > scl_resolve_name "/home/rohan/data/scala/84/scl/young-lm_piano.scl"
--- > scl_resolve_name "/home/rohan/data/scala/84/scl/unknown-tuning.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/85/scl/young-lm_piano.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/85/scl/unknown-tuning.scl"
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
     let ex_f x = if x then return nm else error "scl_resolve_name: file does not exist"
@@ -286,15 +286,15 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 {- | Load all @.scl@ files at /dir/.
 
 > dir <- scl_get_dir
-> dir == ["/home/rohan/data/scala/84/scl","/home/rohan/sw/hmt/data/scl"]
-> let [scl_84_dir,ext_dir] = dir
-> db <- scl_load_dir scl_84_dir
-> length db == 4579
+> dir == ["/home/rohan/data/scala/85/scl","/home/rohan/sw/hmt/data/scl"]
+> let [scl_85_dir,ext_dir] = dir
+> db <- scl_load_dir scl_85_dir
+> length db == 4671
 > length (filter ((== 0) . scale_degree) db) == 0
 > length (filter ((/= 1) . head . scale_ratios 1e-3) db) == 0
 > length (filter ((/= 0) . head . scale_cents) db) == 0
-> length (filter (== Just (Right 2)) (map scale_octave db)) == 3927
-> length (filter is_scale_uniform db) == 2756
+> length (filter (== Just (Right 2)) (map scale_octave db)) == 4003
+> length (filter is_scale_uniform db) == 2816
 
 > let na = filter (not . T.is_ascending . scale_cents) db
 > length na == 121
@@ -315,7 +315,7 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 >         ,"LaMonte Young's Well-Tuned Piano"]
 > in filter (isInfixOf "LaMonte Young") (map scale_description db) == r
 
-> length (filter (not . perfect_octave) db) == 647
+> length (filter (not . perfect_octave) db) == 663
 
 -}
 scl_load_dir :: (Read i, Integral i) => FilePath -> IO [Scale i]
@@ -368,10 +368,13 @@ scale_pp (nm,dsc,k,p) =
 
 -- * DIST
 
+-- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
+--
+-- > fmap (== "/home/rohan/opt/build/scala-22-pc64-linux") dist_get_dir
 dist_get_dir :: IO String
 dist_get_dir = getEnv "SCALA_DIST_DIR"
 
--- | Load file from @scala@ distribution directory, given at @SCALA_DIST_DIR@.
+-- | Load file from 'dist_get_dir'.
 --
 -- > s <- load_dist_file "intnam.par"
 -- > length s == 473
