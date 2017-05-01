@@ -10,9 +10,13 @@ import Text.Printf {- base -}
 -- LIST,UNICODE CHAR,MEANING).  The dot numbers are in column order.
 type BRAILLE = (Int,Char,[Int],Char,String)
 
+-- | ASCII 'Char' of 'BRAILLE'.
+braille_ascii :: BRAILLE -> Char
+braille_ascii (_,c,_,_,_) = c
+
 -- | Unicode 'Char' of 'BRAILLE'.
 braille_unicode :: BRAILLE -> Char
-braille_unicode (_,_,_,c',_) = c'
+braille_unicode (_,_,_,c,_) = c
 
 -- | Dot list of 'BRAILLE'.
 braille_dots :: BRAILLE -> [Int]
@@ -93,17 +97,13 @@ braille_table =
 --
 -- > braille_lookup_unicode '⠝' == Just (0x4E,'N',[1,3,4,5],'⠝',"n")
 braille_lookup_unicode :: Char -> Maybe BRAILLE
-braille_lookup_unicode c =
-    let f (_,_,_,c',_) = c == c'
-    in find f braille_table
+braille_lookup_unicode c = find ((== c) . braille_unicode) braille_table
 
 -- | Lookup 'BRAILLE' value for ascii character (case invariant).
 --
 -- > braille_lookup_ascii 'N' == Just (0x4E,'N',[1,3,4,5],'⠝',"n")
 braille_lookup_ascii :: Char -> Maybe BRAILLE
-braille_lookup_ascii c =
-    let f (_,c',_,_,_) = toUpper c == c'
-    in find f braille_table
+braille_lookup_ascii c = find ((== (toUpper c)) . braille_ascii) braille_table
 
 -- | The arrangement of the 6-dot patterns into /decades/, sequences
 -- of (1,10,3) cells.  The cell to the left of the decade is the empty
@@ -133,14 +133,18 @@ braille_64 =
 
 -- | Transcribe ASCII to unicode braille.
 --
--- > transcribe_unicode "ROHAN DRAPE" == "⠗⠕⠓⠁⠝⠀⠙⠗⠁⠏⠑"
+-- > transcribe_unicode "BRAILLE ASCII CHAR GRID" == "⠃⠗⠁⠊⠇⠇⠑⠀⠁⠎⠉⠊⠊⠀⠉⠓⠁⠗⠀⠛⠗⠊⠙"
+-- > transcribe_unicode "BRAILLE HTML TABLE GRID" == "⠃⠗⠁⠊⠇⠇⠑⠀⠓⠞⠍⠇⠀⠞⠁⠃⠇⠑⠀⠛⠗⠊⠙"
 transcribe_unicode :: String -> String
 transcribe_unicode = map (braille_unicode . fromJust . braille_lookup_ascii)
 
--- > let ch = (white_circle,black_circle)
+-- | Generate a character grid using inidicated values for filled and empty cells.
+--
 -- > let ch = (' ','.')
--- > putStrLn$ transcribe_char_grid ch "ROHAN DRAPE"
--- > putStrLn$ string_html_table $ transcribe_char_grid ch "ERKKI VELTHEIM"
+-- > putStrLn$ transcribe_char_grid ch "BRAILLE ASCII CHAR GRID"
+--
+-- > let ch = (white_circle,black_circle)
+-- > putStrLn$ string_html_table $ transcribe_char_grid ch "BRAILLE HTML TABLE GRID"
 transcribe_char_grid :: (Char,Char) -> String -> String
 transcribe_char_grid (w,b) =
     unlines .
@@ -163,13 +167,15 @@ string_html_table s =
         h x = "<table>" ++ concatMap g x ++ "</table>"
     in h (lines s)
 
--- | Decoding.
---
--- > let t0 = ["⠠⠁⠇⠇⠀⠓⠥⠍⠁⠝⠀⠆⠬⠎⠀⠜⠑⠀⠃⠕⠗⠝⠀⠋⠗⠑⠑⠀⠯⠀⠑⠟⠥⠁⠇⠀⠔⠀⠙⠊⠛⠝⠰⠽⠀⠯⠀⠐⠗⠎⠲"
--- >          ,"⠠⠮⠽⠀⠜⠑⠀⠢⠙⠪⠫⠀⠾⠀⠗⠂⠎⠕⠝⠀⠯⠀⠒⠎⠉⠊⠰⠑⠀⠯⠀⠩⠙⠀⠁⠉⠞⠀⠞⠪⠜⠙⠎⠀⠐⠕⠀⠁⠝⠕⠤"
--- >          ,"⠮⠗⠀⠔⠀⠁⠀⠸⠎⠀⠷⠀⠃⠗⠕⠮⠗⠓⠕⠕⠙⠲"]
---
--- > concatMap (fromMaybe "#" . decode) (concat t0)
+{- | Decoding.
+
+> let t0 = ["⠠⠁⠇⠇⠀⠓⠥⠍⠁⠝⠀⠆⠬⠎⠀⠜⠑⠀⠃⠕⠗⠝⠀⠋⠗⠑⠑⠀⠯⠀⠑⠟⠥⠁⠇⠀⠔⠀⠙⠊⠛⠝⠰⠽⠀⠯⠀⠐⠗⠎⠲"
+>          ,"⠠⠮⠽⠀⠜⠑⠀⠢⠙⠪⠫⠀⠾⠀⠗⠂⠎⠕⠝⠀⠯⠀⠒⠎⠉⠊⠰⠑⠀⠯⠀⠩⠙⠀⠁⠉⠞⠀⠞⠪⠜⠙⠎⠀⠐⠕⠀⠁⠝⠕⠤"
+>          ,"⠮⠗⠀⠔⠀⠁⠀⠸⠎⠀⠷⠀⠃⠗⠕⠮⠗⠓⠕⠕⠙⠲"]
+
+> concatMap (fromMaybe "#" . decode) (concat t0)
+
+-}
 decode :: Char -> Maybe String
 decode c =
     case braille_lookup_unicode c of
