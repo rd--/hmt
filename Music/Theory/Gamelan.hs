@@ -8,6 +8,7 @@ import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Clef as T {- hmt -}
+import qualified Music.Theory.Enum as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt-diagrams -}
@@ -22,6 +23,7 @@ near_rat = flip approxRational 0.01
 
 -- * Gamelan
 
+-- | Enumeration of gamelan instrument families.
 data Instrument_Family
     = Bonang
     | Gender
@@ -29,8 +31,9 @@ data Instrument_Family
     | Saron
       deriving (Enum,Bounded,Eq,Ord,Show,Read)
 
+-- | Universe
 instrument_family_set :: [Instrument_Family]
-instrument_family_set = [Bonang .. Saron]
+instrument_family_set = T.enum_univ
 
 -- | Enumeration of Gamelan instruments.
 data Instrument_Name
@@ -316,7 +319,6 @@ tone_set_gamut g =
       [] -> Nothing
       p -> Just (minimum p,maximum p)
 
--- > tone_set_gamut (tone_set_instrument marsudiraras_tone_set BonangBarung)
 tone_set_instrument :: Tone_Set -> (Instrument_Name,Maybe Scale) -> Tone_Set
 tone_set_instrument db (i,s) =
     let f t = tone_class t == (i,s)

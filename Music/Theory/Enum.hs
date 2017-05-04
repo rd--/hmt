@@ -30,3 +30,9 @@ enum_from_to_reverse p q =
     if fromEnum p > fromEnum q
     then reverse [q .. p]
     else [p .. q]
+
+-- | All elements in sequence.
+--
+-- > (enum_univ :: [Data.Word.Word8]) == [0 .. 255]
+enum_univ :: (Bounded t,Enum t) => [t]
+enum_univ = [minBound .. maxBound]
