@@ -9,6 +9,8 @@ import Music.Theory.Tuning {- hmt -}
 --
 -- > let c = [0,76,193,310,386,503,580,697,773,890,1007,1083]
 -- > in map round pietro_aaron_1523_c == c
+--
+-- > map ((+ 60) . (/ 100)) pietro_aaron_1523_c
 pietro_aaron_1523_c :: [Cents]
 pietro_aaron_1523_c =
     [0,76.0

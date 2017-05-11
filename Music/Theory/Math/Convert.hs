@@ -22,6 +22,16 @@ real_to_float = realToFrac
 real_to_double :: Real t => t -> Double
 real_to_double = realToFrac
 
+-- | Type specialised 'realToFrac'
+double_to_float :: Double -> Float
+double_to_float = realToFrac
+
+-- | Type specialised 'realToFrac'
+float_to_double :: Float -> Double
+float_to_double = realToFrac
+
+-- AUTOGEN (see mk/mk-convert.hs)
+
 -- | Type specialised 'fromIntegral'
 word8_to_word16 :: Word8 -> Word16
 word8_to_word16 = fromIntegral
