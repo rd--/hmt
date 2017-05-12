@@ -462,25 +462,35 @@ cps_midi_tuning_f (t,f0,k,g) n =
 
 -- * Midi tuning tables.
 
--- | Midi-note-number -> CPS table.
+-- | Midi-note-number -> CPS table, possibly sparse.
 type MNN_CPS_Table = [(Int,Double)]
 
 -- | Generates 'MNN_CPS_Table' given 'Midi_Tuning_F' with keys for all valid @MNN@.
 --
 -- > import Sound.SC3.Plot
 -- > plot_p2_ln [map (fmap round) (gen_cps_tuning_tbl f)]
-gen_cps_tuning_tbl :: Midi_Tuning_F -> MNN_CPS_Table
+gen_cps_tuning_tbl :: Sparse_Midi_Tuning_F -> MNN_CPS_Table
 gen_cps_tuning_tbl tn_f =
-    let ix = [0..127]
-        cps = map (T.midi_detune_to_cps . tn_f) ix
-    in zip ix cps
+    let f n = case tn_f n of
+                Just r -> Just (n,T.midi_detune_to_cps r)
+                Nothing -> Nothing
+    in mapMaybe f [0 .. 127]
 
 -- * Derived (secondary) tuning table (DTT) lookup.
 
--- | Given a 'MNN_CPS_Table' /t/, a list of @CPS@ /c/, and a @MNN@ /m/
+-- | Given an 'MNN_CPS_Table' /tbl/, a list of @CPS@ /c/, and a @MNN@ /m/
 -- find the @CPS@ in /c/ that is nearest to the @CPS@ in /t/ for /m/.
+dtt_lookup :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (Maybe v,Maybe v)
+dtt_lookup tbl cps n =
+    let f = lookup n tbl
+    in (f,fmap (T.find_nearest_err cps) f)
+
+-- | Require table be non-sparse.
 dtt_lookup_err :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (k,v,v)
-dtt_lookup_err t cps n = let f = T.lookup_err n t in (n,f,T.find_nearest_err cps f)
+dtt_lookup_err tbl cps n =
+    case dtt_lookup tbl cps n of
+      (Just f,Just g) -> (n,f,g)
+      _ -> error "dtt_lookup"
 
 -- | Given two tuning tables generate the @dtt@ table.
 gen_dtt_lookup_tbl :: MNN_CPS_Table -> MNN_CPS_Table -> MNN_CPS_Table
