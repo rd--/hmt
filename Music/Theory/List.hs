@@ -225,20 +225,24 @@ interleave_continue p q =
 interleave_rotations :: Int -> Int -> [b] -> [b]
 interleave_rotations i j s = interleave (rotate_left i s) (rotate_left j s)
 
+generic_histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
+generic_histogram x =
+    let g = group (sort x)
+    in zip (map head g) (map genericLength g)
+
 -- | Count occurences of elements in list.
 --
--- > histogram "hohoh" == [('h',3),('o',2)]
-histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
+-- > map histogram ["","hohoh"] == [[],[('h',3),('o',2)]]
+histogram :: Ord a => [a] -> [(a,Int)]
 histogram x =
     let g = group (sort x)
-        n = map genericLength g
-    in zip (map head g) n
+    in zip (map head g) (map length g)
 
 -- | Elements that appear more than once in the input.
 --
 -- > map duplicates ["duplicates","redundant"] == ["","dn"]
 duplicates :: Ord a => [a] -> [a]
-duplicates = map fst . filter (\(_,n) -> n > (1::Integer)) . histogram
+duplicates = map fst . filter (\(_,n) -> n > 1) . histogram
 
 -- | List segments of length /i/ at distance /j/.
 --

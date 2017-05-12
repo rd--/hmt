@@ -53,7 +53,7 @@ is_chord = (== 7) . sum
 -- > iv [2,2,3] == [0,2,1]
 iv :: Integral n => [n] -> [n]
 iv p =
-    let h = T.histogram p
+    let h = T.generic_histogram p
         f n = T.lookup_def n 0 h
     in map f [1,2,3]
 

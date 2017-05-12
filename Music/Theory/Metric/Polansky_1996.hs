@@ -199,7 +199,7 @@ direction_interval = d_dx (flip compare)
 -- > ord_hist [LT,GT,GT] == (1,0,2)
 ord_hist :: Integral t => [Ordering] -> (t,t,t)
 ord_hist x =
-    let h = L.histogram x
+    let h = L.generic_histogram x
         f n = fromMaybe 0 (lookup n h)
     in (f LT,f EQ,f GT)
 
