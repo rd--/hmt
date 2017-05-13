@@ -59,7 +59,7 @@ reads_exact_err err_txt str =
 --
 -- > let r = [Just 123456,Just 123456,Nothing,Just 123456789]
 -- > in map read_integral_allow_commas_maybe ["123456","123,456","1234,56","123,456,789"]
-read_integral_allow_commas_maybe :: (Integral i,Read i) => String -> Maybe i
+read_integral_allow_commas_maybe :: Read i => String -> Maybe i
 read_integral_allow_commas_maybe s =
     let c = filter ((== ',') . fst) (zip (reverse s) [0..])
     in if null c
@@ -103,7 +103,7 @@ delete_trailing_point s =
 -- | 'read_err' disallows trailing decimal points.
 --
 -- > map read_fractional_allow_trailing_point_err ["123.","123.4"] == [123.0,123.4]
-read_fractional_allow_trailing_point_err :: (Fractional n,Read n) => String -> n
+read_fractional_allow_trailing_point_err :: Read n => String -> n
 read_fractional_allow_trailing_point_err = read_err . delete_trailing_point
 
 -- * Plain type specialisations

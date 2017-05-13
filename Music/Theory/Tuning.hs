@@ -426,6 +426,17 @@ type Midi_Tuning_F = Int -> T.Midi_Detune
 -- | Variant for tunings that are incomplete.
 type Sparse_Midi_Tuning_F = Int -> Maybe T.Midi_Detune
 
+-- | Variant for sparse tunings that require state.
+type Sparse_Midi_Tuning_ST_F st = st -> Int -> (st,Maybe T.Midi_Detune)
+
+-- | Lift 'Midi_Tuning_F' to 'Sparse_Midi_Tuning_F'.
+lift_tuning_f :: Midi_Tuning_F -> Sparse_Midi_Tuning_F
+lift_tuning_f tn_f = Just . tn_f
+
+-- | Lift 'Sparse_Midi_Tuning_F' to 'Sparse_Midi_Tuning_ST_F'.
+lift_sparse_tuning_f :: Sparse_Midi_Tuning_F -> Sparse_Midi_Tuning_ST_F st
+lift_sparse_tuning_f tn_f st k = (st,tn_f k)
+
 -- | (t,c,k) where t=tuning (must have 12 divisions of octave),
 -- c=cents deviation (ie. constant detune offset), k=midi offset
 -- (ie. value to be added to incoming midi note number).
