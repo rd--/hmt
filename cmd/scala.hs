@@ -1,6 +1,5 @@
 import Data.Char {- base -}
 import Data.List {- base -}
-import Data.Maybe {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
@@ -68,8 +67,8 @@ stat_by_name lm nm = do
   sc <- T.scl_load nm :: IO (T.Scale Integer)
   putStrLn (unlines (map (cut lm) (T.scale_stat sc)))
 
-cps_tbl :: T.MNN_CPS_Table -> (Int,Int) -> IO ()
-cps_tbl tbl (l,r) = do
+cps_tbl :: String -> T.MNN_CPS_Table -> (Int,Int) -> IO ()
+cps_tbl fmt tbl (l,r) = do
   let cps_pp = T.double_pp 2
       cents_pp = T.double_pp 1
       gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
@@ -78,21 +77,26 @@ cps_tbl tbl (l,r) = do
                        in [show i,T.pitch_pp_iso p,cps_pp cps,T.pitch_pp_iso nr
                           ,cps_pp ref,cents_pp (T.cps_difference_cents ref cps)]
       hdr = Just ["MNN","PITCH","CPS","NEAR","ET12","CENTS-/+"]
-  putStr (unlines (T.md_table hdr (map (t_pp . gen_t) [l .. r])))
+      dat = map (t_pp . gen_t) [l .. r]
+      ln = case fmt of
+             "md" -> T.md_table hdr dat
+             "csv" -> map (intercalate ",") dat
+             _ -> error "cps_tbl: fmt?"
+  putStr (unlines ln)
 
--- > cps_tbl_d12 ("young-lm_piano",-74.7,-3) (60,72)
-cps_tbl_d12 :: (String,T.Cents,Int) -> (Int,Int) -> IO ()
-cps_tbl_d12 (nm,c,k) (l,r) = do
+-- > cps_tbl_d12 "csv" ("young-lm_piano",-74.7,-3) (60,72)
+cps_tbl_d12 :: String -> (String,T.Cents,Int) -> (Int,Int) -> IO ()
+cps_tbl_d12 fmt (nm,c,k) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
-  let tbl = T.gen_cps_tuning_tbl (T.d12_midi_tuning_f (t,c,k))
-  cps_tbl tbl (l,r)
+  let tbl = T.gen_cps_tuning_tbl (T.lift_tuning_f (T.d12_midi_tuning_f (t,c,k)))
+  cps_tbl fmt tbl (l,r)
 
--- > cps_tbl_cps ("cet111",27.5,9,127-9) (69,69+25)
-cps_tbl_cps :: (String,R,Int,Int) -> (Int,Int) -> IO ()
-cps_tbl_cps (nm,f0,k,n) (l,r) = do
+-- > cps_tbl_cps "md" ("cet111",27.5,9,127-9) (69,69+25)
+cps_tbl_cps :: String -> (String,R,Int,Int) -> (Int,Int) -> IO ()
+cps_tbl_cps fmt (nm,f0,k,n) (l,r) = do
   t <- T.scl_load_tuning 0.01 nm
-  let tbl = T.gen_cps_tuning_tbl (fmap fromJust (T.cps_midi_tuning_f (t,f0,k,n)))
-  cps_tbl tbl (l,r)
+  let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
+  cps_tbl fmt tbl (l,r)
 
 csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
@@ -134,8 +138,8 @@ intnam_search txt = do
 
 help :: [String]
 help =
-    ["cps-tbl cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
-    ,"cps-tbl d12 name:string cents:real mnn:int mnn-l:int mnn-r:int"
+    ["cps-tbl md|csv cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
+    ,"cps-tbl md|csv d12 name:string cents:real mnn:int mnn-l:int mnn-r:int"
     ,"csv-mnd-retune d12 name:string cents:real mnn:int input-file output-file"
     ,"db-stat"
     ,"env"
@@ -156,10 +160,10 @@ main = do
   a <- getArgs
   let usage = putStrLn (unlines help)
   case a of
-    ["cps-tbl","cps",nm,f0,k,n,l,r] ->
-        cps_tbl_cps (nm,read f0,read k,read n) (read l,read r)
-    ["cps-tbl","d12",nm,c,k,l,r] ->
-        cps_tbl_d12 (nm,read c,read k) (read l,read r)
+    ["cps-tbl",fmt,"cps",nm,f0,k,n,l,r] ->
+        cps_tbl_cps fmt (nm,read f0,read k,read n) (read l,read r)
+    ["cps-tbl",fmt,"d12",nm,c,k,l,r] ->
+        cps_tbl_d12 fmt (nm,read c,read k) (read l,read r)
     ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] ->
         csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
     ["db-stat"] ->

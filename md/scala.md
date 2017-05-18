@@ -73,9 +73,11 @@ $
 ## cps-tbl
 
 Simple `CPS` table for tuning, indicating ET12 A=440 as reference.
+Table format can be `csv` or `md`.
+The table is printed for indicated midi note number range (A0 = 21, C8 = 108).
 
 ~~~~
-$ hmt-scala cps-tbl d12 young-lm_piano -74.7 -3 60 72
+$ hmt-scala cps-tbl md d12 young-lm_piano -74.7 -3 60 72
 ~~~~
 
 MNN PITCH    CPS NEAR   ET12 CENTS-/+
@@ -96,7 +98,7 @@ MNN PITCH    CPS NEAR   ET12 CENTS-/+
 --- ----- ------ ---- ------ --------
 
 ~~~~
-$ hmt-scala cps-tbl cps cet111 440 69 25 69 93
+$ hmt-scala cps-tbl md cps cet111 440 69 25 69 93
 ~~~~
 
 MNN PITCH     CPS NEAR    ET12 CENTS-/+
