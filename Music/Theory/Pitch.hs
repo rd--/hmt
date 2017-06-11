@@ -132,6 +132,7 @@ octpc_trs n (o,pc) =
 -- | 'OctPC' value to integral /midi/ note number.
 --
 -- > map octpc_to_midi [(0,0),(4,9),(9,0)] == [12,69,120]
+-- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
 octpc_to_midi :: Integral i => Octave_PitchClass i -> i
 octpc_to_midi (o,pc) = 60 + ((fromIntegral o - 4) * 12) + pc
 

@@ -1,3 +1,4 @@
+-- | Functions to load a tuning definition and transform it into a sparse tuning function.
 module Music.Theory.Tuning.Load where
 
 import System.Random {- random -}
@@ -19,14 +20,17 @@ load_cps_tbl nm = do
               _ -> error "load_cps_tbl"
   return (map f tbl)
 
+-- | Load scala scl file as 'T.Tuning'.
 load_tuning_scl :: String -> IO T.Tuning
 load_tuning_scl = fmap (T.scale_to_tuning 0.01) . T.scl_load
 
+-- | Load scala file and apply 'T.cps_midi_tuning_f'.
 load_tuning_cps :: (String,Double,Int) -> IO T.Sparse_Midi_Tuning_F
 load_tuning_cps (nm,f0,k) =
     let f tn = T.cps_midi_tuning_f (tn,f0,k,128-k)
     in fmap f (load_tuning_scl nm)
 
+-- | Load scala file and apply 'T.d12_midi_tuning_f'.
 load_tuning_d12 :: (String,Double,Int) -> IO T.Sparse_Midi_Tuning_F
 load_tuning_d12 (nm,dt,k) =
     let f tn = T.lift_tuning_f (T.d12_midi_tuning_f (tn,dt,k))
@@ -39,18 +43,21 @@ load_tuning_tbl (nm,dt,k) =
         f tbl mnn = fmap from_cps (lookup (mnn + k) tbl)
     in fmap f (load_cps_tbl nm)
 
-choose :: RandomGen g => [a] -> g -> (a,g)
-choose l g =
+type Choose_f st t = [t] -> st-> (t,st)
+
+-- | Randomly choose from elements in table, equal weighting.
+default_choose_f :: RandomGen g => Choose_f g t
+default_choose_f l g =
     let (i,g') = randomR (0,length l - 1) g
     in (l !! i,g')
 
--- | Randomly choose from elements in table, even weighting.
-load_tuning_tbl_st :: (String,Double,Int) -> IO (T.Sparse_Midi_Tuning_ST_F StdGen)
-load_tuning_tbl_st (nm,dt,k) =
+-- | Load tuning table with stateful selection function for one-to-many entries.
+load_tuning_tbl_st :: Choose_f st (Int,Double) -> (String,Double,Int) -> IO (T.Sparse_Midi_Tuning_ST_F st)
+load_tuning_tbl_st choose_f (nm,dt,k) =
     let from_cps = T.cps_to_midi_detune . flip T.cps_shift_cents dt
         f tbl g mnn = case filter ((== (mnn + k)) . fst) tbl of
                         [] -> (g,Nothing)
-                        l -> let ((_,e),g') = choose l g
+                        l -> let ((_,e),g') = choose_f l g
                              in (g',Just (from_cps e))
     in fmap f (load_cps_tbl nm)
 
@@ -67,5 +74,5 @@ load_tuning_st_ty ty opt =
     case ty of
       "cps" -> fmap T.lift_sparse_tuning_f (load_tuning_cps opt)
       "d12" -> fmap T.lift_sparse_tuning_f (load_tuning_d12 opt)
-      "tbl" -> load_tuning_tbl_st opt
+      "tbl" -> load_tuning_tbl_st default_choose_f opt
       _ -> error "cps|d12|tbl"
