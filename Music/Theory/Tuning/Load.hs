@@ -14,7 +14,7 @@ import qualified Music.Theory.Tuning.Scala as T
 -- > load_cps_tbl "/home/rohan/dr.csv"
 load_cps_tbl :: FilePath -> IO [(Int,Double)]
 load_cps_tbl nm = do
-  tbl <- T.csv_table_read' id nm
+  tbl <- T.csv_table_read_def id nm
   let f e = case e of
               [p,q] -> (read p,read q)
               _ -> error "load_cps_tbl"

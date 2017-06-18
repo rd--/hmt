@@ -68,6 +68,8 @@ bounds_12et_tone = bounds_et_table tbl_12et
 
 -- | Tuple indicating nearest 'Pitch' to /frequency/ with @ET@
 -- frequency, and deviation in hertz and 'Cents'.
+--
+-- (cps,nearest-pitch,cps-of-nearest-pitch,cps-deviation,cents-deviation)
 type HS_R p = (Double,p,Double,Double,Cents)
 
 -- | /n/-decimal places.

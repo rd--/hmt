@@ -51,8 +51,8 @@ csv_table_read (hdr,delim,brk,_) f fn = do
   return (h,map (map f) d)
 
 -- | Read 'Table' only with 'def_csv_opt'.
-csv_table_read' :: (String -> a) -> FilePath -> IO (Table a)
-csv_table_read' f = fmap snd . csv_table_read def_csv_opt f
+csv_table_read_def :: (String -> a) -> FilePath -> IO (Table a)
+csv_table_read_def f = fmap snd . csv_table_read def_csv_opt f
 
 -- | Read and process @CSV@ 'CSV_Table'.
 csv_table_with :: CSV_Opt -> (String -> a) -> FilePath -> (CSV_Table a -> b) -> IO b
