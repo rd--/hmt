@@ -83,9 +83,9 @@ csv_table_pp f (_,delim,brk,align) (hdr,tbl) =
 csv_table_write :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
 csv_table_write f opt fn csv = T.write_file_utf8 fn (csv_table_pp f opt csv)
 
--- | Write 'Table' only (no header).
-csv_table_write' :: (a -> String) -> CSV_Opt -> FilePath -> Table a -> IO ()
-csv_table_write' f opt fn tbl = csv_table_write f opt fn (Nothing,tbl)
+-- | Write 'Table' only (no header) with 'def_csv_opt'.
+csv_table_write_def :: (a -> String) -> FilePath -> Table a -> IO ()
+csv_table_write_def f fn tbl = csv_table_write f def_csv_opt fn (Nothing,tbl)
 
 -- | @0@-indexed (row,column) cell lookup.
 table_lookup :: Table a -> (Int,Int) -> a
