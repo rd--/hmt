@@ -430,8 +430,11 @@ lookup_def k d = fromMaybe d . lookup k
 -- | Reverse lookup.
 --
 -- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
-reverse_lookup :: Eq k => k -> [(v,k)] -> Maybe v
-reverse_lookup k = lookup k . map (\(p,q) -> (q,p))
+reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
+reverse_lookup key ls =
+    case ls of
+      [] -> Nothing
+      (x,y):ls' -> if key == y then Just x else reverse_lookup key ls'
 
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
 -- right of the list, and it to the right whether equal or not.

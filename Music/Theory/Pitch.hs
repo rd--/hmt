@@ -185,6 +185,8 @@ midi_to_pitch_ks :: Integral i => i -> Pitch
 midi_to_pitch_ks = midi_to_pitch T.pc_spell_ks
 
 -- | Print fractional midi note number as ET12 pitch with cents detune in parentheses.
+--
+-- > fmidi_et12_cents_pp 66.5 == "F♯4(+50)"
 fmidi_et12_cents_pp :: Double -> String
 fmidi_et12_cents_pp =
     let f (m,c) =
