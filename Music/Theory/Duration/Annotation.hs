@@ -3,11 +3,11 @@ module Music.Theory.Duration.Annotation where
 
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
-import qualified Data.Traversable as T {- base -}
 import Data.Tree {- containers -}
 
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
+import qualified Music.Theory.List as L {- hmt -}
 
 -- | Standard music notation durational model annotations
 data D_Annotation = Tie_Right
@@ -63,52 +63,6 @@ da_tuplet (d,n) x =
         jn (p,q) z = (p,q++z)
     in zipWith jn (map fn x) ts
 
--- | Transform predicates into 'Ordering' predicate such that if /f/
--- holds then 'LT', if /g/ holds then 'GT' else 'EQ'.
---
--- > map (begin_end_cmp (== '{') (== '}')) "{a}" == [LT,EQ,GT]
-begin_end_cmp :: (t -> Bool) -> (t -> Bool) -> t -> Ordering
-begin_end_cmp f g x = if f x then LT else if g x then GT else EQ
-
--- | Variant of 'begin_end_cmp', predicates are constructed by '=='.
---
--- > map (begin_end_cmp_eq '{' '}') "{a}" == [LT,EQ,GT]
-begin_end_cmp_eq :: Eq t => t -> t -> t -> Ordering
-begin_end_cmp_eq p q = begin_end_cmp (== p) (== q)
-
--- | Given an 'Ordering' predicate where 'LT' opens a group, 'GT'
--- closes a group, and 'EQ' continues current group, construct tree
--- from list.
---
--- > let {l = "a {b {c d} e f} g h i"
--- >     ;t = group_tree (begin_end_cmp_eq '{' '}') l}
--- > in catMaybes (flatten t) == l
---
--- > let d = putStrLn . drawTree . fmap show
--- > in d (group_tree (begin_end_cmp_eq '(' ')') "a(b(cd)ef)ghi")
-group_tree :: (a -> Ordering) -> [a] -> Tree (Maybe a)
-group_tree f =
-    let unit e = Node (Just e) []
-        nil = Node Nothing []
-        insert_e (Node t l) e = Node t (e:l)
-        reverse_n (Node t l) = Node t (reverse l)
-        push (r,z) e = case z of
-                         h:z' -> (r,insert_e h (unit e) : z')
-                         [] -> (unit e : r,[])
-        open (r,z) = (r,nil:z)
-        close (r,z) = case z of
-                        h0:h1:z' -> (r,insert_e h1 (reverse_n h0) : z')
-                        h:z' -> (reverse_n h : r,z')
-                        [] -> (r,z)
-        go st x =
-            case x of
-              [] -> Node Nothing (reverse (fst st))
-              e:x' -> case f e of
-                        LT -> go (push (open st) e) x'
-                        EQ -> go (push st e) x'
-                        GT -> go (close (push st e)) x'
-    in go ([],[])
-
 -- | Group tuplets into a 'Tree'.  Branch nodes have label 'Nothing',
 -- leaf nodes label 'Just' 'Duration_A'.
 --
@@ -121,9 +75,7 @@ group_tree f =
 -- >         ,(q,[])]
 -- > in catMaybes (flatten (da_group_tuplets d)) == d
 da_group_tuplets :: [Duration_A] -> Tree (Maybe Duration_A)
-da_group_tuplets =
-    let f = begin_end_cmp da_begins_tuplet da_ends_tuplet
-    in group_tree f
+da_group_tuplets = L.group_tree (da_begins_tuplet,da_ends_tuplet)
 
 -- | Variant of 'break' that places separator at left.
 --
@@ -165,22 +117,11 @@ da_group_tuplets_nn x =
                    in Right (d : t) : da_group_tuplets_nn x''
               else Left d : da_group_tuplets_nn x'
 
--- | Keep right variant of 'zipWith', unused rhs values are returned.
---
--- > zip_with_kr (,) [1..3] ['a'..'e'] == ([(1,'a'),(2,'b'),(3,'c')],"de")
-zip_with_kr :: (a -> b -> c) -> [a] -> [b] -> ([c],[b])
-zip_with_kr f =
-    let go r p q =
-            case (p,q) of
-              (i:p',j:q') -> go (f i j : r) p' q'
-              _ -> (reverse r,q)
-    in go []
-
 -- | Keep right variant of 'zip', unused rhs values are returned.
 --
 -- > zip_kr [1..4] ['a'..'f'] == ([(1,'a'),(2,'b'),(3,'c'),(4,'d')],"ef")
 zip_kr :: [a] -> [b] -> ([(a,b)],[b])
-zip_kr = zip_with_kr (,)
+zip_kr = L.zip_with_kr (,)
 
 -- | 'zipWith' variant that adopts the shape of the lhs.
 --
@@ -192,31 +133,9 @@ nn_reshape f p q =
     case (p,q) of
       (e:p',i:q') -> case e of
                        Left j -> Left (f j i) : nn_reshape f p' q'
-                       Right j -> let (j',q'') = zip_with_kr f j q
+                       Right j -> let (j',q'') = L.zip_with_kr f j q
                                   in Right j' : nn_reshape f p' q''
       _ -> []
-
--- | Replace elements at 'Traversable' with result of joining with
--- elements from list.
-adopt_shape :: T.Traversable t => (a -> b -> c) -> [b] -> t a -> t c
-adopt_shape jn l =
-    let f (i:j) k = (j,jn k i)
-        f [] _ = error "adopt_shape: rhs ends"
-    in snd . T.mapAccumL f l
-
--- | Variant of 'adopt_shape' that considers only 'Just' elements at
--- 'Traversable'.
---
--- > let {s = "a(b(cd)ef)ghi"
--- >     ;t = group_tree (begin_end_cmp_eq '(' ')') s}
--- > in adopt_shape_m (,) [1..13] t
-adopt_shape_m :: T.Traversable t => (a -> b-> c) -> [b] -> t (Maybe a) -> t (Maybe c)
-adopt_shape_m jn l =
-    let f (i:j) k = case k of
-                      Nothing -> (i:j,Nothing)
-                      Just k' -> (j,Just (jn k' i))
-        f [] _ = error "adopt_shape_m: rhs ends"
-    in snd . T.mapAccumL f l
 
 -- | Does /a/ have 'Tie_Left' and 'Tie_Right'?
 d_annotated_tied_lr :: [D_Annotation] -> (Bool,Bool)

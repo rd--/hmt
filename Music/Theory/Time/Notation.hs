@@ -30,11 +30,26 @@ sec_to_minsec = flip divMod 60
 minsec_to_sec :: Num n => MinSec n -> n
 minsec_to_sec (m,s) = m * 60 + s
 
+minsec_binop :: Integral t => (t -> t -> t) -> MinSec t -> MinSec t -> MinSec t
+minsec_binop f p q = sec_to_minsec (f (minsec_to_sec p) (minsec_to_sec q))
+
 -- | Difference, assumes /p/ precedes /q/.
 --
 -- > minsec_diff (1,59) (2,35) == (0,36)
 minsec_diff :: Integral n => MinSec n -> MinSec n -> MinSec n
-minsec_diff p q = sec_to_minsec (minsec_to_sec q - minsec_to_sec p)
+minsec_diff = minsec_binop subtract
+
+-- | 'minsec_binop' '+'.
+--
+-- > minsec_add (1,59) (2,35) == (4,34)
+minsec_add :: Integral n => MinSec n -> MinSec n -> MinSec n
+minsec_add = minsec_binop (+)
+
+-- | 'foldl' of 'minsec_add'
+--
+-- > minsec_sum [(1,59),(2,35),(4,34)] == (9,08)
+minsec_sum :: Integral n => [MinSec n] -> MinSec n
+minsec_sum = foldl minsec_add (0,0)
 
 -- | Fractional seconds to @(min,sec)@.
 --

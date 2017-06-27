@@ -5,6 +5,8 @@ import Data.Either {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Data.Tree {- containers -}
+import qualified Data.Traversable as T {- base -}
 
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.List.Split as S {- split -}
@@ -374,12 +376,18 @@ dx_d' n l =
       e:r -> (e,reverse r)
       _ -> error "dx_d'"
 
--- | Integrate, ie. pitch class segment to interval sequence.
+-- | Apply flip of /f/ between elements of /l/.
+--
+-- > d_dx_by (,) "abcd" == [('b','a'),('c','b'),('d','c')]
+d_dx_by :: (t -> t -> u) -> [t] -> [u]
+d_dx_by f l = if null l then [] else zipWith f (tail l) l
+
+-- | Integrate, 'd_dx_by' '-', ie. pitch class segment to interval sequence.
 --
 -- > d_dx [5,6,8,11] == [1,2,3]
 -- > d_dx [] == []
 d_dx :: (Num a) => [a] -> [a]
-d_dx l = if null l then [] else zipWith (-) (tail l) l
+d_dx = d_dx_by (-)
 
 -- | Elements of /p/ not in /q/.
 --
@@ -750,6 +758,17 @@ is_ascending_by cmp = isNothing . find_non_ascending cmp
 is_ascending :: Ord a => [a] -> Bool
 is_ascending = is_ascending_by compare
 
+-- | Keep right variant of 'zipWith', where unused rhs values are returned.
+--
+-- > zip_with_kr (,) [1..3] ['a'..'e'] == ([(1,'a'),(2,'b'),(3,'c')],"de")
+zip_with_kr :: (a -> b -> c) -> [a] -> [b] -> ([c],[b])
+zip_with_kr f =
+    let go r p q =
+            case (p,q) of
+              (i:p',j:q') -> go (f i j : r) p' q'
+              _ -> (reverse r,q)
+    in go []
+
 -- | A 'zipWith' variant that always consumes an element from the left
 -- hand side (lhs), but only consumes an element from the right hand
 -- side (rhs) if the zip function is 'Right' and not if 'Left'.
@@ -880,3 +899,69 @@ unlist1 l =
 unlist1_err :: [t] -> t
 unlist1_err = fromMaybe (error "unlist1") . unlist1
 
+-- * Traversable
+
+-- | Replace elements at 'Traversable' with result of joining with elements from list.
+--
+-- > let t = Node 0 [Node 1 [Node 2 [],Node 3 []],Node 4 []]
+-- > putStrLn $ drawTree (fmap show t)
+-- > let u = (adopt_shape (\_ x -> x) "abcde" t)
+-- > putStrLn $ drawTree (fmap return u)
+adopt_shape :: T.Traversable t => (a -> b -> c) -> [b] -> t a -> t c
+adopt_shape jn l =
+    let f (i:j) k = (j,jn k i)
+        f [] _ = error "adopt_shape: rhs ends"
+    in snd . T.mapAccumL f l
+
+-- | Variant of 'adopt_shape' that considers only 'Just' elements at 'Traversable'.
+--
+-- > let {s = "a(b(cd)ef)ghi"
+-- >     ;t = group_tree (begin_end_cmp_eq '(' ')') s}
+-- > in adopt_shape_m (,) [1..13] t
+adopt_shape_m :: T.Traversable t => (a -> b-> c) -> [b] -> t (Maybe a) -> t (Maybe c)
+adopt_shape_m jn l =
+    let f (i:j) k = case k of
+                      Nothing -> (i:j,Nothing)
+                      Just k' -> (j,Just (jn k' i))
+        f [] _ = error "adopt_shape_m: rhs ends"
+    in snd . T.mapAccumL f l
+
+-- * Tree
+
+{- | Given an 'Ordering' predicate where 'LT' opens a group, 'GT'
+closes a group, and 'EQ' continues current group, construct tree
+from list.
+
+> let {l = "a {b {c d} e f} g h i"
+>     ;t = group_tree ((==) '{',(==) '}') l}
+> in catMaybes (flatten t) == l
+
+> let {d = putStrLn . drawTree . fmap show}
+> in d (group_tree ((==) '(',(==) ')') "a(b(cd)ef)ghi")
+
+-}
+group_tree :: (a -> Bool,a -> Bool) -> [a] -> Tree (Maybe a)
+group_tree (open_f,close_f) =
+    let unit e = Node (Just e) []
+        nil = Node Nothing []
+        insert_e (Node t l) e = Node t (e:l)
+        reverse_n (Node t l) = Node t (reverse l)
+        do_push (r,z) e =
+            case z of
+              h:z' -> (r,insert_e h (unit e) : z')
+              [] -> (unit e : r,[])
+        do_open (r,z) = (r,nil:z)
+        do_close (r,z) =
+            case z of
+              h0:h1:z' -> (r,insert_e h1 (reverse_n h0) : z')
+              h:z' -> (reverse_n h : r,z')
+              [] -> (r,z)
+        go st x =
+            case x of
+              [] -> Node Nothing (reverse (fst st))
+              e:x' -> if open_f e
+                      then go (do_push (do_open st) e) x'
+                      else if close_f e
+                           then go (do_close (do_push st e)) x'
+                           else go (do_push st e) x'
+    in go ([],[])
