@@ -33,7 +33,13 @@ minsec_to_sec (m,s) = m * 60 + s
 minsec_binop :: Integral t => (t -> t -> t) -> MinSec t -> MinSec t -> MinSec t
 minsec_binop f p q = sec_to_minsec (f (minsec_to_sec p) (minsec_to_sec q))
 
--- | Difference, assumes /p/ precedes /q/.
+-- | 'minsec_binop' '-', assumes /q/ precedes /p/.
+--
+-- > minsec_sub (2,35) (1,59) == (0,36)
+minsec_sub :: Integral n => MinSec n -> MinSec n -> MinSec n
+minsec_sub = minsec_binop (-)
+
+-- | 'minsec_binop' 'subtract', assumes /p/ precedes /q/.
 --
 -- > minsec_diff (1,59) (2,35) == (0,36)
 minsec_diff :: Integral n => MinSec n -> MinSec n -> MinSec n
