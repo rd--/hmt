@@ -76,7 +76,7 @@ minsec_parse x =
       [m,s] -> (read m,read s)
       _ -> error "parse_minsec"
 
--- | Fractional seconds to @(min,sec,csec)@.
+-- | Fractional seconds to @(min,sec,csec)@, csec value is 'round'ed.
 --
 -- > map fsec_to_mincsec [1,1.5,4/3] == [(0,1,0),(0,1,50),(0,1,33)]
 fsec_to_mincsec :: FSEC -> MINCSEC
@@ -90,11 +90,27 @@ fsec_to_mincsec tm =
 mincsec_to_fsec :: Real n => MinCsec n -> FSEC
 mincsec_to_fsec (m,s,cs) = realToFrac m * 60 + realToFrac s + (realToFrac cs / 100)
 
+-- > map (mincsec_to_csec . fsec_to_mincsec) [1,6+2/3,123.45] == [100,667,12345]
+mincsec_to_csec :: Num n => MinCsec n -> n
+mincsec_to_csec (m,s,cs) = m * 60 * 100 + s * 100 + cs
+
+-- | Centi-seconds to 'MinCsec'.
+--
+-- > map csec_to_mincsec [123,12345] == [(0,1,23),(2,3,45)]
+csec_to_mincsec :: Integral n => n -> MinCsec n
+csec_to_mincsec csec =
+    let (m,cs) = csec `divMod` 6000
+        (s,cs') = cs `divMod` 100
+    in (m,s,cs')
+
 -- | 'MINCSEC' pretty printer.
 --
--- > map (mincsec_pp . fsec_to_mincsec) [1,4/3] == ["00:01.00","00:01.33"]
+-- > map (mincsec_pp . fsec_to_mincsec) [1,6+2/3,123.45] == ["00:01.00","00:06.67","02:03.45"]
 mincsec_pp :: MINCSEC -> String
 mincsec_pp (m,s,cs) = printf "%02d:%02d.%02d" m s cs
+
+mincsec_binop :: Integral t => (t -> t -> t) -> MinCsec t -> MinCsec t -> MinCsec t
+mincsec_binop f p q = csec_to_mincsec (f (mincsec_to_csec p) (mincsec_to_csec q))
 
 -- | Given printer, pretty print time span.
 span_pp :: (t -> String) -> (t,t) -> String

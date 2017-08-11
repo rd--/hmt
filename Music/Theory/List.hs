@@ -232,19 +232,25 @@ generic_histogram x =
     let g = group (sort x)
     in zip (map head g) (map genericLength g)
 
+histogram_by :: Ord a => (a -> a -> Bool) -> [a] -> [(a,Int)]
+histogram_by f x =
+    let g = groupBy f (sort x)
+    in zip (map head g) (map length g)
+
 -- | Count occurences of elements in list.
 --
 -- > map histogram ["","hohoh"] == [[],[('h',3),('o',2)]]
 histogram :: Ord a => [a] -> [(a,Int)]
-histogram x =
-    let g = group (sort x)
-    in zip (map head g) (map length g)
+histogram = histogram_by (==)
+
+duplicates_by :: Ord a => (a -> a -> Bool) -> [a] -> [a]
+duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f
 
 -- | Elements that appear more than once in the input.
 --
 -- > map duplicates ["duplicates","redundant"] == ["","dn"]
 duplicates :: Ord a => [a] -> [a]
-duplicates = map fst . filter (\(_,n) -> n > 1) . histogram
+duplicates = duplicates_by (==)
 
 -- | List segments of length /i/ at distance /j/.
 --
