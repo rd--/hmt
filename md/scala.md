@@ -1,3 +1,9 @@
+[env](#env),
+[db-stat](#db-stat),
+[search scale](#search-scale), [search mode](#search-mode),
+[cps-table](#cps-tbl),
+[intnam lookup](#intnam-lookup), [intnam search](#intnam-search)
+
 # env
 
 Print environment variable names, and values if set.

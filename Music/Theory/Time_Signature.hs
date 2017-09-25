@@ -68,7 +68,7 @@ ts_compare = compare `on` ts_rq
 -- | 'Time_Signature' derived from whole note duration in 'RQ' form.
 --
 -- > map rq_to_ts [4,3/2,7/4,6] == [(4,4),(3,8),(7,16),(6,4)]
-rq_to_ts :: Rational -> Time_Signature
+rq_to_ts :: RQ -> Time_Signature
 rq_to_ts rq =
     let n = numerator rq
         d = denominator rq * 4

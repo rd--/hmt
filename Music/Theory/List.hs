@@ -452,7 +452,7 @@ reverse_lookup key ls =
 
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
 -- right of the list, and it to the right whether equal or not.
--- 'Right' values will be correct is the list is not ascending,
+-- 'Right' values will be correct if the list is not ascending,
 -- however 'Left' values only make sense for ascending ranges.
 --
 -- > map (find_bounds' compare [(0,1),(1,2)]) [-1,0,1,2,3]

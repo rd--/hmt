@@ -681,7 +681,7 @@ p_simplify = m_simplify p_simplify_rule undefined
 >      ts_p = [[1/2,1,1/2],[1/2,1]]
 >      rq = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]
 >      sr x = T.default_rule [] x
->  in T.notate_rqp sr ts (Just ts_p) rq
+>  in T.notate_rqp 4 sr ts (Just ts_p) rq
 
 -}
 notate_rqp :: Int -> Simplify_P -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] ->
@@ -694,7 +694,7 @@ notate_rqp limit r ts ts_p x = do
 
 -- | Variant of 'notate_rqp' without pulse divisions (derive).
 --
--- > notate (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
+-- > notate 4 (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
 notate :: Int -> Simplify_P -> [Time_Signature] -> [RQ] ->
           Either String [[Duration_A]]
 notate limit r ts x = notate_rqp limit r ts Nothing x

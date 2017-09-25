@@ -39,8 +39,8 @@ factor x n =
 
 -- | 'factor' /n/ from 'primes'.
 --
--- > map prime_factors [1,4,315] == [[],[2,2],[3,3,5,7]]
--- > map P.primeFactors [1,4,315] == [[],[2,2],[3,3,5,7]]
+-- > map prime_factors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
+-- > map P.primeFactors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 prime_factors :: Integral a => a -> [a]
 prime_factors = factor P.primes
 

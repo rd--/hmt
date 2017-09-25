@@ -12,6 +12,9 @@ import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling as T {- hmt -}
 
+import qualified Music.LilyPond.Light as M {- hly -}
+import qualified Music.LilyPond.Light.Constant.Note as M {- hly -}
+
 -- | Pitch classes are modulo twelve integers.
 type PitchClass = Int
 
@@ -131,7 +134,7 @@ octpc_trs n (o,pc) =
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
--- > map octpc_to_midi [(0,0),(4,9),(9,0)] == [12,69,120]
+-- > map octpc_to_midi [(0,0),(2,6),(4,9),(9,0)] == [12,42,69,120]
 -- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
 octpc_to_midi :: Integral i => Octave_PitchClass i -> i
 octpc_to_midi (o,pc) = 60 + ((fromIntegral o - 4) * 12) + pc
@@ -142,7 +145,7 @@ octpc_to_fmidi = fromIntegral . octpc_to_midi
 
 -- | Inverse of 'octpc_to_midi'.
 --
--- > midi_to_octpc 69 == (4,9)
+-- > map midi_to_octpc [40,69] == [(2,4),(4,9)]
 midi_to_octpc :: Integral i => i -> Octave_PitchClass i
 midi_to_octpc n = (n - 12) `divMod` 12
 
