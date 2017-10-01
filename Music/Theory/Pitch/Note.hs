@@ -264,8 +264,12 @@ alteration_tonh a =
 
 note_alteration_to_pc :: (Note_T,Alteration_T) -> Maybe Int
 note_alteration_to_pc (n,a) =
-    let n' = note_to_pc n
-    in fmap (+ n') (alteration_to_diff a)
+    let n_pc = note_to_pc n
+    in fmap ((`mod` 12) . (+ n_pc)) (alteration_to_diff a)
+
+-- > map note_alteration_to_pc_err [(A,DoubleSharp),(B,Sharp),(C,Flat),(C,DoubleFlat)]
+note_alteration_to_pc_err :: (Note_T, Alteration_T) -> Int
+note_alteration_to_pc_err = fromMaybe (error "note_alteration_to_pc") . note_alteration_to_pc
 
 -- | Note & alteration sequence in key-signature spelling.
 note_alteration_ks :: [(Note_T, Alteration_T)]

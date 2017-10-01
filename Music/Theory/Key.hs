@@ -190,7 +190,7 @@ fifths_to_key md n =
 -- > map (implied_key Major_Mode) [[0,1,2],[0,1,3,4]] == [Nothing,Nothing]
 implied_key :: Integral i => Mode_T -> [i] -> Maybe Key
 implied_key md pc_set =
-    let a_seq = [0,1,-1,2,-2,3,-3,4,-4,5,-5]
+    let a_seq = [0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6]
         key_seq = mapMaybe (fifths_to_key md) a_seq
     in find (\k -> pc_set `T.is_subset` key_pc_set k) key_seq
 
