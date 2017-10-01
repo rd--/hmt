@@ -88,7 +88,7 @@ seq_group c_div r_div s =
 -- | Printer for pitch-class segments.
 iw_pc_pp :: Integral n => String -> [[n]] -> IO ()
 iw_pc_pp sep =
-    let f = pitch_class_pp' False . octpc_to_pitch pc_spell_ks . (,) 4
+    let f = pitch_pp_opt (False,False) . octpc_to_pitch pc_spell_ks . (,) 4
     in putStrLn . intercalate sep . map (unwords . map f)
 
 -- * U3
@@ -213,11 +213,13 @@ u3_ch_seq_to_vec =
 
 -- * DC9
 
--- | Circumference pitch classes, C = 0.
---
--- > let c' = map length dc9_circ in (sum c',c') == (72,[5,6,7,2,3,4,4,3,2,7,7,4,4,3,2,2,3,4])
---
--- > iw_pc_pp " | " dc9_circ
+{- | Circumference pitch classes, C = 0.
+
+> let c' = map length dc9_circ in (sum c',c') == (72,[5,6,7,2,3,4,4,3,2,7,7,4,4,3,2,2,3,4])
+
+> iw_pc_pp " | " dc9_circ
+
+-}
 dc9_circ :: Num n => [[n]]
 dc9_circ =
     [[6,5,4,3,2]

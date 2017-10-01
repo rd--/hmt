@@ -39,7 +39,7 @@ tbl_12et = tbl_12et_f0 440
 -- | 24-tone equal temperament variant of 'tbl_12et_f0'.
 tbl_24et_f0 :: Double -> [(Pitch,Double)]
 tbl_24et_f0 f0 =
-    let f x = let p = fmidi_to_pitch pc_spell_ks x
+    let f x = let p = fmidi_to_pitch_err pc_spell_ks x
                   p' = pitch_rewrite_threequarter_alteration p
               in (p',fmidi_to_cps_f0 f0 x)
     in map f [12,12.5 .. 143.5]
@@ -155,7 +155,7 @@ alteration_72et_monzo n =
 -- > let {f = pitch'_pp . fst . pitch_72et
 -- >     ;r = "Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"}
 -- > in unwords (map f (zip (repeat 70) [0..9])) == r
-pitch_72et :: (Int,Int) -> (Pitch',Double)
+pitch_72et :: (Int,Int) -> (Pitch_R,Double)
 pitch_72et (x,n) =
     let p = midi_to_pitch pc_spell_ks x
         t = note p
@@ -167,7 +167,7 @@ pitch_72et (x,n) =
                     _ -> error "pitch_72et: alteration?"
         a' = alteration_72et_monzo n'
         x' = fromIntegral x + (fromIntegral n / 6)
-        r = (Pitch' t' (fromIntegral n' % 12,a') (octave p),fmidi_to_cps x')
+        r = (Pitch_R t' (fromIntegral n' % 12,a') (octave p),fmidi_to_cps x')
         r' = if n > 3
              then pitch_72et (x + 1,n - 6)
              else if n < (-3)
@@ -182,7 +182,7 @@ pitch_72et (x,n) =
 --
 -- > length tbl_72et == 792
 -- > min_max (map (round . snd) tbl_72et) == (16,33167)
-tbl_72et :: [(Pitch',Double)]
+tbl_72et :: [(Pitch_R,Double)]
 tbl_72et =
     let f n = map pitch_72et (zip (replicate 6 n) [0..5])
     in concatMap f [12 .. 143]
@@ -194,7 +194,7 @@ tbl_72et =
 --
 -- > let {f = take 2 . hs_r_pp pitch'_pp 1 . nearest_72et_tone . snd}
 -- > in mapM_ (print . unwords . f) tbl_72et
-nearest_72et_tone :: Double -> HS_R Pitch'
+nearest_72et_tone :: Double -> HS_R Pitch_R
 nearest_72et_tone = nearest_et_table_tone tbl_72et
 
 -- * Detune

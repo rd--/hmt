@@ -20,6 +20,7 @@ note_seq = [C .. B]
 note_pp :: Note_T -> Char
 note_pp = head . show
 
+-- | Table of 'Note_T' and corresponding pitch-classes.
 note_pc_tbl :: Num i => [(Note_T,i)]
 note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
 
@@ -29,6 +30,9 @@ note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
 note_to_pc :: Num i => Note_T -> i
 note_to_pc n = fromMaybe (error "note_to_pc") (lookup n note_pc_tbl)
 
+-- | Inverse of 'note_to_pc'.
+--
+-- > mapMaybe pc_to_note [0,4,7] == [C,E,G]
 pc_to_note :: (Eq i,Num i) => i -> Maybe Note_T
 pc_to_note i = T.reverse_lookup i note_pc_tbl
 
@@ -49,15 +53,30 @@ parse_note_t ci c =
     let tbl = zip "CDEFGAB" [C,D,E,F,G,A,B]
     in lookup (if ci then toUpper c else c) tbl
 
+-- | Inclusive set of 'Note_T' within indicated interval.  This is not
+-- equal to 'enumFromTo' which is not circular.
+--
+-- > note_span E B == [E,F,G,A,B]
+-- > note_span B D == [B,C,D]
+-- > enumFromTo B D == []
+note_span :: Note_T -> Note_T -> [Note_T]
+note_span n1 n2 =
+    let fn x = toEnum (x `mod` 7)
+        n1' = fromEnum n1
+        n2' = fromEnum n2
+        n2'' = if n1' > n2' then n2' + 7 else n2'
+    in map fn [n1' .. n2'']
+
 -- * Alteration
 
 -- | Enumeration of common music notation note alterations.
-data Alteration_T = DoubleFlat
-                  | ThreeQuarterToneFlat | Flat | QuarterToneFlat
-                  | Natural
-                  | QuarterToneSharp | Sharp | ThreeQuarterToneSharp
-                  | DoubleSharp
-                    deriving (Eq,Enum,Bounded,Ord,Show)
+data Alteration_T =
+    DoubleFlat
+  | ThreeQuarterToneFlat | Flat | QuarterToneFlat
+  | Natural
+  | QuarterToneSharp | Sharp | ThreeQuarterToneSharp
+  | DoubleSharp
+    deriving (Eq,Enum,Bounded,Ord,Show)
 
 -- | Generic form.
 generic_alteration_to_diff :: Integral i => Alteration_T -> Maybe i
@@ -262,19 +281,15 @@ pc_note_alteration_ks_tbl = zip note_alteration_ks [0..11]
 pc_to_note_alteration_ks :: Integral i => i -> Maybe (Note_T,Alteration_T)
 pc_to_note_alteration_ks i = T.reverse_lookup i pc_note_alteration_ks_tbl
 
--- * Generalised Alteration
+-- * Rational Alteration
 
--- | Generalised alteration, given as a rational semitone difference
+-- | Alteration given as a rational semitone difference
 -- and a string representation of the alteration.
-type Alteration_T' = (Rational,String)
+type Alteration_R = (Rational,String)
 
--- | Transform 'Alteration_T' to 'Alteration_T''.
+-- | Transform 'Alteration_T' to 'Alteration_R'.
 --
 -- > let r = [(-1,"♭"),(0,"♮"),(1,"♯")]
 -- > in map alteration_t' [Flat,Natural,Sharp] == r
-alteration_t' :: Alteration_T -> Alteration_T'
-alteration_t' a = (alteration_to_fdiff a,[alteration_symbol a])
-
--- | Function to spell a 'PitchClass'.
-type Spelling n = n -> (Note_T,Alteration_T)
-
+alteration_r :: Alteration_T -> Alteration_R
+alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])

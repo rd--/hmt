@@ -1,0 +1,88 @@
+-- | Constants names for notes.  /eses/ indicates double
+-- flat, /eseh/ three quarter tone flat, /es/ flat, /eh/ quarter tone
+-- flat, /ih/ quarter tone sharp, /is/ sharp, /isih/ three quarter
+-- tone sharp and /isis/ double sharp.
+module Music.Theory.Pitch.Note.Name where
+
+import Music.Theory.Pitch.Note
+
+ceses,deses,eeses,feses,geses,aeses,beses :: (Note_T,Alteration_T)
+ceses = (C,DoubleFlat)
+deses = (D,DoubleFlat)
+eeses = (E,DoubleFlat)
+feses = (F,DoubleFlat)
+geses = (G,DoubleFlat)
+aeses = (A,DoubleFlat)
+beses = (B,DoubleFlat)
+
+ceseh,deseh,eeseh,feseh,geseh,aeseh,beseh :: (Note_T,Alteration_T)
+ceseh = (C,ThreeQuarterToneFlat)
+deseh = (D,ThreeQuarterToneFlat)
+eeseh = (E,ThreeQuarterToneFlat)
+feseh = (F,ThreeQuarterToneFlat)
+geseh = (G,ThreeQuarterToneFlat)
+aeseh = (A,ThreeQuarterToneFlat)
+beseh = (B,ThreeQuarterToneFlat)
+
+ces,des,ees,fes,ges,aes,bes :: (Note_T,Alteration_T)
+ces = (C,Flat)
+des = (D,Flat)
+ees = (E,Flat)
+fes = (F,Flat)
+ges = (G,Flat)
+aes = (A,Flat)
+bes = (B,Flat)
+
+ceh,deh,eeh,feh,geh,aeh,beh :: (Note_T,Alteration_T)
+ceh = (C,QuarterToneFlat)
+deh = (D,QuarterToneFlat)
+eeh = (E,QuarterToneFlat)
+feh = (F,QuarterToneFlat)
+geh = (G,QuarterToneFlat)
+aeh = (A,QuarterToneFlat)
+beh = (B,QuarterToneFlat)
+
+c,d,e,f,g,a,b :: (Note_T,Alteration_T)
+c = (C,Natural)
+d = (D,Natural)
+e = (E,Natural)
+f = (F,Natural)
+g = (G,Natural)
+a = (A,Natural)
+b = (B,Natural)
+
+cih,dih,eih,fih,gih,aih,bih :: (Note_T,Alteration_T)
+cih = (C,QuarterToneSharp)
+dih = (D,QuarterToneSharp)
+eih = (E,QuarterToneSharp)
+fih = (F,QuarterToneSharp)
+gih = (G,QuarterToneSharp)
+aih = (A,QuarterToneSharp)
+bih = (B,QuarterToneSharp)
+
+cis,dis,eis,fis,gis,ais,bis :: (Note_T,Alteration_T)
+cis = (C,Sharp)
+dis = (D,Sharp)
+eis = (E,Sharp)
+fis = (F,Sharp)
+gis = (G,Sharp)
+ais = (A,Sharp)
+bis = (B,Sharp)
+
+cisih,disih,eisih,fisih,gisih,aisih,bisih :: (Note_T,Alteration_T)
+cisih = (C,ThreeQuarterToneSharp)
+disih = (D,ThreeQuarterToneSharp)
+eisih = (E,ThreeQuarterToneSharp)
+fisih = (F,ThreeQuarterToneSharp)
+gisih = (G,ThreeQuarterToneSharp)
+aisih = (A,ThreeQuarterToneSharp)
+bisih = (B,ThreeQuarterToneSharp)
+
+cisis,disis,eisis,fisis,gisis,aisis,bisis :: (Note_T,Alteration_T)
+cisis = (C,DoubleSharp)
+disis = (D,DoubleSharp)
+eisis = (E,DoubleSharp)
+fisis = (F,DoubleSharp)
+gisis = (G,DoubleSharp)
+aisis = (A,DoubleSharp)
+bisis = (B,DoubleSharp)

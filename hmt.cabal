@@ -105,8 +105,10 @@ Library
                    Music.Theory.Pitch.Chord
                    Music.Theory.Pitch.Name
                    Music.Theory.Pitch.Note
+                   Music.Theory.Pitch.Note.Name
                    Music.Theory.Pitch.Spelling
                    Music.Theory.Pitch.Spelling.Cluster
+                   Music.Theory.Pitch.Spelling.Key
                    Music.Theory.Random.I_Ching
                    Music.Theory.Read
                    Music.Theory.Set.List

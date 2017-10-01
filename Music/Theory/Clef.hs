@@ -1,8 +1,8 @@
 -- | Common music notation clefs.
 module Music.Theory.Clef where
 
-import Music.Theory.Pitch
-import Music.Theory.Pitch.Name
+import Music.Theory.Pitch {- hmt -}
+import Music.Theory.Pitch.Name {- hmt -}
 
 -- | Clef enumeration type.
 data Clef_T = Bass | Tenor | Alto | Treble | Percussion

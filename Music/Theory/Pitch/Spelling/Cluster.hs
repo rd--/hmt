@@ -1,15 +1,16 @@
 -- | Spelling for chromatic clusters.
 module Music.Theory.Pitch.Spelling.Cluster where
 
-import Data.List
-import Music.Theory.Pitch
+import Data.List {- base -}
+
+import qualified Music.Theory.Pitch as T
 import Music.Theory.Pitch.Name
 
--- | Spelling table for chromatic clusters.
+-- | Spelling table for chromatic and near-chromatic clusters.
 --
 -- > let f (p,q) = p == sort (map (snd . pitch_to_octpc) q)
 -- > in all f spell_cluster_c4_table == True
-spell_cluster_c4_table :: [([PitchClass],[Pitch])]
+spell_cluster_c4_table :: [([T.PitchClass],[T.Pitch])]
 spell_cluster_c4_table =
     [([0],[c4])
     ,([0,1],[c4,des4])
@@ -111,7 +112,7 @@ spell_cluster_c4_table =
 -- > in map f [[11,0],[11]] == [Just ["B3","C4"],Just ["B4"]]
 --
 -- > fmap (map pitch_pp) (spell_cluster_c4 [10,11]) == Just ["A♯4","B4"]
-spell_cluster_c4 :: [PitchClass] -> Maybe [Pitch]
+spell_cluster_c4 :: [T.PitchClass] -> Maybe [T.Pitch]
 spell_cluster_c4 p = lookup (sort p) spell_cluster_c4_table
 
 -- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave'.  An
@@ -120,9 +121,9 @@ spell_cluster_c4 p = lookup (sort p) spell_cluster_c4_table
 --
 -- > fmap (map pitch_pp) (spell_cluster_c 3 [11,0]) == Just ["B2","C3"]
 -- > fmap (map pitch_pp) (spell_cluster_c 3 [10,11]) == Just ["A♯3","B3"]
-spell_cluster_c :: Octave -> [PitchClass] -> Maybe [Pitch]
+spell_cluster_c :: T.Octave -> [T.PitchClass] -> Maybe [T.Pitch]
 spell_cluster_c o =
-    fmap (map (pitch_edit_octave (+ (o - 4)))) .
+    fmap (map (T.pitch_edit_octave (+ (o - 4)))) .
     spell_cluster_c4
 
 -- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave' so
@@ -134,13 +135,13 @@ spell_cluster_c o =
 -- >     ;g = map pitch_pp .fromJust . spell_cluster_f f
 -- >     ;r = [["B3","C4"],["B3"],["C4"],["A♯4","B4"]]}
 -- > in map g [[11,0],[11],[0],[10,11]] == r
-spell_cluster_f :: (PitchClass -> Octave) -> [PitchClass] -> Maybe [Pitch]
+spell_cluster_f :: (T.PitchClass -> T.Octave) -> [T.PitchClass] -> Maybe [T.Pitch]
 spell_cluster_f o_f p =
     let fn r = case r of
                 [] -> []
-                l:_ -> let (o,n) = pitch_to_octpc l
+                l:_ -> let (o,n) = T.pitch_to_octpc l
                            f = (+ (o_f n - o))
-                       in (map (pitch_edit_octave f) r)
+                       in (map (T.pitch_edit_octave f) r)
     in fmap fn (spell_cluster_c4 p)
 
 -- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave' so
@@ -148,10 +149,10 @@ spell_cluster_f o_f p =
 --
 -- > fmap (map pitch_pp) (spell_cluster_left 3 [11,0]) == Just ["B3","C4"]
 -- > fmap (map pitch_pp) (spell_cluster_left 3 [10,11]) == Just ["A♯3","B3"]
-spell_cluster_left :: Octave -> [PitchClass] -> Maybe [Pitch]
+spell_cluster_left :: T.Octave -> [T.PitchClass] -> Maybe [T.Pitch]
 spell_cluster_left o p =
     let fn r = case r of
                 [] -> []
-                l:_ -> let f = (+ (o - octave l))
-                       in map (pitch_edit_octave f) r
+                l:_ -> let f = (+ (o - T.octave l))
+                       in map (T.pitch_edit_octave f) r
     in fmap fn (spell_cluster_c4 p)

@@ -143,7 +143,7 @@ division_musicxml_tbl =
 -- > map whole_note_division_to_musicxml_type [2,4] == ["half","quarter"]
 whole_note_division_to_musicxml_type :: Integer -> String
 whole_note_division_to_musicxml_type x =
-    T.lookup_err' "division_musicxml_tbl" x division_musicxml_tbl
+    T.lookup_err_msg "division_musicxml_tbl" x division_musicxml_tbl
 
 -- | Variant of 'whole_note_division_to_musicxml_type' extracting
 -- 'division' from 'Duration', dots & multipler are ignored.
@@ -163,7 +163,7 @@ division_unicode_tbl = zip [0,1,2,4,8,16,32,64,128,256] "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮�
 -- > map whole_note_division_to_unicode_symbol [1,2,4,8] == "𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮"
 whole_note_division_to_unicode_symbol :: Integer -> Char
 whole_note_division_to_unicode_symbol x =
-    T.lookup_err' "division_unicode_tbl" x division_unicode_tbl
+    T.lookup_err_msg "division_unicode_tbl" x division_unicode_tbl
 
 -- | Give Unicode string for 'Duration'. The duration multiplier is /not/ written.
 --

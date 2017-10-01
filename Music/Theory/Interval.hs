@@ -4,8 +4,9 @@ module Music.Theory.Interval where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import Music.Theory.Pitch
-import Music.Theory.Pitch.Note
+import qualified Music.Theory.Ord as T
+import qualified Music.Theory.Pitch as T
+import qualified Music.Theory.Pitch.Note as T
 
 -- | Interval type or degree.
 data Interval_T = Unison | Second | Third | Fourth
@@ -24,13 +25,13 @@ data Interval_Q = Diminished | Minor
 data Interval = Interval {interval_type :: Interval_T
                          ,interval_quality :: Interval_Q
                          ,interval_direction :: Ordering
-                         ,interval_octave :: Octave}
+                         ,interval_octave :: T.Octave}
                 deriving (Eq,Show)
 
 -- | Interval type between 'Note_T' values.
 --
 -- > map (interval_ty C) [E,B] == [Third,Seventh]
-interval_ty :: Note_T -> Note_T -> Interval_T
+interval_ty :: T.Note_T -> T.Note_T -> Interval_T
 interval_ty n1 n2 = toEnum ((fromEnum n2 - fromEnum n1) `mod` 7)
 
 -- | Table of interval qualities.  For each 'Interval_T' gives
@@ -95,41 +96,17 @@ interval_semitones (Interval ty qu dir oct) =
                 in if dir == GT then negate n - o else n + o
       Nothing -> error "interval_semitones"
 
--- | Inclusive set of 'Note_T' within indicated interval.  This is not
--- equal to 'enumFromTo' which is not circular.
---
--- > note_span E B == [E,F,G,A,B]
--- > note_span B D == [B,C,D]
--- > enumFromTo B D == []
-note_span :: Note_T -> Note_T -> [Note_T]
-note_span n1 n2 =
-    let fn x = toEnum (x `mod` 7)
-        n1' = fromEnum n1
-        n2' = fromEnum n2
-        n2'' = if n1' > n2' then n2' + 7 else n2'
-    in map fn [n1' .. n2'']
-
--- | Invert 'Ordering', ie. 'GT' becomes 'LT' and vice versa.
---
--- > map invert_ordering [LT,EQ,GT] == [GT,EQ,LT]
-invert_ordering :: Ordering -> Ordering
-invert_ordering x =
-    case x of
-      LT -> GT
-      EQ -> EQ
-      GT -> LT
-
 -- | Determine 'Interval' between two 'Pitch'es.
 --
 -- > interval (Pitch C Sharp 4) (Pitch D Flat 4) == Interval Second Diminished EQ 0
 -- > interval (Pitch C Sharp 4) (Pitch E Sharp 5) == Interval Third Major LT 1
-interval :: Pitch -> Pitch -> Interval
+interval :: T.Pitch -> T.Pitch -> Interval
 interval p1 p2 =
     let c = compare p1 p2
-        (Pitch n1 _ o1) = p1
-        (Pitch n2 _ o2) = p2
-        p1' = pitch_to_pc p1
-        p2' = pitch_to_pc p2
+        (T.Pitch n1 _ o1) = p1
+        (T.Pitch n2 _ o2) = p2
+        p1' = T.pitch_to_pc p1
+        p2' = T.pitch_to_pc p2
         st = (p2' - p1') `mod` 12
         ty = interval_ty n1 n2
         (Just qu) = interval_q ty (fromIntegral st)
@@ -138,13 +115,11 @@ interval p1 p2 =
          GT -> (interval p2 p1) { interval_direction = GT }
          _ -> Interval ty qu c (o2 - o1 + o_a)
 
--- | Apply 'invert_ordering' to 'interval_direction' of 'Interval'.
+-- | Apply 'T.ord_invert' to 'interval_direction' of 'Interval'.
 --
 -- > invert_interval (Interval Third Major LT 1) == Interval Third Major GT 1
 invert_interval :: Interval -> Interval
-invert_interval (Interval t qu d o) =
-    let d' = invert_ordering d
-    in Interval t qu d' o
+invert_interval (Interval t qu d o) = Interval t qu (T.ord_invert d) o
 
 -- | The signed difference in semitones between two 'Interval_Q'
 -- values when applied to the same 'Interval_T'.  Can this be written
@@ -185,9 +160,9 @@ quality_difference a b =
 -- | Transpose a 'Pitch' by an 'Interval'.
 --
 -- > transpose (Interval Third Diminished LT 0) (Pitch C Sharp 4) == Pitch E Flat 4
-pitch_transpose :: Interval -> Pitch -> Pitch
+pitch_transpose :: Interval -> T.Pitch -> T.Pitch
 pitch_transpose i ip =
-    let (Pitch p_n p_a p_o) = ip
+    let (T.Pitch p_n p_a p_o) = ip
         (Interval i_t i_q i_d i_o) = i
         i_d' = if i_d == GT
                then -1
@@ -199,10 +174,10 @@ pitch_transpose i ip =
              else if p_n' < p_n && i_d == LT
                   then 1
                   else 0
-        ip' = Pitch p_n' p_a (p_o + i_o + oa)
+        ip' = T.Pitch p_n' p_a (p_o + i_o + oa)
         st = if i_d == GT
-             then (pitch_to_pc ip - pitch_to_pc ip') `mod` 12
-             else (pitch_to_pc ip' - pitch_to_pc ip) `mod` 12
+             then (T.pitch_to_pc ip - T.pitch_to_pc ip') `mod` 12
+             else (T.pitch_to_pc ip' - T.pitch_to_pc ip) `mod` 12
         ty = if i_d == GT
              then interval_ty p_n' p_n
              else interval_ty p_n p_n'
@@ -210,14 +185,14 @@ pitch_transpose i ip =
              in fromMaybe err (interval_q ty (fromIntegral st))
         qd = quality_difference qu i_q * i_d'
         p_a' = toEnum (fromEnum p_a + (qd * 2))
-    in ip' { alteration = p_a' }
+    in ip' {T.alteration = p_a'}
 
 -- | Make leftwards (perfect fourth) and and rightwards (perfect
 -- fifth) circles from 'Pitch'.
 --
 -- > let c = circle_of_fifths (Pitch F Sharp 4)
 -- > in map pitch_to_pc (snd c) == [6,1,8,3,10,5,12,7,2,9,4,11]
-circle_of_fifths :: Pitch -> ([Pitch], [Pitch])
+circle_of_fifths :: T.Pitch -> ([T.Pitch], [T.Pitch])
 circle_of_fifths x =
     let p4 = Interval Fourth Perfect LT 0
         p5 = Interval Fifth Perfect LT 0
@@ -228,7 +203,7 @@ circle_of_fifths x =
 -- displacement.
 --
 -- > mapMaybe parse_interval_type (map show [1 .. 15])
-parse_interval_type :: String -> Maybe (Interval_T,Octave)
+parse_interval_type :: String -> Maybe (Interval_T,T.Octave)
 parse_interval_type n =
     case reads n of
       [(n',[])] -> if n' == 0
@@ -249,7 +224,7 @@ parse_interval_quality q =
 -- 'parse_interval_type'.
 --
 -- > map interval_type_degree [(Third,0),(Second,1),(Unison,2)] == [3,9,15]
-interval_type_degree :: (Interval_T,Octave) -> Int
+interval_type_degree :: (Interval_T,T.Octave) -> Int
 interval_type_degree (t,o) = fromEnum t + 1 + (fromIntegral o * 7)
 
 -- | Inverse of 'parse_interval_quality.
