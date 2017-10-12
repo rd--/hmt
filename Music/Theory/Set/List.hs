@@ -7,11 +7,11 @@ import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- | Remove duplicate elements with 'nub' and then 'sort'.
+-- | 'sort' then 'nub'.
 --
--- > set_l [3,3,3,2,2,1] == [1,2,3]
+-- > set [3,3,3,2,2,1] == [1,2,3]
 set :: (Ord a) => [a] -> [a]
-set = sort . nub
+set = nub . sort
 
 -- | Size of powerset of set of cardinality /n/, ie. @2@ '^' /n/.
 --
