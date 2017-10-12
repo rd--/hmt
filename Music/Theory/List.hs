@@ -765,6 +765,17 @@ is_ascending_by cmp = isNothing . find_non_ascending cmp
 is_ascending :: Ord a => [a] -> Bool
 is_ascending = is_ascending_by compare
 
+-- | Variant of `elem` that operates on a sorted list, halting.
+--
+-- > 16 `elem_ordered` [1,3 ..] == False
+-- > 16 `elem` [1,3 ..] == undefined
+-- > 16 `elem_ordered` [0,1,4,9,16,25,36,49,64,81,100]
+elem_ordered :: Ord t => t -> [t] -> Bool
+elem_ordered e l =
+    case l of
+      [] -> False
+      x:l' -> if e == x then True else if x > e then False else elem_ordered e l'
+
 -- | Keep right variant of 'zipWith', where unused rhs values are returned.
 --
 -- > zip_with_kr (,) [1..3] ['a'..'e'] == ([(1,'a'),(2,'b'),(3,'c')],"de")
