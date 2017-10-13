@@ -163,3 +163,19 @@ oi_mod n m = ((n - 1) `mod` m) + 1
 -- > map (`oi_divMod` 5) [1,3 .. 9] == [(0,1),(0,3),(0,5),(1,2),(1,4)]
 oi_divMod :: Integral t => t -> t -> (t, t)
 oi_divMod n m = let (i,j) = (n - 1) `divMod` m in (i,j + 1)
+
+-- * I = integral
+
+-- | Integral square root function.
+--
+-- > map i_square_root [0,1,4,9,16,25,36,49,64,81,100] == [0 .. 10]
+-- > map i_square_root [4 .. 16] == [2,2,2,2,2,3,3,3,3,3,3,3,4]
+i_square_root :: Integral t => t -> t
+i_square_root n =
+    let babylon a =
+            let b  = quot (a + quot n a) 2
+            in if a > b then babylon b else a
+    in case compare n 0 of
+         GT -> babylon n
+         EQ -> 0
+         _ -> error "i_square_root: negative?"
