@@ -42,11 +42,15 @@ ix_translate (dr,dc) (r,c) = (r + dr,c + dc)
 ix_modulo :: Integral t => Dimensions t -> Ix t -> Ix t
 ix_modulo (nr,nc) (r,c) = (r `mod` nr,c `mod` nc)
 
+-- | Given number of columns and row index, list row indices.
+--
 -- > row_indices 3 1 == [(1,0),(1,1),(1,2)]
 row_indices :: (Enum t, Num t) => t -> t -> [Ix t]
 row_indices nc r = map (\c -> (r,c)) [0 .. nc - 1]
 
--- > column_indices 2 1 == [(0,1),(1,1)]
+-- | Given number of rows and column index, list column indices.
+--
+-- > column_indices 3 1 == [(0,1),(1,1),(2,1)]
 column_indices :: (Enum t, Num t) => t -> t -> [Ix t]
 column_indices nr c = map (\r -> (r,c)) [0 .. nr - 1]
 
@@ -72,11 +76,15 @@ parallelogram_corner_indices :: Num t => (Dimensions t,t) -> [Ix t]
 parallelogram_corner_indices ((nr,nc),o) = [(0,0),(0,nc - 1),(nr - 1,o),(nr - 1,nc + o - 1)]
 
 -- | Apply 'ix_modulo' and 'ix_translate' for all 'matrix_indices',
--- ie. all translations of a 'shape' in row order.  The result may
--- have duplicates.
+-- ie. all translations of a 'shape' in row order.  The resulting 'Ix'
+-- sets are not sorted and may have duplicates.
 --
 -- > concat (all_ix_translations (2,3) [(0,0)]) == matrix_indices (2,3)
 all_ix_translations :: Integral t => Dimensions t -> [Ix t] -> [[Ix t]]
 all_ix_translations dm ix =
     let f z = ix_modulo dm . ix_translate z
-    in map (\dx -> sort (map (f dx) ix)) (matrix_indices dm)
+    in map (\dx -> map (f dx) ix) (matrix_indices dm)
+
+-- | Sort sets into row order and remove duplicates.
+all_ix_translations_uniq :: Integral t => Dimensions t -> [Ix t] -> [[Ix t]]
+all_ix_translations_uniq dm = nub . map sort . all_ix_translations dm
