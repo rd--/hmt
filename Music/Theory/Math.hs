@@ -38,6 +38,14 @@ real_floor = floor . T.real_to_double
 real_floor_int :: Real r => r -> Int
 real_floor_int = real_floor
 
+-- | 'round' of 'T.real_to_double'.
+real_round :: (Real r,Integral i)  => r -> i
+real_round = round . T.real_to_double
+
+-- | Type specialised 'real_round'.
+real_round_int :: Real r => r -> Int
+real_round_int = real_round
+
 -- | Is /r/ zero to /k/ decimal places.
 --
 -- > map (flip zero_to_precision 0.00009) [4,5] == [True,False]
