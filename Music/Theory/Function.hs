@@ -1,6 +1,13 @@
 -- | "Data.Function" related functions.
 module Music.Theory.Function where
 
+-- | 'const' of 'const'.
+--
+-- > const2 5 undefined undefined == 5
+-- > const (const 5) undefined undefined == 5
+const2 :: a -> b -> c -> a
+const2 x _ _ = x
+
 -- * Predicate composition.
 
 -- | '&&' of predicates.

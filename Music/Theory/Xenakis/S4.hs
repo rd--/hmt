@@ -261,7 +261,7 @@ viii_7_lseq =
 --
 -- > import Music.Theory.Array.MD
 --
--- > let t = md_matrix_opt show (\x -> "_" ++ x ++ "_") (head viii_7) viii_7
+-- > let t = md_matrix_opt show (\x -> "_" ++ x ++ "_") (head viii_7,head viii_7) viii_7
 -- > putStrLn $ unlines $ md_table' t
 viii_7 :: [[Label]]
 viii_7 = map (\i -> map (`l_on` i) viii_7_lseq) viii_7_lseq

@@ -23,6 +23,8 @@ db_store_ty ty fn =
 
 -- > convert ("plain","csv") ("/home/rohan/in/CREDITS.txt","/tmp/t.csv")
 -- > convert ("json","csv") ("/home/rohan/ut/www-spr/data/db.js","/tmp/t.csv")
+-- > convert ("json","plain") ("/home/rohan/ut/www-rd/data/db.js","/tmp/t.text")
+-- > convert ("json","plain") ("/home/rohan/ut/www-spr/data/db.js","/tmp/t.text")
 convert :: (String,String) -> (FilePath,FilePath) -> IO ()
 convert (input_ty,output_ty) (input_fn,output_fn) = do
   db <- db_load_ty input_ty input_fn

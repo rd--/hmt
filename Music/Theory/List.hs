@@ -3,6 +3,7 @@ module Music.Theory.List where
 
 import Data.Either {- base -}
 import Data.Function {- base -}
+import qualified Data.IntMap as Map {- containers -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Tree {- containers -}
@@ -61,16 +62,16 @@ bracket_l (l,r) s = l ++ s ++ r
 -- | Relative of 'splitOn', but only makes first separation.
 --
 -- > splitOn "//" "lhs//rhs//rem" == ["lhs","rhs","rem"]
--- > seperate_at "//" "lhs//rhs//rem" == Just ("lhs","rhs//rem")
-seperate_at :: Eq a => [a] -> [a] -> Maybe ([a],[a])
-seperate_at x =
+-- > separate_at "//" "lhs//rhs//rem" == Just ("lhs","rhs//rem")
+separate_at :: Eq a => [a] -> [a] -> Maybe ([a],[a])
+separate_at x =
     let n = length x
         f lhs rhs =
             if null rhs
             then Nothing
-                 else if x == take n rhs
-                      then Just (reverse lhs,drop n rhs)
-                      else f (head rhs : lhs) (tail rhs)
+            else if x == take n rhs
+                 then Just (reverse lhs,drop n rhs)
+                 else f (head rhs : lhs) (tail rhs)
     in f []
 
 -- | 'Splitter' comparing single element.
@@ -179,6 +180,7 @@ genericAdj2 n l =
 -- | Adjacent elements of list, at indicated distance, as pairs.
 --
 -- > adj2 1 [1..5] == [(1,2),(2,3),(3,4),(4,5)]
+-- > let l = [1..5] in zip l (tail l) == adj2 1 l
 -- > adj2 2 [1..4] == [(1,2),(3,4)]
 -- > adj2 3 [1..5] == [(1,2),(4,5)]
 adj2 :: Int -> [t] -> [(t,t)]
@@ -208,6 +210,50 @@ interleave :: [a] -> [a] -> [a]
 interleave p q =
     let u (i,j) = [i,j]
     in concatMap u (zip p q)
+
+-- | Interleave list of lists.  Allows lists to be of non-equal lenghts.
+--
+-- > interleave_set ["abcd","efgh","ijkl"] == "aeibfjcgkdhl"
+-- > interleave_set ["abc","defg","hijkl"] == "adhbeicfjgkl"
+interleave_set :: [[a]] -> [a]
+interleave_set = concat . transpose
+
+{-
+import Safe {- safe -}
+
+interleave_set l =
+    case mapMaybe headMay l of
+      [] -> []
+      r -> r ++ interleave_set (mapMaybe tailMay l)
+-}
+
+-- | De-interleave /n/ lists.
+--
+-- > deinterleave 2 ".a+b-c" == [".+-","abc"]
+-- > deinterleave 3 "aeibfjcgkdhl" == ["abcd","efgh","ijkl"]
+deinterleave :: Int -> [a] -> [[a]]
+deinterleave n = transpose . S.chunksOf n
+
+-- | Special case for two-part deinterleaving.
+--
+-- > deinterleave2 ".a+b-c" == (".+-","abc")
+deinterleave2 :: [t] -> ([t], [t])
+deinterleave2 =
+    let f l =
+            case l of
+              p:q:l' -> (p,q) : f l'
+              _ -> []
+    in unzip . f
+
+{-
+deinterleave2 =
+    let f p q l =
+            case l of
+              [] -> (reverse p,reverse q)
+              [a] -> (reverse (a:p),reverse q)
+              a:b:l' -> rec (a:p) (b:q) l'
+    in f [] []
+-}
 
 -- | Variant that continues with the longer input.
 --
@@ -444,12 +490,19 @@ lookup_def k d = fromMaybe d . lookup k
 
 -- | Reverse lookup.
 --
+-- > reverse_lookup 'c' [] == Nothing
 -- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
+reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
+reverse_lookup k = fmap fst . find ((== k) . snd)
+
+{-
 reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
 reverse_lookup key ls =
     case ls of
       [] -> Nothing
       (x,y):ls' -> if key == y then Just x else reverse_lookup key ls'
+-}
+
 
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
 -- right of the list, and it to the right whether equal or not.
@@ -996,3 +1049,45 @@ group_tree (open_f,close_f) =
                            then go (do_close (do_push st e)) x'
                            else go (do_push st e) x'
     in go ([],[])
+
+-- * Indexing
+
+-- | Remove element at index.
+--
+-- > remove_ix 5 "remove" == "remov"
+-- > remove_ix 5 "short" == undefined
+remove_ix :: Int -> [a] -> [a]
+remove_ix k l = let (p,q) = splitAt k l in p ++ tail q
+
+operate_ixs :: Bool -> [Int] -> [a] -> [a]
+operate_ixs mode k =
+    let sel = if mode then notElem else elem
+        f (n,e) = if n `sel` k then Nothing else Just e
+    in mapMaybe f . zip [0..]
+
+-- > select_ixs [1,3] "select" == "ee"
+select_ixs :: [Int] -> [a] -> [a]
+select_ixs = operate_ixs True
+
+-- > remove_ixs [1,3,5] "remove" == "rmv"
+remove_ixs :: [Int] -> [a] -> [a]
+remove_ixs = operate_ixs False
+
+-- | Replace element at /i/ in /p/ by application of /f/.
+--
+-- > replace_ix negate 1 [1..3] == [1,-2,3]
+replace_ix :: (a -> a) -> Int -> [a] -> [a]
+replace_ix f i p =
+    let (q,r:s) = splitAt i p
+    in q ++ (f r : s)
+
+-- | Cyclic indexing function.
+--
+-- > map (at_cyclic "cycle") [0..9] == "cyclecycle"
+at_cyclic :: [a] -> Int -> a
+at_cyclic l n =
+    let m = Map.fromList (zip [0..] l)
+        k = Map.size m
+        n' = n `mod` k
+    in fromMaybe (error "cyc_at") (Map.lookup n' m)
+
