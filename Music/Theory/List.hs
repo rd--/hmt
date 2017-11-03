@@ -559,6 +559,16 @@ find_bounds_scl scl f l x =
 find_bounds :: Bool -> (t -> s -> Ordering) -> [t] -> s -> Maybe (t,t)
 find_bounds scl f l = find_bounds_scl scl f (adj2 1 l)
 
+-- | Special case of 'dropRight'.
+--
+-- > map drop_last ["","?","remove"] == ["","","remov"]
+drop_last :: [t] -> [t]
+drop_last l =
+    case l of
+      [] -> []
+      [_] -> []
+      e:l' -> e : drop_last l'
+
 -- | Variant of 'drop' from right of list.
 --
 -- > dropRight 1 [1..9] == [1..8]
