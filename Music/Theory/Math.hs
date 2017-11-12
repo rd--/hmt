@@ -63,7 +63,7 @@ whole_to_precision k = zero_to_precision k . fractional_part . T.real_to_double
 --
 -- > plotTable1 (map sawtooth_wave [-2.0,-1.99 .. 2.0])
 sawtooth_wave :: RealFrac a => a -> a
-sawtooth_wave n = n - fromInteger (floor n)
+sawtooth_wave n = n - floor_f n
 
 -- | Pretty printer for 'Rational' that elides denominators of @1@.
 --
@@ -148,15 +148,15 @@ num_diff_str n =
       GT -> '+' : show n
 
 -- | 'fromInteger' . 'floor'.
-floor' :: (RealFrac a, Num b) => a -> b
-floor' = fromInteger . floor
+floor_f :: (RealFrac a, Num b) => a -> b
+floor_f = fromInteger . floor
 
 -- | Round /b/ to nearest multiple of /a/.
 --
 -- > map (round_to 0.25) [0,0.1 .. 1] == [0.0,0.0,0.25,0.25,0.5,0.5,0.5,0.75,0.75,1.0,1.0]
 -- > map (round_to 25) [0,10 .. 100] == [0,0,25,25,50,50,50,75,75,100,100]
 round_to :: RealFrac n => n -> n -> n
-round_to a b = if a == 0 then b else floor' ((b / a) + 0.5) * a
+round_to a b = if a == 0 then b else floor_f ((b / a) + 0.5) * a
 
 -- * One-indexed
 

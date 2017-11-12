@@ -162,6 +162,16 @@ p5_fourth (_,_,_,d,_) = d
 p5_fifth :: (a,b,c,d,e) -> e
 p5_fifth (_,_,_,_,e) = e
 
+p5_from_list :: (t -> t1, t -> t2, t -> t3, t -> t4, t -> t5) -> [t] -> (t1,t2,t3,t4,t5)
+p5_from_list (f1,f2,f3,f4,f5) l =
+  case l of
+    [c1,c2,c3,c4,c5] -> (f1 c1,f2 c2,f3 c3,f4 c4,f5 c5)
+    _ -> error "p5_from_list"
+
+
+p5_to_list :: (t1 -> t, t2 -> t, t3 -> t, t4 -> t, t5 -> t) -> (t1, t2, t3, t4, t5) -> [t]
+p5_to_list (f1,f2,f3,f4,f5) (c1,c2,c3,c4,c5) = [f1 c1,f2 c2,f3 c3,f4 c4,f5 c5]
+
 -- * T5 (5-tuple, regular)
 
 type T5 a = (a,a,a,a,a)

@@ -9,6 +9,7 @@ import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 import qualified Music.Theory.Array.Cell_Ref as T {- hmt -}
 import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * TABLE
 
@@ -173,3 +174,16 @@ csv_load_irregular :: (String -> a) -> FilePath -> IO [[a]]
 csv_load_irregular f fn = do
   s <- T.read_file_utf8 fn
   return (map (map (f . csv_field_str) . csv_row_recover) (C.parseCSV s))
+
+-- * Tuples
+
+type P5_Parser t1 t2 t3 t4 t5 = (String -> t1,String -> t2,String -> t3,String -> t4,String -> t5)
+type P5_Writer t1 t2 t3 t4 t5 = (t1 -> String,t2 -> String,t3 -> String,t4 -> String,t5 -> String)
+
+csv_table_read_p5 :: P5_Parser t1 t2 t3 t4 t5 -> CSV_Opt -> FilePath -> IO (Maybe [String],[(t1,t2,t3,t4,t5)])
+csv_table_read_p5 f opt fn = do
+  (hdr,dat) <- csv_table_read opt id fn
+  return (hdr,map (T.p5_from_list f) dat)
+
+csv_table_write_p5 :: P5_Writer t1 t2 t3 t4 t5 -> CSV_Opt -> FilePath -> (Maybe [String],[(t1,t2,t3,t4,t5)]) -> IO ()
+csv_table_write_p5 f opt fn (hdr,dat) = csv_table_write id opt fn (hdr,map (T.p5_to_list f) dat)
