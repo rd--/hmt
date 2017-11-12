@@ -25,17 +25,20 @@ md_number_rows (hdr,tbl) =
     in (hdr',tbl')
 
 -- | Markdown table, perhaps with header.  Table is in row order.
--- Options are: /pad_left/.
+-- Options are /pad_left/ and /eq_width/.
 --
--- > md_table_opt False (Nothing,[["a","bc","def"],["ghij","klm","no","p"]])
-md_table_opt :: Bool -> MD_Table String -> [String]
-md_table_opt pleft (hdr,t) =
-    let t' = maybe t (:t) hdr
-        c = transpose (T.make_regular "" t')
-        n = map (maximum . map length) c
-        ext k s = if pleft then T.pad_left ' ' k s else s
-        m = unwords (map (flip replicate '-') n)
-        w = map unwords (transpose (zipWith (map . ext) n c))
+-- > let tbl = [["a","bc","def"],["ghij","klm","no","p"]]
+-- > putStrLn$unlines$"": md_table_opt (True,True," · ") (Nothing,tbl)
+md_table_opt :: (Bool,Bool,String) -> MD_Table String -> [String]
+md_table_opt (pad_left,eq_width,col_sep) (hdr,t) =
+    let c = transpose (T.make_regular "" (maybe t (:t) hdr))
+        nc = length c
+        n = let k = map (maximum . map length) c
+            in if eq_width then replicate nc (maximum k) else k
+        ext k s = if pad_left then T.pad_left ' ' k s else T.pad_right ' ' k s
+        jn = intercalate col_sep
+        m = jn (map (flip replicate '-') n)
+        w = map jn (transpose (zipWith (map . ext) n c))
         d = map T.delete_trailing_whitespace w
     in case hdr of
          Nothing -> T.bracket (m,m) d
@@ -44,7 +47,7 @@ md_table_opt pleft (hdr,t) =
                      d0:d' -> d0 : T.bracket (m,m) d'
 
 md_table' :: MD_Table String -> [String]
-md_table' = md_table_opt True
+md_table' = md_table_opt (True,False," ")
 
 -- | 'curry' of 'md_table''.
 md_table :: Maybe [String] -> [[String]] -> [String]

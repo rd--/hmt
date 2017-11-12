@@ -42,7 +42,7 @@ z_add z = lift_binary_Z z (+)
 --
 -- > import Data.Word
 -- > z_sub mod12 (0::Word8) 8 == 8
--- > (0 - 8) :: Word8 == 248
+-- > ((0 - 8) :: Word8) == 248
 -- > 248 `mod` 12 == 8
 z_sub :: Integral i => Z i -> i -> i -> i
 z_sub z = lift_binary_Z z (-)
@@ -59,8 +59,9 @@ z_sub z p q =
 z_mul :: Integral i => Z i -> i -> i -> i
 z_mul z = lift_binary_Z z (*)
 
+-- > z_negate mod12 7 == 5
 z_negate :: Integral i => Z i -> i -> i
-z_negate _ = error "Z numbers are not signed"
+z_negate z = z_sub z 0 -- error "Z numbers are not signed"
 
 z_fromInteger :: Integral i => Z i -> Integer -> i
 z_fromInteger z i = z (fromInteger i)
