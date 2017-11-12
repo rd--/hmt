@@ -10,7 +10,6 @@ import Text.Printf {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
-import qualified Music.Theory.Pitch.Spelling as T {- hmt -}
 
 -- * Octave & pitch-class (generic)
 
@@ -192,43 +191,44 @@ pitch_compare =
     let f = pitch_to_fmidi :: Pitch -> Double
     in compare `on` f
 
+-- * Spelling
+
+-- | Function to spell a 'PitchClass'.
+type Spelling n = n -> (T.Note_T,T.Alteration_T)
+
+-- | Variant of 'Spelling' for incomplete functions.
+type Spelling_M i = i -> Maybe (T.Note_T,T.Alteration_T)
+
 -- | Given 'Spelling' function translate from 'OctPC' notation to 'Pitch'.
 --
 -- > octpc_to_pitch T.pc_spell_sharp (4,6) == Pitch T.F T.Sharp 4
-octpc_to_pitch :: Integral i => T.Spelling i -> Octave_PitchClass i -> Pitch
+octpc_to_pitch :: Integral i => Spelling i -> Octave_PitchClass i -> Pitch
 octpc_to_pitch sp (o,pc) =
     let (n,a) = sp pc
     in Pitch n a (fromIntegral o)
-
-octpc_to_pitch_ks :: Integral i => Octave_PitchClass i -> Pitch
-octpc_to_pitch_ks = octpc_to_pitch T.pc_spell_ks
 
 -- | Midi note number to 'Pitch'.
 --
 -- > let r = ["C4","E♭4","F♯4"]
 -- > in map (pitch_pp . midi_to_pitch pc_spell_ks) [60,63,66] == r
-midi_to_pitch :: Integral i => T.Spelling i -> i -> Pitch
+midi_to_pitch :: Integral i => Spelling i -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
-
--- | 'midi_to_pitch' 'T.pc_spell_ks'.
-midi_to_pitch_ks :: Integral i => i -> Pitch
-midi_to_pitch_ks = midi_to_pitch T.pc_spell_ks
 
 -- | Print fractional midi note number as ET12 pitch with cents detune in parentheses.
 --
 -- > fmidi_et12_cents_pp 66.5 == "F♯4(+50)"
-fmidi_et12_cents_pp :: Double -> String
-fmidi_et12_cents_pp =
+fmidi_et12_cents_pp :: Spelling PitchClass -> Double -> String
+fmidi_et12_cents_pp sp =
     let f (m,c) =
             let d = T.num_diff_str (round c :: Int)
                 d' = if null d then "" else "(" ++ d ++ ")"
-            in pitch_pp (midi_to_pitch T.pc_spell_ks m) ++ d'
+            in pitch_pp (midi_to_pitch sp m) ++ d'
     in f . midi_detune_normalise . fmidi_to_midi_detune
 
 -- | Fractional midi note number to 'Pitch'.
 --
 -- > fmidi_to_pitch pc_spell_ks 69.25 == Nothing
-fmidi_to_pitch :: RealFrac n => T.Spelling Int -> n -> Maybe Pitch
+fmidi_to_pitch :: RealFrac n => Spelling PitchClass -> n -> Maybe Pitch
 fmidi_to_pitch sp m =
     let m' = round m
         (Pitch n a o) = midi_to_pitch sp m'
@@ -244,11 +244,8 @@ fmidi_to_pitch sp m =
 -- > pitch_pp (fmidi_to_pitch_err pc_spell_ks 66.5) == "F𝄰4"
 -- > pitch_pp (fmidi_to_pitch_err pc_spell_ks 67.5) == "A𝄭4"
 -- > pitch_pp (fmidi_to_pitch_err pc_spell_ks 69.5) == "B𝄭4"
-fmidi_to_pitch_err :: (Show n,RealFrac n) => T.Spelling Int -> n -> Pitch
+fmidi_to_pitch_err :: (Show n,RealFrac n) => Spelling Int -> n -> Pitch
 fmidi_to_pitch_err sp m = fromMaybe (error (show ("fmidi_to_pitch",m))) (fmidi_to_pitch sp m)
-
-fmidi_to_pitch_ks :: (Show n,RealFrac n) => n -> Pitch
-fmidi_to_pitch_ks = fmidi_to_pitch_err T.pc_spell_ks
 
 -- | Composition of 'pitch_to_fmidi' and then 'fmidi_to_pitch'.
 --
@@ -256,7 +253,7 @@ fmidi_to_pitch_ks = fmidi_to_pitch_err T.pc_spell_ks
 -- > import Music.Theory.Pitch.Spelling as T
 --
 -- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
-pitch_tranpose :: (RealFrac n,Show n) => T.Spelling Int -> n -> Pitch -> Pitch
+pitch_tranpose :: (RealFrac n,Show n) => Spelling Int -> n -> Pitch -> Pitch
 pitch_tranpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch_err sp (m + n)
@@ -480,11 +477,8 @@ midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (realToFrac c / 100)
 --
 -- > let p = Pitch {note = C, alteration = QuarterToneSharp, octave = 4}
 -- > in midi_detune_to_pitch T.pc_spell_ks (midi_detune_nearest_24et (60,35)) == p
-midi_detune_to_pitch :: Real c => T.Spelling Int -> Midi_Detune' c -> Pitch
+midi_detune_to_pitch :: Real c => Spelling Int -> Midi_Detune' c -> Pitch
 midi_detune_to_pitch sp = fmidi_to_pitch_err sp . cps_to_fmidi . midi_detune_to_cps
-
-midi_detune_to_pitch_ks :: Real c => Midi_Detune' c -> Pitch
-midi_detune_to_pitch_ks = midi_detune_to_pitch T.pc_spell_ks
 
 -- | Midi note number with real-valued cents detune.
 type Midi_Detune = Midi_Detune' Double
@@ -598,9 +592,9 @@ pitch_class_pp = pitch_pp_opt (False,False)
 --
 -- > unwords (pitch_class_names_12et 0 12) == "C C♯ D E♭ E F F♯ G A♭ A B♭ B"
 -- > pitch_class_names_12et 11 2 == ["B","C"]
-pitch_class_names_12et :: Integral n => n -> n -> [String]
-pitch_class_names_12et k n =
-    let f = pitch_class_pp . midi_to_pitch_ks
+pitch_class_names_12et :: Integral n => Spelling n -> n -> n -> [String]
+pitch_class_names_12et sp k n =
+    let f = pitch_class_pp . midi_to_pitch sp
     in map f [60 + k .. 60 + k + n - 1]
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').

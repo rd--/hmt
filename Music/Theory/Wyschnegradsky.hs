@@ -8,7 +8,7 @@ import Data.Maybe {- base -}
 
 import Music.Theory.List {- hmt -}
 import Music.Theory.Pitch {- hmt -}
-import Music.Theory.Pitch.Spelling {- hmt -}
+import Music.Theory.Pitch.Spelling.Table {- hmt -}
 
 -- | In a modulo /m/ system, normalise step increments to be either -1
 -- or 1.  Non steps raise an error.

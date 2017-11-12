@@ -3,7 +3,7 @@ module Music.Theory.Pitch.Spelling.Key where
 import qualified Music.Theory.Key as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
-import qualified Music.Theory.Pitch.Spelling as T {- hmt -}
+import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 
 pcset_spell_implied_key_f :: Integral i => [i] -> Maybe (T.Spelling i)
 pcset_spell_implied_key_f x =
