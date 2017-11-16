@@ -77,11 +77,14 @@ flatten_pairs l =
 swap_all :: [a] -> [a]
 swap_all = flatten_pairs . map swap_pair . T.adj2 2
 
+numeric_spelling_tbl :: [(Char,Int)]
+numeric_spelling_tbl = zip "1234567890ETABCD" [1 .. 16]
+
 -- | Parse abbreviated 'Hold' notation, characters are hexedecimal.
 --
--- > to_abbrev "38A" == [3,8,10]
+-- > to_abbrev "380ETA" == [3,8,10,11,12,13]
 to_abbrev :: String -> [Int]
-to_abbrev = map digitToInt
+to_abbrev = map (fromMaybe (error "to_abbrev") . flip lookup numeric_spelling_tbl)
 
 -- | Given a 'Hold' notation, generate permutation cycles.
 --
@@ -174,9 +177,7 @@ closed_method' m l = concat (closed_method m l) ++ [l]
 
 -- * Methods
 
--- | Cambridgeshire Slow Course Doubles.
---
--- <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Slow_Course_Doubles>
+-- | <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Slow_Course_Doubles>
 --
 -- > length (closed_method cambridgeshire_slow_course_doubles [1..5]) == 3
 cambridgeshire_slow_course_doubles :: Method
@@ -204,9 +205,7 @@ hammersmith_bob_triples =
     let a = ("7.1.5.123.7.345.7",Just "127")
     in parse_method a
 
--- | Cambridge Surprise Major.
---
--- <https://rsw.me.uk/blueline/methods/view/Cambridge_Surprise_Major>
+-- | <https://rsw.me.uk/blueline/methods/view/Cambridge_Surprise_Major>
 --
 -- > length (closed_method cambridge_surprise_major [1..8]) == 7
 cambridge_surprise_major :: Method
@@ -214,12 +213,19 @@ cambridge_surprise_major =
     let a = ("-38-14-1258-36-14-58-16-78",Just "12")
     in parse_method a
 
--- | Smithsonian Surprise Royal.
+-- | <https://rsw.me.uk/blueline/methods/view/Smithsonian_Surprise_Royal>
 --
--- <https://rsw.me.uk/blueline/methods/view/Smithsonian_Surprise_Royal>
---
--- > length (closed_method smithsonian_surprise_royal [1..10]) == 9
+-- > let m = closed_method smithsonian_surprise_royal [1..10]
+-- > (length m,nub (map length m),sum (map length m)) == (9,[40],360)
 smithsonian_surprise_royal :: Method
 smithsonian_surprise_royal =
-    let a = ("-3A-14-5A-16-347A-18-1456-5A-16-7A",Just "12")
+    let a = ("-30-14-50-16-3470-18-1456-50-16-70",Just "12")
     in parse_method a
+
+-- | <https://rsw.me.uk/blueline/methods/view/Ecumenical_Surprise_Maximus>
+--
+-- > let m = closed_method ecumenical_surprise_maximus [1..12]
+-- > (length m,nub (map length m),sum (map length m)) == (11,[48],528)
+ecumenical_surprise_maximus :: Method
+ecumenical_surprise_maximus =
+  parse_method ("x3Tx14x5Tx16x7Tx1238x149Tx50x16x7Tx18.90.ET",Just "12")
