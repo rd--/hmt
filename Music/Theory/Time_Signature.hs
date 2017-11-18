@@ -80,6 +80,7 @@ rq_to_ts rq =
 -- > ts_divisions (3,8) == [1/2,1/2,1/2]
 -- > ts_divisions (2,2) == [2,2]
 -- > ts_divisions (1,1) == [4]
+-- > ts_divisions (7,4) == [1,1,1,1,1,1,1]
 ts_divisions :: Time_Signature -> [RQ]
 ts_divisions (i,j) =
     let k = fromIntegral i
