@@ -103,15 +103,13 @@ csec_to_mincsec csec =
         (s,cs') = cs `divMod` 100
     in (m,s,cs')
 
--- | 'MINCSEC' pretty printer, concise mode omits both minutes and centiseconds when zero.
+-- | 'MINCSEC' pretty printer, concise mode omits centiseconds when zero.
 --
--- > map (mincsec_pp_opt True . fsec_to_mincsec) [1,60.5] == ["01","01:00.50"]
+-- > map (mincsec_pp_opt True . fsec_to_mincsec) [1,60.5] == ["00:01","01:00.50"]
 mincsec_pp_opt :: Bool -> MINCSEC -> String
 mincsec_pp_opt concise (m,s,cs) =
-  if concise
-  then concat [if m == 0 then "" else printf "%02d:" m
-              ,printf "%02d" s
-              ,if cs == 0 then "" else printf ".%02d" cs]
+  if concise && cs == 0
+  then printf "%02d:%02d" m s
   else printf "%02d:%02d.%02d" m s cs
 
 -- | 'MINCSEC' pretty printer.
