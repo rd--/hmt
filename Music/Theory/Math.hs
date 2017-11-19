@@ -187,3 +187,21 @@ i_square_root n =
          GT -> babylon n
          EQ -> 0
          _ -> error "i_square_root: negative?"
+
+-- * Interval
+
+-- | (0,1) = {x | 0 < x < 1}
+in_open_interval :: Ord a => (a, a) -> a -> Bool
+in_open_interval (p,q) n = p < n && n < q
+
+-- | [0,1] = {x | 0 ≤ x ≤ 1}
+in_closed_interval :: Ord a => (a, a) -> a -> Bool
+in_closed_interval (p,q) n = p <= n && n <= q
+
+-- | (p,q] (0,1] = {x | 0 < x ≤ 1}
+in_left_half_open_interval :: Ord a => (a, a) -> a -> Bool
+in_left_half_open_interval (p,q) n = p < n && n <= q
+
+-- | [p,q) [0,1) = {x | 0 ≤ x < 1}
+in_right_half_open_interval :: Ord a => (a, a) -> a -> Bool
+in_right_half_open_interval (p,q) n = p <= n && n < q
