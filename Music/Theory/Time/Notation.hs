@@ -103,11 +103,21 @@ csec_to_mincsec csec =
         (s,cs') = cs `divMod` 100
     in (m,s,cs')
 
+-- | 'MINCSEC' pretty printer, concise mode omits centiseconds if zero.
+--
+-- > map (mincsec_pp_opt True . fsec_to_mincsec) [1,1.5] == ["00:01","00:01.50"]
+mincsec_pp_opt :: Bool -> MINCSEC -> String
+mincsec_pp_opt concise (m,s,cs) =
+  if concise && cs == 0
+  then printf "%02d:%02d" m s
+  else printf "%02d:%02d.%02d" m s cs
+
 -- | 'MINCSEC' pretty printer.
 --
--- > map (mincsec_pp . fsec_to_mincsec) [1,6+2/3,123.45] == ["00:01.00","00:06.67","02:03.45"]
+-- > let r = ["00:01.00","00:06.67","02:03.45"]
+-- > map (mincsec_pp . fsec_to_mincsec) [1,6+2/3,123.45] == r
 mincsec_pp :: MINCSEC -> String
-mincsec_pp (m,s,cs) = printf "%02d:%02d.%02d" m s cs
+mincsec_pp = mincsec_pp_opt False
 
 mincsec_binop :: Integral t => (t -> t -> t) -> MinCsec t -> MinCsec t -> MinCsec t
 mincsec_binop f p q = csec_to_mincsec (f (mincsec_to_csec p) (mincsec_to_csec q))
