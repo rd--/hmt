@@ -510,31 +510,55 @@ wseq_sort = sortBy (compare `on` (fst . fst))
 wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
 
--- | Edit durations to ensure that notes don't overlap.  If the same
--- note is played simultaneously delete shorter note.  If a note
--- extends into a later note shorten duration (apply /d_fn/ to iot).
+wseq_overlap_f :: (Eq e,Ord t,Num t) =>
+                  (e -> e -> Bool) -> (t -> t) -> ((t,t),e) -> Wseq t e -> Maybe (Wseq t e)
+wseq_overlap_f eq_fn dur_fn ((t,d),a) sq =
+  case find (eq_fn a . snd) sq of
+    Nothing -> Nothing
+    Just ((t',d'),a') ->
+      if t == t'
+      then if d <= d'
+           then Just sq -- delete LHS
+           else Just (((t,d),a) : delete ((t',d'),a') sq) -- delete RHS
+      else if t' < t + d
+           then Just (((t,dur_fn (t' - t)),a) : sq) -- truncate LHS
+           else Nothing
+
+-- | Determine if sequence has overlapping equal nodes.
+wseq_has_overlaps :: (Ord t, Num t, Eq e) => (e -> e -> Bool) -> Wseq t e -> Bool
+wseq_has_overlaps eq_fn =
+  let recur sq =
+        case sq of
+          [] -> False
+          h:sq' ->
+            case wseq_overlap_f eq_fn id h sq' of
+              Nothing -> recur sq'
+              Just _ -> True
+    in recur
+
+
+{- | Edit durations to ensure that nodes don't overlap.  If equal nodes
+     begin simultaneously delete the shorter node.  If a node
+     extends into a later node shorten the initial duration (apply /dur_fn/ to iot).
+
+> let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
+> let r = [((0,1),'a'),((1,2),'a'),((3,1),'a')]
+> wseq_has_overlaps (==) sq == True
+> wseq_remove_overlaps (==) id sq == r
+> wseq_has_overlaps (==) (wseq_remove_overlaps (==) id sq) == False
+
+-}
 wseq_remove_overlaps :: (Eq e,Ord t,Num t) =>
-                        (e -> e -> Bool) -> (t -> t) ->
-                        Wseq t e -> Wseq t e
-wseq_remove_overlaps eq_fn d_fn =
-    let go sq =
-            case sq of
-              [] -> []
-              ((t,d),a):sq' ->
-                  case find (eq_fn a . snd) sq' of
-                      Nothing -> ((t,d),a) : go sq'
-                      Just ((t',d'),a') ->
-                          if t == t'
-                          then if d <= d'
-                               then -- delete LHS
-                                   go sq'
-                               else -- delete RHS
-                                   ((t,d),a) :
-                                   go (delete ((t',d'),a') sq')
-                          else if t' < t + d
-                               then ((t,d_fn (t' - t)),a) : go sq'
-                               else ((t,d),a) : go sq'
-    in go
+                        (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e
+wseq_remove_overlaps eq_fn dur_fn =
+  let recur sq =
+        case sq of
+          [] -> []
+          h:sq' ->
+            case wseq_overlap_f eq_fn dur_fn h sq' of
+              Nothing -> h : recur sq'
+              Just sq'' -> recur sq''
+    in recur
 
 -- | Unjoin elements (assign equal time stamps to all elements).
 seq_unjoin :: [(t,[e])] -> [(t,e)]
