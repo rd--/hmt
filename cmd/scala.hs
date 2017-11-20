@@ -12,6 +12,7 @@ import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}

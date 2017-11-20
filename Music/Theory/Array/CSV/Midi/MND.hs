@@ -95,32 +95,32 @@ csv_mnd_write r_prec nm =
 type Event n = (n,n,Channel,[Param])
 
 -- | Translate from 'Tseq' form to 'Wseq' form.
-midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.On_Off (Event n)) -> T.Wseq t (Event n)
-midi_tseq_to_midi_wseq = T.tseq_on_off_to_wseq (\(n0,_,c0,_) (n1,_,c1,_) -> c0 == c1 && n0 == n1)
+midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.Begin_End (Event n)) -> T.Wseq t (Event n)
+midi_tseq_to_midi_wseq = T.tseq_begin_end_to_wseq (\(n0,_,c0,_) (n1,_,c1,_) -> c0 == c1 && n0 == n1)
 
-midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.On_Off x)
-midi_wseq_to_midi_tseq = T.wseq_on_off
+midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.Begin_End x)
+midi_wseq_to_midi_tseq = T.wseq_begin_end
 
 -- | Ignores non on/off messages.
-mnd_to_tseq :: Num n => [MND t n] -> T.Tseq t (T.On_Off (Event n))
+mnd_to_tseq :: Num n => [MND t n] -> T.Tseq t (T.Begin_End (Event n))
 mnd_to_tseq =
     let mk_node (st,msg,mnn,vel,ch,pm) =
             case msg of
-              "on" -> Just (st,T.On (mnn,vel,ch,pm))
-              "off" -> Just (st,T.Off (mnn,0,ch,pm))
+              "on" -> Just (st,T.Begin (mnn,vel,ch,pm))
+              "off" -> Just (st,T.End (mnn,0,ch,pm))
               _ -> Nothing
     in mapMaybe mk_node
 
 -- | 'Tseq' form of 'csv_mnd_read', channel information is retained, off-velocity is zero.
-csv_mnd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.On_Off (Event n)))
+csv_mnd_read_tseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Tseq t (T.Begin_End (Event n)))
 csv_mnd_read_tseq = fmap mnd_to_tseq . csv_mnd_read
 
 -- | 'Tseq' form of 'csv_mnd_write', data is .
-csv_mnd_write_tseq :: (Real t,Real n) => Int -> FilePath -> T.Tseq t (T.On_Off (Event n)) -> IO ()
+csv_mnd_write_tseq :: (Real t,Real n) => Int -> FilePath -> T.Tseq t (T.Begin_End (Event n)) -> IO ()
 csv_mnd_write_tseq r_prec nm sq =
     let f (t,e) = case e of
-                    T.On (n,v,c,p) -> (t,"on",n,v,c,p)
-                    T.Off (n,_,c,p) -> (t,"off",n,0,c,p)
+                    T.Begin (n,v,c,p) -> (t,"on",n,v,c,p)
+                    T.End (n,_,c,p) -> (t,"off",n,0,c,p)
     in csv_mnd_write r_prec nm (map f sq)
 
 -- * MNDD (simplifies cases where overlaps on the same channel are allowed).

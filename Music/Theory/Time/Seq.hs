@@ -26,7 +26,7 @@ type Dseq t a = [(t,a)]
 
 -- | Inter-offset sequence.  The duration is the interval /before/ the
 -- value.  To indicate the duration of the final value /a/ must have
--- an /nil/ (end of sequence) value.
+-- a /nil/ (end of sequence) value.
 type Iseq t a = [(t,a)]
 
 -- | Pattern sequence.  The duration is a triple of /logical/,
@@ -562,6 +562,75 @@ wseq_append p q = p ++ wseq_shift (wseq_end p) q
 wseq_concat :: Num t => [Wseq t a] -> Wseq t a
 wseq_concat = foldl1 wseq_append
 
+-- * Begin/End
+
+-- | Container to mark the /begin/ and /end/ of a value.
+data Begin_End a = Begin a | End a deriving (Eq,Show)
+
+-- | Functor instance.
+begin_end_map :: (t -> u) -> Begin_End t -> Begin_End u
+begin_end_map f x =
+    case x of
+      Begin a -> Begin (f a)
+      End a -> End (f a)
+
+-- | Structural comparison at 'Begin_End', 'On' compares less than 'Off'.
+cmp_begin_end :: Begin_End a -> Begin_End b -> Ordering
+cmp_begin_end p q =
+    case (p,q) of
+      (Begin _,End _) -> LT
+      (Begin _,Begin _) -> EQ
+      (End _,End _) -> EQ
+      (End _,Begin _) -> GT
+
+-- | Translate container types.
+either_to_begin_end :: Either a a -> Begin_End a
+either_to_begin_end p =
+    case p of
+      Left a -> Begin a
+      Right a -> End a
+
+-- | Translate container types.
+begin_end_to_either :: Begin_End a -> Either a a
+begin_end_to_either p =
+    case p of
+      Begin a -> Left a
+      End a -> Right a
+
+-- | Convert 'Wseq' to 'Tseq' transforming elements to 'On' and 'Off'
+-- parts.  When merging, /off/ elements precede /on/ elements at equal
+-- times.
+--
+-- > let {sq = [((0,5),'a'),((2,2),'b')]
+-- >     ;r = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]}
+-- > in wseq_begin_end sq == r
+--
+-- > let {sq = [((0,1),'a'),((1,1),'b'),((2,1),'c')]
+-- >     ;r = [(0,Begin 'a'),(1,End 'a')
+-- >          ,(1,Begin 'b'),(2,End 'b')
+-- >          ,(2,Begin 'c'),(3,End 'c')]}
+-- > in wseq_begin_end sq == r
+wseq_begin_end :: (Num t, Ord t) => Wseq t a -> Tseq t (Begin_End a)
+wseq_begin_end sq =
+    let f ((t,d),a) = [(t,Begin a),(t + d,End a)]
+        g l =
+            case l of
+              [] -> []
+              e:l' -> tseq_merge_by (T.ord_invert .: cmp_begin_end) e (g l')
+    in g (map f sq)
+
+-- | 'begin_end_to_either' of 'wseq_begin_end'.
+wseq_begin_end_either :: (Num t, Ord t) => Wseq t a -> Tseq t (Either a a)
+wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
+
+-- | Variant that applies /on/ and /off/ functions to nodes.
+--
+-- > let {sq = [((0,5),'a'),((2,2),'b')]
+-- >     ;r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]}
+-- > in wseq_begin_end_f Data.Char.toUpper id sq == r
+wseq_begin_end_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
+wseq_begin_end_f f g = tseq_map (either f g) . wseq_begin_end_either
+
 -- | The transition sequence of /active/ elements.
 --
 -- > let w = [((0,3),'a'),((1,2),'b'),((2,1),'c'),((3,3),'d')]
@@ -571,99 +640,30 @@ wseq_accumulate =
     let f st (t,e) =
             let g st' = (st',(t,st'))
                 h st' e' = case e' of
-                             On x -> x : st'
-                             Off x -> delete x st'
+                             Begin x -> x : st'
+                             End x -> delete x st'
             in g (foldl h st e)
-    in snd . mapAccumL f [] . tseq_group . wseq_on_off
+    in snd . mapAccumL f [] . tseq_group . wseq_begin_end
 
--- * On/Off
-
--- | Container for values that have /on/ and /off/ modes.
-data On_Off a = On a | Off a deriving (Eq,Show)
-
--- | Functor instance.
-on_off_map :: (t -> u) -> On_Off t -> On_Off u
-on_off_map f x =
-    case x of
-      On a -> On (f a)
-      Off a -> Off (f a)
-
--- | Structural comparison at 'On_Off', 'On' compares less than 'Off'.
-cmp_on_off :: On_Off a -> On_Off b -> Ordering
-cmp_on_off p q =
-    case (p,q) of
-      (On _,Off _) -> LT
-      (On _,On _) -> EQ
-      (Off _,Off _) -> EQ
-      (Off _,On _) -> GT
-
--- | Translate container types.
-either_to_on_off :: Either a a -> On_Off a
-either_to_on_off p =
-    case p of
-      Left a -> On a
-      Right a -> Off a
-
--- | Translate container types.
-on_off_to_either :: On_Off a -> Either a a
-on_off_to_either p =
-    case p of
-      On a -> Left a
-      Off a -> Right a
-
--- | Convert 'Wseq' to 'Tseq' transforming elements to 'On' and 'Off'
--- parts.  When merging, /off/ elements precede /on/ elements at equal
--- times.
---
--- > let {sq = [((0,5),'a'),((2,2),'b')]
--- >     ;r = [(0,On 'a'),(2,On 'b'),(4,Off 'b'),(5,Off 'a')]}
--- > in wseq_on_off sq == r
---
--- > let {sq = [((0,1),'a'),((1,1),'b'),((2,1),'c')]
--- >     ;r = [(0,On 'a'),(1,Off 'a')
--- >          ,(1,On 'b'),(2,Off 'b')
--- >          ,(2,On 'c'),(3,Off 'c')]}
--- > in wseq_on_off sq == r
-wseq_on_off :: (Num t, Ord t) => Wseq t a -> Tseq t (On_Off a)
-wseq_on_off sq =
-    let f ((t,d),a) = [(t,On a),(t + d,Off a)]
-        g l =
-            case l of
-              [] -> []
-              e:l' -> tseq_merge_by (T.ord_invert .: cmp_on_off) e (g l')
-    in g (map f sq)
-
--- | 'on_off_to_either' of 'wseq_on_off'.
-wseq_on_off_either :: (Num t, Ord t) => Wseq t a -> Tseq t (Either a a)
-wseq_on_off_either = tseq_map on_off_to_either . wseq_on_off
-
--- | Variant that applies /on/ and /off/ functions to nodes.
---
--- > let {sq = [((0,5),'a'),((2,2),'b')]
--- >     ;r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]}
--- > in wseq_on_off_f Data.Char.toUpper id sq == r
-wseq_on_off_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
-wseq_on_off_f f g = tseq_map (either f g) . wseq_on_off_either
-
--- | Inverse of 'wseq_on_off' given a predicate function for locating
+-- | Inverse of 'wseq_begin_end' given a predicate function for locating
 -- the /off/ node of an /on/ node.
 --
--- > let {sq = [(0,On 'a'),(2,On 'b'),(4,Off 'b'),(5,Off 'a')]
+-- > let {sq = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]
 -- >     ;r = [((0,5),'a'),((2,2),'b')]}
--- > in tseq_on_off_to_wseq (==) sq == r
-tseq_on_off_to_wseq :: Num t => (a -> a -> Bool) -> Tseq t (On_Off a) -> Wseq t a
-tseq_on_off_to_wseq cmp =
+-- > in tseq_begin_end_to_wseq (==) sq == r
+tseq_begin_end_to_wseq :: Num t => (a -> a -> Bool) -> Tseq t (Begin_End a) -> Wseq t a
+tseq_begin_end_to_wseq cmp =
     let cmp' x e =
             case e of
-              Off x' -> cmp x x'
+              End x' -> cmp x x'
               _ -> False
         f e r = case seq_find (cmp' e) r of
-                        Nothing -> error "tseq_on_off_to_wseq: no matching off?"
+                        Nothing -> error "tseq_begin_end_to_wseq: no matching off?"
                         Just (t,_) -> t
         go sq = case sq of
                   [] -> []
-                  (_,Off _) : sq' -> go sq'
-                  (t,On e) : sq' -> let t' = f e sq' in ((t,t' - t),e) : go sq'
+                  (_,End _) : sq' -> go sq'
+                  (t,Begin e) : sq' -> let t' = f e sq' in ((t,t' - t),e) : go sq'
     in go
 
 -- * Interop
