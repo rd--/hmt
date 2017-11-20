@@ -651,7 +651,7 @@ tseq_begin_end_accum =
   let f st (t,x) =
             let (b,e) = begin_end_partition x
                 st' = foldl begin_end_track st x
-            in (st',(t,(b,e,st)))
+            in (st',(t,(b,e,st \\ e)))
     in snd . mapAccumL f []
 
 tseq_accumulate :: Eq a => Tseq t [Begin_End a] -> Tseq t [a]
