@@ -574,7 +574,7 @@ begin_end_map f x =
       Begin a -> Begin (f a)
       End a -> End (f a)
 
--- | Structural comparison at 'Begin_End', 'On' compares less than 'Off'.
+-- | Structural comparison at 'Begin_End', 'Begin' compares less than 'End'.
 cmp_begin_end :: Begin_End a -> Begin_End b -> Ordering
 cmp_begin_end p q =
     case (p,q) of
@@ -611,9 +611,8 @@ begin_end_track st e =
     Begin x -> x : st
     End x -> delete x st
 
--- | Convert 'Wseq' to 'Tseq' transforming elements to 'On' and 'Off'
--- parts.  When merging, /off/ elements precede /on/ elements at equal
--- times.
+-- | Convert 'Wseq' to 'Tseq' transforming elements to 'Begin_End'.
+--   When merging, /end/ elements precede /begin/ elements at equal times.
 --
 -- > let {sq = [((0,5),'a'),((2,2),'b')]
 -- >     ;r = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]}
@@ -637,7 +636,7 @@ wseq_begin_end sq =
 wseq_begin_end_either :: (Num t, Ord t) => Wseq t a -> Tseq t (Either a a)
 wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
 
--- | Variant that applies /on/ and /off/ functions to nodes.
+-- | Variant that applies /begin/ and /end/ functions to nodes.
 --
 -- > let {sq = [((0,5),'a'),((2,2),'b')]
 -- >     ;r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]}
@@ -645,7 +644,8 @@ wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
 wseq_begin_end_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
 wseq_begin_end_f f g = tseq_map (either f g) . wseq_begin_end_either
 
--- | Result for each time-point the triple (begin-list,end-list,held-list)
+-- | Result for each time-point the triple (begin-list,end-list,hold-list).
+--   The elements of the end-list have been deleted from the hold list.
 tseq_begin_end_accum :: Eq a => Tseq t [Begin_End a] -> Tseq t ([a],[a],[a])
 tseq_begin_end_accum =
   let f st (t,x) =
@@ -669,7 +669,7 @@ wseq_accumulate :: (Eq a,Ord t,Num t) => Wseq t a -> Tseq t [a]
 wseq_accumulate = tseq_accumulate . tseq_group . wseq_begin_end
 
 -- | Inverse of 'wseq_begin_end' given a predicate function for locating
--- the /off/ node of an /on/ node.
+-- the /end/ node of a /begin/ node.
 --
 -- > let {sq = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]
 -- >     ;r = [((0,5),'a'),((2,2),'b')]}
@@ -681,7 +681,7 @@ tseq_begin_end_to_wseq cmp =
               End x' -> cmp x x'
               _ -> False
         f e r = case seq_find (cmp' e) r of
-                        Nothing -> error "tseq_begin_end_to_wseq: no matching off?"
+                        Nothing -> error "tseq_begin_end_to_wseq: no matching end?"
                         Just (t,_) -> t
         go sq = case sq of
                   [] -> []
