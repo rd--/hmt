@@ -114,8 +114,8 @@ wseq_until :: Ord t => t -> Wseq t a -> Wseq t a
 wseq_until tm = takeWhile (\((t0,_),_) -> t0 <= tm)
 
 -- | Keep only elements that are entirely contained within the indicated
--- temporal window, which is inclusive at the left & at the right
--- edge, ie. [t0,t1].  Halts processing at end of window.
+-- temporal window, which is inclusive at the left & right
+-- edges, ie. [t0,t1].  Halts processing at end of window.
 --
 -- > let r = [((5,1),'e'),((6,1),'f'),((7,1),'g'),((8,1),'h')]
 -- > in wseq_twindow (5,9) (zip (zip [1..] (repeat 1)) ['a'..]) == r
@@ -597,6 +597,20 @@ begin_end_to_either p =
       Begin a -> Left a
       End a -> Right a
 
+begin_end_partition :: [Begin_End a] -> ([a],[a])
+begin_end_partition =
+  let f e (p,q) = case e of
+                    Begin x -> (x:p,q)
+                    End x -> (p,x:q)
+  in foldr f ([],[])
+
+-- | Add or delete element from accumulated state.
+begin_end_track :: Eq a => [a] -> Begin_End a -> [a]
+begin_end_track st e =
+  case e of
+    Begin x -> x : st
+    End x -> delete x st
+
 -- | Convert 'Wseq' to 'Tseq' transforming elements to 'On' and 'Off'
 -- parts.  When merging, /off/ elements precede /on/ elements at equal
 -- times.
@@ -631,19 +645,28 @@ wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
 wseq_begin_end_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
 wseq_begin_end_f f g = tseq_map (either f g) . wseq_begin_end_either
 
+-- | Result for each time-point the triple (begin-list,end-list,held-list)
+tseq_begin_end_accum :: Eq a => Tseq t [Begin_End a] -> Tseq t ([a],[a],[a])
+tseq_begin_end_accum =
+  let f st (t,x) =
+            let (b,e) = begin_end_partition x
+                st' = st \\ e
+            in (st',(t,(b,e,st)))
+    in snd . mapAccumL f []
+
+tseq_accumulate :: Eq a => Tseq t [Begin_End a] -> Tseq t [a]
+tseq_accumulate =
+  let f st (t,e) =
+            let g st' = (st',(t,st'))
+            in g (foldl begin_end_track st e)
+    in snd . mapAccumL f []
+
 -- | The transition sequence of /active/ elements.
 --
 -- > let w = [((0,3),'a'),((1,2),'b'),((2,1),'c'),((3,3),'d')]
--- > in wseq_accumulate w == [(0,"a"),(1,"ba"),(2,"cba"),(3,"d"),(6,"")]
+-- > wseq_accumulate w == [(0,"a"),(1,"ba"),(2,"cba"),(3,"d"),(6,"")]
 wseq_accumulate :: (Eq a,Ord t,Num t) => Wseq t a -> Tseq t [a]
-wseq_accumulate =
-    let f st (t,e) =
-            let g st' = (st',(t,st'))
-                h st' e' = case e' of
-                             Begin x -> x : st'
-                             End x -> delete x st'
-            in g (foldl h st e)
-    in snd . mapAccumL f [] . tseq_group . wseq_begin_end
+wseq_accumulate = tseq_accumulate . tseq_group . wseq_begin_end
 
 -- | Inverse of 'wseq_begin_end' given a predicate function for locating
 -- the /off/ node of an /on/ node.
