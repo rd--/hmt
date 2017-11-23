@@ -3,3 +3,8 @@ push-sp:
 
 pull-sp:
 	darcs pull -a http://rd.slavepianos.org/sw/hmt
+
+clean:
+	cabal clean
+	rm -Rf dist
+	(cd cmd; make clean)
