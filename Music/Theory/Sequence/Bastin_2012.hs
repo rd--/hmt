@@ -1,6 +1,8 @@
 module Music.Theory.Sequence.Bastin_2012 where
 
 import Data.Bits {- base -}
+import Data.Char {- base -}
+import Numeric {- base -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
@@ -8,9 +10,33 @@ import qualified Music.Theory.Set.List as T
 -- | Set of elements.
 type Set = [Int]
 
+-- | Set as sequence of 'Bool', most significant bit left.
+--
+-- > set_binary [0,1,4] == [True,False,False,True,True]
+set_binary :: Set -> [Bool]
+set_binary =
+    let f n = True : replicate (n - 1) False
+    in reverse . (++ [True]) . concatMap f . differentiate
+
+-- | Show 'set_binary' of 'Set' (most significant bit at left).
+--
+-- > set_binary_pp 12 [0,1,4] == "000000010011"
+--
+-- > map (set_binary_pp 4) (family 4 [0..3]) == ["1111","0001","0011","0101"]
+set_binary_pp :: Int -> Set -> String
+set_binary_pp k =
+    let c b = if b then '1' else '0'
+    in T.pad_left '0' k . map c . set_binary
+
+-- | Show 'Word' in binary.
+word_pp :: Word -> String
+word_pp n = showIntAtBase 2 intToDigit n ""
+
 -- | Encode 'Set' as 'Word'.
 --
--- > encode_set [0,1,3] == 11
+-- > encode_set [0,1,3,7] == 139
+-- > word_pp 139 == "10001011"
+-- > set_binary_pp 8 [0,1,3,7] == word_pp 139
 encode_set :: Set -> Word
 encode_set s =
     case s of
@@ -31,9 +57,10 @@ decode_set n k = filter (testBit k) [0 .. n - 1]
 operation :: Int -> Word -> Word
 operation n k = (k `xor` shiftL k 1) .&. (2 ^ n - 1)
 
--- | Predicate to determine if /q/ is a rotation of /p/.
+-- | Predicate to determine if the set /q/ is a rotation of /p/.
 --
 -- > is_rotation [0,1,3] [1,3,0] == True
+-- > is_rotation [] [] == True
 is_rotation :: Eq a => [a] -> [a] -> Bool
 is_rotation p q =
     case p of
@@ -222,20 +249,6 @@ universe n =
 -- > differentiate [0,1,3] == [1,2]
 differentiate :: (Num a) => [a] -> [a]
 differentiate l = zipWith (-) (tail l) l
-
--- > set_binary [0,1,4] == [True,True,False,False,True]
-set_binary :: Set -> [Bool]
-set_binary =
-    let f n = True : replicate (n - 1) False
-    in (++ [True]) . concatMap f . differentiate
-
--- > set_binary_pp 12 [0,1,4] == "110010000000"
---
--- > map (set_binary_pp 4) (family 4 [0..3]) == ["1111","1000","1100","1010"]
-set_binary_pp :: Int -> Set -> String
-set_binary_pp k =
-    let c b = if b then '1' else '0'
-    in T.pad_right '0' k . map c . set_binary
 
 {-
 http://en.wikipedia.org/wiki/Linear_feedback_shift_register
