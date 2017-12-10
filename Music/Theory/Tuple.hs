@@ -111,6 +111,9 @@ p4_third (_,_,c,_) = c
 p4_fourth :: (a,b,c,d) -> d
 p4_fourth (_,_,_,d) = d
 
+p4_zip :: (a,b,c,d) -> (e,f,g,h) -> ((a,e),(b,f),(c,g),(d,h))
+p4_zip (a,b,c,d) (e,f,g,h) = ((a,e),(b,f),(c,g),(d,h))
+
 -- * T4 (4-tuple, regular)
 
 type T4 a = (a,a,a,a)
