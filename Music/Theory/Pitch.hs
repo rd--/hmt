@@ -38,6 +38,8 @@ octave_pitchclass_to_midi :: Integral i => Octave_PitchClass i -> i
 octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 -- | Inverse of 'octave_pitchclass_to_midi'.
+--
+  -- > map midi_to_octave_pitchclass [60,84,91] == [(4,0),(6,0),(6,7)]
 midi_to_octave_pitchclass :: Integral i => i -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (n - 12) `divMod` 12
 
