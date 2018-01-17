@@ -275,9 +275,10 @@ p177_gr_set =
 
 -- * IO
 
-wr_graphs :: IO ()
-wr_graphs = do
-  let f (nm,gr) = writeFile ("/home/rohan/sw/hmt/data/dot/tj_oh_" ++ nm) (unlines gr)
+-- > wr_graphs "/home/rohan/sw/hmt/data/dot/"
+wr_graphs :: FilePath -> IO ()
+wr_graphs dir = do
+  let f (nm,gr) = writeFile (dir ++ "tj_oh_" ++ nm) (unlines gr)
   f ("p012.dot",p12_euler_plane_gr)
   f ("p014.dot",p14_gr)
   f ("p031.dot",p31_gr)
