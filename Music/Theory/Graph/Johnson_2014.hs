@@ -91,6 +91,12 @@ m_get m i = fromMaybe (error "get") (M.lookup i m)
 m_doi_of :: M.Map Int [Z12] -> Int -> Int -> Int -> Bool
 m_doi_of m n p q = doi_of n (m_get m p) (m_get m q)
 
+-- * Edge
+
+-- | Add /k/ as prefix to both left and right hand sides of edge.
+e_add_id :: k -> [(t,u)] -> [((k,t),(k,u))]
+e_add_id k = map (\(lhs,rhs) -> ((k,lhs),(k,rhs)))
+
 -- * Graph
 
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
@@ -273,6 +279,61 @@ p177_gr_set =
              gr = T.g_from_edges (map (partition_ic 6) p_set)
          in T.g_to_udot [("edge:len","1.5")] gr_pp gr)]
 
+-- * P.201
+
+type SET = [Int]
+type E = (SET,SET)
+
+bd_9_3_2_12 :: [SET]
+bd_9_3_2_12 =
+    [[0,1,2],[0,1,2],[0,3,4],[0,3,4],[0,5,6],[0,5,7],[0,6,8],[0,7,8]
+    ,[1,3,5],[1,3,8],[1,4,5],[1,4,8],[1,6,7],[1,6,7]
+    ,[2,3,6],[2,3,7],[2,4,6],[2,4,7],[2,5,8],[2,5,8]
+    ,[3,5,6],[3,7,8]
+    ,[4,5,7],[4,6,8]]
+
+p201_mk_e :: [Int] -> [E]
+p201_mk_e =
+    let f n s = if n `elem` s then Just ([n],sort (n `delete` s)) else Nothing
+        g n = mapMaybe (f n) bd_9_3_2_12
+    in concatMap g
+
+p201_e :: [[E]]
+p201_e = map p201_mk_e [[0,3,4],[1,6,7],[2,5,8]]
+
+p201_o :: [T.DOT_ATTR]
+p201_o = [("graph:splines","false"),("node:shape","box"),("edge:len","1.75")]
+
+p201_gr_set :: [[String]]
+p201_gr_set = map (gen_graph_ul p201_o set_pp) p201_e
+
+p201_gr_join :: [String]
+p201_gr_join =
+    let e = zipWith e_add_id [0..] p201_e
+    in gen_graph_ul p201_o (set_pp . snd) (concat e)
+
+-- * P.205
+
+bd_9_3_2_34 :: [SET]
+bd_9_3_2_34 =
+    [[0,1,2],[0,1,3],[0,2,4],[0,3,4]
+    ,[0,5,6],[0,5,7],[0,6,8],[0,7,8]
+    ,[1,2,5],[1,3,6],[1,4,5],[1,4,8]
+    ,[1,6,7],[1,7,8],[2,3,6],[2,3,7]
+    ,[2,4,7],[2,5,8],[2,6,8],[3,4,8]
+    ,[3,5,7],[3,5,8],[4,5,6],[4,6,7]]
+
+p205_mk_e :: [Int] -> [E]
+p205_mk_e =
+    let f n s = if n `elem` s then Just ([n],sort (n `delete` s)) else Nothing
+        g n = mapMaybe (f n) bd_9_3_2_34
+    in concatMap g
+
+p205_gr :: [String]
+p205_gr =
+    let o = [("graph:splines","false"),("node:shape","box"),("edge:len","2.25")]
+    in gen_graph_ul o set_pp (p205_mk_e [0..8])
+
 -- * IO
 
 -- > wr_graphs "/home/rohan/sw/hmt/data/dot/"
@@ -289,3 +350,6 @@ wr_graphs dir = do
   f ("p162.dot",p162_gr)
   mapM_ f p172_gr_set
   mapM_ f p177_gr_set
+  mapM_ f (zip ["p201.1.dot","p201.2.dot","p201.3.dot"] p201_gr_set)
+  f ("p201.4.dot",p201_gr_join)
+  f ("p205.dot",p205_gr)
