@@ -279,6 +279,11 @@ p177_gr_set =
              gr = T.g_from_edges (map (partition_ic 6) p_set)
          in T.g_to_udot [("edge:len","1.5")] gr_pp gr)]
 
+-- * P.196
+
+p196_gr :: [String]
+p196_gr = gen_flt_graph [("edge:len","1.25")] (loc_dif_of 1) (T.combinations 3 [1..6])
+
 -- * P.201
 
 type SET = [Int]
@@ -350,6 +355,7 @@ wr_graphs dir = do
   f ("p162.dot",p162_gr)
   mapM_ f p172_gr_set
   mapM_ f p177_gr_set
+  f ("p196.dot",p196_gr)
   mapM_ f (zip ["p201.1.dot","p201.2.dot","p201.3.dot"] p201_gr_set)
   f ("p201.4.dot",p201_gr_join)
   f ("p205.dot",p205_gr)
