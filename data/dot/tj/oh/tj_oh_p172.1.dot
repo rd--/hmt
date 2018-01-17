@@ -1,6 +1,7 @@
 graph
  g {
-graph [layout=circo,epsilon=0.000001];
+edge [len=2.0];
+graph [layout=neato,epsilon=0.000001];
 node [shape=plaintext,fontsize=10,fontname="century schoolbook"];
 0 [label="3,7,9,10"];
 1 [label="0,2,6,11"];

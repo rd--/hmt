@@ -14,6 +14,9 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}
+import qualified Music.Theory.Z as T {- hmt -}
+import qualified Music.Theory.Z.Forte_1973 as T {- hmt -}
+import qualified Music.Theory.Z.TTO as T {- hmt -}
 import qualified Music.Theory.Z.SRO as T {- hmt -}
 
 -- * Common
@@ -82,6 +85,12 @@ combinations2 p = [(i,j) | i <- p, j <- p, i < j]
 set_pp :: Show t => [t] -> String
 set_pp = intercalate "," . map show
 
+tto_rel_to :: Integral t => T.Z t -> [t] -> [t] -> [T.TTO t]
+tto_rel_to z p = T.z_tto_rel 5 z p
+
+set_pp_tto_rel :: (Integral t, Show t) => T.Z t -> [t] -> [t] -> String
+set_pp_tto_rel z p = intercalate "," . map T.tto_pp . tto_rel_to z p
+
 -- * Map
 
 m_get :: Ord k => M.Map k v -> k -> v
@@ -97,6 +106,12 @@ m_doi_of m n p q = doi_of n (m_get m p) (m_get m q)
 e_add_id :: k -> [(t,u)] -> [((k,t),(k,u))]
 e_add_id k = map (\(lhs,rhs) -> ((k,lhs),(k,rhs)))
 
+gen_edges :: (t -> t -> Bool) -> [t] -> [(t,t)]
+gen_edges f l = [(p,q) | p <- l, q <- l, f p q]
+
+gen_u_edges :: Ord a => (a -> a -> Bool) -> [a] -> [(a, a)]
+gen_u_edges f = let g p q = p < q && f p q in gen_edges g
+
 -- * Graph
 
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
@@ -110,7 +125,6 @@ gen_flt_graph o f p = gen_graph_ul o set_pp (T.e_univ_select_u_edges f p)
 
 -- * P.12
 
--- | <http://localhost/rd/?t=j&e=2016-04-04.md>
 p12_euler_plane :: T.Euler_Plane Rational
 p12_euler_plane =
     let f = T.fold_ratio_to_octave_err
@@ -164,15 +178,26 @@ p31_gr = gen_graph_ul [] set_pp p31_e_set
 p114_f_3_7 :: [Z12]
 p114_f_3_7 = [0,2,5]
 
+p114_mk_o :: Show t => t -> [T.DOT_ATTR]
+p114_mk_o el = [("node:shape","box"),("edge:len",show el)]
+
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
-    let o = [("node:shape","box")
-            ,("edge:len",show el)]
-    in gen_flt_graph o flt (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
+  let n = (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
+  in gen_flt_graph (p114_mk_o el) flt n
+
+p114_f37_sc_pp :: [Int] -> String
+p114_f37_sc_pp = set_pp_tto_rel mod12 [0,2,5]
+
+p114_g0 :: [String]
+p114_g0 =
+  let mk_e flt = gen_u_edges flt (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
+  in gen_graph_ul (p114_mk_o 2.5) p114_f37_sc_pp (mk_e (doi_of 2))
 
 p114_gr_set :: [(String,[String])]
 p114_gr_set =
-  [("p114.1.dot",p114_mk_gr 2.5 (doi_of 2))
+  [("p114.0.dot",p114_g0)
+  ,("p114.1.dot",p114_mk_gr 2.5 (doi_of 2))
   ,("p114.2.dot"
    ,let o = [("edge:len","1.25")]
     in gen_flt_graph o (loc_dif_of 1) (T.combinations 3 [1::Int .. 6]))
@@ -252,12 +277,12 @@ p172_gr_set :: [(String,[String])]
 p172_gr_set =
     [("p172.0.dot"
      ,let nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
-      in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)
+      in gen_graph_ul [] p172_set_pp nd_e_set)
     ,("p172.1.dot"
      ,let nd_e_set = concatMap T.e_path_to_edges
                      [[22,11,20,9,18,7,16,5,14,3,12,1,22]
                      ,[23,2,13,8,19,10,21,4,15,6,17,0,23]]
-      in gen_graph_ul_ty "circo" p172_set_pp nd_e_set)]
+      in gen_graph_ul [("edge:len","2.0")] p172_set_pp nd_e_set)]
 
 -- * P.177
 
@@ -278,6 +303,66 @@ p177_gr_set =
         ,let gr_pp = T.gr_pp_lift_node_f set_pp
              gr = T.g_from_edges (map (partition_ic 6) p_set)
          in T.g_to_udot [("edge:len","1.5")] gr_pp gr)]
+
+-- * P.178
+
+type SC = [Int]
+type PCSET = [Int]
+
+ait :: [SC]
+ait = map T.sc ["4-Z15","4-Z29"]
+
+-- | List of pcsets /s/ where /prime(p+s)=r/ and /prime(q+s)=r/.
+-- /#p/ and /#q/ must be equal, and less than /#r/.
+--
+-- > mk_bridge (T.sc "4-Z15") [0,6] [1,7] == [[2,5],[8,11]]
+-- > mk_bridge (T.sc "4-Z29") [0,6] [1,7] == [[2,11],[5,8]]
+mk_bridge :: SC -> PCSET -> PCSET -> [PCSET]
+mk_bridge r p q =
+    let n = length r - length p
+        c = T.combinations n [0..11]
+        f s = T.forte_prime mod12 (p ++ s) == r && T.forte_prime mod12 (q ++ s) == r
+    in filter f c
+
+-- | 'concatMap' of 'mk_bridge'.
+--
+-- > mk_bridge_set ait [0,6] [1,7] == [[2,5],[8,11],[2,11],[5,8]]
+mk_bridge_set :: [SC] -> PCSET -> PCSET -> [PCSET]
+mk_bridge_set r_set p q = concatMap (\r -> mk_bridge r p q) r_set
+
+mk_bridge_set_seq :: [SC] -> [PCSET] -> [[PCSET]]
+mk_bridge_set_seq r_set k_seq =
+    case k_seq of
+      p:q:k_seq' -> mk_bridge_set r_set p q : mk_bridge_set_seq r_set (q : k_seq')
+      _ -> []
+
+-- > zip [0..] (mk_bridge_set_seq ait i6_seq)
+p178_i6_seq :: [PCSET]
+p178_i6_seq = map (sort . (\n -> T.z_pcset mod12 [n,n+6])) [0..6]
+
+p178_ch :: [(PCSET,[PCSET],PCSET)]
+p178_ch = zip3 p178_i6_seq (mk_bridge_set_seq ait p178_i6_seq) (tail p178_i6_seq)
+
+type ID = Char
+
+-- | Add 'ID' to vertices, the @2,11@ the is between @0,6@ and @1,7@
+-- is /not/ the same @2,11@ that is between @3,9@ and @4,10@.
+p178_e :: [((ID,PCSET),(ID,PCSET))]
+p178_e =
+    let f k (p,c,q) = map (\x -> (('.',p),(k,x))) c ++ map (\x -> ((k,x),('.',q))) c
+    in concat (zipWith f ['a'..] p178_ch)
+
+p178_gr_1 :: [String]
+p178_gr_1 =
+    let opt = [("node:shape","rectangle")
+              ,("node:start","1362874")
+              ,("edge:len","2")]
+    in gen_graph_ul opt (set_pp . snd) p178_e
+
+p178_gr_2 :: [String]
+p178_gr_2 =
+    let opt = [("node:shape","point")]
+    in gen_graph_ul opt (const "") p178_e
 
 -- * P.196
 
@@ -341,7 +426,7 @@ p205_gr =
 
 -- * IO
 
--- > wr_graphs "/home/rohan/sw/hmt/data/dot/"
+-- > wr_graphs "/home/rohan/sw/hmt/data/dot/tj/oh/"
 wr_graphs :: FilePath -> IO ()
 wr_graphs dir = do
   let f (nm,gr) = writeFile (dir ++ "tj_oh_" ++ nm) (unlines gr)
@@ -355,6 +440,8 @@ wr_graphs dir = do
   f ("p162.dot",p162_gr)
   mapM_ f p172_gr_set
   mapM_ f p177_gr_set
+  f ("p178.1.dot",p178_gr_1)
+  f ("p178.2.dot",p178_gr_2)
   f ("p196.dot",p196_gr)
   mapM_ f (zip ["p201.1.dot","p201.2.dot","p201.3.dot"] p201_gr_set)
   f ("p201.4.dot",p201_gr_join)
