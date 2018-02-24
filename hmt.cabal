@@ -39,7 +39,8 @@ Library
                    random,
                    safe,
                    split,
-                   text
+                   text,
+                   time
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Array
                    Music.Theory.Array.Cell_Ref

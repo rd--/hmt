@@ -62,6 +62,7 @@ tn_cents_octave t = tn_cents t ++ [ratio_to_cents (tn_octave_ratio t)]
 -- | Convert from interval in cents to frequency ratio.
 --
 -- > map cents_to_ratio [0,701.9550008653874,1200] == [1,3/2,2]
+-- > map cents_to_ratio [-1800,1800] -- three octaves about zero
 cents_to_ratio :: Floating a => a -> a
 cents_to_ratio n = 2 ** (n / 1200)
 
@@ -149,7 +150,7 @@ ratio_to_cents = approximate_ratio_to_cents . realToFrac
 -- | Construct an exact 'Rational' that approximates 'Cents' to within
 -- /epsilon/.
 --
--- > map (reconstructed_ratio 1e-5) [0,700,1200] == [1,442/295,2]
+-- > map (reconstructed_ratio 1e-5) [0,700,1200,1800] == [1,442/295,2,577/204]
 --
 -- > ratio_to_cents (442/295) == 699.9976981706735
 reconstructed_ratio :: Double -> Cents -> Rational
@@ -287,7 +288,7 @@ fold_ratio_to_octave' =
 
 -- | Error if input is less than or equal to zero.
 --
--- > map fold_ratio_to_octave_err [2/3,3/4] == [4/3,3/2]
+-- > map fold_ratio_to_octave_err [2/3,3/4,4/5,4/7] == [4/3,3/2,8/5,8/7]
 fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
 fold_ratio_to_octave_err n =
     if n <= 0

@@ -5,7 +5,6 @@
 -- <http://www.cccbr.org.uk/bibliography/>
 module Music.Theory.Permutations.Morris_1984 where
 
-import Data.Char {- base -}
 import Data.List {- base -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
