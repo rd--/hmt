@@ -1,6 +1,9 @@
 -- | "Data.Function" related functions.
 module Music.Theory.Function where
 
+type UOp t = t -> t
+type BinOp t = t -> t -> t
+
 -- | 'const' of 'const'.
 --
 -- > const2 5 undefined undefined == 5

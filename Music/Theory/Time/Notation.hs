@@ -6,6 +6,8 @@ import Text.Printf {- base -}
 
 -- * TYPES
 
+type BinOp t = t -> t -> t
+
 type WEEK = Int -- (1-52)
 type DAY = Int
 type HOUR = Int -- (0-23)
@@ -16,7 +18,7 @@ type CSEC = Int -- (0-99)
 -- | Fractional days.
 type FDAY = Double
 
--- | Fractional hour.
+-- | Fractional hour (1.50 is one and a half hours).
 type FHOUR = Double
 
 -- | Fractional seconds.
@@ -27,6 +29,9 @@ type MinSec n = (n,n)
 
 -- | Type specialised.
 type MINSEC = (MIN,SEC)
+
+-- | Fractional minutes and seconds (mm.ss, ie. 01.45 is 1 minute and 45 seconds).
+type FMINSEC = Double
 
 -- | Minutes, seconds, centi-seconds as @(min,sec,csec)@
 type MinCsec n = (n,n,n)
@@ -106,6 +111,53 @@ fsec_to_picoseconds s = floor (s * (10 ** 12))
 
 fsec_to_difftime :: FSEC -> T.DiffTime
 fsec_to_difftime = T.picosecondsToDiffTime . fsec_to_picoseconds
+
+-- * FMINSEC
+
+-- > map fminsec_to_fsec [0.45,15.355] == [45,935.5]
+fminsec_to_fsec :: FMINSEC -> FSEC
+fminsec_to_fsec n =
+    let m = ffloor n
+        s = (n - m) * 100
+    in (m * 60) + s
+
+fminsec_to_sec_generic :: (RealFrac f,Integral i) => f -> i
+fminsec_to_sec_generic n =
+    let m = floor n
+        s = round ((n - fromIntegral m) * 100)
+    in (m * 60) + s
+
+-- | Fractional minutes are mm.ss, so that 15.35 is 15 minutes and 35 seconds.
+--
+-- > map fminsec_to_sec [0.45,15.35] == [45,935]
+fminsec_to_sec :: FMINSEC -> SEC
+fminsec_to_sec = fminsec_to_sec_generic
+
+-- > fsec_to_fminsec 935.5 == 15.355
+fsec_to_fminsec :: FSEC -> FMINSEC
+fsec_to_fminsec n =
+    let m = ffloor (n / 60)
+        s = n - (m * 60)
+    in m + (s / 100)
+
+-- > sec_to_fminsec 935 == 15.35
+sec_to_fminsec :: SEC -> FMINSEC
+sec_to_fminsec n =
+    let m = ffloor (fromIntegral n / 60)
+        s = fromIntegral n - (m * 60)
+    in m + (s / 100)
+
+-- > fminsec_add 1.30 0.45 == 2.15
+-- > fminsec_add 1.30 0.45 == 2.15
+fminsec_add :: BinOp FMINSEC
+fminsec_add p q = fsec_to_fminsec (fminsec_to_fsec p + fminsec_to_fsec q)
+
+fminsec_sub :: BinOp FMINSEC
+fminsec_sub p q = fsec_to_fminsec (fminsec_to_fsec p - fminsec_to_fsec q)
+
+-- > fminsec_mul 0.45 2 == 1.30
+fminsec_mul :: BinOp FMINSEC
+fminsec_mul t n = fsec_to_fminsec (fminsec_to_fsec t * n)
 
 -- * FHOUR
 
