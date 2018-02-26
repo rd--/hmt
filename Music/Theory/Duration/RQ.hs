@@ -12,7 +12,7 @@ import Music.Theory.Duration {- hmt -}
 type RQ = Rational
 
 -- > rq_duration_tbl 2
-rq_duration_tbl :: Integer -> [(Rational,Duration)]
+rq_duration_tbl :: Dots -> [(Rational,Duration)]
 rq_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
 
 -- | Rational quarter note to duration value.  It is a mistake to hope
@@ -38,7 +38,7 @@ rq_to_duration_err msg n =
 -- | Convert a whole note division integer to an 'RQ' value.
 --
 -- > map whole_note_division_to_rq [1,2,4,8] == [4,2,1,1/2]
-whole_note_division_to_rq :: Integer -> RQ
+whole_note_division_to_rq :: Division -> RQ
 whole_note_division_to_rq x =
     let f = (* 4) . recip . (%1)
     in case x of
@@ -48,8 +48,8 @@ whole_note_division_to_rq x =
 
 -- | Apply dots to an 'RQ' duration.
 --
--- > map (rq_apply_dots 1) [1,2] == [3/2,7/4]
-rq_apply_dots :: RQ -> Integer -> RQ
+-- > map (rq_apply_dots 1) [1,2] == [1 + 1/2,1 + 1/2 + 1/4]
+rq_apply_dots :: RQ -> Dots -> RQ
 rq_apply_dots n d =
     let m = iterate (/ 2) n
     in sum (genericTake (d + 1) m)

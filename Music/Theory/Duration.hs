@@ -9,9 +9,12 @@ import Data.Ratio {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Ord as T {- hmt -}
 
+type Division = Integer
+type Dots = Int
+
 -- | Common music notation durational model
-data Duration = Duration {division :: Integer -- ^ division of whole note
-                         ,dots :: Integer -- ^ number of dots
+data Duration = Duration {division :: Division -- ^ division of whole note
+                         ,dots :: Int -- ^ number of dots
                          ,multiplier :: Rational -- ^ tuplet modifier
                          }
                 deriving (Eq,Show)
@@ -52,7 +55,7 @@ no_dots :: (Duration, Duration) -> Bool
 no_dots (x0,x1) = dots x0 == 0 && dots x1 == 0
 
 -- | Sum undotted divisions, input is required to be sorted.
-sum_dur_undotted :: (Integer, Integer) -> Maybe Duration
+sum_dur_undotted :: (Division, Division) -> Maybe Duration
 sum_dur_undotted (x0, x1)
     | x0 == x1 = Just (Duration (x0 `div` 2) 0 1)
     | x0 == x1 * 2 = Just (Duration x1 1 1)
@@ -64,7 +67,7 @@ sum_dur_undotted (x0, x1)
 -- > sum_dur_dotted (4,0,2,1) == Just (Duration 1 0 1)
 -- > sum_dur_dotted (8,1,4,0) == Just (Duration 4 2 1)
 -- > sum_dur_dotted (16,0,4,2) == Just (Duration 2 0 1)
-sum_dur_dotted :: (Integer,Integer,Integer,Integer) -> Maybe Duration
+sum_dur_dotted :: (Division,Dots,Division,Dots) -> Maybe Duration
 sum_dur_dotted (x0, n0, x1, n1)
     | x0 == x1 &&
       n0 == 1 &&
@@ -103,27 +106,27 @@ sum_dur_err y0 y1 =
     in fromMaybe err y2
 
 -- | Standard divisions (from 0 to 256).  MusicXML allows @-1@ as a division (for @long@).
-divisions_set :: [Integer]
+divisions_set :: [Division]
 divisions_set = [0,1,2,4,8,16,32,64,128,256]
 
 -- | Durations set derived from 'divisions_set' with up to /k/ dots.  Multiplier of @1@.
-duration_set :: Integer -> [Duration]
+duration_set :: Dots -> [Duration]
 duration_set k = [Duration dv dt 1 | dv <- divisions_set, dt <- [0..k]]
 
 -- | Table of number of beams at notated division.
-beam_count_tbl :: [(Integer,Integer)]
+beam_count_tbl :: [(Division,Int)]
 beam_count_tbl = zip (-1 : divisions_set) [0,0,0,0,0,1,2,3,4,5,6]
 
 -- | Lookup 'beam_count_tbl'.
 --
 -- > whole_note_division_to_beam_count 32 == Just 3
-whole_note_division_to_beam_count :: Integer -> Maybe Integer
+whole_note_division_to_beam_count :: Division -> Maybe Int
 whole_note_division_to_beam_count x = lookup x beam_count_tbl
 
 -- | Calculate number of beams at 'Duration'.
 --
 -- > map duration_beam_count [Duration 2 0 1,Duration 16 0 1] == [0,2]
-duration_beam_count :: Duration -> Integer
+duration_beam_count :: Duration -> Int
 duration_beam_count (Duration x _ _) =
     let err = error "duration_beam_count"
         bc = whole_note_division_to_beam_count x
@@ -132,7 +135,7 @@ duration_beam_count (Duration x _ _) =
 -- * MusicXML
 
 -- | Table giving @MusicXML@ types for divisions.
-division_musicxml_tbl :: [(Integer,String)]
+division_musicxml_tbl :: [(Division,String)]
 division_musicxml_tbl =
     let nm = ["long","breve","whole","half","quarter","eighth"
              ,"16th","32nd","64th","128th","256th"]
@@ -141,7 +144,7 @@ division_musicxml_tbl =
 -- | Lookup 'division_musicxml_tbl'.
 --
 -- > map whole_note_division_to_musicxml_type [2,4] == ["half","quarter"]
-whole_note_division_to_musicxml_type :: Integer -> String
+whole_note_division_to_musicxml_type :: Division -> String
 whole_note_division_to_musicxml_type x =
     T.lookup_err_msg "division_musicxml_tbl" x division_musicxml_tbl
 
@@ -161,7 +164,7 @@ division_unicode_tbl = zip [0,1,2,4,8,16,32,64,128,256] "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮�
 -- | Lookup 'division_unicode_tbl'.
 --
 -- > map whole_note_division_to_unicode_symbol [1,2,4,8] == "𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮"
-whole_note_division_to_unicode_symbol :: Integer -> Char
+whole_note_division_to_unicode_symbol :: Division -> Char
 whole_note_division_to_unicode_symbol x =
     T.lookup_err_msg "division_unicode_tbl" x division_unicode_tbl
 
@@ -207,7 +210,7 @@ duration_recip_pp (Duration x d m) =
 
 -- * Letter
 
-whole_note_division_letter_pp :: Integer -> Maybe Char
+whole_note_division_letter_pp :: Division -> Maybe Char
 whole_note_division_letter_pp x =
     let t = [(16,'s'),(8,'e'),(4,'q'),(2,'h'),(1,'w')]
     in lookup x t
