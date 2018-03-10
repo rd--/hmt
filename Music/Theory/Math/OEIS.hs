@@ -14,6 +14,12 @@ a000290 = let square n = n * n in map square [0..]
 a002267 :: Num n => [n]
 a002267 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 41, 47, 59, 71]
 
+-- | <http://oeis.org/A080992>
+--
+-- Entries in Durer's magic square.
+a080992 :: Num n => [n]
+a080992 = [16, 3, 2, 13, 5, 10, 11, 8, 9, 6, 7, 12, 4, 15, 14, 1]
+
 -- | <http://oeis.org/A126709>
 --
 -- Loh-Shu magic square, attributed to the legendary Fu Xi (Fuh-Hi).
