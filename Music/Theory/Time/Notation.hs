@@ -4,9 +4,9 @@ import Data.List.Split {- split -}
 import qualified Data.Time as T {- time -}
 import Text.Printf {- base -}
 
--- * TYPES
+import Music.Theory.Function {- hmt -}
 
-type BinOp t = t -> t -> t
+-- * TYPES
 
 type WEEK = Int -- (1-52)
 type DAY = Int
