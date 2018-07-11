@@ -1,7 +1,10 @@
--- | Parser for the Scala scale file format.  See
--- <http://www.huygens-fokker.org/scala/scl_format.html> for details.
--- This module succesfully parses all 4671 scales in v.85 of the scale
--- library.
+{- | Parser for the Scala scale file format.
+
+See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
+
+This module succesfully parses all 4671 scales in v.85 of the scale library.
+
+-}
 module Music.Theory.Tuning.Scala where
 
 import Control.Monad {- base -}
@@ -306,14 +309,16 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 
 > import Data.List
 
-> let r = ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
->         ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
->         ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
-> in filter (isInfixOf "Xenakis") (map scale_description db) == r
+> filter (isInfixOf "Xenakis") (map scale_description db)
 
-> let r = ["LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.of Mersenne lute 1"
->         ,"LaMonte Young's Well-Tuned Piano"]
-> in filter (isInfixOf "LaMonte Young") (map scale_description db) == r
+> > ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
+> > ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
+> > ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
+
+> filter (isInfixOf "LaMonte Young") (map scale_description db)
+
+> > ["LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.of Mersenne lute 1"
+> > ,"LaMonte Young's Well-Tuned Piano"]
 
 > length (filter (not . perfect_octave) db) == 663
 
@@ -333,6 +338,7 @@ scl_load_db = do
 
 -- * PP
 
+-- | Simple plain-text display of scale data.
 scale_stat :: (Integral i,Show i) => Scale i -> [String]
 scale_stat s =
     let ty = uniform_pitch_type (scale_pitches s)

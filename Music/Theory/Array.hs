@@ -15,12 +15,33 @@ larray a = A.array (larray_bounds a) a
 
 -- * List Table
 
+-- | Plain list representation of a two-dimensional table of /a/ in
+-- row-order.  Tables are regular, ie. all rows have equal numbers of
+-- columns.
+type Table a = [[a]]
+
+tbl_rows :: Table t -> Int
+tbl_rows = length
+
+tbl_columns :: Table t -> Int
+tbl_columns tbl =
+  case tbl of
+    [] -> 0
+    r0:_ -> length r0
+
+-- > tbl_is_regular [[0..3],[4..7],[8..11]]
+tbl_is_regular :: Table t -> Bool
+tbl_is_regular = (== 1) . length . nub . map length
+
+tbl_make_regular :: (t -> u,u) -> Table t -> Table u
+tbl_make_regular (f,k) tbl =
+    let z = maximum (map length tbl)
+    in map (T.pad_right k z) (map (map f) tbl)
+
 -- | Append a sequence of /nil/ (or default) values to each row of /tbl/
 -- so to make it regular (ie. all rows of equal length).
-make_regular :: t -> [[t]] -> [[t]]
-make_regular k tbl =
-    let z = maximum (map length tbl)
-    in map (T.pad_right k z) tbl
+tbl_make_regular_nil :: t -> Table t -> Table t
+tbl_make_regular_nil k = tbl_make_regular (id,k)
 
 -- * Matrix Indices
 

@@ -6,7 +6,8 @@ import Data.List {- base -}
 
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 
-import qualified Music.Theory.Array.Cell_Ref as T {- hmt -}
+import qualified Music.Theory.Array as T {- hmt -}
+import qualified Music.Theory.Array.Cell_Ref as R {- hmt -}
 import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
@@ -34,13 +35,8 @@ type CSV_Opt = (CSV_Has_Header,CSV_Delimiter,CSV_Allow_Linebreaks,CSV_Align_Colu
 def_csv_opt :: CSV_Opt
 def_csv_opt = (False,',',False,CSV_No_Align)
 
--- | Plain list representation of a two-dimensional table of /a/ in
--- row-order.  Tables are regular, ie. all rows have equal numbers of
--- columns.
-type Table a = [[a]]
-
 -- | CSV table, ie. a 'Table' with 'Maybe' a header.
-type CSV_Table a = (Maybe [String],Table a)
+type CSV_Table a = (Maybe [String],T.Table a)
 
 -- | Read 'CSV_Table' from @CSV@ file.
 csv_table_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (CSV_Table a)
@@ -51,8 +47,8 @@ csv_table_read (hdr,delim,brk,_) f fn = do
       (h,d) = if hdr then (Just (head p),tail p) else (Nothing,p)
   return (h,map (map f) d)
 
--- | Read 'Table' only with 'def_csv_opt'.
-csv_table_read_def :: (String -> a) -> FilePath -> IO (Table a)
+-- | Read 'T.Table' only with 'def_csv_opt'.
+csv_table_read_def :: (String -> a) -> FilePath -> IO (T.Table a)
 csv_table_read_def f = fmap snd . csv_table_read def_csv_opt f
 
 -- | Read and process @CSV@ 'CSV_Table'.
@@ -62,7 +58,7 @@ csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
 -- | Align table according to 'CSV_Align_Columns'.
 --
 -- > csv_table_align CSV_No_Align [["a","row","and"],["then","another","one"]]
-csv_table_align :: CSV_Align_Columns -> Table String -> Table String
+csv_table_align :: CSV_Align_Columns -> T.Table String -> T.Table String
 csv_table_align align tbl =
     let c = transpose tbl
         n = map (maximum . map length) c
@@ -85,43 +81,43 @@ csv_table_write :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
 csv_table_write f opt fn csv = T.write_file_utf8 fn (csv_table_pp f opt csv)
 
 -- | Write 'Table' only (no header) with 'def_csv_opt'.
-csv_table_write_def :: (a -> String) -> FilePath -> Table a -> IO ()
+csv_table_write_def :: (a -> String) -> FilePath -> T.Table a -> IO ()
 csv_table_write_def f fn tbl = csv_table_write f def_csv_opt fn (Nothing,tbl)
 
 -- | @0@-indexed (row,column) cell lookup.
-table_lookup :: Table a -> (Int,Int) -> a
+table_lookup :: T.Table a -> (Int,Int) -> a
 table_lookup t (r,c) = (t !! r) !! c
 
 -- | Row data.
-table_row :: Table a -> T.Row_Ref -> [a]
-table_row t r = t !! T.row_index r
+table_row :: T.Table a -> R.Row_Ref -> [a]
+table_row t r = t !! R.row_index r
 
 -- | Column data.
-table_column :: Table a -> T.Column_Ref -> [a]
-table_column t c = transpose t !! T.column_index c
+table_column :: T.Table a -> R.Column_Ref -> [a]
+table_column t c = transpose t !! R.column_index c
 
 -- | Lookup value across columns.
-table_column_lookup :: Eq a => Table a -> (T.Column_Ref,T.Column_Ref) -> a -> Maybe a
+table_column_lookup :: Eq a => T.Table a -> (R.Column_Ref,R.Column_Ref) -> a -> Maybe a
 table_column_lookup t (c1,c2) e =
     let a = zip (table_column t c1) (table_column t c2)
     in lookup e a
 
 -- | Table cell lookup.
-table_cell :: Table a -> T.Cell_Ref -> a
+table_cell :: T.Table a -> R.Cell_Ref -> a
 table_cell t (c,r) =
-    let (r',c') = (T.row_index r,T.column_index c)
+    let (r',c') = (R.row_index r,R.column_index c)
     in table_lookup t (r',c')
 
 -- | @0@-indexed (row,column) cell lookup over column range.
-table_lookup_row_segment :: Table a -> (Int,(Int,Int)) -> [a]
+table_lookup_row_segment :: T.Table a -> (Int,(Int,Int)) -> [a]
 table_lookup_row_segment t (r,(c0,c1)) =
     let r' = t !! r
     in take (c1 - c0 + 1) (drop c0 r')
 
 -- | Range of cells from row.
-table_row_segment :: Table a -> (T.Row_Ref,T.Column_Range) -> [a]
+table_row_segment :: T.Table a -> (R.Row_Ref,R.Column_Range) -> [a]
 table_row_segment t (r,c) =
-    let (r',c') = (T.row_index r,T.column_indices c)
+    let (r',c') = (R.row_index r,R.column_indices c)
     in table_lookup_row_segment t (r',c')
 
 -- * Array
@@ -135,16 +131,16 @@ table_row_segment t (r,c) =
 -- > > (((A,1),(C,2))
 -- > > ,[(A,1),(A,2),(B,1),(B,2),(C,1),(C,2)]
 -- > > ,[0,2,1,4,3,5])
-table_to_array :: Table a -> A.Array T.Cell_Ref a
+table_to_array :: T.Table a -> A.Array R.Cell_Ref a
 table_to_array t =
     let nr = length t
         nc = length (t !! 0)
-        bnd = (T.cell_ref_minima,(toEnum (nc - 1),nr))
-        asc = zip (T.cell_range_row_order bnd) (concat t)
+        bnd = (R.cell_ref_minima,(toEnum (nc - 1),nr))
+        asc = zip (R.cell_range_row_order bnd) (concat t)
     in A.array bnd asc
 
 -- | 'table_to_array' of 'csv_table_read'.
-csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (A.Array T.Cell_Ref a)
+csv_array_read :: CSV_Opt -> (String -> a) -> FilePath -> IO (A.Array R.Cell_Ref a)
 csv_array_read opt f fn = fmap (table_to_array . snd) (csv_table_read opt f fn)
 
 -- * Irregular
@@ -174,6 +170,14 @@ csv_load_irregular :: (String -> a) -> FilePath -> IO [[a]]
 csv_load_irregular f fn = do
   s <- T.read_file_utf8 fn
   return (map (map (f . csv_field_str) . csv_row_recover) (C.parseCSV s))
+
+csv_write_irregular :: (a -> String) -> CSV_Opt -> FilePath -> CSV_Table a -> IO ()
+csv_write_irregular f opt fn (hdr,tbl) =
+  let tbl' = T.tbl_make_regular_nil "" (map (map f) tbl)
+  in T.write_file_utf8 fn (csv_table_pp id opt (hdr,tbl'))
+
+csv_write_irregular_def :: (a -> String) -> FilePath -> T.Table a -> IO ()
+csv_write_irregular_def f fn tbl = csv_write_irregular f def_csv_opt fn (Nothing,tbl)
 
 -- * Tuples
 

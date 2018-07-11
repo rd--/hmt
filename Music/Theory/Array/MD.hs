@@ -31,7 +31,7 @@ md_number_rows (hdr,tbl) =
 -- > putStrLn$unlines$"": md_table_opt (True,True," · ") (Nothing,tbl)
 md_table_opt :: (Bool,Bool,String) -> MD_Table String -> [String]
 md_table_opt (pad_left,eq_width,col_sep) (hdr,t) =
-    let c = transpose (T.make_regular "" (maybe t (:t) hdr))
+    let c = transpose (T.tbl_make_regular_nil "" (maybe t (:t) hdr))
         nc = length c
         n = let k = map (maximum . map length) c
             in if eq_width then replicate nc (maximum k) else k
