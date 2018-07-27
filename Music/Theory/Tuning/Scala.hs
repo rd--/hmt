@@ -182,13 +182,6 @@ tuning_to_scale (nm,dsc) (T.Tuning p o) =
 > let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
 > scale_name py' == "pyth_12"
 
-> let r = [15/14,28/25,6/5,32/25,75/56,7/5,3/2,8/5,12/7,7/4,28/15,2/1]
-> find (scale_eq ("","",length r,map Right r)) db
-> filter (scale_eqn 10 ("","",length r,map Right r)) db
-> filter (scale_sub ("","",length r,map Right r)) (filter ((<= 24) . scale_degree) db)
-> let c = map T.ratio_to_cents r
-> filter (scale_eqv 25.0 ("","",length c,map Left c)) db
-
 -}
 scale_eq :: Eq n => Scale n -> Scale n -> Bool
 scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
