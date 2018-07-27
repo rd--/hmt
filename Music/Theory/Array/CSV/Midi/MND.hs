@@ -129,6 +129,10 @@ csv_mnd_write_tseq r_prec nm sq =
 csv_mndd_hdr :: [String]
 csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 
+-- | Midi note/duration data.
+-- The type parameters are to allow for fractional note & velocity values.
+-- The command is a string, @on@ and @off@ are standard, other commands may be present.
+--
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
 type MNDD t n = (t,t,String,n,n,Channel,[Param])
 
