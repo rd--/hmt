@@ -49,7 +49,7 @@ real_round_int = real_round
 -- | Is /r/ zero to /k/ decimal places.
 --
 -- > map (flip zero_to_precision 0.00009) [4,5] == [True,False]
--- > zero_to_precision 4 1.00009 == False
+-- > map (zero_to_precision 4) [0.00009,1.00009] == [True,False]
 zero_to_precision :: Real r => Int -> r -> Bool
 zero_to_precision k r = real_floor_int (r * (fromIntegral ((10::Int) ^ k))) == 0
 

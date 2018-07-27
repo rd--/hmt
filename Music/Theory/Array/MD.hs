@@ -8,7 +8,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 
 -- | Optional header row then data rows.
-type MD_Table t = (Maybe [String],[[t]])
+type MD_Table t = (Maybe [String],T.Table t)
 
 -- | Join second table to right of initial table.
 md_table_join :: MD_Table a -> MD_Table a -> MD_Table a
@@ -50,19 +50,19 @@ md_table' :: MD_Table String -> [String]
 md_table' = md_table_opt (True,False," ")
 
 -- | 'curry' of 'md_table''.
-md_table :: Maybe [String] -> [[String]] -> [String]
+md_table :: Maybe [String] -> T.Table String -> [String]
 md_table = curry md_table'
 
 -- | Variant relying on 'Show' instances.
 --
 -- > md_table_show Nothing [[1..4],[5..8],[9..12]]
-md_table_show :: Show t => Maybe [String] -> [[t]] -> [String]
+md_table_show :: Show t => Maybe [String] -> T.Table t -> [String]
 md_table_show hdr = md_table hdr . map (map show)
 
 -- | Variant in column order (ie. 'transpose').
 --
 -- > md_table_column_order [["a","bc","def"],["ghij","klm","no"]]
-md_table_column_order :: Maybe [String] -> [[String]] -> [String]
+md_table_column_order :: Maybe [String] -> T.Table String -> [String]
 md_table_column_order hdr = md_table hdr . transpose
 
 -- | Two-tuple 'show' variant.
@@ -88,11 +88,11 @@ c 3 4 1 2
 - - - - -
 
 -}
-md_matrix :: a -> ([a],[a]) -> [[a]] -> MD_Table a
+md_matrix :: a -> ([a],[a]) -> T.Table a -> MD_Table a
 md_matrix nil (r,c) t = md_table_join (Nothing,[nil] : map return r) (Nothing,c : t)
 
 -- | Variant that takes a 'show' function and a /header decoration/ function.
-md_matrix_opt :: (a -> String) -> (String -> String) -> ([a],[a]) -> [[a]] -> MD_Table String
+md_matrix_opt :: (a -> String) -> (String -> String) -> ([a],[a]) -> T.Table a -> MD_Table String
 md_matrix_opt show_f hd_f nm t =
     let t' = map (map show_f) t
         nm' = T.bimap1 (map (hd_f . show_f)) nm
@@ -104,5 +104,5 @@ md_embolden x = "__" ++ x ++ "__"
 
 -- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
 -- the header cells are in bold.
-md_matrix_bold :: Show a => ([a],[a]) -> [[a]] -> MD_Table String
+md_matrix_bold :: Show a => ([a],[a]) -> T.Table a -> MD_Table String
 md_matrix_bold = md_matrix_opt show md_embolden

@@ -175,21 +175,37 @@ tuning_to_scale (nm,dsc) (T.Tuning p o) =
 
 > db <- scl_load_db
 > let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
-> let Just py = find (scale_eq ("","",12,map Right r)) db
+> let Just py = find (scale_eq ("","",length r,map Right r)) db
 > scale_name py == "pyth_12"
 
 > let c = map T.ratio_to_cents r
-> let Just py' = find (scale_eqv ("","",12,map Left c)) db
+> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
 > scale_name py' == "pyth_12"
+
+> let r = [15/14,28/25,6/5,32/25,75/56,7/5,3/2,8/5,12/7,7/4,28/15,2/1]
+> find (scale_eq ("","",length r,map Right r)) db
+> filter (scale_eqn 10 ("","",length r,map Right r)) db
+> filter (scale_sub ("","",length r,map Right r)) (filter ((<= 24) . scale_degree) db)
+> let c = map T.ratio_to_cents r
+> filter (scale_eqv 25.0 ("","",length c,map Left c)) db
+
 -}
 scale_eq :: Eq n => Scale n -> Scale n -> Bool
 scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
 
--- | Are scales equal ('==') at degree and tuning data after 'pitch_cents'.
-scale_eqv :: Integral n => Scale n -> Scale n -> Bool
-scale_eqv (_,_,d0,p0) (_,_,d1,p1) =
-    let f = map pitch_cents
-    in d0 == d1 && f p0 == f p1
+-- | Are scales equal at degree and 'intersect' to at least /k/ places of tuning data.
+scale_eqn :: Eq n => Int -> Scale n -> Scale n -> Bool
+scale_eqn k (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && length (intersect p0 p1) >= k
+
+scale_sub :: Eq n => Scale n -> Scale n -> Bool
+scale_sub (_,_,d0,p0) (_,_,d1,p1) = d0 < d1 && intersect p0 p1 == p0
+
+-- | Are scales equal at degree and equivalent to within /epsilon/ at
+-- tuning data after 'pitch_cents'.
+scale_eqv :: Integral n => Epsilon -> Scale n -> Scale n -> Bool
+scale_eqv epsilon (_,_,d0,p0) (_,_,d1,p1) =
+    let (~=) p q = abs (pitch_cents p - pitch_cents q) < epsilon
+    in d0 == d1 && all id (zipWith (~=) p0 p1)
 
 -- * Parser
 
@@ -286,43 +302,7 @@ scl_load nm = do
 scl_load_tuning :: Epsilon -> String -> IO T.Tuning
 scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 
-{- | Load all @.scl@ files at /dir/.
-
-> dir <- scl_get_dir
-> dir == ["/home/rohan/data/scala/85/scl","/home/rohan/sw/hmt/data/scl"]
-> let [scl_85_dir,ext_dir] = dir
-> db <- scl_load_dir scl_85_dir
-> length db == 4671
-> length (filter ((== 0) . scale_degree) db) == 0
-> length (filter ((/= 1) . head . scale_ratios 1e-3) db) == 0
-> length (filter ((/= 0) . head . scale_cents) db) == 0
-> length (filter (== Just (Right 2)) (map scale_octave db)) == 4003
-> length (filter is_scale_uniform db) == 2816
-
-> let na = filter (not . T.is_ascending . scale_cents) db
-> length na == 121
-> mapM_ (putStrLn . unlines . scale_stat) na
-
-> import qualified Music.Theory.List as T
-> import Sound.SC3.Plot
-> plot_p2_stp [T.histogram (map scale_degree db)]
-
-> import Data.List
-
-> filter (isInfixOf "Xenakis") (map scale_description db)
-
-> > ["Xenakis's Byzantine Liturgical mode, 5 + 19 + 6 parts"
-> > ,"Xenakis's Byzantine Liturgical mode, 12 + 11 + 7 parts"
-> > ,"Xenakis's Byzantine Liturgical mode, 7 + 16 + 7 parts"]
-
-> filter (isInfixOf "LaMonte Young") (map scale_description db)
-
-> > ["LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.of Mersenne lute 1"
-> > ,"LaMonte Young's Well-Tuned Piano"]
-
-> length (filter (not . perfect_octave) db) == 663
-
--}
+{- | Load all @.scl@ files at /dir/. -}
 scl_load_dir :: (Read i, Integral i) => FilePath -> IO [Scale i]
 scl_load_dir d = T.dir_subset [".scl"] d >>= mapM scl_load
 
