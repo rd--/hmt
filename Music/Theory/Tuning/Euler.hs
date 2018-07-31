@@ -1,4 +1,4 @@
--- | Euler plane diagrams as /dot/ language graph.
+-- | Euler plane diagrams as /dot/ language graphs.
 --
 -- <http://rd.slavepianos.org/?t=hmt-texts&e=md/euler.md>
 module Music.Theory.Tuning.Euler where
@@ -117,5 +117,6 @@ euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
        map subgraphs_to_dot (zip_sme ("min","same","max") h) ++
        ["}"]
 
+-- | Variant with default printers and fixed node type.
 euler_plane_to_dot_rat :: (Int, Bool) -> Euler_Plane Rational -> [String]
 euler_plane_to_dot_rat opt = euler_plane_to_dot (rat_id,rat_label opt,rat_edge_label)
