@@ -249,13 +249,13 @@ uedge_set :: Ord v => [T.EDGE v] -> [T.EDGE v]
 uedge_set = nub . map T.t2_sort
 
 -- | Self-inversional pcsets are drawn in a double circle, other pcsets in a circle.
-set_shape :: PCSET -> String
-set_shape v = if self_inv v then "doublecircle" else "circle"
+set_shape :: PCSET -> T.DOT_ATTR
+set_shape v = ("shape",if self_inv v then "doublecircle" else "circle")
 
 type GR = G.Gr PCSET ()
 
 gr_pp' :: (PCSET -> String) -> T.GR_PP PCSET ()
-gr_pp' f = (Just . set_shape,Just . f,const Nothing)
+gr_pp' f = (\v -> [set_shape v,("label",f v)],const [])
 
 gr_pp :: T.GR_PP PCSET ()
 gr_pp = gr_pp' pcset_pp
@@ -292,5 +292,5 @@ d_fig_5_g' = T.g_from_edges_l d_fig_5_e
 
 d_fig_5' :: [String]
 d_fig_5' =
-    let pp = (const (Just ""),const Nothing,Just . ath_pp)
+    let pp = (\_ -> [("shape","")],\e -> [("label",ath_pp e)])
     in T.g_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'

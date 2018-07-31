@@ -22,7 +22,7 @@ gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul opt pp es = T.g_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edges es)
 
 gen_digraph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
-gen_digraph opt pp es = T.g_to_dot T.G_DIGRAPH opt pp Nothing (T.g_from_edges_l es)
+gen_digraph opt pp es = T.g_to_dot T.G_DIGRAPH opt pp (T.g_from_edges_l es)
 
 type G = (T.GRAPH String,[T.DOT_ATTR],FilePath)
 
