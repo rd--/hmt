@@ -1,4 +1,6 @@
 -- | Euler plane diagrams as /dot/ language graph.
+--
+-- <http://rd.slavepianos.org/?t=hmt-texts&e=md/euler.md>
 module Music.Theory.Tuning.Euler where
 
 import Data.List {- base -}
@@ -24,6 +26,7 @@ rat_div p q = T.fold_ratio_to_octave_err (p / q)
 tun_seq :: Int -> Rational -> Rational -> [Rational]
 tun_seq n m = take n . iterate (rat_mul m)
 
+-- | `mod` 12.
 mod12 :: Integral a => a -> a
 mod12 n = n `mod` 12
 
@@ -33,6 +36,9 @@ mod12 n = n `mod` 12
 ratio_to_pc :: Int -> Rational -> Int
 ratio_to_pc n = mod12 . (+ n) . round . (/ 100) . T.ratio_to_cents
 
+-- | All possible pairs of elements (/x/,/y/) where /x/ is from /p/ and /y/ from /q/.
+--
+-- > all_pairs "ab" "cde" == [('a','c'),('a','d'),('a','e'),('b','c'),('b','d'),('b','e')]
 all_pairs :: [t] -> [u] -> [(t,u)]
 all_pairs p q = [(x,y) | x <- p, y <- q]
 
@@ -52,9 +58,12 @@ pc_pp x =
       Just (n,a) -> [T.note_pp n,T.alteration_symbol a]
       Nothing -> error (show ("pc_pp",x))
 
+-- | Show ratio as intergral ('round') cents value.
 cents_pp :: Rational -> String
 cents_pp = show . (round :: Double -> Integer) . T.ratio_to_cents
 
+-- | Dot label for ratio, /k/ is the pitch-class of the unit ratio.
+--
 -- > rat_label (0,False) 1 == "C♮\\n1:1"
 -- > rat_label (3,True) (7/4) == "C♯=969\\n7:4"
 rat_label :: (Int,Bool) -> Rational -> String
@@ -67,10 +76,13 @@ rat_label (k,with_cents) r =
                  else ""
                 ,"\\n",T.ratio_pp r]
 
+-- | Generate value /dot/ node identifier for ratio.
+--
 -- > rat_id (5/4) == "R_5_4"
 rat_id :: Rational-> String
 rat_id r = "R_" ++ show (numerator r) ++ "_" ++ show (denominator r)
 
+-- | Printer for edge label between given ratio nodes.
 rat_edge_label :: (Rational, Rational) -> String
 rat_edge_label (p,q) = concat ["   (",T.ratio_pp (rat_div p q),")"]
 
@@ -83,11 +95,14 @@ zip_sme (s,m,e) xs =
       x0:x1:xs' -> (s,x0) : (m,x1) : T.at_last (\x -> (m,x)) (\x -> (e,x)) xs'
       _ -> error "zip_sme: not SME list"
 
+-- | Euler diagram given as (/h/,/v/) duple,
+-- where /h/ are the horizontal sequences and /v/ are the vertical edges.
 type Euler_Plane t = ([[t]],[(t,t)])
 
+-- | Generate /dot/ graph given printer functions and an /Euler_Plane/.
 euler_plane_to_dot :: (t -> String,t -> String,(t,t) -> String) -> Euler_Plane t -> [String]
 euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
-    let mk_lab_term x =concat [" [label=\"",x,"\"];"]
+    let mk_lab_term x = concat [" [label=\"",x,"\"];"]
         node_to_dot x = concat [n_id x,mk_lab_term (n_pp x)]
         subgraph_edges x = intercalate " -- " (map n_id x) ++ ";"
         edge_to_dot (lhs,rhs) = concat [n_id lhs," -- ",n_id rhs,mk_lab_term (e_pp (lhs,rhs))]
@@ -104,35 +119,3 @@ euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
 
 euler_plane_to_dot_rat :: (Int, Bool) -> Euler_Plane Rational -> [String]
 euler_plane_to_dot_rat opt = euler_plane_to_dot (rat_id,rat_label opt,rat_edge_label)
-
-{-
-
-let j5 =
-    let {l1 = tun_seq 3 (3%2) (5%3)
-        ;l2 = tun_seq 5 (3%2) (16%9)
-        ;l3 = tun_seq 4 (3%2) (64%45)
-        ;(c1,c2) = euler_align_rat (5%8,5%4) (l1,l2,l3)}
-    in ([l1,l2,l3],c1 ++ c2)
-
-let j5' =
-    let {f = T.fold_ratio_to_octave_err
-        ;l1 = tun_seq 4 (3/2) (f (1 * 2/3 * 5/4))
-        ;l2 = tun_seq 5 (3/2) (f (1 * 2/3 * 2/3))
-        ;l3 = tun_seq 3 (3/2) (f (1 * 2/3 * 4/5))
-        ;(c1,c2) = euler_align_rat (5/4,5/4) (l1,l2,l3)}
-    in ([l1,l2,l3],c1 ++ c2)
-
-let j7 =
-    let {l1 = tun_seq 4 (3%2) (5%4)
-        ;l2 = tun_seq 5 (3%2) (4%3)
-        ;l3 = tun_seq 3 (3%2) (14%9)
-        ;(c1,c2) = euler_align_rat (5%4,4%7) (l1,l2,l3)}
-    in ([l1,l2,l3],c1 ++ c2)
-
-let dir = "/home/rohan/sw/hmt/data/dot/"
-let f = unlines . euler_plane_to_dot_rat (0,False)
-writeFile (dir ++ "euler-j5-a.dot") (f j5)
-writeFile (dir ++ "euler-j5-b.dot") (f j5')
-writeFile (dir ++ "euler-j7.dot") (f j7)
-
--}
