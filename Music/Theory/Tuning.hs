@@ -97,6 +97,7 @@ oct_diff_to_ratio r n = if n >= 0 then recur_n n (* r) 1 else recur_n (negate n)
 
 -- | Lookup function that allows both negative & multiple octave indices.
 --
+-- > :l Music.Theory.Tuning.DB.Werckmeister
 -- > let map_zip f l = zip l (map f l)
 -- > map_zip (tn_ratios_lookup werckmeister_vi) [-24 .. 24]
 tn_ratios_lookup :: Tuning -> Int -> Maybe Rational
@@ -117,7 +118,7 @@ tn_approximate_ratios_lookup t n =
 -- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.
 --
--- > :l Music.Theory.Tuning.Werckmeister
+-- > :l Music.Theory.Tuning.DB.Werckmeister
 -- > let r = [1,17/16,9/8,13/11,5/4,4/3,7/5,3/2,11/7,5/3,16/9,15/8]
 -- > tn_reconstructed_ratios 1e-2 werckmeister_iii == Just r
 tn_reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
@@ -129,7 +130,7 @@ tn_reconstructed_ratios epsilon =
 -- | Convert from a 'Floating' ratio to /cents/.
 --
 -- > let r = [0,498,702,1200]
--- > in map (round . fratio_to_cents) [1,4/3,3/2,2] == r
+-- > map (round . fratio_to_cents) [1,4/3,3/2,2] == r
 fratio_to_cents :: (Real r,Floating n) => r -> n
 fratio_to_cents = (1200 *) . logBase 2 . realToFrac
 
@@ -143,6 +144,7 @@ approximate_ratio = fromRational
 
 -- | 'approximate_ratio_to_cents' '.' 'approximate_ratio'.
 --
+-- > import Data.Ratio
 -- > map (\n -> (n,round (ratio_to_cents (fold_ratio_to_octave_err (n % 1))))) [1..21]
 ratio_to_cents :: Integral i => Ratio i -> Cents
 ratio_to_cents = approximate_ratio_to_cents . realToFrac
@@ -169,7 +171,7 @@ cps_shift_cents f = (* f) . cents_to_ratio
 -- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
 --
 -- > let abs_dif i j = abs (i - j)
--- > in cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
+-- > cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
 cps_difference_cents :: (Real r,Fractional r,Floating n) => r -> r -> n
 cps_difference_cents p q = fratio_to_cents (q / p)
 
@@ -218,7 +220,7 @@ equal_temperament n =
 
 -- | 12-tone equal temperament.
 --
--- > cents equal_temperament_12 == [0,100..1100]
+-- > tn_cents equal_temperament_12 == [0,100..1100]
 equal_temperament_12 :: Tuning
 equal_temperament_12 = equal_temperament (12::Int)
 
@@ -237,7 +239,7 @@ equal_temperament_53 = equal_temperament (53::Int)
 -- | 72-tone equal temperament.
 --
 -- > let r = [0,17,33,50,67,83,100]
--- > in take 7 (map round (cents equal_temperament_72)) == r
+-- > take 7 (map round (tn_cents equal_temperament_72)) == r
 equal_temperament_72 :: Tuning
 equal_temperament_72 = equal_temperament (72::Int)
 
@@ -260,7 +262,7 @@ harmonic_series_cps n = [n,n * 2 ..]
 -- | /n/ elements of 'harmonic_series_cps'.
 --
 -- > let r = [55,110,165,220,275,330,385,440,495,550,605,660,715,770,825,880,935]
--- > in harmonic_series_cps_n 17 55 == r
+-- > harmonic_series_cps_n 17 55 == r
 harmonic_series_cps_n :: (Num a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_n n = take n . harmonic_series_cps
 
@@ -271,7 +273,7 @@ subharmonic_series_cps n = map (* n) (map recip [1..])
 -- | /n/ elements of 'harmonic_series_cps'.
 --
 -- > let r = [1760,880,587,440,352,293,251,220,196,176,160,147,135,126,117,110,104]
--- > in map round (subharmonic_series_cps_n 17 1760) == r
+-- > map round (subharmonic_series_cps_n 17 1760) == r
 subharmonic_series_cps_n :: (Fractional t,Enum t) => Int -> t -> [t]
 subharmonic_series_cps_n n = take n . subharmonic_series_cps
 
@@ -324,9 +326,9 @@ ratio_interval_class i =
 --
 -- > import Music.Theory.Pitch
 --
--- > let {r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
--- >     ;d = harmonic_series_cps_derived 5 (octpc_to_cps (1,4))}
--- > in map round (take 15 d) == r
+-- > let r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
+-- > let d = harmonic_series_cps_derived 5 (octpc_to_cps (1,4))
+-- > map round (take 15 d) == r
 harmonic_series_cps_derived :: (Ord a, Fractional a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
     let f0 = T.cps_in_octave_above f1 (partial f1 k)
@@ -337,7 +339,7 @@ harmonic_series_cps_derived k f1 =
 -- > harmonic_series_folded_r 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
 --
 -- > let r = [0,105,204,386,551,702,841,969,1088]
--- > in map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
+-- > map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
 harmonic_series_folded_r :: Integer -> [Rational]
 harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n%1]))
 
@@ -350,8 +352,8 @@ harmonic_series_folded n o = Tuning (Left (harmonic_series_folded_r n)) o
 
 -- | @12@-tone tuning of first @21@ elements of the harmonic series.
 --
--- > cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
--- > divisions harmonic_series_folded_21 == 11
+-- > tn_cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
+-- > tn_divisions harmonic_series_folded_21 == 11
 harmonic_series_folded_21 :: Tuning
 harmonic_series_folded_21 = harmonic_series_folded 21 2
 
@@ -360,7 +362,7 @@ harmonic_series_folded_21 = harmonic_series_folded 21 2
 -- | Give cents difference from nearest 12ET tone.
 --
 -- > let r = [50,-49,-2,0,2,49,50]
--- > in map cents_et12_diff [650,651,698,700,702,749,750] == r
+-- > map cents_et12_diff [650,651,698,700,702,749,750] == r
 cents_et12_diff :: Integral n => n -> n
 cents_et12_diff n =
     let m = n `mod` 100
@@ -377,7 +379,7 @@ fcents_et12_diff n =
 -- > map cents_interval_class [50,1150,1250] == [50,50,50]
 --
 -- > let r = concat [[0,50 .. 550],[600],[550,500 .. 0]]
--- > in map cents_interval_class [1200,1250 .. 2400] == r
+-- > map cents_interval_class [1200,1250 .. 2400] == r
 cents_interval_class :: Integral a => a -> a
 cents_interval_class n =
     let n' = n `mod` 1200
@@ -464,6 +466,7 @@ type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 -- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is sparse, it is only
 -- valid for /g/ values from /k/.
 --
+-- > import qualified Music.Theory.Pitch as T
 -- > let f = cps_midi_tuning_f (equal_temperament 72,T.midi_to_cps 59,59,72 * 4)
 -- > map f [59 .. 59 + 72]
 cps_midi_tuning_f :: CPS_Midi_Tuning -> Sparse_Midi_Tuning_F
@@ -547,7 +550,8 @@ efg_collate = T.histogram . sort
 >         ,([1,0],[3]),([1,1],[3,7]),([1,2],[3,7,7])
 >         ,([2,0],[3,3]),([2,1],[3,3,7]),([2,2],[3,3,7,7])
 >         ,([3,0],[3,3,3]),([3,1],[3,3,3,7]),([3,2],[3,3,3,7,7])]
-> in efg_factors [(3,3),(7,2)] == r
+
+> efg_factors [(3,3),(7,2)] == r
 
 -}
 efg_factors :: EFG i -> [([Int],[i])]
@@ -562,6 +566,7 @@ efg_factors efg =
 
 {- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
+> import Data.List
 > let r = sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
 > r == [1/1,9/8,8/7,9/7,21/16,189/128,3/2,27/16,12/7,7/4,27/14,63/32]
 > map (round . ratio_to_cents) r == [0,204,231,435,471,675,702,906,933,969,1137,1173]
