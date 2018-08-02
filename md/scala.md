@@ -25,6 +25,22 @@ $ hmt-scala db-stat
 $
 ~~~~
 
+# db-summarise
+
+~~~~
+$ hmt-scala db-summarise 12 68 | grep convex | grep 7-limit
+diaconv1029  : convex closure of 7-limit diamond with respect to 1029/1024
+diaconv225   : convex closure of 7-limit diamond with respect to 225/224
+diaconv2401  : convex closure of 7-limit diamond with respect to 2401/2400
+diaconv3136  : convex closure of 7-limit diamond with respect to 3136/3125
+diaconv4375  : convex closure of 7-limit diamond with respect to 4375/4374
+diaconv5120  : convex closure of 7-limit diamond with respect to 5120/5103
+diaconv6144  : convex closure of 7-limit diamond with respect to 6144/6125
+diamond7_126 : 7-limit diamond starling (126/125) 5-limit convex closure
+diamond7_225 : 7-limit diamond marvel (225/224) 5-limit convex closure
+$
+~~~~
+
 # search scale
 
 ~~~~

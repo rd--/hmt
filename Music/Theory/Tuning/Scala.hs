@@ -143,7 +143,7 @@ scale_cents_i = map round . scale_cents
 scale_ratios :: Epsilon -> Scale Integer -> [Rational]
 scale_ratios epsilon s = 1 : map (pitch_ratio epsilon) (scale_pitches s)
 
--- | Require that 'Scale' be uniformlay of 'Ratio's.
+-- | Require that 'Scale' be uniformly of 'Ratio's.
 scale_ratios_req :: Integral i => Scale i -> [Ratio i]
 scale_ratios_req =
     let err = error "scale_ratios_req"

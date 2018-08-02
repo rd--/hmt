@@ -33,6 +33,17 @@ db_stat = do
           ,"# scale-uniform  : " ++ show (length uf)]
   putStrLn (unlines r)
 
+-- > db_summarise (Just 15) (Just 65)
+db_summarise :: Maybe Int -> Maybe Int -> IO ()
+db_summarise nm_lim dsc_lim = do
+  db <- T.scl_load_db :: IO [T.Scale Integer]
+  let nm_seq = map T.scale_name db
+      nm_max = maybe (maximum (map length nm_seq)) id nm_lim
+      dsc_seq = map T.scale_description db
+      fmt (nm,dsc) = printf "%-*s : %s" nm_max (take nm_max nm) (maybe dsc (flip take dsc) dsc_lim)
+      tbl = map fmt (zip nm_seq dsc_seq)
+  putStrLn (unlines tbl)
+
 env :: IO ()
 env = do
   scl_dir <- T.scl_get_dir
@@ -170,6 +181,7 @@ help =
     ,"cps-tbl md|csv d12 name:string cents:real mnn:int mnn-l:int mnn-r:int"
     ,"csv-mnd-retune d12 name:string cents:real mnn:int input-file output-file"
     ,"db-stat"
+    ,"db-summarise nm-lm|nil dsc-lm|nil"
     ,"env"
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"intname lookup interval:rational..."
@@ -197,6 +209,8 @@ main = do
         csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
     ["db-stat"] ->
         db_stat
+    ["db-summarise",nm_lim,dsc_lim] ->
+        db_summarise (nil_or_read nm_lim) (nil_or_read dsc_lim)
     ["env"] ->
         env
     ["fluidsynth","d12",scl_nm,c,k,fs_nm,fs_bank,fs_prog] ->
