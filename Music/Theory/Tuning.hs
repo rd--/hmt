@@ -62,7 +62,22 @@ oct_diff_to_ratio r n = if n >= 0 then T.recur_n n (* r) 1 else T.recur_n (negat
 ratio_to_pc :: Int -> Rational -> Int
 ratio_to_pc n = T.mod12 . (+ n) . round . (/ 100) . ratio_to_cents
 
--- | Diverges if /n/ is negative.
+-- | Fold ratio to lie within an octave, ie. @1@ '<' /n/ '<=' @2@.
+--   It is an error for /n/ to be more than one octave outside of this range.
+--
+-- > map fold_ratio_to_octave_nonrec [2/3,3/4,4/5,4/7] == [4/3,3/2,8/5,8/7]
+fold_ratio_to_octave_nonrec :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave_nonrec n =
+  if n >= 1 && n < 2
+  then n
+  else if n >= 2 && n < 4
+       then n / 2
+       else if n < 1 && n >= (1/2)
+            then n * 2
+            else error "fold_ratio_to_octave_nonrec"
+
+-- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
+--   Diverges if /n/ is negative.
 fold_ratio_to_octave_unsafe :: Integral i => Ratio i -> Ratio i
 fold_ratio_to_octave_unsafe =
     let rec_f n = if n >= 2 then rec_f (n / 2) else if n < 1 then rec_f (n * 2) else n
