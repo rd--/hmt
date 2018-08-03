@@ -136,11 +136,13 @@ Library
                    Music.Theory.Tuning.DB.Microtonal_Synthesis
                    Music.Theory.Tuning.DB.Riley
                    Music.Theory.Tuning.DB.Werckmeister
+                   Music.Theory.Tuning.EFG
                    Music.Theory.Tuning.ET
                    Music.Theory.Tuning.Euler
                    Music.Theory.Tuning.Gann_1993
                    Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Meyer_1929
+                   Music.Theory.Tuning.Midi
                    Music.Theory.Tuning.Partch
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984

@@ -1,6 +1,10 @@
 -- | 'Ordering' functions
 module Music.Theory.Ord where
 
+-- | Minimum by /f/.
+min_by :: Ord a => (t -> a) -> t -> t -> t
+min_by f p q = if f p <= f q then p else q
+
 -- | Specialised 'fromEnum'.
 ord_to_int :: Ordering -> Int
 ord_to_int = fromEnum

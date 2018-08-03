@@ -6,6 +6,7 @@ import System.Random {- random -}
 import qualified Music.Theory.Array.CSV as T
 import qualified Music.Theory.Pitch as T
 import qualified Music.Theory.Tuning as T
+import qualified Music.Theory.Tuning.Midi as T
 import qualified Music.Theory.Tuning.Scala as T
 
 -- | Load possibly sparse and possibly one-to-many

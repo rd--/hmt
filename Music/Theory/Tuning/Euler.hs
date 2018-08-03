@@ -12,11 +12,11 @@ import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
--- | 'T.fold_ratio_to_octave' of '*'.
+-- | 'T.fold_ratio_to_octave_err' of '*'.
 rat_mul :: Rational -> Rational -> Rational
 rat_mul r = T.fold_ratio_to_octave_err . (* r)
 
--- | 'T.fold_ratio_to_octave' of '/'.
+-- | 'T.fold_ratio_to_octave_err' of '/'.
 rat_div :: Rational -> Rational -> Rational
 rat_div p q = T.fold_ratio_to_octave_err (p / q)
 
@@ -25,16 +25,6 @@ rat_div p q = T.fold_ratio_to_octave_err (p / q)
 -- > tun_seq 5 (3/2) 1 == [1/1,3/2,9/8,27/16,81/64]
 tun_seq :: Int -> Rational -> Rational -> [Rational]
 tun_seq n m = take n . iterate (rat_mul m)
-
--- | `mod` 12.
-mod12 :: Integral a => a -> a
-mod12 n = n `mod` 12
-
--- | 'T.ratio_to_cents' rounded to nearest multiple of 100, modulo 12.
---
--- > map (ratio_to_pc 0) [1,4/3,3/2,2] == [0,5,7,0]
-ratio_to_pc :: Int -> Rational -> Int
-ratio_to_pc n = mod12 . (+ n) . round . (/ 100) . T.ratio_to_cents
 
 -- | All possible pairs of elements (/x/,/y/) where /x/ is from /p/ and /y/ from /q/.
 --
@@ -70,7 +60,7 @@ rat_label :: (Int,Bool) -> Rational -> String
 rat_label (k,with_cents) r =
     if r < 1 || r >= 2
     then error (show ("rat_label",r))
-    else concat [pc_pp (ratio_to_pc k r)
+    else concat [pc_pp (T.ratio_to_pc k r)
                 ,if with_cents
                  then '=' : cents_pp r
                  else ""

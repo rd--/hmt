@@ -205,3 +205,13 @@ in_left_half_open_interval (p,q) n = p < n && n <= q
 -- | [p,q) [0,1) = {x | 0 ≤ x < 1}
 in_right_half_open_interval :: Ord a => (a, a) -> a -> Bool
 in_right_half_open_interval (p,q) n = p <= n && n < q
+
+-- | Calculate /n/th root of /x/.
+--
+-- > 12 `nth_root` 2 == 1.0594630943592953
+nth_root :: (Floating a,Eq a) => a -> a -> a
+nth_root n x =
+    let f (_,x0) = (x0, ((n - 1) * x0 + x / x0 ** (n - 1)) / n)
+        eq = uncurry (==)
+    in fst (until eq f (x, x/n))
+

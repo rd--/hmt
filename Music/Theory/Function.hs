@@ -4,6 +4,13 @@ module Music.Theory.Function where
 type UOp t = t -> t
 type BinOp t = t -> t -> t
 
+-- | Iterate the function /f/ /n/ times, the inital value is /x/.
+--
+-- > recur_n 5 (* 2) 1 == 32
+-- > take (5 + 1) (iterate (* 2) 1) == [1,2,4,8,16,32]
+recur_n :: Integral n => n -> (t -> t) -> t -> t
+recur_n n f x = if n < 1 then x else recur_n (n - 1) f (f x)
+
 -- | 'const' of 'const'.
 --
 -- > const2 5 undefined undefined == 5

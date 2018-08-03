@@ -195,7 +195,7 @@ p114_f37_sc_pp = set_pp_tto_rel mod12 [0,2,5]
 p114_g0 :: [String]
 p114_g0 =
   let mk_e flt = gen_u_edges flt (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
-  in gen_graph_ul (p114_mk_o 2.5) p114_f37_sc_pp (mk_e (doi_of 2))
+  in gen_graph_ul (p114_mk_o (2.5::Double)) p114_f37_sc_pp (mk_e (doi_of 2))
 
 p114_gr_set :: [(String,[String])]
 p114_gr_set =
@@ -370,7 +370,7 @@ p178_gr_2 =
 -- * P.196
 
 p196_gr :: [String]
-p196_gr = gen_flt_graph [("edge:len","1.25")] (loc_dif_of 1) (T.combinations 3 [1..6])
+p196_gr = gen_flt_graph [("edge:len","1.25")] (loc_dif_of 1) (T.combinations 3 [1::Int .. 6])
 
 -- * P.201
 
@@ -402,7 +402,7 @@ p201_gr_set = map (gen_graph_ul p201_o set_pp) p201_e
 
 p201_gr_join :: [String]
 p201_gr_join =
-    let e = zipWith e_add_id [0..] p201_e
+    let e = zipWith e_add_id [0::Int ..] p201_e
     in gen_graph_ul p201_o (set_pp . snd) (concat e)
 
 -- * P.205

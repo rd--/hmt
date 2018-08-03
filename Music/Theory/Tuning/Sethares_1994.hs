@@ -28,7 +28,7 @@ d (f1,v1) (f2,v2) =
 fig_1 :: (Floating n,Enum n,Ord n) => [[n]]
 fig_1 =
     let f0 = [125,250,500,1000,2000]
-        r_seq = map T.cents_to_ratio [0 .. 1200]
+        r_seq = map T.cents_to_fratio [0 .. 1200]
     in map (\f -> map (\r -> d (f,1) (f * r,1)) r_seq) f0
 
 -- > let a_seq = take 7 (iterate (* 0.88) 1.0)
