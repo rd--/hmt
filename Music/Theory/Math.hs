@@ -104,6 +104,10 @@ rational_whole r = if denominator r == 1 then Just (numerator r) else Nothing
 rational_whole_err :: Integral a => Ratio a -> a
 rational_whole_err = fromMaybe (error "rational_whole") . rational_whole
 
+-- | Sum of numerator & denominator.
+ratio_nd_sum :: Num a => Ratio a -> a
+ratio_nd_sum r = numerator r + denominator r
+
 -- | Show rational to /n/ decimal places.
 --
 -- > let r = approxRational pi 1e-100

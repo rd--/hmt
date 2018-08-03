@@ -80,21 +80,21 @@ fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave_
 fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
 fold_ratio_to_octave_err = fromMaybe (error "fold_ratio_to_octave") . fold_ratio_to_octave
 
--- | Sum of numerator & denominator.
-ratio_nd_sum :: Num a => Ratio a -> a
-ratio_nd_sum r = numerator r + denominator r
-
 -- | The interval between two pitches /p/ and /q/ given as ratio
 -- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
 -- intervals consider the 'fold_ratio_to_octave' of both /p/ to /q/
--- and /q/ to /p/.
+-- and /q/ to /p/ and select the minima at the /cmp_f/.
 --
 -- > map ratio_interval_class [2/3,3/2,3/4,4/3] == [3/2,3/2,3/2,3/2]
 -- > map ratio_interval_class [7/6,12/7] == [7/6,7/6]
-ratio_interval_class :: Integral i => Ratio i -> Ratio i
-ratio_interval_class i =
+ratio_interval_class_by :: (Ord t, Integral i) => (Ratio i -> t) -> Ratio i -> Ratio i
+ratio_interval_class_by cmp_f i =
     let f = fold_ratio_to_octave_err
-    in T.min_by ratio_nd_sum (f i) (f (recip i))
+    in T.min_by cmp_f (f i) (f (recip i))
+
+-- | 'ratio_interval_class_by' 'ratio_nd_sum'
+ratio_interval_class :: Integral i => Ratio i -> Ratio i
+ratio_interval_class = ratio_interval_class_by T.ratio_nd_sum
 
 -- * Types
 
