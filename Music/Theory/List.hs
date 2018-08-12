@@ -289,10 +289,11 @@ histogram_by f x =
 histogram :: Ord a => [a] -> [(a,Int)]
 histogram = histogram_by (==)
 
+-- | Elements that appear more than once in the input given equality predicate.
 duplicates_by :: Ord a => (a -> a -> Bool) -> [a] -> [a]
 duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f
 
--- | Elements that appear more than once in the input.
+-- | 'duplicates_by' of '=='.
 --
 -- > map duplicates ["duplicates","redundant"] == ["","dn"]
 duplicates :: Ord a => [a] -> [a]
@@ -492,6 +493,7 @@ lookup_def k d = fromMaybe d . lookup k
 --
 -- > reverse_lookup 'c' [] == Nothing
 -- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
+-- > lookup 2 (zip [0..4] ['a'..]) == Just 'c'
 reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
 reverse_lookup k = fmap fst . find ((== k) . snd)
 

@@ -140,6 +140,7 @@ Library
                    Music.Theory.Tuning.ET
                    Music.Theory.Tuning.Euler
                    Music.Theory.Tuning.Gann_1993
+                   Music.Theory.Tuning.Graph
                    Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Midi

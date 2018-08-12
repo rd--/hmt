@@ -128,6 +128,8 @@ gen_flt_graph o f p = gen_graph_ul o set_pp (T.e_univ_select_u_edges f p)
 
 -- * P.12
 
+-- > let r = [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8]
+-- > sort (concat (fst p12_euler_plane)) == r
 p12_euler_plane :: T.Euler_Plane Rational
 p12_euler_plane =
     let f = T.fold_ratio_to_octave_err

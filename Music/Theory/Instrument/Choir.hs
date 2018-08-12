@@ -1,9 +1,9 @@
 module Music.Theory.Instrument.Choir where
 
 import Data.List.Split {- split -}
-import Data.Maybe {- base -}
 
 import qualified Music.Theory.Clef as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Name as T {- hmt -}
 
@@ -43,13 +43,9 @@ voice_rng_tbl_safe =
     ,(Alto,(T.g3,T.c5))
     ,(Soprano,(T.c4,T.f5))]
 
--- | Erroring variant.
-lookup_err :: Eq a => a -> [(a,b)] -> b
-lookup_err e = fromMaybe (error "lookup_err") . lookup e
-
 -- | Lookup voice range table.
 voice_rng :: Voice_Rng_Tbl -> Voice -> (T.Pitch,T.Pitch)
-voice_rng tbl v = lookup_err v tbl
+voice_rng tbl v = T.lookup_err v tbl
 
 -- | Lookup 'voice_rng_tbl_std'.
 voice_rng_std :: Voice -> (T.Pitch,T.Pitch)
