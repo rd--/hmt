@@ -123,8 +123,7 @@ perfect_octave s = scale_octave s `elem` [Just (Right 2),Just (Left 1200)]
 is_scale_uniform :: Scale i -> Bool
 is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
 
--- | Make scale pitches uniform, conforming to the most promininent
--- pitch type.
+-- | Make scale pitches uniform, conforming to the most predominant pitch type.
 scale_uniform :: Epsilon -> Scale Integer -> Scale Integer
 scale_uniform epsilon (nm,d,n,p) =
     case pitch_type_predominant p of
@@ -144,10 +143,17 @@ scale_ratios :: Epsilon -> Scale Integer -> [Rational]
 scale_ratios epsilon s = 1 : map (pitch_ratio epsilon) (scale_pitches s)
 
 -- | Require that 'Scale' be uniformly of 'Ratio's.
+scale_ratios_u :: Integral i => Scale i -> Maybe [Ratio i]
+scale_ratios_u scl =
+  let err = error "scale_ratios_u"
+      p = scale_pitches scl
+  in case uniform_pitch_type p of
+       Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.fromRight) p)
+       _ -> Nothing
+
+-- | Require that 'Scale' be uniformly of 'Ratio's.
 scale_ratios_req :: Integral i => Scale i -> [Ratio i]
-scale_ratios_req =
-    let err = error "scale_ratios_req"
-    in (1 :) . map (fromMaybe err . T.fromRight) . scale_pitches
+scale_ratios_req = fromMaybe (error "scale_ratios_req") . scale_ratios_u
 
 -- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
 -- rational, 'T.Tuning' is rational, else 'T.Tuning' is in 'T.Cents'.
