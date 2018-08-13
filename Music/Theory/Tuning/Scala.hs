@@ -107,17 +107,20 @@ scale_verify (_,_,n,p) = n == length p
 scale_verify_err :: Scale i -> Scale i
 scale_verify_err scl = if scale_verify scl then scl else error "invalid scale"
 
--- | The last 'Pitch' element of the scale (ie. the /ocatve/).
+-- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale i -> Maybe (Pitch i)
 scale_octave (_,_,_,s) =
     case s of
       [] -> Nothing
       _ -> Just (last s)
 
--- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of
--- @1200@.
+-- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of @1200@.
 perfect_octave :: Integral i => Scale i -> Bool
-perfect_octave s = scale_octave s `elem` [Just (Right 2),Just (Left 1200)]
+perfect_octave s =
+  case scale_octave s of
+    Just (Right 2) -> True
+    Just (Left 1200) -> True
+    _ -> False
 
 -- | Are all pitches of the same type.
 is_scale_uniform :: Scale i -> Bool
@@ -151,7 +154,7 @@ scale_ratios_u scl =
        Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.fromRight) p)
        _ -> Nothing
 
--- | Require that 'Scale' be uniformly of 'Ratio's.
+-- | Erroring variant of 'scale_ratios_u.
 scale_ratios_req :: Integral i => Scale i -> [Ratio i]
 scale_ratios_req = fromMaybe (error "scale_ratios_req") . scale_ratios_u
 
