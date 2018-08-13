@@ -25,6 +25,11 @@ g_edge_list (_,e) r =
   let f (p,q,_) = if r == p then Just q else if r == q then Just p else Nothing
   in mapMaybe f e
 
+-- | Flip a ratio in (1,2) and multiply by 2.
+--
+-- > import Data.Ratio {- base -}
+-- > map rflip [5%4,3%2,7%4] == [8%5,4%3,8%7]
+-- > map rflip [3/2,5/4,7/4]
 rflip :: R -> R
 rflip n = if n < 1 || n > 2 then error "rflip" else 1 / n * 2
 

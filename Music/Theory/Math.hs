@@ -65,9 +65,9 @@ whole_to_precision k = zero_to_precision k . fractional_part . T.real_to_double
 sawtooth_wave :: RealFrac a => a -> a
 sawtooth_wave n = n - floor_f n
 
--- | Pretty printer for 'Rational' that elides denominators of @1@.
+-- | Pretty printer for 'Rational' using @/@ and eliding denominators of @1@.
 --
--- > map rational_pp [1,3/2,2] == ["1","3/2","2"]
+-- > map rational_pp [1,3/2,5/4,2] == ["1","3/2","5/4","2"]
 rational_pp :: (Show a,Integral a) => Ratio a -> String
 rational_pp r =
     let n = numerator r
@@ -75,6 +75,17 @@ rational_pp r =
     in if d == 1
        then show n
        else concat [show n,"/",show d]
+
+-- | Parser for 'rational_pp'.
+--
+-- > map rational_parse ["1","3/2","5/4","2"] == [1,3/2,5/4,2]
+-- > rational_parse "" == undefined
+rational_parse :: (Read t,Integral t) => String -> Ratio t
+rational_parse s =
+  case break (== '/') s of
+    ([],_) -> error "rational_parse"
+    (n,[]) -> read n % 1
+    (n,_:d) -> read n % read d
 
 -- | Pretty print ratio as @:@ separated integers.
 --
