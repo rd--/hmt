@@ -24,13 +24,27 @@ md_number_rows (hdr,tbl) =
         tbl' = map (\(i,r) -> show i : r) (zip [1::Int ..] tbl)
     in (hdr',tbl')
 
+-- | Options are:
+-- pad text with space to left instead of right,
+-- make all columns equal width,
+-- column separator string,
+-- print end of table footer.
+type MD_Opt = (Bool,Bool,String,Bool)
+
+-- | Options for @simple@ layout.
+md_opt_simple :: MD_Opt
+md_opt_simple = (True,False," ",True)
+
+-- | Options for @pipe@ layout.
+md_opt_pipe :: MD_Opt
+md_opt_pipe = (True,False," | ",False)
+
 -- | Markdown table, perhaps with header.  Table is in row order.
--- Options are /pad_left/ and /eq_width/.
 --
 -- > let tbl = [["a","bc","def"],["ghij","klm","no","p"]]
--- > putStrLn$unlines$"": md_table_opt (True,True," · ") (Nothing,tbl)
-md_table_opt :: (Bool,Bool,String) -> MD_Table String -> [String]
-md_table_opt (pad_left,eq_width,col_sep) (hdr,t) =
+-- > putStrLn$unlines$"": md_table_opt (True,True," | ",False) (Just (map return "1234"),tbl)
+md_table :: MD_Opt -> MD_Table String -> [String]
+md_table (pad_left,eq_width,col_sep,print_eot) (hdr,t) =
     let c = transpose (T.tbl_make_regular_nil "" (maybe t (:t) hdr))
         nc = length c
         n = let k = map (maximum . map length) c
@@ -44,34 +58,31 @@ md_table_opt (pad_left,eq_width,col_sep) (hdr,t) =
          Nothing -> T.bracket (m,m) d
          Just _ -> case d of
                      [] -> error "md_table"
-                     d0:d' -> d0 : T.bracket (m,m) d'
+                     d0:d' -> d0 : if print_eot then T.bracket (m,m) d' else m : d'
 
-md_table' :: MD_Table String -> [String]
-md_table' = md_table_opt (True,False," ")
-
--- | 'curry' of 'md_table''.
-md_table :: Maybe [String] -> T.Table String -> [String]
-md_table = curry md_table'
+-- | 'curry' of 'md_table'.
+md_table' :: MD_Opt -> Maybe [String] -> T.Table String -> [String]
+md_table' opt hdr tbl = md_table opt (hdr,tbl)
 
 -- | Variant relying on 'Show' instances.
 --
 -- > md_table_show Nothing [[1..4],[5..8],[9..12]]
-md_table_show :: Show t => Maybe [String] -> T.Table t -> [String]
-md_table_show hdr = md_table hdr . map (map show)
+md_table_show :: Show t => MD_Opt -> Maybe [String] -> T.Table t -> [String]
+md_table_show opt hdr = md_table' opt hdr . map (map show)
 
 -- | Variant in column order (ie. 'transpose').
 --
 -- > md_table_column_order [["a","bc","def"],["ghij","klm","no"]]
-md_table_column_order :: Maybe [String] -> T.Table String -> [String]
-md_table_column_order hdr = md_table hdr . transpose
+md_table_column_order :: MD_Opt -> Maybe [String] -> T.Table String -> [String]
+md_table_column_order opt hdr = md_table' opt hdr . transpose
 
 -- | Two-tuple 'show' variant.
-md_table_p2 :: (Show a,Show b) => Maybe [String] -> ([a],[b]) -> [String]
-md_table_p2 hdr (p,q) = md_table hdr [map show p,map show q]
+md_table_p2 :: (Show a,Show b) => MD_Opt -> Maybe [String] -> ([a],[b]) -> [String]
+md_table_p2 opt hdr (p,q) = md_table' opt hdr [map show p,map show q]
 
 -- | Three-tuple 'show' variant.
-md_table_p3 :: (Show a,Show b,Show c) => Maybe [String] -> ([a],[b],[c]) -> [String]
-md_table_p3 hdr (p,q,r) = md_table hdr [map show p,map show q,map show r]
+md_table_p3 :: (Show a,Show b,Show c) => MD_Opt -> Maybe [String] -> ([a],[b],[c]) -> [String]
+md_table_p3 opt hdr (p,q,r) = md_table' opt hdr [map show p,map show q,map show r]
 
 {- | Matrix form, ie. header in both first row and first column, in
 each case displaced by one location which is empty.

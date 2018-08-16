@@ -163,13 +163,16 @@ table_3 =
               in (i p,i q)
     in map f ath_trichords
 
+pp_tbl :: T.MD_Table String -> [String]
+pp_tbl = T.md_table T.md_opt_simple
+
 -- > putStrLn $ unlines $ table_3_md
 table_3_md :: [String]
 table_3_md =
     let pp = pcset_pp_hex
         f ((p,q,r),(s,t,u)) = [pp p,pp q,r,pp s,pp t,u]
         hdr = ["P","P/SC","P/F","Q=H0-P","Q/SC","Q/F"]
-    in T.md_table' (Just hdr,map f table_3)
+    in pp_tbl (Just hdr,map f table_3)
 
 -- > length table_4 == 10
 table_4 :: [((PCSET,PCSET,T.SC_Name),(PCSET,PCSET,T.SC_Name))]
@@ -181,7 +184,7 @@ table_4_md =
     let pp = pcset_pp_hex
         f ((p,q,r),(s,t,u)) = [pp p ++ "/" ++ pp s,pp q ++ "/" ++ pp t,r ++ "/" ++ u]
         hdr = ["Trichords","Prime Forms","Forte Numbers"]
-    in T.md_table' (Just hdr,map f table_4)
+    in pp_tbl (Just hdr,map f table_4)
 
 table_5 :: [(PCSET,Int)]
 table_5 = T.histogram (map (T.forte_prime T.mod12) ath_trichords)
@@ -190,7 +193,7 @@ table_5 = T.histogram (map (T.forte_prime T.mod12) ath_trichords)
 table_5_md :: [String]
 table_5_md =
     let f (p,q) = [pcset_pp_hex p,show q]
-    in T.md_table' (Just ["SC","#ATH"],map f table_5)
+    in pp_tbl (Just ["SC","#ATH"],map f table_5)
 
 table_6 :: [(PCSET,Int,Int)]
 table_6 =
@@ -201,7 +204,7 @@ table_6 =
 table_6_md :: [String]
 table_6_md =
     let f (p,q,r) = [pcset_pp_hex p,show q,show r]
-    in T.md_table' (Just ["SC","#H0","#Hn"],map f table_6)
+    in pp_tbl (Just ["SC","#H0","#Hn"],map f table_6)
 
 -- * FIGURES
 
