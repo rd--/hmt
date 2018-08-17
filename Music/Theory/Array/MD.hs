@@ -42,7 +42,7 @@ md_opt_pipe = (True,False," | ",False)
 -- | Markdown table, perhaps with header.  Table is in row order.
 --
 -- > let tbl = [["a","bc","def"],["ghij","klm","no","p"]]
--- > putStrLn$unlines$"": md_table_opt (True,True," | ",False) (Just (map return "1234"),tbl)
+-- > putStrLn$unlines$"": md_table (True,True," | ",False) (Just (map return "1234"),tbl)
 md_table :: MD_Opt -> MD_Table String -> [String]
 md_table (pad_left,eq_width,col_sep,print_eot) (hdr,t) =
     let c = transpose (T.tbl_make_regular_nil "" (maybe t (:t) hdr))

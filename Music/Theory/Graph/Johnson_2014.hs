@@ -3,8 +3,12 @@ module Music.Theory.Graph.Johnson_2014 where
 
 import Control.Monad {- base -}
 import Data.List {- base -}
-import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
+
+import qualified Control.Monad.Logic as L {- logict -}
+import qualified Data.Map as M {- containers -}
+import qualified Data.Graph.Inductive as G {- fgl -}
+--import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Music.Theory.Combinations as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
@@ -123,8 +127,11 @@ gen_graph_ul opt pp es = T.g_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edge
 gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
 
+gen_flt_graph_pp :: Ord t => [T.DOT_ATTR] -> ([t] -> String) -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
+gen_flt_graph_pp o pp f p = gen_graph_ul o pp (gen_u_edges f p)
+
 gen_flt_graph :: (Ord t, Show t) => [T.DOT_ATTR] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
-gen_flt_graph o f p = gen_graph_ul o set_pp (T.e_univ_select_u_edges f p)
+gen_flt_graph o = gen_flt_graph_pp o set_pp
 
 -- * P.12
 
@@ -270,13 +277,31 @@ p162_gr =
 
 -- * P.172
 
+-- > M.size p172_nd_map == 24
 p172_nd_map :: M.Map Int [Z12]
 p172_nd_map =
     let nd_exp = map sort (T.z_sro_ti_related mod12 [0,1,3,7])
     in M.fromList (zip [0..] nd_exp)
 
+p172_nd_e_set :: [(Int,Int)]
+p172_nd_e_set = gen_u_edges (m_doi_of p172_nd_map 0) [0..23]
+
+p172_gr :: G.Gr () ()
+p172_gr = G.mkUGraph [0..23] p172_nd_e_set
+
 p172_set_pp :: Int -> String
 p172_set_pp = set_pp . m_get p172_nd_map
+
+-- > let (c0,c1) = p172_all_cyc p172_gr
+-- > (length c0,length c1) == (48,48)
+p172_all_cyc :: ([[Int]], [[Int]])
+p172_all_cyc =
+    let [a,b] = T.g_partition p172_gr
+    in (L.observeAll (T.ug_hamiltonian_path_ml_0 a)
+       ,L.observeAll (T.ug_hamiltonian_path_ml_0 b))
+
+p172_cyc0 :: [[Int]]
+p172_cyc0 = map (!! 0) [fst p172_all_cyc,snd p172_all_cyc]
 
 p172_gr_set :: [(String,[String])]
 p172_gr_set =
@@ -284,9 +309,7 @@ p172_gr_set =
      ,let nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
       in gen_graph_ul [] p172_set_pp nd_e_set)
     ,("p172.1.dot"
-     ,let nd_e_set = concatMap T.e_path_to_edges
-                     [[22,11,20,9,18,7,16,5,14,3,12,1,22]
-                     ,[23,2,13,8,19,10,21,4,15,6,17,0,23]]
+     ,let nd_e_set = concatMap T.e_path_to_edges p172_cyc0
       in gen_graph_ul [("edge:len","2.0")] p172_set_pp nd_e_set)]
 
 -- * P.177
@@ -341,7 +364,7 @@ mk_bridge_set_seq r_set k_seq =
       p:q:k_seq' -> mk_bridge_set r_set p q : mk_bridge_set_seq r_set (q : k_seq')
       _ -> []
 
--- > zip [0..] (mk_bridge_set_seq ait i6_seq)
+-- > zip [0..] (mk_bridge_set_seq ait p178_i6_seq)
 p178_i6_seq :: [PCSET]
 p178_i6_seq = map (sort . (\n -> T.z_pcset mod12 [n,n+6])) [0..6]
 
@@ -399,6 +422,7 @@ p201_e = map p201_mk_e [[0,3,4],[1,6,7],[2,5,8]]
 p201_o :: [T.DOT_ATTR]
 p201_o = [("graph:splines","false"),("node:shape","box"),("edge:len","1.75")]
 
+-- > length p201_gr_set
 p201_gr_set :: [[String]]
 p201_gr_set = map (gen_graph_ul p201_o set_pp) p201_e
 

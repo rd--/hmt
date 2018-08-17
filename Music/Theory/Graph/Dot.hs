@@ -20,11 +20,25 @@ sep1 e l =
       (p,_:q) -> (p,q)
       _ -> error "sep1"
 
+s_classify :: (t -> Bool) -> (t -> Bool) -> [t] -> Bool
+s_classify p q s =
+  case s of
+    c0:s' -> p c0 && all q s'
+    [] -> False
+
+-- > map is_symbol ["sym","sym2","3sym",""] == [True,True,False,False]
+is_symbol :: String -> Bool
+is_symbol = s_classify isAlpha isAlphaNum
+
+-- > map is_number ["123","123.45",".25","1.1.1",""] == [True,True,False,True,False]
+is_number :: String -> Bool
+is_number = s_classify isDigit (\c -> isDigit c || c == '.')
+
 -- | Quote /s/ if it includes white space.
 --
--- > map maybe_quote ["abc","a b c","10"] == ["abc","\"a b c\"","10"]
+-- > map maybe_quote ["abc","a b c","12","12.3"] == ["abc","\"a b c\"","12","12.3"]
 maybe_quote :: String -> String
-maybe_quote s = if all isAlphaNum s then s else concat ["\"",s,"\""]
+maybe_quote s = if is_symbol s || is_number s then s else concat ["\"",s,"\""]
 
 -- | Left biased union of association lists /p/ and /q/.
 --
