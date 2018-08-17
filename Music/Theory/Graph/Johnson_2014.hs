@@ -266,14 +266,22 @@ p148_gr_set =
 
 -- * P.162
 
+-- > length p162_ch == 30
+p162_ch :: [[Int]]
+p162_ch =
+  let n = [0::Int,1,2,3,4,5,6,7,8]
+      c = T.combinations 4 n
+  in filter ((== 1) . (`mod` 4) . sum) c
+
+-- > length p162_e == 47
+p162_e :: [T.EDGE [Int]]
+p162_e = T.e_univ_select_u_edges (doi_of 3) p162_ch
+
 p162_gr :: [String]
 p162_gr =
-    let n = [0::Int,1,2,3,4,5,6,7,8]
-        c = T.combinations 4 n
-        ch = filter ((== 1) . (`mod` 4) . sum) c
-        opt = [("graph:layout","neato")
+    let opt = [("graph:layout","neato")
               ,("edge:len","1.75")]
-    in gen_graph_ul opt set_pp (T.e_univ_select_u_edges (doi_of 3) ch)
+    in gen_graph_ul opt set_pp p162_e
 
 -- * P.172
 

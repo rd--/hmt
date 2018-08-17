@@ -88,9 +88,9 @@ dot_attr_def :: [DOT_ATTR]
 dot_attr_def =
     [("graph:layout","neato")
     ,("graph:epsilon","0.000001")
-    ,("node:shape","plaintext")
-    ,("node:fontsize","10")
-    ,("node:fontname","century schoolbook")]
+    ,("graph:fontsize","10")
+    ,("graph:fontname","century schoolbook")
+    ,("node:shape","plaintext")]
 
 -- * GRAPH
 
