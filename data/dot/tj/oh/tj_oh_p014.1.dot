@@ -1,0 +1,66 @@
+graph
+ g {
+edge [len=1.5,fontsize=6]
+graph [start=168732,layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+node [shape=box,fontsize=10,fontname="century schoolbook"]
+0 [label="C♮"];
+1 [label="c♮"];
+2 [label="C♯"];
+3 [label="c♯"];
+4 [label="D♮"];
+5 [label="d♮"];
+6 [label="E♭"];
+7 [label="e♭"];
+8 [label="E♮"];
+9 [label="e♮"];
+10 [label="F♮"];
+11 [label="f♮"];
+12 [label="F♯"];
+13 [label="f♯"];
+14 [label="G♮"];
+15 [label="g♮"];
+16 [label="A♭"];
+17 [label="a♭"];
+18 [label="A♮"];
+19 [label="a♮"];
+20 [label="B♭"];
+21 [label="b♭"];
+22 [label="B♮"];
+23 [label="b♮"];
+0 -- 1;
+0 -- 9;
+0 -- 19;
+2 -- 3;
+2 -- 11;
+2 -- 21;
+4 -- 5;
+4 -- 13;
+4 -- 23;
+6 -- 1;
+6 -- 7;
+6 -- 15;
+8 -- 3;
+8 -- 9;
+8 -- 17;
+10 -- 5;
+10 -- 11;
+10 -- 19;
+12 -- 7;
+12 -- 13;
+12 -- 21;
+14 -- 9;
+14 -- 15;
+14 -- 23;
+16 -- 1;
+16 -- 11;
+16 -- 17;
+18 -- 3;
+18 -- 13;
+18 -- 19;
+20 -- 5;
+20 -- 15;
+20 -- 21;
+22 -- 7;
+22 -- 17;
+22 -- 23;
+}

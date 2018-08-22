@@ -1,0 +1,34 @@
+graph
+ g {
+edge [fontsize=9]
+graph [start=187623,layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+node [fontsize=10,shape=plaintext]
+0 [label="A♮"];
+1 [label="E♮"];
+2 [label="B♮"];
+3 [label="F♯"];
+4 [label="B♭"];
+5 [label="F♮"];
+6 [label="C♮"];
+7 [label="G♮"];
+8 [label="D♮"];
+9 [label="C♯"];
+10 [label="A♭"];
+11 [label="E♭"];
+0 -- 1 [label=5];
+0 -- 5 [label=4];
+1 -- 2 [label=5];
+1 -- 6 [label=4];
+2 -- 3 [label=5];
+2 -- 7 [label=4];
+3 -- 8 [label=4];
+4 -- 5 [label=5];
+5 -- 6 [label=5];
+5 -- 9 [label=4];
+6 -- 7 [label=5];
+6 -- 10 [label=4];
+7 -- 8 [label=5];
+7 -- 11 [label=4];
+9 -- 10 [label=5];
+10 -- 11 [label=5];
+}

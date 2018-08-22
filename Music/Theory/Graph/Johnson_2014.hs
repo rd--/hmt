@@ -135,6 +135,34 @@ gen_flt_graph o = gen_flt_graph_pp o set_pp
 
 -- * P.12
 
+circ_5 :: Integral a => Int -> a -> [a]
+circ_5 l n = take l (iterate (mod12 . (+ 7)) (mod12 n))
+
+all_pairs :: [t] -> [u] -> [(t,u)]
+all_pairs x y = [(p,q) | p <- x, q <- y]
+
+adj :: [t] -> [(t,t)]
+adj = T.adj2 1
+
+p12_c5_eset :: [(Int,Int)]
+p12_c5_eset =
+    let l1 = circ_5 4 9 -- [9,4,11,6]
+        l2 = circ_5 5 10 -- [10,5,0,7,2]
+        l3 = circ_5 3 1 -- [1,8,3]
+        align p q = filter ((== 4) . mod12 . dif) (all_pairs p q)
+    in concatMap adj [l1,l2,l3] ++ align l1 l2 ++ align l2 l3
+
+e_add_label :: (T.EDGE v -> l) -> [T.EDGE v] -> [T.EDGE_L v l]
+e_add_label f = let g (p,q) = ((p,q),f (p,q)) in map g
+
+p12_c5_gr :: [String]
+p12_c5_gr =
+    let o = [("graph:start","187623")
+            ,("node:fontsize","10")
+            ,("edge:fontsize","9")]
+        e_l = e_add_label (i_to_ic . absdif) p12_c5_eset
+    in gen_graph o (\v -> [("label",T.pc_pp v)],\e -> [("label",show e)]) e_l
+
 -- > let r = [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8]
 -- > sort (concat (fst p12_euler_plane)) == r
 p12_euler_plane :: T.Euler_Plane Rational
@@ -151,28 +179,82 @@ p12_euler_plane_gr = T.euler_plane_to_dot_rat (0,True) p12_euler_plane
 
 -- * P.14
 
+p14_eset :: ([(Int, Int)], [(Int, Int)], [(Int, Int)])
+p14_eset =
+  let univ = [0 .. 11]
+      trs n = map (mod12 . (+ n))
+      e_par = zip univ univ
+      e_rel = zip univ (trs 9 univ)
+      e_med = zip univ (trs 4 univ)
+  in (e_par,e_rel,e_med)
+
+p14_mk_e :: [(Int, Int)] -> [(T.Key,T.Key)]
+p14_mk_e =
+  let pc_to_key m pc = let Just (n,a) = T.pc_to_note_alteration_ks pc in (n,a,m)
+      e_lift (lhs,rhs) = (pc_to_key T.Major_Mode lhs,pc_to_key T.Minor_Mode rhs)
+  in map e_lift
+
+p14_edges_u :: [(T.Key,T.Key)]
+p14_edges_u =
+  let (e_par,e_rel,e_med) = p14_eset
+  in p14_mk_e (concat [e_par,e_rel,e_med])
+
 p14_edges :: [(T.Key,T.Key)]
 p14_edges =
-    let univ = [0::Int .. 11]
-        trs n = map (mod12 . (+ n))
-        e_par = zip univ univ
-        e_rel = zip univ (trs 9 univ)
-        e_med = zip univ (trs 4 univ)
-        del_par = [10]
-        del_rel = [5,6]
-        del_med = [2,5,8,11]
-        rem_set r = filter (\(lhs,_) -> lhs `notElem` r)
-        pc_to_key m pc = let Just (n,a) = T.pc_to_note_alteration_ks pc in (n,a,m)
-        e_lift (lhs,rhs) = (pc_to_key T.Major_Mode lhs,pc_to_key T.Minor_Mode rhs)
-        e_mod = concat [rem_set del_par e_par,rem_set del_rel e_rel,rem_set del_med e_med]
-    in map e_lift e_mod
+  let (e_par,e_rel,e_med) = p14_eset
+      del_par = [10]
+      del_rel = [5,6]
+      del_med = [2,5,8,11]
+      rem_set r = filter (\(lhs,_) -> lhs `notElem` r)
+      e_mod = concat [rem_set del_par e_par,rem_set del_rel e_rel,rem_set del_med e_med]
+  in p14_mk_e e_mod
+
+p14_mk_gr :: [T.DOT_ATTR] -> [T.EDGE T.Key] -> [String]
+p14_mk_gr opt e =
+    let opt' = ("graph:start","168732") : opt
+        pp = T.gr_pp_lift_node_f T.key_lc_uc_pp
+        gr = T.g_from_edges e
+    in T.g_to_udot opt' pp gr
+
+p14_gr_u :: [String]
+p14_gr_u =
+  p14_mk_gr
+  [("edge:len","1.5")
+  ,("edge:fontsize","6")
+  ,("node:shape","box")
+  ,("node:fontsize","10")
+  ,("node:fontname","century schoolbook")]
+  p14_edges_u
 
 p14_gr :: [String]
-p14_gr =
-    let opt = [("graph:start","168732")]
-        pp = T.gr_pp_lift_node_f T.key_lc_uc_pp
-        gr = T.g_from_edges p14_edges
-    in T.g_to_udot opt pp gr
+p14_gr = p14_mk_gr [] p14_edges
+
+p14_gen_tonnetz_n :: Int -> [Int] -> [Int] -> [Int]
+p14_gen_tonnetz_n n k x =
+  let gen_neighbours_n l z = map (+ z) l ++ map (z -) l
+  in if n == 0
+     then x
+     else let r = nub (x ++ concatMap (gen_neighbours_n k) x)
+          in p14_gen_tonnetz_n (n - 1) k r
+
+p14_gen_tonnetz_e :: Int -> [Int] -> [Int] -> [((Int, Int), Int)]
+p14_gen_tonnetz_e n k =
+    let gen_e x y = ((min x y,max x y),abs (x - y))
+        gen_e_n d_set x y = if abs (x - y) `elem` d_set then Just (gen_e x y) else Nothing
+        f [p,q] = gen_e_n k p q
+        f _ = error "p14_gen_tonnetz_e"
+    in mapMaybe f . T.combinations 2 . p14_gen_tonnetz_n n k
+
+-- NEO-RIEMANNIAN TONNETTZ
+p14_nrt_gr :: [String]
+p14_nrt_gr =
+  let e = p14_gen_tonnetz_e 3 [7,9,16] [48]
+      o = [("node:shape","circle")
+          ,("node:fontsize","10")
+          ,("node:fontname","century schoolbook")
+          ,("edge:len","1")]
+      pp = (\v -> [("label",T.pc_pp (T.mod12 v))],\_ -> [])
+  in gen_graph o pp e
 
 -- * P.31
 
@@ -467,8 +549,11 @@ p205_gr =
 wr_graphs :: FilePath -> IO ()
 wr_graphs dir = do
   let f (nm,gr) = writeFile (dir ++ "tj_oh_" ++ nm) (unlines gr)
-  f ("p012.dot",p12_euler_plane_gr)
-  f ("p014.dot",p14_gr)
+  f ("p012.1.dot",p12_c5_gr)
+  f ("p012.2.dot",p12_euler_plane_gr)
+  f ("p014.1.dot",p14_gr_u)
+  f ("p014.2.dot",p14_gr)
+  f ("p014.3.dot",p14_nrt_gr)
   f ("p031.dot",p31_gr)
   mapM_ f p114_gr_set
   f ("p125.dot",p125_gr)
