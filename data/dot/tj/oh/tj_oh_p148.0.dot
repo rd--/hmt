@@ -1,32 +1,32 @@
 graph
  g {
-edge [len=1.75];
-graph [layout=neato,epsilon=0.000001];
-node [shape=plaintext,fontsize=10,fontname="century schoolbook"];
-0 [label="136"];
-1 [label="137"];
-2 [label="146"];
-3 [label="236"];
-4 [label="346"];
-5 [label="356"];
-6 [label="157"];
-7 [label="237"];
-8 [label="378"];
-9 [label="379"];
-10 [label="148"];
-11 [label="467"];
-12 [label="469"];
-13 [label="158"];
-14 [label="348"];
-15 [label="458"];
-16 [label="478"];
-17 [label="457"];
-18 [label="256"];
-19 [label="267"];
-20 [label="269"];
-21 [label="259"];
-22 [label="359"];
-23 [label="479"];
+edge [len=1.75]
+graph [layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+node [shape=plaintext]
+0 [label=136];
+1 [label=137];
+2 [label=146];
+3 [label=236];
+4 [label=346];
+5 [label=356];
+6 [label=157];
+7 [label=237];
+8 [label=378];
+9 [label=379];
+10 [label=148];
+11 [label=467];
+12 [label=469];
+13 [label=158];
+14 [label=348];
+15 [label=458];
+16 [label=478];
+17 [label=457];
+18 [label=256];
+19 [label=267];
+20 [label=269];
+21 [label=259];
+22 [label=359];
+23 [label=479];
 0 -- 1;
 0 -- 2;
 0 -- 3;

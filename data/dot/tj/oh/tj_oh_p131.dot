@@ -1,7 +1,7 @@
 graph
  g {
-graph [layout=neato,epsilon=0.000001];
-node [shape=plaintext,fontsize=10,fontname="century schoolbook"];
+graph [layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+node [shape=plaintext]
 0 [label="6,10,14"];
 1 [label="6,11,13"];
 2 [label="7,9,14"];

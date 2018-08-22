@@ -1,32 +1,32 @@
 graph
  g {
-edge [len=2.5];
-graph [layout=neato,epsilon=0.000001];
-node [shape=box,fontsize=10,fontname="century schoolbook"];
-0 [label="T0"];
-1 [label="T2I"];
-2 [label="T5I"];
-3 [label="T7I"];
-4 [label="T1"];
-5 [label="T3I"];
-6 [label="T6I"];
-7 [label="T8I"];
-8 [label="T2"];
-9 [label="T4I"];
-10 [label="T9I"];
-11 [label="T3"];
-12 [label="T10I"];
-13 [label="T4"];
-14 [label="T11I"];
-15 [label="T5"];
-16 [label="T6"];
-17 [label="T7"];
-18 [label="T0I"];
-19 [label="T8"];
-20 [label="T1I"];
-21 [label="T9"];
-22 [label="T10"];
-23 [label="T11"];
+edge [len=2.5]
+graph [layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+node [shape=box]
+0 [label=T0];
+1 [label=T2I];
+2 [label=T5I];
+3 [label=T7I];
+4 [label=T1];
+5 [label=T3I];
+6 [label=T6I];
+7 [label=T8I];
+8 [label=T2];
+9 [label=T4I];
+10 [label=T9I];
+11 [label=T3];
+12 [label=T10I];
+13 [label=T4];
+14 [label=T11I];
+15 [label=T5];
+16 [label=T6];
+17 [label=T7];
+18 [label=T0I];
+19 [label=T8];
+20 [label=T1I];
+21 [label=T9];
+22 [label=T10];
+23 [label=T11];
 0 -- 1;
 0 -- 2;
 0 -- 3;
