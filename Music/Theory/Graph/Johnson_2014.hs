@@ -273,7 +273,7 @@ p114_f_3_7 :: [Z12]
 p114_f_3_7 = [0,2,5]
 
 p114_mk_o :: Show t => t -> [T.DOT_ATTR]
-p114_mk_o el = [("node:shape","box"),("edge:len",show el)]
+p114_mk_o el = [("node:shape","box"),("edge:len",show el),("edge:fontsize","10")]
 
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
@@ -288,10 +288,13 @@ p114_g0 =
   let mk_e flt = gen_u_edges flt (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
   in gen_graph_ul (p114_mk_o (2.5::Double)) p114_f37_sc_pp (mk_e (doi_of 2))
 
+p114_g1 :: [String]
+p114_g1 = p114_mk_gr 2.5 (doi_of 2)
+
 p114_gr_set :: [(String,[String])]
 p114_gr_set =
   [("p114.0.dot",p114_g0)
-  ,("p114.1.dot",p114_mk_gr 2.5 (doi_of 2))
+  ,("p114.1.dot",p114_g1)
   ,("p114.2.dot"
    ,let o = [("edge:len","1.25")]
     in gen_flt_graph o (loc_dif_of 1) (T.combinations 3 [1::Int .. 6]))
