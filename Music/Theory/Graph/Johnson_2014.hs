@@ -18,6 +18,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 import qualified Music.Theory.Z as T {- hmt -}
 import qualified Music.Theory.Z.Forte_1973 as T {- hmt -}
 import qualified Music.Theory.Z.TTO as T {- hmt -}
@@ -114,7 +115,7 @@ gen_edges :: (t -> t -> Bool) -> [t] -> [(t,t)]
 gen_edges f l = [(p,q) | p <- l, q <- l, f p q]
 
 gen_u_edges :: Ord a => (a -> a -> Bool) -> [a] -> [(a, a)]
-gen_u_edges f = let g p q = p < q && f p q in gen_edges g
+gen_u_edges = T.e_univ_select_u_edges
 
 -- * Graph
 
@@ -143,6 +144,9 @@ all_pairs x y = [(p,q) | p <- x, q <- y]
 
 adj :: [t] -> [(t,t)]
 adj = T.adj2 1
+
+adj_cyc :: [t] -> [(t,t)]
+adj_cyc = adj . T.close
 
 p12_c5_eset :: [(Int,Int)]
 p12_c5_eset =
@@ -377,7 +381,10 @@ p172_nd_map =
     in M.fromList (zip [0..] nd_exp)
 
 p172_nd_e_set :: [(Int,Int)]
-p172_nd_e_set = gen_u_edges (m_doi_of p172_nd_map 0) [0..23]
+p172_nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
+
+p172_nd_e_set_alt :: [T.EDGE Int]
+p172_nd_e_set_alt = concatMap (T.e_path_to_edges . T.close) p172_cyc0
 
 p172_gr :: G.Gr () ()
 p172_gr = G.mkUGraph [0..23] p172_nd_e_set
@@ -396,14 +403,55 @@ p172_all_cyc =
 p172_cyc0 :: [[Int]]
 p172_cyc0 = map (!! 0) [fst p172_all_cyc,snd p172_all_cyc]
 
+p172_g1 :: [String]
+p172_g1 = gen_graph_ul [("edge:len","2.0")] p172_set_pp p172_nd_e_set
+
+p172_g2 :: [String]
+p172_g2 = gen_graph_ul [] p172_set_pp p172_nd_e_set_alt
+
+p172_g3 :: [String]
+p172_g3 =
+  let m_set_pp_tto_rel = set_pp_tto_rel mod12 [0,1,3,7] . m_get p172_nd_map
+  in gen_graph_ul [("node:shape","box"),("edge:len","2.0")] m_set_pp_tto_rel p172_nd_e_set
+
+-- | 'T.TTO' T/n/.
+tto_tn :: Integral t => t -> T.TTO t
+tto_tn n = T.TTO (T.mod12 n) False False
+
+-- | 'Z.TTO' T/n/I.
+tto_tni :: Integral t => t -> T.TTO t
+tto_tni n = T.TTO (T.mod12 n) False True
+
+gen_tto_alt_seq :: Integral t => (t -> T.TTO t,t -> T.TTO t) -> Int -> t -> t -> t -> [T.TTO t]
+gen_tto_alt_seq (f,g) k n m x =
+    let t = map f (take k [x,x + n ..])
+        i = map g (take k [x + m,x + m + n ..])
+    in T.interleave t i
+
+-- | /k/ is length of the T & I sequences, /n/ is the T & I sequence
+-- interval, /m/ is the interval between the T & I sequence.
+--
+-- > r = ["T0 T5I T3 T8I T6 T11I T9 T2I","T1 T6I T4 T9I T7 T0I T10 T3I"]
+-- > map (unwords . map Z.tto_pp . gen_tni_seq 4 3 5) [0,1] == r
+gen_tni_seq :: Integral t => Int -> t -> t -> t -> [T.TTO t]
+gen_tni_seq = gen_tto_alt_seq (tto_tn,tto_tni)
+
+-- > putStrLn $ unlines $ map (unwords . map Z.tto_pp) c4
+p172_c4 :: [[T.TTO Int]]
+p172_c4 = map (gen_tni_seq 3 4 9) [0 .. 3] ++ map (gen_tni_seq 2 6 11) [0 .. 5]
+
+tto_seq_edges :: Show t => [[T.TTO t]] -> [(String, String)]
+tto_seq_edges = nub . sort . concatMap (map T.t2_sort . adj_cyc . map T.tto_pp)
+
+p172_g4 :: [String]
+p172_g4 = gen_graph_ul [("edge:len","2.0")] id (tto_seq_edges p172_c4)
+
 p172_gr_set :: [(String,[String])]
 p172_gr_set =
-    [("p172.0.dot"
-     ,let nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
-      in gen_graph_ul [] p172_set_pp nd_e_set)
-    ,("p172.1.dot"
-     ,let nd_e_set = concatMap T.e_path_to_edges p172_cyc0
-      in gen_graph_ul [("edge:len","2.0")] p172_set_pp nd_e_set)]
+    [("p172.0.dot",p172_g1)
+    ,("p172.1.dot",p172_g2)
+    ,("p172.2.dot",p172_g3)
+    ,("p172.3.dot",p172_g4)]
 
 -- * P.177
 

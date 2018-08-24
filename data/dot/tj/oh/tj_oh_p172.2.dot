@@ -1,0 +1,66 @@
+graph
+ g {
+edge [len=2.0]
+graph [layout=neato,epsilon=0.000001]
+node [shape=box,fontsize=10,fontname="century schoolbook"]
+0 [label=T0];
+1 [label=T5I];
+2 [label=T9I];
+3 [label=T11I];
+4 [label=T1];
+5 [label=T0I];
+6 [label=T6I];
+7 [label=T10I];
+8 [label=T2];
+9 [label=T1I];
+10 [label=T7I];
+11 [label=T3];
+12 [label=T2I];
+13 [label=T8I];
+14 [label=T4];
+15 [label=T3I];
+16 [label=T5];
+17 [label=T4I];
+18 [label=T6];
+19 [label=T7];
+20 [label=T8];
+21 [label=T9];
+22 [label=T10];
+23 [label=T11];
+0 -- 1;
+0 -- 2;
+0 -- 3;
+4 -- 5;
+4 -- 6;
+4 -- 7;
+8 -- 3;
+8 -- 9;
+8 -- 10;
+11 -- 5;
+11 -- 12;
+11 -- 13;
+14 -- 2;
+14 -- 9;
+14 -- 15;
+16 -- 7;
+16 -- 12;
+16 -- 17;
+18 -- 1;
+18 -- 3;
+18 -- 15;
+19 -- 5;
+19 -- 6;
+19 -- 17;
+20 -- 1;
+20 -- 9;
+20 -- 10;
+21 -- 6;
+21 -- 12;
+21 -- 13;
+22 -- 2;
+22 -- 10;
+22 -- 15;
+23 -- 7;
+23 -- 13;
+23 -- 17;
+}

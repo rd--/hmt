@@ -1,7 +1,7 @@
 graph
  g {
 edge [len=1.5,fontsize=6]
-graph [start=168732,layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
+graph [start=168732,layout=neato,epsilon=0.000001]
 node [shape=box,fontsize=10,fontname="century schoolbook"]
 0 [label="C♮"];
 1 [label="c♮"];

@@ -1,8 +1,7 @@
 graph
  g {
-edge [len=2.0]
-graph [layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
-node [shape=plaintext]
+graph [layout=neato,epsilon=0.000001]
+node [fontsize=10,fontname="century schoolbook",shape=plaintext]
 0 [label="4,8,10,11"];
 1 [label="2,3,5,9"];
 2 [label="0,1,6,10"];
@@ -38,6 +37,7 @@ node [shape=plaintext]
 8 -- 9;
 9 -- 10;
 10 -- 11;
+11 -- 0;
 12 -- 13;
 13 -- 14;
 14 -- 15;
@@ -49,4 +49,5 @@ node [shape=plaintext]
 20 -- 21;
 21 -- 22;
 22 -- 23;
+23 -- 12;
 }

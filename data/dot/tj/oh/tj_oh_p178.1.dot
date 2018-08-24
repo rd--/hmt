@@ -1,8 +1,8 @@
 graph
  g {
 edge [len=2]
-graph [layout=neato,epsilon=0.000001,fontsize=10,fontname="century schoolbook"]
-node [shape=rectangle,start=1362874]
+graph [layout=neato,epsilon=0.000001]
+node [shape=rectangle,start=1362874,fontsize=10,fontname="century schoolbook"]
 0 [label="0,6"];
 1 [label="2,5"];
 2 [label="8,11"];
