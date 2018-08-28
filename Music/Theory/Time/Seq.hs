@@ -668,7 +668,7 @@ wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
 wseq_begin_end_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
 wseq_begin_end_f f g = tseq_map (either f g) . wseq_begin_end_either
 
--- | Result for each time-point the triple (begin-list,end-list,hold-list).
+-- | Generate for each time-point the triple (begin-list,end-list,hold-list).
 --   The elements of the end-list have been deleted from the hold list.
 tseq_begin_end_accum :: Eq a => Tseq t [Begin_End a] -> Tseq t ([a],[a],[a])
 tseq_begin_end_accum =
@@ -677,6 +677,14 @@ tseq_begin_end_accum =
                 st' = foldl begin_end_track st x
             in (st',(t,(b,e,st \\ e)))
     in snd . mapAccumL f []
+
+-- | Variant that initially transforms 'Wseq' into non-overlapping begin-end sequence.
+wseq_begin_end_accum :: (Eq e, Ord t, Num t) => Wseq t e -> (Bool, Tseq t ([e],[e],[e]))
+wseq_begin_end_accum sq =
+  let ol = wseq_has_overlaps (==) sq
+      sq_edit = if ol then wseq_remove_overlaps (==) id sq else sq
+      a_sq = tseq_begin_end_accum (tseq_group (wseq_begin_end sq_edit))
+  in (ol,a_sq)
 
 tseq_accumulate :: Eq a => Tseq t [Begin_End a] -> Tseq t [a]
 tseq_accumulate =

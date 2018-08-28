@@ -6,32 +6,33 @@ import Text.Printf {- base -}
 
 import Music.Theory.Function {- hmt -}
 
--- * TYPES
+-- * Integral types
 
-type WEEK = Int -- (1-52)
+-- | Week, one-indexed, ie. 1-52
+type WEEK = Int
+
+-- | Week, one-indexed, ie. 1-31
 type DAY = Int
-type HOUR = Int -- (0-23)
-type MIN = Int -- (0-59)
-type SEC = Int -- (0-59)
+
+-- | Hour, zero-indexed, ie. 0-23
+type HOUR = Int
+
+-- | Minute, zero-indexed, ie. 0-59
+type MIN = Int
+
+-- | Second, zero-indexed, ie. 0-59
+type SEC = Int
+
+-- | Centi-seconds, one-indexed, ie. 0-99
 type CSEC = Int -- (0-99)
 
--- | Fractional days.
-type FDAY = Double
-
--- | Fractional hour (1.50 is one and a half hours).
-type FHOUR = Double
-
--- | Fractional seconds.
-type FSEC = Double
+-- * Composite types
 
 -- | Minutes, seconds as @(min,sec)@
 type MinSec n = (n,n)
 
 -- | Type specialised.
 type MINSEC = (MIN,SEC)
-
--- | Fractional minutes and seconds (mm.ss, ie. 01.45 is 1 minute and 45 seconds).
-type FMINSEC = Double
 
 -- | Minutes, seconds, centi-seconds as @(min,sec,csec)@
 type MinCsec n = (n,n,n)
@@ -45,8 +46,23 @@ type HMS = (HOUR,MIN,SEC)
 -- | (Days,Hours,Minutes,Seconds)
 type DHMS = (DAY,HOUR,MIN,SEC)
 
+-- * Fractional types
+
+-- | Fractional days.
+type FDAY = Double
+
+-- | Fractional hour, ie. 1.50 is one and a half hours, ie. 1 hour and 30 minutes.
+type FHOUR = Double
+
+-- | Fractional seconds.
+type FSEC = Double
+
+-- | Fractional minutes and seconds (mm.ss, ie. 01.45 is 1 minute and 45 seconds).
+type FMINSEC = Double
+
 -- * T.UTCTime format strings.
 
+-- | 'T.parseTimeOrError' with 'T.defaultTimeLocale'.
 parse_time_str :: String -> String -> T.UTCTime
 parse_time_str = T.parseTimeOrError True T.defaultTimeLocale
 
@@ -105,6 +121,8 @@ format_iso8601_date_time = format_time_str "%FT%H:%M:%S"
 
 -- * FSEC
 
+-- | Translate fractional seconds to picoseconds.
+--
 -- > fsec_to_picoseconds 78240.05
 fsec_to_picoseconds :: FSEC -> Integer
 fsec_to_picoseconds s = floor (s * (10 ** 12))
@@ -114,6 +132,8 @@ fsec_to_difftime = T.picosecondsToDiffTime . fsec_to_picoseconds
 
 -- * FMINSEC
 
+-- | Translate fractional minutes.seconds to picoseconds.
+--
 -- > map fminsec_to_fsec [0.45,15.355] == [45,935.5]
 fminsec_to_fsec :: FMINSEC -> FSEC
 fminsec_to_fsec n =
