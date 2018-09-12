@@ -592,8 +592,9 @@ pitch_class_pp = pitch_pp_opt (False,False)
 
 -- | Sequential list of /n/ pitch class names starting from /k/.
 --
--- > unwords (pitch_class_names_12et 0 12) == "C C♯ D E♭ E F F♯ G A♭ A B♭ B"
--- > pitch_class_names_12et 11 2 == ["B","C"]
+-- > import Music.Theory.Pitch.Spelling.Table
+-- > unwords (pitch_class_names_12et pc_spell_ks 0 12) == "C C♯ D E♭ E F F♯ G A♭ A B♭ B"
+-- > pitch_class_names_12et pc_spell_ks 11 2 == ["B","C"]
 pitch_class_names_12et :: Integral n => Spelling n -> n -> n -> [String]
 pitch_class_names_12et sp k n =
     let f = pitch_class_pp . midi_to_pitch sp

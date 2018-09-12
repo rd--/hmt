@@ -429,9 +429,11 @@ dx_d' n l =
       e:r -> (e,reverse r)
       _ -> error "dx_d'"
 
--- | Apply flip of /f/ between elements of /l/.
+-- | Integration with /f/, ie. apply flip of /f/ between elements of /l/.
 --
 -- > d_dx_by (,) "abcd" == [('b','a'),('c','b'),('d','c')]
+-- > d_dx_by (-) [0,2,4,1,0] == [2,2,-3,-1]
+-- > d_dx_by (-) [2,3,0,4,1] == [1,-3,4,-3]
 d_dx_by :: (t -> t -> u) -> [t] -> [u]
 d_dx_by f l = if null l then [] else zipWith f (tail l) l
 
