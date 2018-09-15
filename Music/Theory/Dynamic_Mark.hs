@@ -5,14 +5,24 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Read as T {- hmt -}
 
 -- | Enumeration of dynamic mark symbols.
 data Dynamic_Mark_T = Niente
                     | PPPPP | PPPP | PPP | PP | P | MP
                     | MF | F | FF | FFF | FFFF | FFFFF
                     | FP | SF | SFP | SFPP | SFZ | SFFZ
-                      deriving (Eq,Ord,Enum,Bounded,Show)
+                      deriving (Eq,Ord,Enum,Bounded,Show,Read)
+
+-- | Case insensitive reader for 'Dynamic_Mark_T'.
+--
+-- > map dynamic_mark_t_parse (words "pP p Mp F")
+dynamic_mark_t_parse_ci :: String -> Maybe Dynamic_Mark_T
+dynamic_mark_t_parse_ci s =
+  case map toUpper s of
+    "NIENTE" -> Just Niente
+    uc -> T.read_maybe uc
 
 -- | Lookup MIDI velocity for 'Dynamic_Mark_T'.  The range is linear
 -- in @0-127@.
@@ -150,8 +160,7 @@ dynamic_sequence_sets =
 --
 -- > let f _ x = show x
 -- > in apply_dynamic_node f f (Nothing,Just Crescendo) undefined
-apply_dynamic_node :: (a -> Dynamic_Mark_T -> a) -> (a -> Hairpin_T -> a)
-                   -> Dynamic_Node -> a -> a
+apply_dynamic_node :: (a -> Dynamic_Mark_T -> a) -> (a -> Hairpin_T -> a) -> Dynamic_Node -> a -> a
 apply_dynamic_node f g (i,j) m =
     let n = maybe m (g m) j
     in maybe n (f n) i
