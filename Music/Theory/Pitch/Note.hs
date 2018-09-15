@@ -343,6 +343,7 @@ p_alteration_t_tonh =
     (fromMaybe (error "p_alteration_t_tonh") . tonh_to_alteration)
     (P.many1 (P.oneOf "ehis"))
 
+-- > map (P.runP p_note_alteration_ly () "") ["c","ees","fis","aeses"]
 p_note_alteration_ly :: P.GenParser Char () (Note_T,Maybe Alteration_T)
 p_note_alteration_ly = do
   n <- p_note_t_lc

@@ -2,7 +2,9 @@ module Music.Theory.Z.TTO where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import qualified Text.ParserCombinators.Parsec as P {- parsec -}
+
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.Parse as T
 import qualified Music.Theory.Set.List as T

@@ -2,7 +2,8 @@ module Music.Theory.Parse where
 
 import Data.Maybe {- base -}
 
-import qualified Text.ParserCombinators.Parsec as P {- parsec -}
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
 
 -- | A 'Char' parser.
 type P a = P.GenParser Char () a

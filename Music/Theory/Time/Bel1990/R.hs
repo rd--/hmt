@@ -20,7 +20,9 @@ import Control.Monad {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
-import qualified Text.ParserCombinators.Parsec as P {- parsec -}
+
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Math as T

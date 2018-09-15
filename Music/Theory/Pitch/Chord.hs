@@ -3,7 +3,8 @@ module Music.Theory.Pitch.Chord where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Text.ParserCombinators.Parsec as P {- parsec -}
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.Key as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
