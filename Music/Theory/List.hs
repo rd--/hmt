@@ -499,6 +499,10 @@ lookup_def k d = fromMaybe d . lookup k
 reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
 reverse_lookup k = fmap fst . find ((== k) . snd)
 
+-- | Erroring variant.
+reverse_lookup_err :: Eq b => b -> [(a,b)] -> a
+reverse_lookup_err k = fromMaybe (error "reverse_lookup") . reverse_lookup k
+
 {-
 reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
 reverse_lookup key ls =

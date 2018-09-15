@@ -178,8 +178,8 @@ duration_to_unicode (Duration dv d _) =
 
 -- * Lilypond
 
--- | Give /Lilypond/ notation for 'Duration'.  Note that the duration
--- multiplier is /not/ written.
+-- | Give /Lilypond/ notation for 'Duration'.
+-- Note that the duration multiplier is /not/ written.
 --
 -- > map duration_to_lilypond_type [Duration 2 0 1,Duration 4 1 1] == ["2","4."]
 duration_to_lilypond_type :: Duration -> String

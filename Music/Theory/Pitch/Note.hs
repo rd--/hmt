@@ -4,6 +4,9 @@ module Music.Theory.Pitch.Note where
 import Data.Char {- base -}
 import Data.Maybe {- base -}
 
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
+
 import qualified Music.Theory.List as T {- hmt -}
 
 -- * Note_T
@@ -19,6 +22,10 @@ note_seq = [C .. B]
 -- | Char variant of 'show'.
 note_pp :: Note_T -> Char
 note_pp = head . show
+
+-- | Note name in lilypond syntax (ie. lower case).
+note_pp_ly :: Note_T -> String
+note_pp_ly = map toLower . show
 
 -- | Table of 'Note_T' and corresponding pitch-classes.
 note_pc_tbl :: Num i => [(Note_T,i)]
@@ -242,23 +249,32 @@ alteration_iso =
     in fromMaybe qt . alteration_iso_m
 
 -- | The /Tonhöhe/ ASCII spellings for alterations.
+alteration_tonh_tbl :: [(Alteration_T, String)]
+alteration_tonh_tbl =
+  [(DoubleFlat,"eses")
+  ,(ThreeQuarterToneFlat,"eseh")
+  ,(Flat,"es")
+  ,(QuarterToneFlat,"eh")
+  ,(Natural,"")
+  ,(QuarterToneSharp,"ih")
+  ,(Sharp,"is")
+  ,(ThreeQuarterToneSharp,"isih")
+  ,(DoubleSharp,"isis")]
+
+-- | The /Tonhöhe/ ASCII spellings for alterations.
 --
 -- See <http://www.musiccog.ohio-state.edu/Humdrum/guide04.html> and
 -- <http://lilypond.org/doc/v2.16/Documentation/notation/writing-pitches>
 --
 -- > map alteration_tonh [Flat .. Sharp] == ["es","eh","","ih","is"]
 alteration_tonh :: Alteration_T -> String
-alteration_tonh a =
-    case a of
-      DoubleFlat -> "eses"
-      ThreeQuarterToneFlat -> "eseh"
-      Flat -> "es"
-      QuarterToneFlat -> "eh"
-      Natural -> ""
-      QuarterToneSharp -> "ih"
-      Sharp -> "is"
-      ThreeQuarterToneSharp -> "isih"
-      DoubleSharp -> "isis"
+alteration_tonh a = T.lookup_err a alteration_tonh_tbl
+
+-- | Inverse of 'alteration_tonh'.
+--
+-- > mapMaybe tonh_to_alteration ["es","eh","","ih","is"] == [Flat .. Sharp]
+tonh_to_alteration :: String -> Maybe Alteration_T
+tonh_to_alteration s = T.reverse_lookup s alteration_tonh_tbl
 
 -- * 12-ET
 
@@ -297,3 +313,38 @@ type Alteration_R = (Rational,String)
 -- > in map alteration_t' [Flat,Natural,Sharp] == r
 alteration_r :: Alteration_T -> Alteration_R
 alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])
+
+-- * Parsers
+
+-- > map (P.runP p_note_t () "" . return) "ABCDEFG"
+p_note_t :: P.GenParser Char () Note_T
+p_note_t =
+    fmap
+    (fromMaybe (error "p_note_t") . parse_note_t False)
+    (P.oneOf "ABCDEFG")
+
+p_note_t_lc :: P.GenParser Char () Note_T
+p_note_t_lc =
+    fmap
+    (fromMaybe (error "p_note_t_lc") . parse_note_t False . toUpper)
+    (P.oneOf "abcdefg")
+
+-- > map (P.runP p_alteration_t_iso () "" . return) "b#x"
+p_alteration_t_iso :: P.GenParser Char () Alteration_T
+p_alteration_t_iso =
+    fmap
+    (fromMaybe (error "p_alteration_t_iso") . symbol_to_alteration_iso)
+    (P.oneOf "b#x")
+
+-- > map (P.runP p_alteration_t_tonh () "") ["eses","es","is","isis"]
+p_alteration_t_tonh :: P.GenParser Char () Alteration_T
+p_alteration_t_tonh =
+    fmap
+    (fromMaybe (error "p_alteration_t_tonh") . tonh_to_alteration)
+    (P.many1 (P.oneOf "ehis"))
+
+p_note_alteration_ly :: P.GenParser Char () (Note_T,Maybe Alteration_T)
+p_note_alteration_ly = do
+  n <- p_note_t_lc
+  a <- P.optionMaybe p_alteration_t_tonh
+  return (n,a)

@@ -7,6 +7,9 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Text.Printf {- base -}
 
+import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec.String as P {- parsec -}
+
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
@@ -523,7 +526,7 @@ midi_cents_pp (m,c) = if cents_is_normal c then printf "%d.%02d" m c else error 
 
 -- | Parse possible octave from single integer.
 --
--- > map (parse_octave 2) ["","4","x","11"]
+-- > map (parse_octave 2) ["","4","x","11"] == [Just 2,Just 4,Nothing,Nothing]
 parse_octave :: Num a => a -> String -> Maybe a
 parse_octave def_o o =
     case o of
@@ -562,6 +565,9 @@ parse_iso_pitch = parse_iso_pitch_oct (error "parse_iso_pitch: no octave")
 -- | 'error' variant.
 parse_iso_pitch_err :: String -> Pitch
 parse_iso_pitch_err = fromMaybe (error "parse_iso_pitch") . parse_iso_pitch
+
+--parse_ly_pitch :: String -> Pitch
+--parse_ly_pitch s =
 
 -- * Pretty printers
 
@@ -607,6 +613,28 @@ pitch_class_names_12et sp k n =
 -- > pitch_pp_iso (Pitch C ThreeQuarterToneSharp 4) -- error
 pitch_pp_iso :: Pitch -> String
 pitch_pp_iso (Pitch n a o) = show n ++ T.alteration_iso a ++ show o
+
+-- | Lilypond octave syntax.
+ly_octave_tbl :: [(Octave, String)]
+ly_octave_tbl =
+  [(-1,",,,,")
+  ,( 0,",,,")
+  ,( 1,",,")
+  ,( 2,",")
+  ,( 3,"")
+  ,( 4,"'")
+  ,( 5,"''")
+  ,( 6,"'''")
+  ,( 7,"''''")
+  ,( 8,"'''''")]
+
+-- | Lookup 'ly_octave_tbl'.
+octave_pp_ly :: Octave -> String
+octave_pp_ly o = T.lookup_err o ly_octave_tbl
+
+-- | Parse lilypond octave indicator.
+octave_parse_ly :: String -> Maybe Octave
+octave_parse_ly s = T.reverse_lookup s ly_octave_tbl
 
 -- | Pretty printer for 'Pitch' (ASCII, see 'alteration_tonh').
 --
@@ -670,3 +698,17 @@ pitch_r_pp (Pitch_R n (_,a) o) = show n ++ a ++ show o
 pitch_r_class_pp :: Pitch_R -> String
 pitch_r_class_pp = T.dropWhileRight isDigit . pitch_r_pp
 
+-- * Parsers
+
+p_octave_ly :: P.GenParser Char () Octave
+p_octave_ly =
+    fmap
+    (fromMaybe (error "p_octave_ly") . octave_parse_ly)
+    (P.many1 (P.oneOf ",'"))
+
+-- > map (P.runP p_pitch_ly () "") ["c","d'","ees,","fisis''"]
+p_pitch_ly :: P.GenParser Char () Pitch
+p_pitch_ly = do
+  (n,a) <- T.p_note_alteration_ly
+  o <- P.optionMaybe p_octave_ly
+  return (Pitch n (fromMaybe T.Natural a) (fromMaybe 3 o))

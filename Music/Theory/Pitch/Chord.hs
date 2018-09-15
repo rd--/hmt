@@ -94,22 +94,10 @@ type P a = P.GenParser Char () a
 m_error :: String -> Maybe a -> a
 m_error txt = fromMaybe (error txt)
 
-p_note_t :: P T.Note_T
-p_note_t =
-    fmap
-    (m_error "p_note_t" . T.parse_note_t False)
-    (P.oneOf "ABCDEFG")
-
-p_alteration_t_iso :: P T.Alteration_T
-p_alteration_t_iso =
-    fmap
-    (m_error "p_alteration_t_iso" . T.symbol_to_alteration_iso)
-    (P.oneOf "b#x")
-
 p_pc :: P PC
 p_pc = do
-  n <- p_note_t
-  a <- P.optionMaybe p_alteration_t_iso
+  n <- T.p_note_t
+  a <- P.optionMaybe T.p_alteration_t_iso
   return (n,fromMaybe T.Natural a)
 
 p_mode_m :: P T.Mode_T
@@ -149,6 +137,8 @@ p_chord = do
                _ -> error ("trailing type not sus2 or sus4: " ++ show ty')
   return (CH pc ty'' ex b)
 
+-- | Parse chord.
+--
 -- > let ch = words "CmM7 C#o EbM7 Fo7 Gx/D C/E GØ/F Bbsus4/C E7sus2"
 -- > let c = map parse_chord ch
 -- > map chord_pp c == ch
