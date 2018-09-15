@@ -4,9 +4,9 @@ module Music.Theory.Dynamic_Mark where
 import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Text.Read {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Read as T {- hmt -}
 
 -- | Enumeration of dynamic mark symbols.
 data Dynamic_Mark_T = Niente
@@ -22,7 +22,7 @@ dynamic_mark_t_parse_ci :: String -> Maybe Dynamic_Mark_T
 dynamic_mark_t_parse_ci s =
   case map toUpper s of
     "NIENTE" -> Just Niente
-    uc -> T.read_maybe uc
+    uc -> readMaybe uc
 
 -- | Lookup MIDI velocity for 'Dynamic_Mark_T'.  The range is linear
 -- in @0-127@.

@@ -24,7 +24,8 @@ reads_to_read_precise_err err f =
     reads_to_read_precise f
 
 -- | 'reads_to_read_precise' of 'reads'.
--- space character.
+--
+-- > read_maybe "1.0" :: Maybe Int
 read_maybe :: Read a => String -> Maybe a
 read_maybe = reads_to_read_precise reads
 
