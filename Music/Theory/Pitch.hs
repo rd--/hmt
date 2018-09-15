@@ -706,9 +706,17 @@ p_octave_ly =
     (fromMaybe (error "p_octave_ly") . octave_parse_ly)
     (P.many1 (P.oneOf ",'"))
 
--- > map (P.runP p_pitch_ly () "") ["c","d'","ees,","fisis''"]
 p_pitch_ly :: P.GenParser Char () Pitch
 p_pitch_ly = do
   (n,a) <- T.p_note_alteration_ly
   o <- P.optionMaybe p_octave_ly
   return (Pitch n (fromMaybe T.Natural a) (fromMaybe 3 o))
+
+-- | Run 'p_pitch_ly'.
+--
+-- > map (pitch_pp . pitch_parse_ly_err) ["c","d'","ees,","fisis''"] == ["C3","D4","E♭2","F𝄪5"]
+pitch_parse_ly_err :: String -> Pitch
+pitch_parse_ly_err s =
+  case P.runP p_pitch_ly () "pitch_parse_ly" s of
+    Left err -> error (show err)
+    Right r -> r
