@@ -17,6 +17,7 @@ import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
+import qualified Music.Theory.Tuning.Midi as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
@@ -102,7 +103,7 @@ cps_tbl fmt tbl mnn_rng = do
                  ,"REF CPS","REF ET12","CENTS-/+"]
       dat = map (t_pp . gen_t) (rng_enum mnn_rng)
       ln = case fmt of
-             "md" -> T.md_table hdr dat
+             "md" -> T.md_table T.md_opt_simple (hdr,dat)
              "csv" -> map (intercalate ",") dat
              _ -> error "cps_tbl: fmt?"
   putStr (unlines ln)
