@@ -5,8 +5,10 @@ module Music.Theory.Xenakis.S4 where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
+
 import qualified Data.Permute as P {- permutation -}
 
+import qualified Music.Theory.List as T
 import qualified Music.Theory.Permutations as T
 
 -- * S4 notation
@@ -76,30 +78,29 @@ Note that the article has an error, printing Q4 for Q11 in the sequence below.
 > import qualified Music.Theory.List as T
 
 > let r = [D,Q12,Q4, E,Q8,Q2, E2,Q7,Q4, D2,Q3,Q11, L2,Q7,Q2, L,Q8,Q11]
-> in (take 18 (fib_proc l_on D Q12) == r,T.duplicates r == [Q2,Q4,Q7,Q8,Q11])
+> (take 18 (fib_proc l_on D Q12) == r,T.duplicates r == [Q2,Q4,Q7,Q8,Q11])
 
 Beginning E then G2 no Q nodes are visited.
 
 > let r = [E,G2,L2,C,G,D,E,B,D2,L,G,C,L2,E2,D2,B]
-> in (take 16 (fib_proc l_on E G2) == r,T.duplicates r == [B,C,D2,E,G,L2])
+> (take 16 (fib_proc l_on E G2) == r,T.duplicates r == [B,C,D2,E,G,L2])
 
-> import Music.Theory.List
-> let [a,b] = take 2 (segments 18 18 (fib_proc l_on D Q12)) in a == b
+> let [a,b] = take 2 (T.segments 18 18 (fib_proc l_on D Q12)) in a == b
 
 The prime numbers that are not factors of 18 are {1,5,7,11,13,17}.
 They form a closed group under modulo 18 multiplication.
 
-> let {n = [5,7,11,13,17]
->     ;r = [(5,7,17),(5,11,1),(5,13,11),(5,17,13)
->          ,(7,11,5),(7,13,1),(7,17,11)
->          ,(11,13,17),(11,17,7)
->          ,(13,17,5)]}
-> in [(p,q,(p * q) `mod` 18) | p <- n, q <- n, p < q] == r
+> let n = [5,7,11,13,17]
+> let r0 = [(5,7,17),(5,11,1),(5,13,11),(5,17,13)]
+> let r1 = [(7,11,5),(7,13,1),(7,17,11)]
+> let r2 = [(11,13,17),(11,17,7)]
+> let r3 = [(13,17,5)]
+> [(p,q,(p * q) `mod` 18) | p <- n, q <- n, p < q] == concat [r0,r1,r2,r3]
 
 The article also omits the 5 after 5,1 in the sequence below.
 
 > let r = [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1,11]
-> in take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
+> take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
 
 -}
 fib_proc :: (a -> a -> a) -> a -> a -> [a]
@@ -123,15 +124,6 @@ half_seq_of = half_seq . seq_of
 half_seq :: Seq -> Half_Seq
 half_seq = take 4
 
--- | Reverse table 'lookup'.
---
--- > reverse_lookup 'b' (zip [1..] ['a'..]) == Just 2
--- > lookup 2 (zip [1..] ['a'..]) == Just 'b'
-reverse_lookup :: (Eq a) => a -> [(b,a)] -> Maybe b
-reverse_lookup i =
-    let f (p,q) = (q,p)
-    in lookup i . map f
-
 -- | 'Label' of 'Seq', inverse of 'seq_of'.
 --
 -- > label_of [8,7,5,6,4,3,1,2] == Q1
@@ -139,7 +131,7 @@ reverse_lookup i =
 label_of :: Seq -> Label
 label_of i =
     let err = error ("label_of: " ++ show i)
-    in fromMaybe err (reverse_lookup i viii_6b)
+    in fromMaybe err (T.reverse_lookup i viii_6b)
 
 -- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
 --
@@ -212,11 +204,10 @@ apply_relations_l rs = map (label_of . full_seq) .
 data Face = F_Back | F_Front | F_Right | F_Left | F_Bottom | F_Top
           deriving (Eq,Enum,Bounded,Ord,Show)
 
--- | Table indicating set of faces of cubes as drawn in Fig. VIII-6
--- (p.220).
+-- | Table indicating set of faces of cubes as drawn in Fig. VIII-6 (p.220).
 --
 -- > lookup [1,4,6,7] faces == Just F_Left
--- > reverse_lookup F_Right faces == Just [2,3,5,8]
+-- > T.reverse_lookup F_Right faces == Just [2,3,5,8]
 faces :: [([Int],Face)]
 faces =
     [([1,3,6,8],F_Back) -- (I in viii-6)

@@ -144,13 +144,13 @@ realise_ath_seq sq =
       _ -> [sq]
 
 -- return edges that connect z to nodes at gr in an ATH relation
-ath_gr_extend :: T.GRAPH PCSET -> PCSET -> [T.EDGE PCSET]
+ath_gr_extend :: [T.EDGE PCSET] -> PCSET -> [T.EDGE PCSET]
 ath_gr_extend gr c =
     let f x y = if is_ath (x ++ y) then Just (x,y) else Nothing
         g (p,q) = mapMaybe (f c) [p,q]
     in nub (map T.t2_sort (concatMap g gr))
 
-gr_trs :: Int -> T.GRAPH PCSET -> T.GRAPH PCSET
+gr_trs :: Int -> [T.EDGE PCSET] -> [T.EDGE PCSET]
 gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 
 -- * TABLES
@@ -208,7 +208,7 @@ table_6_md =
 
 -- * FIGURES
 
-fig_1 :: T.GRAPH PCSET
+fig_1 :: [T.EDGE PCSET]
 fig_1 = map (T.t2_map T.p3_snd) table_4
 
 fig_1_gr :: G.Gr PCSET ()
@@ -225,19 +225,19 @@ fig_2 =
      p' = (filter (not . null) p)
  in map (mapMaybe (\x -> lookup x n)) p'
 
-fig_3 :: [T.GRAPH PCSET]
+fig_3 :: [[T.EDGE PCSET]]
 fig_3 = map (concatMap (T.adj2 1) . realise_ath_seq) fig_2
 
 fig_3_gr :: [G.Gr PCSET ()]
 fig_3_gr = map T.g_from_edges fig_3
 
-fig_4 :: [T.GRAPH PCSET]
+fig_4 :: [[T.EDGE PCSET]]
 fig_4 =
     let p = concatMap realise_ath_seq fig_2
         q = filter ([0,1,2] `elem`) p
     in map (T.adj2 1) q
 
-fig_5 :: [T.GRAPH PCSET]
+fig_5 :: [[T.EDGE PCSET]]
 fig_5 =
     let c = [0,4,8]
         f gr = case ath_gr_extend gr c of
@@ -264,28 +264,28 @@ gr_pp :: T.GR_PP PCSET ()
 gr_pp = gr_pp' pcset_pp
 
 d_fig_1 :: [String]
-d_fig_1 = T.g_to_udot [] gr_pp fig_1_gr
+d_fig_1 = T.fgl_to_udot [] gr_pp fig_1_gr
 
 d_fig_3_g :: GR
 d_fig_3_g = T.g_from_edges (uedge_set (concat fig_3))
 
 d_fig_3 :: [String]
-d_fig_3 = T.g_to_udot [] gr_pp d_fig_3_g
+d_fig_3 = T.fgl_to_udot [] gr_pp d_fig_3_g
 
 d_fig_3' :: [[String]]
-d_fig_3' = map (T.g_to_udot [("node:shape","circle")] gr_pp) fig_3_gr
+d_fig_3' = map (T.fgl_to_udot [("node:shape","circle")] gr_pp) fig_3_gr
 
 d_fig_4_g :: GR
 d_fig_4_g = T.g_from_edges (uedge_set (concat fig_4))
 
 d_fig_4 :: [String]
-d_fig_4 = T.g_to_udot [] gr_pp d_fig_4_g
+d_fig_4 = T.fgl_to_udot [] gr_pp d_fig_4_g
 
 d_fig_5_g :: GR
 d_fig_5_g = T.g_from_edges (uedge_set (concat fig_5))
 
 d_fig_5 :: [String]
-d_fig_5 = T.g_to_udot [("edge:len","1.5")] (gr_pp' pcset_pp_hex) d_fig_5_g
+d_fig_5 = T.fgl_to_udot [("edge:len","1.5")] (gr_pp' pcset_pp_hex) d_fig_5_g
 
 d_fig_5_e :: [T.EDGE_L PCSET PCSET]
 d_fig_5_e = map (\(p,q) -> ((p,q),p++q)) (uedge_set (concat fig_5))
@@ -296,4 +296,4 @@ d_fig_5_g' = T.g_from_edges_l d_fig_5_e
 d_fig_5' :: [String]
 d_fig_5' =
     let pp = (\_ -> [("shape","")],\e -> [("label",ath_pp e)])
-    in T.g_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'
+    in T.fgl_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'

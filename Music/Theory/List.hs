@@ -494,8 +494,8 @@ lookup_def k d = fromMaybe d . lookup k
 -- | Reverse lookup.
 --
 -- > reverse_lookup 'c' [] == Nothing
--- > reverse_lookup 'c' (zip [0..4] ['a'..]) == Just 2
--- > lookup 2 (zip [0..4] ['a'..]) == Just 'c'
+-- > reverse_lookup 'b' (zip [1..] ['a'..]) == Just 2
+-- > lookup 2 (zip [1..] ['a'..]) == Just 'b'
 reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
 reverse_lookup k = fmap fst . find ((== k) . snd)
 

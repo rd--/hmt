@@ -5,7 +5,6 @@ import Data.Char {- base -}
 import Data.List {- base -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
-import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
@@ -134,16 +133,28 @@ type POS_FN v = (v -> (Int,Int))
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
 g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r * 100))]
 
-g_to_dot :: G_TYPE -> [DOT_ATTR] -> GR_PP v e -> G.Gr v e -> [String]
-g_to_dot g_typ opt (v_attr,e_attr) gr =
-    let v_f (k,n) = concat [show k,dot_attr_seq_pp (v_attr n),";"]
-        e_f (lhs,rhs,e) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
-                                 ,dot_attr_seq_pp (e_attr e),";"]
+-- | Labelled vertices and edges lists.
+type LVE v e = ([(Int,v)],[(Int,Int,e)])
+
+lve_to_dot :: G_TYPE -> [DOT_ATTR] -> GR_PP v e -> LVE v e -> [String]
+lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
+    let v_f (k,lbl) = concat [show k,dot_attr_seq_pp (v_attr lbl),";"]
+        e_f (lhs,rhs,lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
+                                   ,dot_attr_seq_pp (e_attr lbl),";"]
     in concat [[g_type_to_string g_typ," g {"]
               ,map dot_attr_set_pp (dot_attr_collate (assoc_union opt dot_attr_def))
-              ,map v_f (G.labNodes gr)
-              ,map e_f (G.labEdges gr)
+              ,map v_f v
+              ,map e_f e
               ,["}"]]
 
-g_to_udot :: [DOT_ATTR] -> GR_PP v e -> G.Gr v e -> [String]
-g_to_udot o pp = g_to_dot G_UGRAPH o pp
+lve_to_udot :: [DOT_ATTR] -> GR_PP v e -> LVE v e -> [String]
+lve_to_udot o pp = lve_to_dot G_UGRAPH o pp
+
+fgl_to_lve :: G.Graph gr => gr v e -> LVE v e
+fgl_to_lve gr = (G.labNodes gr,G.labEdges gr)
+
+fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_ATTR] -> GR_PP v e -> gr v e -> [String]
+fgl_to_dot typ opt pp gr = lve_to_dot typ opt pp (fgl_to_lve gr)
+
+fgl_to_udot :: G.Graph gr => [DOT_ATTR] -> GR_PP v e -> gr v e -> [String]
+fgl_to_udot opt pp gr = lve_to_udot opt pp (fgl_to_lve gr)
