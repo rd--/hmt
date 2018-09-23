@@ -147,6 +147,15 @@ lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
               ,map e_f e
               ,["}"]]
 
+ve_to_lve :: Eq t => ([t],[(t,t)]) -> LVE t ()
+ve_to_lve (v,e) =
+  let n = length v
+      v' = [0 .. n - 1]
+      tbl = zip v' v
+      get k = T.reverse_lookup_err k tbl
+      e' = map (\(p,q) -> (get p,get q,())) e
+  in (zip v' v,e')
+
 lve_to_udot :: [DOT_ATTR] -> GR_PP v e -> LVE v e -> [String]
 lve_to_udot o pp = lve_to_dot G_UGRAPH o pp
 
