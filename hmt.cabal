@@ -36,6 +36,7 @@ Library
                    parsec,
                    permutation,
                    primes,
+                   process,
                    random,
                    safe,
                    split,
@@ -78,7 +79,9 @@ Library
                    Music.Theory.Graph.Deacon_1934
                    Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
+                   Music.Theory.Graph.IO
                    Music.Theory.Graph.Johnson_2014
+                   Music.Theory.Graph.Type
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
                    Music.Theory.Interval
