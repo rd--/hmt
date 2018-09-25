@@ -10,14 +10,8 @@ import qualified Music.Theory.List as T {- hmt -}
 
 -- * UTIL
 
--- | Separate at element.
---
--- > sep1 ':' "graph:layout"
-sep1 :: Eq t => t -> [t] -> ([t],[t])
-sep1 e l =
-    case break (== e) l of
-      (p,_:q) -> (p,q)
-      _ -> error "sep1"
+sep1 :: Eq t => t -> [t] -> ([t], [t])
+sep1 c = T.split_on_1_err [c]
 
 s_classify :: (t -> Bool) -> (t -> Bool) -> [t] -> Bool
 s_classify p q s =

@@ -88,6 +88,19 @@ on_elem e = S.defaultSplitter { S.delimiter = S.Delimiter [(==) e] }
 split_before :: Eq a => a -> [a] -> [[a]]
 split_before = S.split . S.keepDelimsL . on_elem
 
+-- | Singleton variant of 'S.splitOn'.
+--
+-- > split_on_1 ":" "graph:layout" == Just ("graph","layout")
+split_on_1 :: Eq t => [t] -> [t] -> Maybe ([t],[t])
+split_on_1 e l =
+    case S.splitOn e l of
+      [p,q] -> Just (p,q)
+      _ -> Nothing
+
+-- | Erroring variant.
+split_on_1_err :: Eq t => [t] -> [t] -> ([t],[t])
+split_on_1_err e = fromMaybe (error "split_on_1") . split_on_1 e
+
 -- * Rotate
 
 -- | Generic form of 'rotate_left'.
