@@ -177,11 +177,11 @@ adj n k l =
 -- | Variant of 'adj' where the last element has /n/ places but may
 -- not reach the end of the input sequence.
 --
--- > adj' 3 2 "adjacent" == ["adj","jac","cen"]
-adj' :: Int -> Int -> [a] -> [[a]]
-adj' n k l =
+-- > adj_trunc 3 2 "adjacent" == ["adj","jac","cen"]
+adj_trunc :: Int -> Int -> [a] -> [[a]]
+adj_trunc n k l =
     let r = take n l
-    in if length r == n then r : adj' n k (drop k l) else []
+    in if length r == n then r : adj_trunc n k (drop k l) else []
 
 -- | Generic form of 'adj2'.
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
