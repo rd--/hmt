@@ -23,17 +23,17 @@ g6_dsc_load fn = do
   return r
 
 -- | Call nauty-listg to transform a sequence of G6.
-g6_to_el :: [String] -> IO [T.EL]
+g6_to_el :: [String] -> IO [T.EDG]
 g6_to_el g6 = do
   r <- readProcess "nauty-listg" ["-q","-l0","-e"] (unlines g6)
-  return (map T.el_parse (chunksOf 2 (lines r)))
+  return (map T.edg_parse (chunksOf 2 (lines r)))
 
 -- | 'T.el_to_gr' of 'g6_to_el'
-g6_to_gr :: [String] -> IO [T.GR]
-g6_to_gr = fmap (map T.el_to_gr) . g6_to_el
+g6_to_gr :: [String] -> IO [T.G]
+g6_to_gr = fmap (map T.edg_to_g) . g6_to_el
 
 -- | 'g6_to_gr' of 'g6_dsc_load'
-g6_dsc_load_gr :: FilePath -> IO [(String,T.GR)]
+g6_dsc_load_gr :: FilePath -> IO [(String,T.G)]
 g6_dsc_load_gr fn = do
   dat <- g6_dsc_load fn
   let (dsc,g6) = unzip dat
