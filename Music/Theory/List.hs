@@ -425,6 +425,17 @@ uncollate = concatMap (\(k,v) -> zip (repeat k) v)
 with_key :: k -> [v] -> [(k,v)]
 with_key h = zip (repeat h)
 
+-- | Left biased merge of association lists /p/ and /q/.
+--
+-- > assoc_merge [(5,"a"),(3,"b")] [(5,"A"),(7,"C")] == [(5,"a"),(3,"b"),(7,"C")]
+assoc_merge :: Eq k => [(k,v)] -> [(k,v)] -> [(k,v)]
+assoc_merge p q =
+    let p_k = map fst p
+        q' = filter ((`notElem` p_k) . fst) q
+    in p ++ q'
+
+-- * Δ
+
 -- | Intervals to values, zero is /n/.
 --
 -- > dx_d 5 [1,2,3] == [5,6,8,11]

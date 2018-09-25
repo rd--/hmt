@@ -14,3 +14,4 @@ clean:
 	cabal clean
 	rm -Rf dist
 	(cd cmd; make clean)
+	rm -f data/dot/tj/oh/svg/*.svg

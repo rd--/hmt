@@ -123,7 +123,7 @@ gen_graph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
 
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
-gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edges es)
+gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_label_v pp) (T.g_from_edges es)
 
 gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
@@ -216,7 +216,7 @@ p14_edges =
 p14_mk_gr :: [T.DOT_ATTR] -> [T.EDGE T.Key] -> [String]
 p14_mk_gr opt e =
     let opt' = ("graph:start","168732") : opt
-        pp = T.gr_pp_lift_node_f T.key_lc_uc_pp
+        pp = T.gr_pp_label_v T.key_lc_uc_pp
         gr = T.g_from_edges e
     in T.fgl_to_udot opt' pp gr
 
@@ -469,7 +469,7 @@ p177_gr_set =
     in [("p177.0.dot",gen_graph_ul [] set_pp (map (partition_ic 4) p_set))
        ,("p177.1.dot",gen_graph_ul_ty "circo" set_pp (map (partition_ic 6) p_set))
        ,("p177.2.dot"
-        ,let gr_pp = T.gr_pp_lift_node_f set_pp
+        ,let gr_pp = T.gr_pp_label_v set_pp
              gr = T.g_from_edges (map (partition_ic 6) p_set)
          in T.fgl_to_udot [("edge:len","1.5")] gr_pp gr)]
 

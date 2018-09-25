@@ -19,7 +19,7 @@ gen_graph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
 
 gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
-gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_lift_node_f pp) (T.g_from_edges es)
+gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_label_v pp) (T.g_from_edges es)
 
 gen_digraph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
 gen_digraph opt pp es = T.fgl_to_dot T.G_DIGRAPH opt pp (T.g_from_edges_l es)
@@ -118,10 +118,10 @@ wr (e,o,nm) = do
   let mk_nm ty = "/home/rohan/sw/hmt/data/dot/deacon/" ++ nm ++ "_" ++ ty ++ ".dot"
       wr_f ty g = writeFile (mk_nm ty) (unlines g)
   wr_f "G" (gen_graph_ul o id e)
-  wr_f "GL" (gen_graph o T.gr_pp_id_show (T.e_label_seq e))
-  wr_f "GC" (gen_graph o T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))
+  wr_f "GL" (gen_graph o (T.gr_pp_label id show) (T.e_label_seq e))
+  wr_f "GC" (gen_graph o (T.gr_pp_label id T.br_csl_pp) (T.e_collate_normalised_l (T.e_label_seq e)))
   wr_f "GF" (gen_graph_ul o id (nub (map T.t2_sort e)))
-  wr_f "GD" (gen_digraph o T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))
+  wr_f "GD" (gen_digraph o (T.gr_pp_label id T.br_csl_pp) (T.e_collate_normalised_l (T.e_label_seq e)))
 {-
   let o' = ("graph:layout","fdp") : o
   wr_f "GC_" (gen_graph o' T.gr_pp_id_br_csl (T.e_collate_normalised_l (T.e_label_seq e)))

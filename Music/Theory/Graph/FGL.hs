@@ -12,7 +12,11 @@ import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
+import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+
+fgl_to_lve :: G.Graph gr => gr v e -> T.LVE v e
+fgl_to_lve gr = (G.labNodes gr,G.labEdges gr)
 
 -- | Synonym for 'G.noNodes'.
 g_degree :: G.Gr v e -> Int

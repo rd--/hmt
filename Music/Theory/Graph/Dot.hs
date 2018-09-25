@@ -3,44 +3,41 @@ module Music.Theory.Graph.Dot where
 
 import Data.Char {- base -}
 import Data.List {- base -}
+import System.Exit {- process -}
+import System.Process {- process -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
 
+import qualified Music.Theory.Graph.FGL as T {- hmt -}
+import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
 -- * UTIL
 
-sep1 :: Eq t => t -> [t] -> ([t], [t])
-sep1 c = T.split_on_1_err [c]
-
-s_classify :: (t -> Bool) -> (t -> Bool) -> [t] -> Bool
-s_classify p q s =
+-- | Classify /s/ using a first element predicate, a remainder predicate and a unit predicate.
+s_classify :: (t -> Bool) -> (t -> Bool) -> ([t] -> Bool) -> [t] -> Bool
+s_classify p q r s =
   case s of
-    c0:s' -> p c0 && all q s'
+    c0:s' -> p c0 && all q s' && r s
     [] -> False
 
--- > map is_symbol ["sym","sym2","3sym",""] == [True,True,False,False]
+-- | Symbol rule.
+--
+-- > map is_symbol ["sym","Sym2","3sym","1",""] == [True,True,False,False,False]
 is_symbol :: String -> Bool
-is_symbol = s_classify isAlpha isAlphaNum
+is_symbol = s_classify isAlpha isAlphaNum (const True)
 
--- > map is_number ["123","123.45",".25","1.1.1",""] == [True,True,False,True,False]
+-- | Number rule.
+--
+-- > map is_number ["123","123.45",".25","1.","1.2.3",""] == [True,True,False,True,False,False]
 is_number :: String -> Bool
-is_number = s_classify isDigit (\c -> isDigit c || c == '.')
+is_number = s_classify isDigit (\c -> isDigit c || c == '.') ((< 2) . length . filter ((==) '.'))
 
--- | Quote /s/ if it includes white space.
+-- | Quote /s/ if 'is_symbol' or 'is_number'.
 --
 -- > map maybe_quote ["abc","a b c","12","12.3"] == ["abc","\"a b c\"","12","12.3"]
 maybe_quote :: String -> String
 maybe_quote s = if is_symbol s || is_number s then s else concat ["\"",s,"\""]
-
--- | Left biased union of association lists /p/ and /q/.
---
--- > assoc_union [(5,"a"),(3,"b")] [(5,"A"),(7,"C")] == [(5,"a"),(3,"b"),(7,"C")]
-assoc_union :: Eq k => [(k,v)] -> [(k,v)] -> [(k,v)]
-assoc_union p q =
-    let p_k = map fst p
-        q' = filter ((`notElem` p_k) . fst) q
-    in p ++ q'
 
 -- * ATTR
 
@@ -51,9 +48,9 @@ type DOT_VALUE = String
 type DOT_ATTR = (DOT_OPT,DOT_VALUE)
 type DOT_ATTR_SET = (String,[DOT_ATTR])
 
--- > dot_key_sep "graph:layout"
-dot_key_sep :: String -> (String,String)
-dot_key_sep = sep1 ':'
+-- > dot_key_sep "graph:layout" == ("graph","layout")
+dot_key_sep :: DOT_KEY -> (String,String)
+dot_key_sep = T.split_on_1_err ":"
 
 dot_attr_pp :: DOT_ATTR -> String
 dot_attr_pp (lhs,rhs) = concat [lhs,"=",maybe_quote rhs]
@@ -74,7 +71,7 @@ dot_attr_collate opt =
     in T.collate c
 
 dot_attr_ext :: [DOT_ATTR] -> [DOT_ATTR] -> [DOT_ATTR]
-dot_attr_ext = assoc_union
+dot_attr_ext = T.assoc_merge
 
 -- > map dot_attr_set_pp (dot_attr_collate dot_attr_def)
 dot_attr_def :: [DOT_ATTR]
@@ -87,14 +84,23 @@ dot_attr_def =
 
 -- * GRAPH
 
--- | Graph pretty-printer, (node->attr,edge->attr)
+-- | Graph pretty-printer, (v -> [attr],e -> [attr])
 type GR_PP v e = (v -> [DOT_ATTR],e -> [DOT_ATTR])
 
-gr_pp_lift_node_f :: (v -> String) -> GR_PP v e
-gr_pp_lift_node_f f = (\v -> [("label",f v)], const [])
+gr_pp_label_m :: Maybe (v -> DOT_VALUE) -> Maybe (e -> DOT_VALUE) -> GR_PP v e
+gr_pp_label_m f_v f_e =
+  let lift m e = case m of
+                    Nothing -> []
+                    Just f -> [("label",f e)]
+  in (lift f_v,lift f_e)
 
-gr_pp_id_show :: Show e => GR_PP String e
-gr_pp_id_show = (\v -> [("label",v)],\e -> [("label",show e)])
+-- | Label V & E.
+gr_pp_label :: (v -> DOT_VALUE) -> (e -> DOT_VALUE) -> GR_PP v e
+gr_pp_label f_v f_e = gr_pp_label_m (Just f_v) (Just f_e)
+
+-- | Label V only.
+gr_pp_label_v :: (v -> DOT_VALUE) -> GR_PP v e
+gr_pp_label_v f = gr_pp_label_m (Just f) Nothing
 
 -- | br = brace, csl = comma separated list
 br_csl_pp :: Show t => [t] -> String
@@ -102,9 +108,6 @@ br_csl_pp l =
     case l of
       [e] -> show e
       _ -> T.bracket ('{','}') (intercalate "," (map show l))
-
-gr_pp_id_br_csl :: Show e => GR_PP String [e]
-gr_pp_id_br_csl = (\v -> [("label",v)],\e -> [("label",br_csl_pp e)])
 
 -- | Graph type, directed or un-directed.
 data G_TYPE = G_DIGRAPH | G_UGRAPH
@@ -127,37 +130,30 @@ type POS_FN v = (v -> (Int,Int))
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
 g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r * 100))]
 
--- | Labelled vertices and edges lists.
-type LVE v e = ([(Int,v)],[(Int,Int,e)])
-
-lve_to_dot :: G_TYPE -> [DOT_ATTR] -> GR_PP v e -> LVE v e -> [String]
+lve_to_dot :: G_TYPE -> [DOT_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
 lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
     let v_f (k,lbl) = concat [show k,dot_attr_seq_pp (v_attr lbl),";"]
         e_f (lhs,rhs,lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
                                    ,dot_attr_seq_pp (e_attr lbl),";"]
     in concat [[g_type_to_string g_typ," g {"]
-              ,map dot_attr_set_pp (dot_attr_collate (assoc_union opt dot_attr_def))
+              ,map dot_attr_set_pp (dot_attr_collate (T.assoc_merge opt dot_attr_def))
               ,map v_f v
               ,map e_f e
               ,["}"]]
 
-ve_to_lve :: Eq t => ([t],[(t,t)]) -> LVE t ()
-ve_to_lve (v,e) =
-  let n = length v
-      v' = [0 .. n - 1]
-      tbl = zip v' v
-      get k = T.reverse_lookup_err k tbl
-      e' = map (\(p,q) -> (get p,get q,())) e
-  in (zip v' v,e')
-
-lve_to_udot :: [DOT_ATTR] -> GR_PP v e -> LVE v e -> [String]
+lve_to_udot :: [DOT_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
 lve_to_udot o pp = lve_to_dot G_UGRAPH o pp
 
-fgl_to_lve :: G.Graph gr => gr v e -> LVE v e
-fgl_to_lve gr = (G.labNodes gr,G.labEdges gr)
-
 fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_ATTR] -> GR_PP v e -> gr v e -> [String]
-fgl_to_dot typ opt pp gr = lve_to_dot typ opt pp (fgl_to_lve gr)
+fgl_to_dot typ opt pp gr = lve_to_dot typ opt pp (T.fgl_to_lve gr)
 
 fgl_to_udot :: G.Graph gr => [DOT_ATTR] -> GR_PP v e -> gr v e -> [String]
-fgl_to_udot opt pp gr = lve_to_udot opt pp (fgl_to_lve gr)
+fgl_to_udot opt pp gr = lve_to_udot opt pp (T.fgl_to_lve gr)
+
+-- * IO
+
+dot_to_ftype :: String -> String -> IO ExitCode
+dot_to_ftype typ dot_fn = rawSystem "dot" ["-T",typ,"-O",dot_fn]
+
+dot_to_svg :: String -> IO ExitCode
+dot_to_svg = dot_to_ftype "svg"

@@ -89,18 +89,74 @@ edg_parse ln =
 -- | Adjacency list
 type ADJ = [(V,[V])]
 
+-- | ADJ to G
 adj_to_g :: ADJ -> G
 adj_to_g adj =
   let e = concatMap (\(i,j) -> zip (repeat i) j) adj
   in eset_to_gr e
 
--- > g_to_adj ([0,1,2,3],[(0,1),(1,2)]) == [(0,[1]),(1,[2])]
-g_to_adj :: G -> ADJ
-g_to_adj (v,e) =
-  let sel k (i,j) = if i == k && j >= k
-                    then Just j
-                    else if j == k && i >= k
-                         then Just i
-                         else Nothing
-      f k = (k,nub (sort (mapMaybe (sel k) e)))
+g_to_adj :: (V -> E -> Maybe V) -> G -> ADJ
+g_to_adj sel_f (v,e) =
+  let f k = (k,sort (mapMaybe (sel_f k) e))
   in filter (\(_,a) -> a /= []) (map f v)
+
+-- | Directed graph to ADJ.
+--
+-- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
+-- > r = [(0,[1,3]),(2,[1]),(3,[0])]
+-- > g_to_adj_dir g == r
+g_to_adj_dir :: G -> ADJ
+g_to_adj_dir =
+  let sel_f k (i,j) = if i == k then Just j else Nothing
+  in g_to_adj sel_f
+
+-- | Un-directed graph to ADJ.
+--
+-- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
+-- > g_to_adj_undir g == [(0,[1,3,3]),(1,[2])]
+g_to_adj_undir :: G -> ADJ
+g_to_adj_undir =
+  let sel_f k (i,j) =
+        if i == k && j >= k
+        then Just j
+        else if j == k && i >= k
+             then Just i
+             else Nothing
+  in g_to_adj sel_f
+
+-- * Labels
+
+-- | Table of labels for vertices and edges.
+type LBL v e = ([(V,v)],[(E,e)])
+
+v_label :: v -> LBL v e -> V -> v
+v_label def (tbl,_) v = fromMaybe def (lookup v tbl)
+
+v_label_err :: LBL v e -> V -> v
+v_label_err = v_label (error "v_label")
+
+e_label :: e -> LBL v e -> E -> e
+e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
+
+e_label_err :: LBL v e -> E -> e
+e_label_err = e_label (error "e_label")
+
+-- > gr_to_lbl ("ab",[('a','b')])
+gr_to_lbl :: Eq t => GR t -> LBL t ()
+gr_to_lbl (v,e) =
+  let n = length v
+      v' = [0 .. n - 1]
+      tbl = zip v' v
+      get k = T.reverse_lookup_err k tbl
+      e' = map (\(p,q) -> ((get p,get q),())) e
+  in (zip v' v,e')
+
+-- * LVE
+
+-- | Labelled vertices and edges lists.
+type LVE v e = ([(V,v)],[(V,V,e)])
+
+gr_to_lve :: Eq t => GR t -> LVE t ()
+gr_to_lve g =
+  let (v,e) = gr_to_lbl g
+  in (v,map (\((i,j),k) -> (i,j,k)) e)
