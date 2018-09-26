@@ -4,6 +4,7 @@ module Music.Theory.Graph.Dot where
 import Data.Char {- base -}
 import Data.List {- base -}
 import System.Exit {- process -}
+import System.FilePath {- process -}
 import System.Process {- process -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
@@ -152,8 +153,12 @@ fgl_to_udot opt pp gr = lve_to_udot opt pp (T.fgl_to_lve gr)
 
 -- * IO
 
+-- | Given x.dot write x.typ.
 dot_to_ftype :: String -> String -> IO ExitCode
-dot_to_ftype typ dot_fn = rawSystem "dot" ["-T",typ,"-O",dot_fn]
+dot_to_ftype typ dot_fn =
+  -- -O write x.dot to x.dot.typ, use -o
+  let typ_fn = replaceExtension dot_fn typ
+  in rawSystem "dot" ["-T",typ,"-o" ++ typ_fn,dot_fn]
 
 dot_to_svg :: String -> IO ExitCode
 dot_to_svg = dot_to_ftype "svg"
