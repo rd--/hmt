@@ -16,26 +16,16 @@ type GR t = ([t],[(t,t)])
 gr_degree :: GR t -> (Int,Int)
 gr_degree (v,e) = (length v,length e)
 
--- | Label graph given labeling table.
+-- | Label graph given labelling table.
 gr_label :: Eq t => [(t,u)] -> GR t -> GR u
 gr_label tbl (v,e) =
   let get z = T.lookup_err z tbl
   in (map get v,map (\(p,q) -> (get p,get q)) e)
 
--- | Unlabel graph, make labeling table.
-gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
-gr_unlabel (v,e) =
-  let n = length v
-      v' = [0 .. n - 1]
-      tbl = zip v' v
-      get k = T.reverse_lookup_err k tbl
-      e' = map (\(p,q) -> (get p,get q)) e
-  in ((v',e'),tbl)
-
-gr_to_graph :: Eq t => GR t -> (G.Graph,[(V,t)])
-gr_to_graph gr =
-  let ((v,e),tbl) = gr_unlabel gr
-  in (G.buildG (0,length v - 1) e,tbl)
+e_eq_undir :: Eq t => (t, t) -> (t, t) -> Bool
+e_eq_undir e0 e1 =
+  let swap (i,j) = (j,i)
+  in e0 == e1 || e0 == swap e1
 
 -- | Sort edge.
 e_sort :: Ord t => (t, t) -> (t, t)
@@ -61,6 +51,21 @@ type G = GR V
 graph_to_g :: G.Graph -> G
 graph_to_g gr = (G.vertices gr,G.edges gr)
 
+-- | Unlabel graph, make labelling table.
+gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
+gr_unlabel (v,e) =
+  let n = length v
+      v' = [0 .. n - 1]
+      tbl = zip v' v
+      get k = T.reverse_lookup_err k tbl
+      e' = map (\(p,q) -> (get p,get q)) e
+  in ((v',e'),tbl)
+
+gr_to_graph :: Eq t => GR t -> (G.Graph,[(V,t)])
+gr_to_graph gr =
+  let ((v,e),tbl) = gr_unlabel gr
+  in (G.buildG (0,length v - 1) e,tbl)
+
 -- * EDG = edge list (zero-indexed)
 
 -- | ((|V|,|E|),[E])
@@ -71,7 +76,7 @@ edg_to_g :: EDG -> G
 edg_to_g ((nv,ne),e) =
   let v = [0 .. nv - 1]
   in if ne /= length e
-     then error (show ("el_to_gr",nv,ne,length e))
+     then error (show ("edg_to_g",nv,ne,length e))
      else (v,e)
 
 -- | Parse EDG as printed by nauty-listg.
@@ -82,21 +87,21 @@ edg_parse ln =
       parse_int_pair = T.unlist1_err . parse_int_pairs
   in case ln of
        [m,e] -> (parse_int_pair m,parse_int_pairs e)
-       _ -> error "parse_e"
+       _ -> error "edg_parse"
 
 -- * Adjacencies
 
 -- | Adjacency list
-type ADJ = [(V,[V])]
+type ADJ t = [(t,[t])]
 
 -- | ADJ to G
-adj_to_g :: ADJ -> G
-adj_to_g adj =
+adj_to_gr :: Ord t => ADJ t -> GR t
+adj_to_gr adj =
   let e = concatMap (\(i,j) -> zip (repeat i) j) adj
   in eset_to_gr e
 
-g_to_adj :: (V -> E -> Maybe V) -> G -> ADJ
-g_to_adj sel_f (v,e) =
+gr_to_adj :: Ord t => (t -> (t,t) -> Maybe t) -> GR t -> ADJ t
+gr_to_adj sel_f (v,e) =
   let f k = (k,sort (mapMaybe (sel_f k) e))
   in filter (\(_,a) -> a /= []) (map f v)
 
@@ -104,29 +109,49 @@ g_to_adj sel_f (v,e) =
 --
 -- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
 -- > r = [(0,[1,3]),(2,[1]),(3,[0])]
--- > g_to_adj_dir g == r
-g_to_adj_dir :: G -> ADJ
-g_to_adj_dir =
+-- > gr_to_adj_dir g == r
+gr_to_adj_dir :: Ord t => GR t -> ADJ t
+gr_to_adj_dir =
   let sel_f k (i,j) = if i == k then Just j else Nothing
-  in g_to_adj sel_f
+  in gr_to_adj sel_f
 
 -- | Un-directed graph to ADJ.
 --
 -- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
--- > g_to_adj_undir g == [(0,[1,3,3]),(1,[2])]
-g_to_adj_undir :: G -> ADJ
-g_to_adj_undir =
+-- > gr_to_adj_undir g == [(0,[1,3,3]),(1,[2])]
+gr_to_adj_undir :: Ord t => GR t -> ADJ t
+gr_to_adj_undir =
   let sel_f k (i,j) =
         if i == k && j >= k
         then Just j
         else if j == k && i >= k
              then Just i
              else Nothing
-  in g_to_adj sel_f
+  in gr_to_adj sel_f
+
+-- | Adjacency matrix, (|v|,mtx)
+type ADJ_MTX = (Int,[[Int]])
+
+{- | EDG to ADJ_MTX for un-directed graph.
+
+> e = ((4,3),[(0,3),(1,3),(2,3)])
+> edg_to_adj_mtx_undir e == [[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,0]]
+
+> e = ((4,4),[(0,1),(0,3),(1,2),(2,3)])
+> edg_to_adj_mtx_undir e == [[0,1,0,1],[1,0,1,0],[0,1,0,1],[1,0,1,0]]
+
+-}
+edg_to_adj_mtx_undir :: EDG -> ADJ_MTX
+edg_to_adj_mtx_undir ((nv,_ne),e) =
+  let v = [0 .. nv - 1]
+      f i j = case find (e_eq_undir (i,j)) e of
+                Nothing -> 0
+                _ -> 1
+  in (nv,map (\i -> map (f i) v) v)
 
 -- * Labels
 
--- | Table of labels for vertices and edges.
+-- | Labelled graph.
 type LBL v e = ([(V,v)],[(E,e)])
 
 v_label :: v -> LBL v e -> V -> v
@@ -153,10 +178,11 @@ gr_to_lbl (v,e) =
 
 -- * LVE
 
--- | Labelled vertices and edges lists.
+-- | Minor variant on LBL.
 type LVE v e = ([(V,v)],[(V,V,e)])
 
+lbl_to_lve :: LBL v e -> LVE v e
+lbl_to_lve (v,e) = (v,map (\((i,j),k) -> (i,j,k)) e)
+
 gr_to_lve :: Eq t => GR t -> LVE t ()
-gr_to_lve g =
-  let (v,e) = gr_to_lbl g
-  in (v,map (\((i,j),k) -> (i,j,k)) e)
+gr_to_lve = lbl_to_lve . gr_to_lbl
