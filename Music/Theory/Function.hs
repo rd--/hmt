@@ -1,6 +1,8 @@
 -- | "Data.Function" related functions.
 module Music.Theory.Function where
 
+import Data.Function {- base -}
+
 type UOp t = t -> t
 type BinOp t = t -> t -> t
 
@@ -41,6 +43,10 @@ predicate_or f g x = f x || g x
 -- > in map (predicate_any [(== 0),(== 5),even]) [0..5] == r
 predicate_any :: [t -> Bool] -> t -> Bool
 predicate_any p x = any id (map ($ x) p)
+
+-- | '==' 'on'.
+eq_on :: Eq t => (u -> t) -> u -> u -> Bool
+eq_on f = (==) `on` f
 
 -- * Function composition.
 

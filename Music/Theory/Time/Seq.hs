@@ -479,6 +479,10 @@ dseq_set_whole sq =
         t_f n = T.rational_whole_err (n * fromIntegral m)
     in map (dseq_tmap t_f) sq
 
+-- | End-time of sequence (ie. sum of durations).
+dseq_end :: Num t => Dseq t a -> t
+dseq_end = sum . map fst
+
 -- * Tseq
 
 -- | Given a a default value, a 'Tseq' /sq/ and a list of time-points
@@ -496,6 +500,14 @@ tseq_latch def sq t =
                                    LT -> (sq_t,sq_e) : tseq_latch sq_e sq' t
                                    EQ -> (sq_t,sq_e) : tseq_latch sq_e sq' t'
                                    GT -> (t0,def) : tseq_latch def sq t'
+
+-- | End-time of sequence (ie. time of last event).
+tseq_end :: Tseq t a -> t
+tseq_end = fst . last
+
+-- | Append the value /nil/ at /n/ seconds after the end of the sequence.
+tseq_add_nil_after :: Num t => a -> t -> Tseq t a -> Tseq t a
+tseq_add_nil_after nil n sq = sq ++ [(tseq_end sq + n,nil)]
 
 -- * Wseq
 
@@ -535,7 +547,6 @@ wseq_has_overlaps eq_fn =
               Nothing -> recur sq'
               Just _ -> True
     in recur
-
 
 {- | Edit durations to ensure that nodes don't overlap.  If equal nodes
      begin simultaneously delete the shorter node.  If a node
@@ -585,6 +596,10 @@ wseq_append p q = p ++ wseq_shift (wseq_end p) q
 -- > wseq_concat [[((1,2),'a')],[((1,2),'b')]] == [((1,2),'a'),((4,2),'b')]
 wseq_concat :: Num t => [Wseq t a] -> Wseq t a
 wseq_concat = foldl1 wseq_append
+
+-- | Transform sequence to start at time zero.
+wseq_zero :: Num t => Wseq t a -> Wseq t a
+wseq_zero sq = let t0 = wseq_start sq in wseq_tmap (\(st,du) -> (st - t0,du)) sq
 
 -- * Begin/End
 
