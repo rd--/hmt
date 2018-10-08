@@ -151,7 +151,7 @@ scale_ratios_u scl =
   let err = error "scale_ratios_u"
       p = scale_pitches scl
   in case uniform_pitch_type p of
-       Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.fromRight) p)
+       Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.from_right) p)
        _ -> Nothing
 
 -- | Erroring variant of 'scale_ratios_u.

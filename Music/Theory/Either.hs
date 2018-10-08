@@ -1,16 +1,24 @@
 -- | Either
 module Music.Theory.Either where
 
+import Data.Maybe {- base -}
+
 -- | Maybe 'Left' of 'Either'.
-fromLeft :: Either a b -> Maybe a
-fromLeft e =
+from_left :: Either a b -> Maybe a
+from_left e =
     case e of
       Left x -> Just x
       _ -> Nothing
 
+from_left_err :: Either t e -> t
+from_left_err = fromMaybe (error "from_left_err") . from_left
+
 -- | Maybe 'Right' of 'Either'.
-fromRight :: Either a b -> Maybe b
-fromRight e =
+from_right :: Either x t -> Maybe t
+from_right e =
     case e of
-      Right x -> Just x
-      _ -> Nothing
+      Left _ -> Nothing
+      Right r -> Just r
+
+from_right_err :: Either e t -> t
+from_right_err = fromMaybe (error "from_right_err") . from_right

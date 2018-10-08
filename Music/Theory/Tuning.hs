@@ -160,7 +160,7 @@ tn_divisions = either length length . tn_ratios_or_cents
 
 -- | 'Maybe' exact ratios of 'Tuning'.
 tn_ratios :: Tuning -> Maybe [Rational]
-tn_ratios = T.fromLeft . tn_ratios_or_cents
+tn_ratios = T.from_left . tn_ratios_or_cents
 
 -- | 'error'ing variant.
 tn_ratios_err :: Tuning -> [Rational]
@@ -222,7 +222,7 @@ tn_approximate_ratios_lookup t n =
 tn_reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
 tn_reconstructed_ratios epsilon =
     fmap (map (reconstructed_ratio epsilon)) .
-    T.fromRight .
+    T.from_right .
     tn_ratios_or_cents
 
 -- * Commas
