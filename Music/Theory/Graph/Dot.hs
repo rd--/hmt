@@ -143,10 +143,10 @@ g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r 
 
 lve_to_dot :: G_TYPE -> [DOT_KV] -> GR_PP v e -> T.LVE v e -> [String]
 lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
-    let v_f (k,lbl) = concat [show k," ",dot_attr_seq_pp (v_attr lbl),";"]
+    let ws s = if null s then " " ++ s else ""
+        v_f (k,lbl) = concat [show k,ws (dot_attr_seq_pp (v_attr lbl)),";"]
         e_f (lhs,rhs,lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
-                                   ," "
-                                   ,dot_attr_seq_pp (e_attr lbl),";"]
+                                   ,ws (dot_attr_seq_pp (e_attr lbl)),";"]
     in concat [[g_type_to_string g_typ," g {"]
               ,map dot_attr_set_pp (dot_attr_collate opt)
               ,map v_f v
