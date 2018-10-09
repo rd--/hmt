@@ -86,7 +86,7 @@ dot_attr_collate opt =
 
 -- > k = dot_attr_def ("neato","century schoolbook",10,"plaintext")
 -- > map dot_attr_set_pp (dot_attr_collate k)
-dot_attr_def :: (String,String,Double,String) -> [(DOT_KEY,DOT_VALUE)]
+dot_attr_def :: (String,String,Double,String) -> [(DOT_KV)]
 dot_attr_def (ly,fn,fs,sh) =
     [("graph:layout",ly)
     ,("node:fontname",fn)
