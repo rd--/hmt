@@ -1,3 +1,4 @@
+-- | Graph types.
 module Music.Theory.Graph.Type where
 
 import Data.List {- base -}
@@ -22,12 +23,17 @@ gr_label tbl (v,e) =
   let get z = T.lookup_err z tbl
   in (map get v,map (\(p,q) -> (get p,get q)) e)
 
-e_eq_undir :: Eq t => (t, t) -> (t, t) -> Bool
+-- | Un-directed edge equality.
+--
+-- > e_eq_undir (0,1) (1,0) == True
+e_eq_undir :: Eq t => (t,t) -> (t,t) -> Bool
 e_eq_undir e0 e1 =
   let swap (i,j) = (j,i)
   in e0 == e1 || e0 == swap e1
 
 -- | Sort edge.
+--
+-- > map e_sort [(0,1),(1,0)] == [(0,1),(0,1)]
 e_sort :: Ord t => (t, t) -> (t, t)
 e_sort (i,j) = (min i j,max i j)
 
@@ -36,6 +42,10 @@ eset_to_gr :: Ord t => [(t,t)] -> GR t
 eset_to_gr e =
   let v = sort (nub (concatMap (\(i,j) -> [i,j]) e))
   in (v,e)
+
+-- | Sort v and e.
+gr_sort :: Ord t => GR t -> GR t
+gr_sort (v,e) = (sort v,sort e)
 
 -- * Int graph
 
@@ -48,8 +58,16 @@ type E = (V,V)
 -- | (vertices,edges)
 type G = GR V
 
+-- | 'G.Graph' to 'G'.
 graph_to_g :: G.Graph -> G
 graph_to_g gr = (G.vertices gr,G.edges gr)
+
+-- | 'G' to 'G.Graph'
+--
+-- > g = ([0,1,2],[(0,1),(0,2),(1,2)])
+-- > g == gr_sort (graph_to_g (g_to_graph g))
+g_to_graph :: G -> G.Graph
+g_to_graph (v,e) = G.buildG (minimum v,maximum v) e
 
 -- | Unlabel graph, make labelling table.
 gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
@@ -61,6 +79,10 @@ gr_unlabel (v,e) =
       e' = map (\(p,q) -> (get p,get q)) e
   in ((v',e'),tbl)
 
+-- | 'g_to_graph' of 'gr_unlabel'.
+--
+-- > gr = ("abc",[('a','b'),('a','c'),('b','c')])
+-- > (g,tbl) = gr_to_graph gr
 gr_to_graph :: Eq t => GR t -> (G.Graph,[(V,t)])
 gr_to_graph gr =
   let ((v,e),tbl) = gr_unlabel gr
@@ -94,12 +116,13 @@ edg_parse ln =
 -- | Adjacency list
 type ADJ t = [(t,[t])]
 
--- | ADJ to G
+-- | ADJ to G.
 adj_to_gr :: Ord t => ADJ t -> GR t
 adj_to_gr adj =
   let e = concatMap (\(i,j) -> zip (repeat i) j) adj
   in eset_to_gr e
 
+-- | G to ADJ.
 gr_to_adj :: Ord t => (t -> (t,t) -> Maybe t) -> GR t -> ADJ t
 gr_to_adj sel_f (v,e) =
   let f k = (k,sort (mapMaybe (sel_f k) e))
