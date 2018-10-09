@@ -1,14 +1,14 @@
 all:
 	(cd data/dot/tj/oh; sh mk.sh)
 
-push-sp:
-	darcs push -a rd@slavepianos.org:sw/hmt
+push-rd:
+	darcs push -a rd@rohandrape.net:sw/hmt
 
-pull-sp:
-	darcs pull -a http://rd.slavepianos.org/sw/hmt
+pull-rd:
+	darcs pull -a http://rohandrape.net/sw/hmt
 
 remote-update:
-	ssh rd@slavepianos.org "(cd sw/hmt; make)"
+	ssh rd@rohandrape.net "(cd sw/hmt; make)"
 
 clean:
 	cabal clean

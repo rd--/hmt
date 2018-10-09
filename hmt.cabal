@@ -6,10 +6,10 @@ License:           GPL
 Category:          Music
 Copyright:         Rohan Drape, 2006-2018
 Author:            Rohan Drape
-Maintainer:        rd@slavepianos.org
+Maintainer:        rd@rohandrape.net
 Stability:         Experimental
-Homepage:          http://rd.slavepianos.org/t/hmt
-Tested-With:       GHC == 8.0.2
+Homepage:          http://rohandrape.net/t/hmt
+Tested-With:       GHC == 8.2.2
 Build-Type:        Simple
 Cabal-Version:     >= 1.8
 
@@ -187,4 +187,4 @@ Library
 
 Source-Repository  head
   Type:            darcs
-  Location:        http://rd.slavepianos.org/sw/hmt
+  Location:        http://rohandrape.net/sw/hmt
