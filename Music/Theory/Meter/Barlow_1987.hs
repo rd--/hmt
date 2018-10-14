@@ -3,11 +3,11 @@
 -- Translated by Henning Lohner.
 module Music.Theory.Meter.Barlow_1987 where
 
-import Data.List
+import Data.List {- base -}
 import Data.Numbers.Primes {- primes -}
 --import Debug.Trace
 
-import Music.Theory.Math (R)
+import Music.Theory.Math
 
 traceShow :: a -> b -> b
 traceShow _ x = x
@@ -241,18 +241,6 @@ prolong_stratifications (s1,v1) (s2,v2) =
         s1' = s1 ++ prime_stratification (t `whole_div` t1)
         s2' = s2 ++ prime_stratification (t `whole_div` t2)
     in (s1',s2')
-
--- | Arithmetic mean (average) of a list.
---
--- > mean [0..5] == 2.5
-mean :: Fractional a => [a] -> a
-mean x = sum x / fromIntegral (length x)
-
--- | Square of /n/.
---
--- > square 5 == 25
-square :: Num a => a -> a
-square n = n * n
 
 -- | Composition of 'prolong_stratifications' and 'align_meters'.
 --

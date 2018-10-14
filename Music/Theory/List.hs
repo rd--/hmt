@@ -218,6 +218,16 @@ close x =
 adj2_cyclic :: Int -> [t] -> [(t,t)]
 adj2_cyclic n = adj2 n . close
 
+
+-- | Adjacent triples.
+--
+-- > adj3 3 [1..6] == [(1,2,3),(4,5,6)]
+adj3 :: Int -> [t] -> [(t,t,t)]
+adj3 n l =
+  case l of
+      p:q:r:_ -> (p,q,r) : adj3 n (drop n l)
+      _ -> []
+
 -- | Interleave elements of /p/ and /q/.
 --
 -- > interleave [1..3] [4..6] == [1,4,2,5,3,6]

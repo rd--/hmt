@@ -1,6 +1,7 @@
 -- | Math functions.
 module Music.Theory.Math where
 
+import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Numeric {- base -}
@@ -229,4 +230,24 @@ nth_root n x =
     let f (_,x0) = (x0, ((n - 1) * x0 + x / x0 ** (n - 1)) / n)
         eq = uncurry (==)
     in fst (until eq f (x, x/n))
+
+-- | Arithmetic mean (average) of a list.
+--
+-- > map arithmetic_mean [[-3..3],[0..5],[1..5],[3,5,7],[7,7],[3,9,10,11,12]] == [0,2.5,3,5,7,9]
+arithmetic_mean :: Fractional a => [a] -> a
+arithmetic_mean x = sum x / fromIntegral (length x)
+
+-- | Numerically stable mean
+--
+-- > map ns_mean [[-3..3],[0..5],[1..5],[3,5,7],[7,7],[3,9,10,11,12]] == [0,2.5,3,5,7,9]
+ns_mean :: Floating a => [a] -> a
+ns_mean =
+    let f (m,n) x = (m + (x - m) / (n + 1),n + 1)
+    in fst . foldl' f (0,0)
+
+-- | Square of /n/.
+--
+-- > square 5 == 25
+square :: Num a => a -> a
+square n = n * n
 
