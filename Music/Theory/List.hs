@@ -33,29 +33,33 @@ section l r = take (r - l + 1) . drop l
 bracket :: (a,a) -> [a] -> [a]
 bracket (l,r) x = l : x ++ [r]
 
-unbracket' :: [a] -> (Maybe a,[a],Maybe a)
-unbracket' x =
+-- | Variant where brackets are sequences.
+--
+-- > bracket_l ("<:",":>") "1,2,3" == "<:1,2,3:>"
+bracket_l :: ([a],[a]) -> [a] -> [a]
+bracket_l (l,r) s = l ++ s ++ r
+
+-- | The first & middle & last elements of a list.
+--
+-- > map unbracket_el ["","{12}"] == [(Nothing,"",Nothing),(Just '{',"12",Just '}')]
+unbracket_el :: [a] -> (Maybe a,[a],Maybe a)
+unbracket_el x =
     case x of
       [] -> (Nothing,[],Nothing)
       l:x' -> let (m,r) = separate_last' x' in (Just l,m,r)
 
 -- | The first & middle & last elements of a list.
 --
--- > unbracket "[12]" == Just ('[',"12",']')
+-- > map unbracket ["","{12}"] == [Nothing,Just ('{',"12",'}')]
 unbracket :: [t] -> Maybe (t,[t],t)
 unbracket x =
-    case unbracket' x of
+    case unbracket_el x of
       (Just l,m,Just r) -> Just (l,m,r)
       _ -> Nothing
 
+-- | Erroring variant.
 unbracket_err :: [t] -> (t,[t],t)
 unbracket_err = fromMaybe (error "unbracket") . unbracket
-
--- | Variant where brackets are sequences.
---
--- > bracket_l ("<:",":>") "1,2,3" == "<:1,2,3:>"
-bracket_l :: ([a],[a]) -> [a] -> [a]
-bracket_l (l,r) s = l ++ s ++ r
 
 -- * Split
 

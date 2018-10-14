@@ -17,9 +17,9 @@ type GR t = ([t],[(t,t)])
 gr_degree :: GR t -> (Int,Int)
 gr_degree (v,e) = (length v,length e)
 
--- | Label graph given labelling table.
-gr_label :: Eq t => [(t,u)] -> GR t -> GR u
-gr_label tbl (v,e) =
+-- | Re-label graph given table.
+gr_relabel :: Eq t => [(t,u)] -> GR t -> GR u
+gr_relabel tbl (v,e) =
   let get z = T.lookup_err z tbl
   in (map get v,map (\(p,q) -> (get p,get q)) e)
 
@@ -69,7 +69,7 @@ graph_to_g gr = (G.vertices gr,G.edges gr)
 g_to_graph :: G -> G.Graph
 g_to_graph (v,e) = G.buildG (minimum v,maximum v) e
 
--- | Unlabel graph, make labelling table.
+-- | Unlabel graph, make table.
 gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
 gr_unlabel (v,e) =
   let n = length v
@@ -189,7 +189,7 @@ e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
 e_label_err :: LBL v e -> E -> e
 e_label_err = e_label (error "e_label")
 
--- > gr_to_lbl ("ab",[('a','b')])
+-- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),())])
 gr_to_lbl :: Eq t => GR t -> LBL t ()
 gr_to_lbl (v,e) =
   let n = length v
@@ -198,6 +198,13 @@ gr_to_lbl (v,e) =
       get k = T.reverse_lookup_err k tbl
       e' = map (\(p,q) -> ((get p,get q),())) e
   in (zip v' v,e')
+
+-- | Construct LBL from set of E, derives V from E.
+eset_to_lbl :: Ord t => [(t,t)] -> LBL t ()
+eset_to_lbl e =
+  let v = nub (sort (concatMap (\(i,j) -> [i,j]) e))
+      get_ix z = fromMaybe (error "lbl_recover") (elemIndex z v)
+  in (zip [0..] v, map (\(i,j) -> ((get_ix i,get_ix j),())) e)
 
 -- * LVE
 
