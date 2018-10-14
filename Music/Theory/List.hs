@@ -639,6 +639,13 @@ take_right n = reverse . take n . reverse
 take_while_right :: (a -> Bool) -> [a] -> [a]
 take_while_right p = reverse . takeWhile p . reverse
 
+-- | Variant of 'take' that allows 'Nothing' to indicate the complete list.
+--
+-- > maybe_take (Just 5) [1 .. ] == [1 .. 5]
+-- > maybe_take Nothing [1 .. 9] == [1 .. 9]
+maybe_take :: Maybe Int -> [a] -> [a]
+maybe_take n l = maybe l (flip take l) n
+
 -- | Apply /f/ at first element, and /g/ at all other elements.
 --
 -- > at_head negate id [1..5] == [-1,2,3,4,5]
