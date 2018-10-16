@@ -1,3 +1,4 @@
+-- | Tuning graph related functions.
 module Music.Theory.Tuning.Graph where
 
 import Data.List {- base -}
@@ -13,11 +14,17 @@ import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}
 
+-- | R = Rational
 type R = Rational
 
-type N = R
-type E = (R,R,R) -- ((r0,r1),r1-r0), r0 < r1
-type G = ([N],[E])
+-- | V = Vertex (R)
+type V = R
+
+-- | E = Edge (V1,V2,V2-V1) where V1 < V2
+type E = (R,R,R)
+
+-- | G = Graph ([V],[E])
+type G = ([V],[E])
 
 -- | List of nodes at /g/ connected to node /r/.
 g_edge_list :: G -> R -> [R]
@@ -33,6 +40,7 @@ g_edge_list (_,e) r =
 rflip :: R -> R
 rflip n = if n < 1 || n > 2 then error "rflip" else 1 / n * 2
 
+-- | nrm = normalise
 rnrm :: R -> R
 rnrm = T.ratio_interval_class_by id
 
@@ -61,16 +69,17 @@ mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
 r_pcset_univ :: [R] -> [Int]
 r_pcset_univ = nub . sort . map (T.ratio_to_pc 0)
 
+-- | Does [R] construct indicated /pcset/.
 r_is_pcset :: [Int] -> [R] -> Bool
 r_is_pcset pcset = ((==) pcset) . sort . map (T.ratio_to_pc 0)
 
 graph_to_fgl :: G -> G.Gr R R
-graph_to_fgl (n,e) =
-  let fgl_n = zip [0..] n
-      r_to_n :: R -> Int
-      r_to_n x = fromJust (T.reverse_lookup x fgl_n)
-      fgl_e = map (\(p,q,i) -> (r_to_n p,r_to_n q,i)) e
-  in G.mkGraph fgl_n fgl_e
+graph_to_fgl (v,e) =
+  let fgl_v = zip [0..] v
+      r_to_v :: R -> Int
+      r_to_v x = fromJust (T.reverse_lookup x fgl_v)
+      fgl_e = map (\(p,q,i) -> (r_to_v p,r_to_v q,i)) e
+  in G.mkGraph fgl_v fgl_e
 
 mk_graph_fgl :: [R] -> [R] -> G.Gr R R
 mk_graph_fgl iset r = graph_to_fgl (mk_graph iset r)
