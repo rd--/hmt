@@ -119,20 +119,28 @@ gen_u_edges = T.e_univ_select_u_edges
 
 -- * Graph
 
-gen_graph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
-gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
+oh_def_opt :: [T.DOT_KV]
+oh_def_opt =
+  [("graph:layout","neato")
+  ,("graph:epsilon","0.000001")
+  ,("node:shape","plaintext")
+  ,("node:fontsize","10")
+  ,("node:fontname","century schoolbook")]
 
-gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
-gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_label_v pp) (T.g_from_edges es)
+gen_graph :: Ord v => [T.DOT_KV] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
+gen_graph opt pp es = T.fgl_to_udot (oh_def_opt ++ opt) pp (T.g_from_edges_l es)
+
+gen_graph_ul :: Ord v => [T.DOT_KV] -> (v -> String) -> [T.EDGE v] -> [String]
+gen_graph_ul opt pp es = T.fgl_to_udot (oh_def_opt ++ opt) (T.gr_pp_label_v pp) (T.g_from_edges es)
 
 gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
 gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
 
-gen_flt_graph_pp :: Ord t => [T.DOT_ATTR] -> ([t] -> String) -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
-gen_flt_graph_pp o pp f p = gen_graph_ul o pp (gen_u_edges f p)
+gen_flt_graph_pp :: Ord t => [T.DOT_KV] -> ([t] -> String) -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
+gen_flt_graph_pp opt pp f p = gen_graph_ul opt pp (gen_u_edges f p)
 
-gen_flt_graph :: (Ord t, Show t) => [T.DOT_ATTR] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
-gen_flt_graph o = gen_flt_graph_pp o set_pp
+gen_flt_graph :: (Ord t, Show t) => [T.DOT_KV] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
+gen_flt_graph opt = gen_flt_graph_pp opt set_pp
 
 -- * P.12
 
@@ -213,7 +221,7 @@ p14_edges =
       e_mod = concat [rem_set del_par e_par,rem_set del_rel e_rel,rem_set del_med e_med]
   in p14_mk_e e_mod
 
-p14_mk_gr :: [T.DOT_ATTR] -> [T.EDGE T.Key] -> [String]
+p14_mk_gr :: [T.DOT_KV] -> [T.EDGE T.Key] -> [String]
 p14_mk_gr opt e =
     let opt' = ("graph:start","168732") : opt
         pp = T.gr_pp_label_v T.key_lc_uc_pp
@@ -276,8 +284,11 @@ p31_gr = gen_graph_ul [] set_pp p31_e_set
 p114_f_3_7 :: [Z12]
 p114_f_3_7 = [0,2,5]
 
-p114_mk_o :: Show t => t -> [T.DOT_ATTR]
-p114_mk_o el = [("node:shape","box"),("edge:len",show el),("edge:fontsize","10")]
+p114_mk_o :: Show t => t -> [T.DOT_KV]
+p114_mk_o el =
+  [("node:shape","box")
+  ,("edge:len",show el)
+  ,("edge:fontsize","10")]
 
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
@@ -560,8 +571,11 @@ p201_mk_e =
 p201_e :: [[E]]
 p201_e = map p201_mk_e [[0,3,4],[1,6,7],[2,5,8]]
 
-p201_o :: [T.DOT_ATTR]
-p201_o = [("graph:splines","false"),("node:shape","box"),("edge:len","1.75")]
+p201_o :: [T.DOT_KV]
+p201_o =
+  [("graph:splines","false")
+  ,("node:shape","box")
+  ,("edge:len","1.75")]
 
 -- > length p201_gr_set
 p201_gr_set :: [[String]]

@@ -320,3 +320,46 @@ t12_sum :: Num n => T12 n -> n
 t12_sum t =
     let (n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12) = t
     in n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8 + n9 + n10 + n11 + n12
+
+-- * Family of 'uncurry' functions.
+
+uncurry3 :: (a->b->c -> z) -> (a,b,c) -> z
+uncurry3 fn (a,b,c) = fn a b c
+uncurry4 :: (a->b->c->d -> z) -> (a,b,c,d) -> z
+uncurry4 fn (a,b,c,d) = fn a b c d
+uncurry5 :: (a->b->c->d->e -> z) -> (a,b,c,d,e) -> z
+uncurry5 fn (a,b,c,d,e) = fn a b c d e
+uncurry6 :: (a->b->c->d->e->f -> z) -> (a,b,c,d,e,f) -> z
+uncurry6 fn (a,b,c,d,e,f) = fn a b c d e f
+uncurry7 :: (a->b->c->d->e->f->g -> z) -> (a,b,c,d,e,f,g) -> z
+uncurry7 fn (a,b,c,d,e,f,g) = fn a b c d e f g
+uncurry8 :: (a->b->c->d->e->f->g->h -> z) -> (a,b,c,d,e,f,g,h) -> z
+uncurry8 fn (a,b,c,d,e,f,g,h) = fn a b c d e f g h
+uncurry9 :: (a->b->c->d->e->f->g->h->i -> z) -> (a,b,c,d,e,f,g,h,i) -> z
+uncurry9 fn (a,b,c,d,e,f,g,h,i) = fn a b c d e f g h i
+uncurry10 :: (a->b->c->d->e->f->g->h->i->j -> z) -> (a,b,c,d,e,f,g,h,i,j) -> z
+uncurry10 fn (a,b,c,d,e,f,g,h,i,j) = fn a b c d e f g h i j
+uncurry11 :: (a->b->c->d->e->f->g->h->i->j->k -> z) -> (a,b,c,d,e,f,g,h,i,j,k) -> z
+uncurry11 fn (a,b,c,d,e,f,g,h,i,j,k) = fn a b c d e f g h i j k
+uncurry12 :: (a->b->c->d->e->f->g->h->i->j->k->l -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l) -> z
+uncurry12 fn (a,b,c,d,e,f,g,h,i,j,k,l) = fn a b c d e f g h i j k l
+uncurry13 :: (a->b->c->d->e->f->g->h->i->j->k->l->m -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m) -> z
+uncurry13 fn (a,b,c,d,e,f,g,h,i,j,k,l,m) = fn a b c d e f g h i j k l m
+uncurry14 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n) -> z
+uncurry14 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n) = fn a b c d e f g h i j k l m n
+uncurry15 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) -> z
+uncurry15 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) = fn a b c d e f g h i j k l m n o
+uncurry16 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o->p -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) -> z
+uncurry16 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p) = fn a b c d e f g h i j k l m n o p
+uncurry17 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o->p->q -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) -> z
+uncurry17 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q) = fn a b c d e f g h i j k l m n o p q
+uncurry18 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o->p->q->r -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) -> z
+uncurry18 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) = fn a b c d e f g h i j k l m n o p q r
+uncurry19 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o->p->q->r->s -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) -> z
+uncurry19 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s) = fn a b c d e f g h i j k l m n o p q r s
+uncurry20 :: (a->b->c->d->e->f->g->h->i->j->k->l->m->n->o->p->q->r->s->t -> z) -> (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) -> z
+uncurry20 fn (a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t) = fn a b c d e f g h i j k l m n o p q r s t
+
+-- Local Variables:
+-- truncate-lines:t
+-- End:
