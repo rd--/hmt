@@ -485,10 +485,8 @@ d_dx = d_dx_by (-)
 -- | Elements of /p/ not in /q/.
 --
 -- > [1,2,3] `difference` [1,2] == [3]
-difference :: (Eq a) => [a] -> [a] -> [a]
-difference p q =
-    let f e = e `notElem` q
-    in filter f p
+difference :: Eq a => [a] -> [a] -> [a]
+difference p q = filter (`notElem` q) p
 
 -- | Is /p/ a subset of /q/, ie. is 'intersect' of /p/ and /q/ '==' /p/.
 --

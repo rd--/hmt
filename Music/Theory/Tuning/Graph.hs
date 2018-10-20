@@ -40,16 +40,23 @@ g_edge_list (_,e) r =
 rflip :: R -> R
 rflip n = if n < 1 || n > 2 then error "rflip" else 1 / n * 2
 
--- | nrm = normalise
+-- | r = ration, nrm = normalise
+--
+-- > map rnrm [3/2,5/4] == [4/3,5/4]
 rnrm :: R -> R
 rnrm = T.ratio_interval_class_by id
 
+-- | The folded interval from p to q.
+--
+-- > rrel (1,3/2) == 4/3
 rrel :: (R,R) -> R
 rrel (p,q) = T.fold_ratio_to_octave_err (p / q)
 
+-- | The interval set /i/ and it's 'rflip.
 iset_sym :: [R] -> [R]
 iset_sym l = l ++ map rflip l
 
+-- | The graph with vertices /scl_r/ and all edges where the interval (i,j) is in /iset/.
 mk_graph :: [R] -> [R] -> G
 mk_graph iset scl_r =
   (scl_r
@@ -60,18 +67,22 @@ mk_graph iset scl_r =
     let r = rnrm (rrel (p,q)),
     r `elem` iset_sym iset])
 
+-- | Require r to have a perfect octave as last element, and remove it.
 rem_oct :: [R] -> [R]
 rem_oct r = if last r /= 2 then error "rem_oct" else T.drop_last r
 
 mk_graph_scl :: [R] -> T.Scale Integer -> G
 mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
 
+r_pcset :: [R] -> [Int]
+r_pcset = sort . map (T.ratio_to_pc 0)
+
 r_pcset_univ :: [R] -> [Int]
-r_pcset_univ = nub . sort . map (T.ratio_to_pc 0)
+r_pcset_univ = nub . r_pcset
 
 -- | Does [R] construct indicated /pcset/.
 r_is_pcset :: [Int] -> [R] -> Bool
-r_is_pcset pcset = ((==) pcset) . sort . map (T.ratio_to_pc 0)
+r_is_pcset pcset = ((==) pcset) . r_pcset
 
 graph_to_fgl :: G -> G.Gr R R
 graph_to_fgl (v,e) =
