@@ -27,6 +27,29 @@ non_breaking_hypen = toEnum 0x2011
 non_breaking_space :: Char
 non_breaking_space = toEnum 0x00A0
 
+-- * Table
+
+-- | <http://unicode.org/Public/8.0.0/ucd/UnicodeData.txt>
+--
+-- > let fn = "/home/rohan/data/unicode.org/Public/8.0.0/ucd/UnicodeData.txt"
+-- > tbl <- unicode_data_table_read fn
+-- > length tbl == 29215
+unicode_data_table_read :: FilePath -> IO Unicode_Table
+unicode_data_table_read fn = do
+  s <- T.read_file_utf8 fn
+  let t = C.fromCSVTable (C.csvTable (C.parseDSV False ';' s))
+      f x = (T.read_hex_err (x !! 0),x !! 1)
+  return (map f t)
+
+unicode_table_block :: (Int,Int) -> Unicode_Table -> Unicode_Table
+unicode_table_block (l,r) = takeWhile ((<= r) . fst) . dropWhile ((< l) . fst)
+
+unicode_point_hs :: Unicode_Point -> String
+unicode_point_hs (n,s) = concat ["(0x",showHex n "",",\"",s,"\")"]
+
+unicode_table_hs :: Unicode_Table -> String
+unicode_table_hs = T.bracket ('[',']') . intercalate "," . map unicode_point_hs
+
 -- * Music
 
 type Unicode_Index = Int
@@ -34,19 +57,35 @@ type Unicode_Range = (Unicode_Index,Unicode_Index)
 type Unicode_Point = (Unicode_Index,String)
 type Unicode_Table = [Unicode_Point]
 
--- > putStrLn$ map (toEnum . fst) (concat unicode)
-unicode :: [Unicode_Table]
-unicode = [accidentals,notes,rests,clefs]
+-- > putStrLn$ map (toEnum . fst) (concat music_tbl)
+music_tbl :: [Unicode_Table]
+music_tbl = [barlines_tbl,accidentals_tbl,notes_tbl,rests_tbl,clefs_tbl]
 
 -- > putStrLn$ concatMap (unicode_table_hs . flip unicode_table_block tbl) accidentals_rng_set
 accidentals_rng_set :: [Unicode_Range]
 accidentals_rng_set = [(0x266D,0x266F),(0x1D12A,0x1D133)]
 
+-- > putStrLn$ unicode_table_hs (unicode_table_block barlines_rng tbl)
+barlines_rng :: Unicode_Range
+barlines_rng = (0x1D100,0x1D105)
+
+-- | UNICODE barline symbols.
+--
+-- > let r = "𝄀𝄁𝄂𝄃𝄄𝄅" in map (toEnum . fst) barlines_tbl == r
+barlines_tbl :: Unicode_Table
+barlines_tbl =
+  [(0x1D100,"MUSICAL SYMBOL SINGLE BARLINE")
+  ,(0x1D101,"MUSICAL SYMBOL DOUBLE BARLINE")
+  ,(0x1D102,"MUSICAL SYMBOL FINAL BARLINE")
+  ,(0x1D103,"MUSICAL SYMBOL REVERSE FINAL BARLINE")
+  ,(0x1D104,"MUSICAL SYMBOL DASHED BARLINE")
+  ,(0x1D105,"MUSICAL SYMBOL SHORT BARLINE")]
+
 -- | UNICODE accidental symbols.
 --
 -- > let r = "♭♮♯𝄪𝄫𝄬𝄭𝄮𝄯𝄰𝄱𝄲𝄳" in map (toEnum . fst) accidentals == r
-accidentals :: Unicode_Table
-accidentals =
+accidentals_tbl :: Unicode_Table
+accidentals_tbl =
     [(0x266D,"MUSIC FLAT SIGN")
     ,(0x266E,"MUSIC NATURAL SIGN")
     ,(0x266F,"MUSIC SHARP SIGN")
@@ -68,8 +107,8 @@ notes_rng = (0x1D15C,0x1D164)
 -- | UNICODE note duration symbols.
 --
 -- > let r = "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅥𝅲" in map (toEnum . fst) notes == r
-notes :: Unicode_Table
-notes =
+notes_tbl :: Unicode_Table
+notes_tbl =
     [(0x1D15C,"MUSICAL SYMBOL BREVE")
     ,(0x1D15D,"MUSICAL SYMBOL WHOLE NOTE")
     ,(0x1D15E,"MUSICAL SYMBOL HALF NOTE")
@@ -87,8 +126,8 @@ rests_rng = (0x1D13B,0x1D142)
 -- | UNICODE rest symbols.
 --
 -- > let r = "𝄻𝄼𝄽𝄾𝄿𝅀𝅁𝅂" in map (toEnum . fst) rests == r
-rests :: Unicode_Table
-rests =
+rests_tbl :: Unicode_Table
+rests_tbl =
     [(0x1D13B,"MUSICAL SYMBOL WHOLE REST")
     ,(0x1D13C,"MUSICAL SYMBOL HALF REST")
     ,(0x1D13D,"MUSICAL SYMBOL QUARTER REST")
@@ -98,6 +137,8 @@ rests =
     ,(0x1D141,"MUSICAL SYMBOL SIXTY-FOURTH REST")
     ,(0x1D142,"MUSICAL SYMBOL ONE HUNDRED TWENTY-EIGHTH REST")]
 
+-- | Augmentation dot.
+--
 -- > map toEnum [0x1D15E,0x1D16D,0x1D16D] == "𝅗𝅥𝅭𝅭"
 augmentation_dot :: Unicode_Point
 augmentation_dot = (0x1D16D, "MUSICAL SYMBOL COMBINING AUGMENTATION DOT")
@@ -109,8 +150,8 @@ clefs_rng = (0x1D11E,0x1D126)
 -- | UNICODE clef symbols.
 --
 -- > let r = "𝄞𝄟𝄠𝄡𝄢𝄣𝄤𝄥𝄦" in map (toEnum . fst) clefs == r
-clefs :: Unicode_Table
-clefs =
+clefs_tbl :: Unicode_Table
+clefs_tbl =
     [(0x1D11E,"MUSICAL SYMBOL G CLEF")
     ,(0x1D11F,"MUSICAL SYMBOL G CLEF OTTAVA ALTA")
     ,(0x1D120,"MUSICAL SYMBOL G CLEF OTTAVA BASSA")
@@ -122,14 +163,14 @@ clefs =
     ,(0x1D126,"MUSICAL SYMBOL DRUM CLEF-2")]
 
 -- > putStrLn$ unicode_table_hs (unicode_table_block tbl notehead_rng)
-notehead_rng :: Unicode_Range
-notehead_rng = (0x1D143,0x1D15B)
+noteheads_rng :: Unicode_Range
+noteheads_rng = (0x1D143,0x1D15B)
 
 -- | UNICODE notehead symbols.
 --
 -- > let r = "𝅃𝅄𝅅𝅆𝅇𝅈𝅉𝅊𝅋𝅌𝅍𝅎𝅏𝅐𝅑𝅒𝅓𝅔𝅕𝅖𝅗𝅘𝅙𝅚𝅛" in map (toEnum . fst) noteheads == r
-noteheads :: Unicode_Table
-noteheads =
+noteheads_tbl :: Unicode_Table
+noteheads_tbl =
     [(0x1d143,"MUSICAL SYMBOL X NOTEHEAD")
     ,(0x1d144,"MUSICAL SYMBOL PLUS NOTEHEAD")
     ,(0x1d145,"MUSICAL SYMBOL CIRCLE X NOTEHEAD")
@@ -165,8 +206,8 @@ dynamics_rng :: Unicode_Range
 dynamics_rng = (0x1D18C,0x1D193)
 
 -- > map (toEnum . fst) dynamics == "𝆌𝆍𝆎𝆏𝆐𝆑𝆒𝆓"
-dynamics :: Unicode_Table
-dynamics =
+dynamics_tbl :: Unicode_Table
+dynamics_tbl =
     [(0x1d18c,"MUSICAL SYMBOL RINFORZANDO")
     ,(0x1d18d,"MUSICAL SYMBOL SUBITO")
     ,(0x1d18e,"MUSICAL SYMBOL Z")
@@ -181,8 +222,8 @@ articulations_rng :: Unicode_Range
 articulations_rng = (0x1D17B,0x1D18B)
 
 -- > putStrLn (map (toEnum . fst) articulations :: String)
-articulations :: Unicode_Table
-articulations =
+articulations_tbl :: Unicode_Table
+articulations_tbl =
     [(0x1d17b,"MUSICAL SYMBOL COMBINING ACCENT")
     ,(0x1d17c,"MUSICAL SYMBOL COMBINING STACCATO")
     ,(0x1d17d,"MUSICAL SYMBOL COMBINING TENUTO")
@@ -215,25 +256,3 @@ unicode_blocks =
     ,((0x1D100,0x1D1FF),"Musical Symbols")
     ,((0x1D200,0x1D24F),"Ancient Greek Musical Notation")]
 
--- * Table
-
--- | <http://unicode.org/Public/8.0.0/ucd/UnicodeData.txt>
---
--- > let fn = "/home/rohan/data/unicode.org/Public/8.0.0/ucd/UnicodeData.txt"
--- > tbl <- unicode_data_table_read fn
--- > length tbl == 29215
-unicode_data_table_read :: FilePath -> IO Unicode_Table
-unicode_data_table_read fn = do
-  s <- T.read_file_utf8 fn
-  let t = C.fromCSVTable (C.csvTable (C.parseDSV False ';' s))
-      f x = (T.read_hex_err (x !! 0),x !! 1)
-  return (map f t)
-
-unicode_table_block :: (Int,Int) -> Unicode_Table -> Unicode_Table
-unicode_table_block (l,r) = takeWhile ((<= r) . fst) . dropWhile ((< l) . fst)
-
-unicode_point_hs :: Unicode_Point -> String
-unicode_point_hs (n,s) = concat ["(0x",showHex n "",",\"",s,"\")"]
-
-unicode_table_hs :: Unicode_Table -> String
-unicode_table_hs = T.bracket ('[',']') . intercalate "," . map unicode_point_hs

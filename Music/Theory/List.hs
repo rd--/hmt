@@ -1120,16 +1120,21 @@ group_tree (open_f,close_f) =
 remove_ix :: Int -> [a] -> [a]
 remove_ix k l = let (p,q) = splitAt k l in p ++ tail q
 
+-- | Select or remove elements at set of indices.
 operate_ixs :: Bool -> [Int] -> [a] -> [a]
 operate_ixs mode k =
     let sel = if mode then notElem else elem
         f (n,e) = if n `sel` k then Nothing else Just e
     in mapMaybe f . zip [0..]
 
+-- | Select elements at set of indices.
+--
 -- > select_ixs [1,3] "select" == "ee"
 select_ixs :: [Int] -> [a] -> [a]
 select_ixs = operate_ixs True
 
+-- | Remove elements at set of indices.
+--
 -- > remove_ixs [1,3,5] "remove" == "rmv"
 remove_ixs :: [Int] -> [a] -> [a]
 remove_ixs = operate_ixs False
