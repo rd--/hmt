@@ -249,6 +249,18 @@ hms_to_difftime = fhour_to_difftime . hms_to_fhour
 
 -- * HMS
 
+hms_to_sec :: HMS -> SEC
+hms_to_sec (h,m,s) = h * 60 * 60 + m * 60 + s
+
+-- | Seconds to (hours,minutes,seconds).
+--
+-- > map sec_to_hms [60-1,60+1,60*60-1,60*60+1] == [(0,0,59),(0,1,1),(0,59,59),(1,0,1)]
+sec_to_hms :: SEC -> HMS
+sec_to_hms s =
+  let (h,s') = s `divMod` (60 * 60)
+      (m,s'') = sec_to_minsec s'
+  in (h,m,s'')
+
 -- | 'HMS' pretty printer.
 --
 -- > hms_pp (1,2,3) == "01:02:03"
