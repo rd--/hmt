@@ -566,9 +566,6 @@ parse_iso_pitch = parse_iso_pitch_oct (error "parse_iso_pitch: no octave")
 parse_iso_pitch_err :: String -> Pitch
 parse_iso_pitch_err = fromMaybe (error "parse_iso_pitch") . parse_iso_pitch
 
---parse_ly_pitch :: String -> Pitch
---parse_ly_pitch s =
-
 -- * Pretty printers
 
 -- | Pretty printer for 'Pitch' (unicode, see 'alteration_symbol').
@@ -700,6 +697,9 @@ pitch_r_class_pp = T.dropWhileRight isDigit . pitch_r_pp
 
 -- * Parsers
 
+p_octave_iso :: P.GenParser Char () Octave
+p_octave_iso = fmap digitToInt P.digit
+
 p_octave_ly :: P.GenParser Char () Octave
 p_octave_ly =
     fmap
@@ -718,5 +718,21 @@ p_pitch_ly = do
 pitch_parse_ly_err :: String -> Pitch
 pitch_parse_ly_err s =
   case P.runP p_pitch_ly () "pitch_parse_ly" s of
+    Left err -> error (show err)
+    Right r -> r
+
+-- | Parser for hly notation.
+p_pitch_hly :: P.GenParser Char () Pitch
+p_pitch_hly = do
+  (n,a) <- T.p_note_alteration_ly
+  o <- p_octave_iso
+  return (Pitch n (fromMaybe T.Natural a) o)
+
+-- | Run 'p_pitch_hly'.
+--
+-- > map (pitch_pp . pitch_parse_hly) ["ees4","fih3","b6"] == ["E♭4","F𝄲3","B6"]
+pitch_parse_hly :: String -> Pitch
+pitch_parse_hly s =
+  case P.runP p_pitch_hly () "pitch_parse_hly" s of
     Left err -> error (show err)
     Right r -> r
