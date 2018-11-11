@@ -1,3 +1,4 @@
+-- | Time and duration notations.
 module Music.Theory.Time.Notation where
 
 import Data.List.Split {- split -}
@@ -181,6 +182,7 @@ fminsec_mul t n = fsec_to_fminsec (fminsec_to_fsec t * n)
 
 -- * FHOUR
 
+-- | Type specialised 'fromInteger' of 'floor'.
 ffloor :: Double -> Double
 ffloor = fromInteger . floor
 
@@ -193,6 +195,8 @@ fhour_to_hms h =
         s = (m - ffloor m) * 60
     in (floor h,floor m,round s)
 
+-- | HMS to fractional hours.
+--
 -- > hms_to_fhour (21,45,0) == 21.75
 hms_to_fhour :: HMS -> FHOUR
 hms_to_fhour (h,m,s) = fromIntegral h + (fromIntegral m / 60) + (fromIntegral s / (60 * 60))
@@ -205,9 +209,6 @@ fhour_to_fsec = (*) (60 * 60)
 
 fhour_to_difftime :: FHOUR -> T.DiffTime
 fhour_to_difftime = fsec_to_difftime . fhour_to_fsec
-
-hms_to_difftime :: HMS -> T.DiffTime
-hms_to_difftime = fhour_to_difftime . hms_to_fhour
 
 -- * FDAY
 
@@ -242,6 +243,26 @@ difftime_to_fmin = (/ 60) . difftime_to_fsec
 -- > difftime_to_fhour (hms_to_difftime (21,45,00)) == 21.75
 difftime_to_fhour :: T.DiffTime -> FHOUR
 difftime_to_fhour = (/ 60) . difftime_to_fmin
+
+hms_to_difftime :: HMS -> T.DiffTime
+hms_to_difftime = fhour_to_difftime . hms_to_fhour
+
+-- * HMS
+
+-- | 'HMS' pretty printer.
+--
+-- > hms_pp (1,2,3) == "01:02:03"
+hms_pp :: HMS -> String
+hms_pp (h,m,s) = printf "%02d:%02d:%02d" h m s
+
+-- * 'HMS' parser.
+--
+-- > hms_parse "0:01:00" == (0,1,0)
+hms_parse :: String -> HMS
+hms_parse x =
+    case splitOn ":" x of
+      [h,m,s] -> (read h,read m,read s)
+      _ -> error "parse_hms"
 
 -- * MINSEC
 
@@ -354,6 +375,7 @@ mincsec_binop f p q = csec_to_mincsec (f (mincsec_to_csec p) (mincsec_to_csec q)
 
 -- * DHMS
 
+-- | Convert seconds into (days,hours,minutes,seconds).
 sec_to_dhms_generic :: Integral n => n -> (n,n,n,n)
 sec_to_dhms_generic n =
     let (d,h') = n `divMod` (24 * 60 * 60)
@@ -361,7 +383,7 @@ sec_to_dhms_generic n =
         (m,s) = m' `divMod` 60
     in (d,h,m,s)
 
--- | Convert seconds into (days,hours,minutes,seconds).
+-- | Type specialised 'sec_to_dhms_generic'.
 --
 -- > sec_to_dhms 1475469 == (17,1,51,9)
 sec_to_dhms :: SEC -> DHMS
@@ -373,6 +395,7 @@ sec_to_dhms = sec_to_dhms_generic
 dhms_to_sec :: Num n => (n,n,n,n) -> n
 dhms_to_sec (d,h,m,s) = sum [d * 24 * 60 * 60,h * 60 * 60,m * 60,s]
 
+-- | Generic form of 'parse_dhms'.
 parse_dhms_generic :: (Integral n,Read n) => String -> (n,n,n,n)
 parse_dhms_generic =
     let sep_elem = split . keepDelimsR . oneOf
