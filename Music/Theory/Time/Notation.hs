@@ -263,9 +263,12 @@ sec_to_hms s =
 
 -- | 'HMS' pretty printer.
 --
--- > hms_pp (1,2,3) == "01:02:03"
-hms_pp :: HMS -> String
-hms_pp (h,m,s) = printf "%02d:%02d:%02d" h m s
+-- > map (hms_pp True) [(0,1,2),(1,2,3)] == ["01:02","01:02:03"]
+hms_pp :: Bool -> HMS -> String
+hms_pp trunc (h,m,s) =
+  if trunc && h == 0
+  then printf "%02d:%02d" m s
+  else printf "%02d:%02d:%02d" h m s
 
 -- * 'HMS' parser.
 --
