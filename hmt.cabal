@@ -1,5 +1,5 @@
 Name:              hmt
-Version:           0.17
+Version:           0.18
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
@@ -9,7 +9,7 @@ Author:            Rohan Drape
 Maintainer:        rd@rohandrape.net
 Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
-Tested-With:       GHC == 8.2.2
+Tested-With:       GHC == 8.4.3
 Build-Type:        Simple
 Cabal-Version:     >= 1.8
 
@@ -21,7 +21,7 @@ Data-files:        README
 Library
   Build-Depends:   aeson,
                    array,
-                   base >= 4.8 && < 5,
+                   base >= 4.9 && < 5,
                    bytestring,
                    colour,
                    containers,
