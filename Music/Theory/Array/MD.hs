@@ -114,6 +114,5 @@ md_embolden :: String -> String
 md_embolden x = "__" ++ x ++ "__"
 
 -- | 'md_matrix_opt' with 'show' and markdown /bold/ annotations for header.
--- the header cells are in bold.
 md_matrix_bold :: Show a => ([a],[a]) -> T.Table a -> MD_Table String
 md_matrix_bold = md_matrix_opt show md_embolden
