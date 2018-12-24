@@ -11,7 +11,7 @@ import qualified Data.Graph.Inductive.Graph as G {- fgl -}
 
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt -}
 
 -- * UTIL
 
@@ -42,14 +42,15 @@ maybe_quote s = if is_symbol s || is_number s then s else concat ["\"",s,"\""]
 
 -- * ATTR/KEY
 
-type DOT_OPT = String
+type DOT_KEY = String
 type DOT_VALUE = String
-type DOT_ATTR = (DOT_OPT,DOT_VALUE)
+type DOT_ATTR = (DOT_KEY,DOT_VALUE)
 
+-- | Format 'DOT_ATTR'.
 dot_attr_pp :: DOT_ATTR -> String
 dot_attr_pp (lhs,rhs) = concat [lhs,"=",maybe_quote rhs]
 
--- | Format sqeuence of DOT_ATTR.
+-- | Format sequence of DOT_ATTR.
 --
 -- > dot_attr_seq_pp [("layout","neato"),("epsilon","0.0001")]
 dot_attr_seq_pp :: [DOT_ATTR] -> String
@@ -58,35 +59,46 @@ dot_attr_seq_pp opt =
   then ""
   else concat ["[",intercalate "," (map dot_attr_pp opt),"]"]
 
+-- | Merge attributes, left-biased.
 dot_attr_ext :: [DOT_ATTR] -> [DOT_ATTR] -> [DOT_ATTR]
-dot_attr_ext = T.assoc_merge
+dot_attr_ext = List.assoc_merge
+
+-- | graph|node|edge
+type DOT_TYPE = String
 
 -- | (type,[attr])
-type DOT_ATTR_SET = (String,[DOT_ATTR])
+type DOT_ATTR_SET = (DOT_TYPE,[DOT_ATTR])
 
+-- | Format DOT_ATTR_SET.
+--
+-- > a = ("graph",[("layout","neato"),("epsilon","0.0001")])
+-- > dot_attr_set_pp a == "graph [layout=neato,epsilon=0.0001]"
 dot_attr_set_pp :: DOT_ATTR_SET -> String
 dot_attr_set_pp (ty,opt) = concat [ty," ",dot_attr_seq_pp opt]
 
 -- | type:attr (type = graph|node|edge)
-type DOT_KEY = String
-type DOT_KV = (DOT_KEY,DOT_VALUE)
+type DOT_META_KEY = String
+
+type DOT_META_ATTR = (DOT_META_KEY,DOT_VALUE)
 
 -- | Keys are given as "type:attr".
 --
 -- > dot_key_sep "graph:layout" == ("graph","layout")
-dot_key_sep :: DOT_KEY -> (String,DOT_OPT)
-dot_key_sep = T.split_on_1_err ":"
+dot_key_sep :: DOT_META_KEY -> (DOT_TYPE,DOT_KEY)
+dot_key_sep = List.split_on_1_err ":"
 
 -- | Collate DOT_KEY attribute set to DOT_ATTR_SET.
-dot_attr_collate :: [DOT_KV] -> [DOT_ATTR_SET]
+dot_attr_collate :: [DOT_META_ATTR] -> [DOT_ATTR_SET]
 dot_attr_collate opt =
     let f (k,v) = let (ty,nm) = dot_key_sep k in (ty,(nm,v))
         c = map f opt
-    in T.collate c
+    in List.collate c
 
+-- | Default values for default meta-keys.
+--
 -- > k = dot_attr_def ("neato","century schoolbook",10,"plaintext")
 -- > map dot_attr_set_pp (dot_attr_collate k)
-dot_attr_def :: (String,String,Double,String) -> [(DOT_KV)]
+dot_attr_def :: (String,String,Double,String) -> [(DOT_META_ATTR)]
 dot_attr_def (ly,fn,fs,sh) =
     [("graph:layout",ly)
     ,("node:fontname",fn)
@@ -118,7 +130,7 @@ br_csl_pp :: Show t => [t] -> String
 br_csl_pp l =
     case l of
       [e] -> show e
-      _ -> T.bracket ('{','}') (intercalate "," (map show l))
+      _ -> List.bracket ('{','}') (intercalate "," (map show l))
 
 -- | Graph type, directed or un-directed.
 data G_TYPE = G_DIGRAPH | G_UGRAPH
@@ -141,7 +153,7 @@ type POS_FN v = (v -> (Int,Int))
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
 g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r * 100))]
 
-lve_to_dot :: G_TYPE -> [DOT_KV] -> GR_PP v e -> T.LVE v e -> [String]
+lve_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
 lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
     let ws s = if null s then "" else " " ++ s
         v_f (k,lbl) = concat [show k,ws (dot_attr_seq_pp (v_attr lbl)),";"]
@@ -153,21 +165,21 @@ lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
               ,map e_f e
               ,["}"]]
 
-lve_to_udot :: [DOT_KV] -> GR_PP v e -> T.LVE v e -> [String]
+lve_to_udot :: [DOT_META_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
 lve_to_udot o pp = lve_to_dot G_UGRAPH o pp
 
-fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_KV] -> GR_PP v e -> gr v e -> [String]
+fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
 fgl_to_dot typ opt pp gr = lve_to_dot typ opt pp (T.fgl_to_lve gr)
 
-fgl_to_udot :: G.Graph gr => [DOT_KV] -> GR_PP v e -> gr v e -> [String]
+fgl_to_udot :: G.Graph gr => [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
 fgl_to_udot opt pp gr = lve_to_udot opt pp (T.fgl_to_lve gr)
 
 -- * IO
 
--- | Given x.dot write x.typ.
+-- | Given x.dot write x.typ.  Requires @dot@ be installed.
 dot_to_ftype :: String -> String -> IO ExitCode
 dot_to_ftype typ dot_fn =
-  -- -O write x.dot to x.dot.typ, use -o
+  -- -O writes x.dot to x.dot.typ, use -o
   let typ_fn = replaceExtension dot_fn typ
   in rawSystem "dot" ["-T",typ,"-o" ++ typ_fn,dot_fn]
 
