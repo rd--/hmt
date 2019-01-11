@@ -300,25 +300,29 @@ interleave_continue p q =
 interleave_rotations :: Int -> Int -> [b] -> [b]
 interleave_rotations i j s = interleave (rotate_left i s) (rotate_left j s)
 
-generic_histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
-generic_histogram x =
-    let g = group (sort x)
+-- | Generalised histogram, with equality function for grouping and comparison function for sorting.
+generic_histogram_by :: Integral i => (a->a->Bool) -> (Maybe (a->a->Ordering)) -> [a] -> [(a,i)]
+generic_histogram_by eq_f cmp_f x =
+    let g = groupBy eq_f (maybe x (\f -> sortBy f x) cmp_f)
     in zip (map head g) (map genericLength g)
 
-histogram_by :: Ord a => (a -> a -> Bool) -> [a] -> [(a,Int)]
-histogram_by f x =
-    let g = groupBy f (sort x)
-    in zip (map head g) (map length g)
+-- | Type specialised 'generic_histogram_by'.
+histogram_by :: (a->a->Bool) -> (Maybe (a->a->Ordering)) -> [a] -> [(a,Int)]
+histogram_by = generic_histogram_by
 
--- | Count occurences of elements in list.
+-- | Count occurences of elements in list, 'histogram_by' of '==' and 'compare'.
+generic_histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
+generic_histogram = generic_histogram_by (==) (Just compare)
+
+-- | Type specialised 'generic_histogram'.
 --
 -- > map histogram ["","hohoh"] == [[],[('h',3),('o',2)]]
 histogram :: Ord a => [a] -> [(a,Int)]
-histogram = histogram_by (==)
+histogram = generic_histogram
 
 -- | Elements that appear more than once in the input given equality predicate.
 duplicates_by :: Ord a => (a -> a -> Bool) -> [a] -> [a]
-duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f
+duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f (Just compare)
 
 -- | 'duplicates_by' of '=='.
 --

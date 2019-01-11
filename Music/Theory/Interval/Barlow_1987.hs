@@ -10,6 +10,7 @@ import Text.Printf {- base -}
 
 import qualified Data.Numbers.Primes as P {- primes -}
 
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- | Barlow's /indigestibility/ function for prime numbers.
@@ -48,17 +49,19 @@ prime_factors = factor P.primes
 --
 -- > multiplicities [1,1,1,2,2,3] == [(1,3),(2,2),(3,1)]
 multiplicities :: (Eq a,Integral n) => [a] -> [(a,n)]
-multiplicities =
-    let f x = case x of
-                [] -> undefined
-                e:_ -> (e,genericLength x)
-    in map f . group
+multiplicities = T.generic_histogram_by (==) Nothing
 
 -- | 'multiplicities' '.' 'P.primeFactors'.
 --
 -- > prime_factors_m 315 == [(3,2),(5,1),(7,1)]
 prime_factors_m :: Integral a => a -> [(a,a)]
 prime_factors_m = multiplicities . P.primeFactors
+
+-- > prime_factors_m_pp 315 == "3×2 5×1 7×1"
+prime_factors_m_pp :: Integer -> String
+prime_factors_m_pp =
+  let f (x,y) = show x ++ "×" ++ show y
+  in unwords . map f . prime_factors_m
 
 -- | Merging function for 'rational_prime_factors_m'.
 merge :: (Ord a,Num b,Eq b) => [(a,b)] -> [(a,b)] -> [(a,b)]
