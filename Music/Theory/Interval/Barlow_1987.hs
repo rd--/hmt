@@ -57,6 +57,8 @@ multiplicities = T.generic_histogram_by (==) Nothing
 prime_factors_m :: Integral a => a -> [(a,a)]
 prime_factors_m = multiplicities . P.primeFactors
 
+-- | Pretty printing variant of 'prime_factors_m'.
+--
 -- > prime_factors_m_pp 315 == "3×2 5×1 7×1"
 prime_factors_m_pp :: Integer -> String
 prime_factors_m_pp =
@@ -108,7 +110,7 @@ rational_prime_factors_t n x =
 -- | Compute the disharmonicity of the interval /(p,q)/ using the
 -- prime valuation function /pv/.
 --
--- > map (disharmonicity barlow) [(9,10),(8,9)] ~= [12.733333,8.333333]
+-- > map (disharmonicity barlow) [(9,10),(8,9)] == ([12 + 11/15,8 + 1/3] :: [Rational])
 disharmonicity :: (Integral a,Num b) => (a -> b) -> (a,a) -> b
 disharmonicity pv (p,q) =
     let n = rational_prime_factors_m (p,q)
@@ -116,7 +118,7 @@ disharmonicity pv (p,q) =
 
 -- | The reciprocal of 'disharmonicity'.
 --
--- > map (harmonicity barlow) [(9,10),(8,9)] ~= [0.078534,0.120000]
+-- > map (harmonicity barlow) [(9,10),(8,9)] == ([15/191,3/25] :: [Rational])
 harmonicity :: (Integral a,Fractional b) => (a -> b) -> (a,a) -> b
 harmonicity pv = recip . disharmonicity pv
 
