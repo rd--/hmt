@@ -105,6 +105,19 @@ split_on_1 e l =
 split_on_1_err :: Eq t => [t] -> [t] -> ([t],[t])
 split_on_1_err e = fromMaybe (error "split_on_1") . split_on_1 e
 
+-- | Split function that splits only once, ie. a variant of 'break'.
+--
+-- > split1 ' ' "three word sentence" == Just ("three","word sentence")
+split1 :: Eq a => a -> [a] -> Maybe ([a],[a])
+split1 c l =
+    case break (== c) l of
+      (lhs,_:rhs) -> Just (lhs,rhs)
+      _ -> Nothing
+
+-- | Erroring variant.
+split1_err :: (Eq a, Show a) => a -> [a] -> ([a], [a])
+split1_err e s = fromMaybe (error (show ("split1",e,s))) (split1 e s)
+
 -- * Rotate
 
 -- | Generic form of 'rotate_left'.
@@ -372,6 +385,10 @@ cycles n = transpose . S.chunksOf n
 -- > filter_halt (even . fst) ((< 5) . snd) (zip [1..] [0..])
 filter_halt :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
 filter_halt sel end = filter sel . takeWhile end
+
+-- | Variant of 'filter' that lifts kept elements to 'Just', and marks removed elements as 'Nothing'.
+filter_maybe :: (a -> Bool) -> [a] -> [Maybe a]
+filter_maybe f = map (\e -> if f e then Just e else Nothing)
 
 -- | Replace all /p/ with /q/ in /s/.
 --
