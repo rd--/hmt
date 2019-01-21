@@ -20,27 +20,30 @@ import qualified Music.Theory.Tuple as T {- hmt -}
 -- | Sequence of elements with uniform duration.
 type Useq t a = (t,[a])
 
--- | Duration sequence.  The duration is the /forward/ duration of the
--- value, if it has other durations they must be encoded at /a/.
+-- | Duration sequence.
+-- /t/ indicates the /forward/ duration of the value, ie. the interval to the next value.
+-- If there are other durations they must be encoded at /a/.
+-- If the sequence does not begin at time zero there must be an /empty/ value for /a/.
 type Dseq t a = [(t,a)]
 
--- | Inter-offset sequence.  The duration is the interval /before/ the
--- value.  To indicate the duration of the final value /a/ must have
--- a /nil/ (end of sequence) value.
+-- | Inter-offset sequence.
+-- /t/ is the interval /before/ the value.
+-- Duration can be encoded at /a/, or if implicit /a/ must include an end of sequence value.
 type Iseq t a = [(t,a)]
 
--- | Pattern sequence.  The duration is a triple of /logical/,
--- /sounding/ and /forward/ durations.
+-- | Pattern sequence.
+-- The duration is a triple of /logical/, /sounding/ and /forward/ durations.
 type Pseq t a = [((t,t,t),a)]
 
--- | Time-point sequence.  To express holes /a/ must have an /empty/
--- value.  To indicate the duration of the final value /a/ must have
--- a /nil/ (end of sequence) value.
+-- | Time-point sequence.
+-- To express holes /a/ must have an /empty/ value.
+-- Duration can be encoded at /a/, or if implicit /a/ must include an end of sequence value.
 type Tseq t a = [(t,a)]
 
--- | Window sequence.  The temporal field is (/time/,/duration/).
--- Holes exist where @t(n) + d(n)@ '<' @t(n+1)@.  Overlaps exist where
--- the same relation is '>'.
+-- | Window sequence.
+-- /t/ is a duple of /time/ and /duration/.
+-- Holes exist where @t(n) + d(n)@ '<' @t(n+1)@.
+-- Overlaps exist where the same relation is '>'.
 type Wseq t a = [((t,t),a)]
 
 -- * Zip
@@ -815,7 +818,10 @@ tseq_to_wseq dur_f sq =
               Nothing -> T.d_dx t
     in wseq_zip t d a
 
-tseq_to_iseq :: Num t => Tseq t a -> Dseq t a
+-- | Tseq to Iseq.
+--
+-- > tseq_to_iseq (zip [0,1,3,6,8,9] "abcde|") == zip [0,1,2,3,2,1] "abcde|"
+tseq_to_iseq :: Num t => Tseq t a -> Iseq t a
 tseq_to_iseq =
     let recur n p =
             case p of

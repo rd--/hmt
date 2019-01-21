@@ -70,8 +70,9 @@ load_csv = T.csv_table_read (True,',',False,T.CSV_No_Align) id
 -- | Midi note data.
 --
 -- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
--- > m <- csv_mnd_read fn :: IO [MND Double Double]
--- > length m == 17655
+-- > let fn = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
+-- > m <- csv_mnd_read fn :: IO [MND Double Int]
+-- > length m -- 1800 17655
 -- > csv_mnd_write 4 "/tmp/t.csv" m
 csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MND t n]
 csv_mnd_read = fmap csv_mnd_parse . load_csv
