@@ -52,11 +52,14 @@ pc_pp x =
 cents_pp :: Rational -> String
 cents_pp = show . (round :: Double -> Integer) . T.ratio_to_cents
 
+-- | (unit-pitch-class,print-cents)
+type RAT_LABEL_OPT = (Int,Bool)
+
 -- | Dot label for ratio, /k/ is the pitch-class of the unit ratio.
 --
 -- > rat_label (0,False) 1 == "C♮\\n1:1"
 -- > rat_label (3,True) (7/4) == "C♯=969\\n7:4"
-rat_label :: (Int,Bool) -> Rational -> String
+rat_label :: RAT_LABEL_OPT -> Rational -> String
 rat_label (k,with_cents) r =
     if r < 1 || r >= 2
     then error (show ("rat_label",r))
@@ -108,5 +111,5 @@ euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
        ["}"]
 
 -- | Variant with default printers and fixed node type.
-euler_plane_to_dot_rat :: (Int, Bool) -> Euler_Plane Rational -> [String]
+euler_plane_to_dot_rat :: RAT_LABEL_OPT -> Euler_Plane Rational -> [String]
 euler_plane_to_dot_rat opt = euler_plane_to_dot (rat_id,rat_label opt,rat_edge_label)
