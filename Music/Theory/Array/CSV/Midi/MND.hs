@@ -48,21 +48,24 @@ param_pp k =
 -- > unwords csv_mnd_hdr == "time on/off note velocity channel param"
 type MND t n = (t,String,n,n,Channel,[Param])
 
-csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n]
-csv_mnd_parse (hdr,dat) =
+csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MND t m]
+csv_mnd_parse_f cnv (hdr,dat) =
     let err x = error ("csv_mnd_read: " ++ x)
         f m = case m of
                 [st,msg,mnn,vel,ch,pm] ->
                     (T.reads_exact_err "time:real" st
                     ,msg
-                    ,T.reads_exact_err "note:real" mnn
-                    ,T.reads_exact_err "velocity:real" vel
+                    ,cnv (T.reads_exact_err "note:real" mnn)
+                    ,cnv (T.reads_exact_err "velocity:real" vel)
                     ,T.reads_exact_err "channel:int" ch
                     ,param_parse pm)
                 _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
          Nothing -> err "no header?"
+
+csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n]
+csv_mnd_parse = csv_mnd_parse_f id
 
 load_csv :: FilePath -> IO (T.CSV_Table String)
 load_csv = T.csv_table_read (True,',',False,T.CSV_No_Align) id
@@ -132,13 +135,13 @@ csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 
 -- | Midi note/duration data.
 -- The type parameters are to allow for fractional note & velocity values.
--- The command is a string, @on@ and @off@ are standard, other commands may be present.
+-- The command is a string, @note@ is standard, other commands may be present.
 --
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
 type MNDD t n = (t,t,String,n,n,Channel,[Param])
 
-csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
-csv_mndd_parse (hdr,dat) =
+csv_mndd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MNDD t m]
+csv_mndd_parse_f cnv (hdr,dat) =
     let err x = error ("csv_mndd_read: " ++ x)
         f m =
             case m of
@@ -146,8 +149,8 @@ csv_mndd_parse (hdr,dat) =
                   (T.reads_exact_err "time" st
                   ,T.reads_exact_err "duration" du
                   ,msg
-                  ,T.reads_exact_err "note" mnn
-                  ,T.reads_exact_err "velocity" vel
+                  ,cnv (T.reads_exact_err "note" mnn)
+                  ,cnv (T.reads_exact_err "velocity" vel)
                   ,T.reads_exact_err "channel" ch
                   ,param_parse pm)
               _ -> err "entry?"
@@ -155,7 +158,10 @@ csv_mndd_parse (hdr,dat) =
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
          Nothing -> err "no header?"
 
--- | Midi note/duration data.
+csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
+csv_mndd_parse = csv_mndd_parse_f id
+
+  -- | Midi note/duration data.
 csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
 csv_mndd_read = fmap csv_mndd_parse . load_csv
 
@@ -194,15 +200,18 @@ csv_mndd_write_wseq r_prec nm =
 -- * Composite
 
 -- | Parse either MND or MNDD data to Wseq, CSV type is decided by header.
-csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> T.Wseq t (Event n)
-csv_midi_parse_wseq (hdr,dat) = do
+csv_midi_parse_wseq_f :: (Read t,Real t,Read n,Real n,Num m, Eq m) => (n -> m) -> T.CSV_Table String -> T.Wseq t (Event m)
+csv_midi_parse_wseq_f cnv (hdr,dat) = do
   case hdr of
     Just hdr' -> if hdr' == csv_mnd_hdr
-                 then midi_tseq_to_midi_wseq (mnd_to_tseq (csv_mnd_parse (hdr,dat)))
+                 then midi_tseq_to_midi_wseq (mnd_to_tseq (csv_mnd_parse_f cnv (hdr,dat)))
                  else if hdr' == csv_mndd_hdr
-                      then mndd_to_wseq (csv_mndd_parse (hdr,dat))
+                      then mndd_to_wseq (csv_mndd_parse_f cnv (hdr,dat))
                       else error "csv_midi_read_wseq: not MND or MNDD"
     _ -> error "csv_midi_read_wseq: header?"
+
+csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> T.Wseq t (Event n)
+csv_midi_parse_wseq = csv_midi_parse_wseq_f id
 
 csv_midi_read_wseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t (Event n))
 csv_midi_read_wseq = fmap csv_midi_parse_wseq . load_csv

@@ -92,6 +92,10 @@ zip_sme (s,m,e) xs =
 -- where /h/ are the horizontal sequences and /v/ are the vertical edges.
 type Euler_Plane t = ([[t]],[(t,t)])
 
+-- | Apply /f/ at all nodes of the plane.
+euler_plane_map :: (t -> u) -> Euler_Plane t -> Euler_Plane u
+euler_plane_map f (p,q) = (map (map f) p,map (T.bimap1 f) q)
+
 -- | Generate /dot/ graph given printer functions and an /Euler_Plane/.
 euler_plane_to_dot :: (t -> String,t -> String,(t,t) -> String) -> Euler_Plane t -> [String]
 euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
