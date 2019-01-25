@@ -29,11 +29,11 @@ non_breaking_space = toEnum 0x00A0
 
 -- * Table
 
--- | <http://unicode.org/Public/8.0.0/ucd/UnicodeData.txt>
+-- | <http://unicode.org/Public/11.0.0/ucd/UnicodeData.txt>
 --
--- > let fn = "/home/rohan/data/unicode.org/Public/8.0.0/ucd/UnicodeData.txt"
+-- > let fn = "/home/rohan/data/unicode.org/Public/11.0.0/ucd/UnicodeData.txt"
 -- > tbl <- unicode_data_table_read fn
--- > length tbl == 29215
+-- > length tbl == 32292
 unicode_data_table_read :: FilePath -> IO Unicode_Table
 unicode_data_table_read fn = do
   s <- T.read_file_utf8 fn
@@ -83,7 +83,7 @@ barlines_tbl =
 
 -- | UNICODE accidental symbols.
 --
--- > let r = "♭♮♯𝄪𝄫𝄬𝄭𝄮𝄯𝄰𝄱𝄲𝄳" in map (toEnum . fst) accidentals == r
+-- > let r = "♭♮♯𝄪𝄫𝄬𝄭𝄮𝄯𝄰𝄱𝄲𝄳" in map (toEnum . fst) accidentals_tbl == r
 accidentals_tbl :: Unicode_Table
 accidentals_tbl =
     [(0x266D,"MUSIC FLAT SIGN")
@@ -106,7 +106,7 @@ notes_rng = (0x1D15C,0x1D164)
 
 -- | UNICODE note duration symbols.
 --
--- > let r = "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅥𝅲" in map (toEnum . fst) notes == r
+-- > let r = "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅥𝅲" in map (toEnum . fst) notes_tbl == r
 notes_tbl :: Unicode_Table
 notes_tbl =
     [(0x1D15C,"MUSICAL SYMBOL BREVE")
@@ -125,7 +125,7 @@ rests_rng = (0x1D13B,0x1D142)
 
 -- | UNICODE rest symbols.
 --
--- > let r = "𝄻𝄼𝄽𝄾𝄿𝅀𝅁𝅂" in map (toEnum . fst) rests == r
+-- > let r = "𝄻𝄼𝄽𝄾𝄿𝅀𝅁𝅂" in map (toEnum . fst) rests_tbl == r
 rests_tbl :: Unicode_Table
 rests_tbl =
     [(0x1D13B,"MUSICAL SYMBOL WHOLE REST")
@@ -149,7 +149,7 @@ clefs_rng = (0x1D11E,0x1D126)
 
 -- | UNICODE clef symbols.
 --
--- > let r = "𝄞𝄟𝄠𝄡𝄢𝄣𝄤𝄥𝄦" in map (toEnum . fst) clefs == r
+-- > let r = "𝄞𝄟𝄠𝄡𝄢𝄣𝄤𝄥𝄦" in map (toEnum . fst) clefs_tbl == r
 clefs_tbl :: Unicode_Table
 clefs_tbl =
     [(0x1D11E,"MUSICAL SYMBOL G CLEF")
@@ -162,13 +162,13 @@ clefs_tbl =
     ,(0x1D125,"MUSICAL SYMBOL DRUM CLEF-1")
     ,(0x1D126,"MUSICAL SYMBOL DRUM CLEF-2")]
 
--- > putStrLn$ unicode_table_hs (unicode_table_block tbl notehead_rng)
+-- > putStrLn$ unicode_table_hs (unicode_table_block noteheads_rng tbl)
 noteheads_rng :: Unicode_Range
 noteheads_rng = (0x1D143,0x1D15B)
 
 -- | UNICODE notehead symbols.
 --
--- > let r = "𝅃𝅄𝅅𝅆𝅇𝅈𝅉𝅊𝅋𝅌𝅍𝅎𝅏𝅐𝅑𝅒𝅓𝅔𝅕𝅖𝅗𝅘𝅙𝅚𝅛" in map (toEnum . fst) noteheads == r
+-- > let r = "𝅃𝅄𝅅𝅆𝅇𝅈𝅉𝅊𝅋𝅌𝅍𝅎𝅏𝅐𝅑𝅒𝅓𝅔𝅕𝅖𝅗𝅘𝅙𝅚𝅛" in map (toEnum . fst) noteheads_tbl == r
 noteheads_tbl :: Unicode_Table
 noteheads_tbl =
     [(0x1d143,"MUSICAL SYMBOL X NOTEHEAD")
@@ -205,7 +205,7 @@ stem = (0x1D165, "MUSICAL SYMBOL COMBINING STEM")
 dynamics_rng :: Unicode_Range
 dynamics_rng = (0x1D18C,0x1D193)
 
--- > map (toEnum . fst) dynamics == "𝆌𝆍𝆎𝆏𝆐𝆑𝆒𝆓"
+-- > map (toEnum . fst) dynamics_tbl == "𝆌𝆍𝆎𝆏𝆐𝆑𝆒𝆓"
 dynamics_tbl :: Unicode_Table
 dynamics_tbl =
     [(0x1d18c,"MUSICAL SYMBOL RINFORZANDO")
@@ -221,7 +221,7 @@ dynamics_tbl =
 articulations_rng :: Unicode_Range
 articulations_rng = (0x1D17B,0x1D18B)
 
--- > putStrLn (map (toEnum . fst) articulations :: String)
+-- > putStrLn (map (toEnum . fst) articulations_tbl :: String)
 articulations_tbl :: Unicode_Table
 articulations_tbl =
     [(0x1d17b,"MUSICAL SYMBOL COMBINING ACCENT")
@@ -242,6 +242,21 @@ articulations_tbl =
     ,(0x1d18a,"MUSICAL SYMBOL COMBINING DOUBLE TONGUE")
     ,(0x1d18b,"MUSICAL SYMBOL COMBINING TRIPLE TONGUE")]
 
+-- * Math
+
+ix_set_to_tbl :: Unicode_Table -> [Unicode_Index] -> Unicode_Table
+ix_set_to_tbl tbl ix = zip ix (map (flip T.lookup_err tbl) ix)
+
+-- | Math symbols outside of the math blocks.
+--
+-- > putStrLn (unicode_table_hs (ix_set_to_tbl tbl math_plain_ix))
+math_plain_ix :: [Unicode_Index]
+math_plain_ix = [0x00D7,0x00F7]
+
+-- > map (toEnum . fst) math_plain_tbl == "×÷"
+math_plain_tbl :: Unicode_Table
+math_plain_tbl = [(0xd7,"MULTIPLICATION SIGN"),(0xf7,"DIVISION SIGN")]
+
 -- * Blocks
 
 type Unicode_Block = (Unicode_Range,String)
@@ -249,10 +264,17 @@ type Unicode_Block = (Unicode_Range,String)
 -- > putStrLn$ unicode_table_hs (concatMap (flip unicode_table_block tbl . fst) unicode_blocks)
 unicode_blocks :: [Unicode_Block]
 unicode_blocks =
-    [((0x1B00,0x1B7F),"Balinese")
-    ,((0x2200,0x22FF),"Mathematical Operators")
-    ,((0x25A0,0x25FF),"Geometric Shapes")
+    [((0x01B00,0x01B7F),"Balinese")
+    ,((0x02200,0x022FF),"Mathematical Operators")
+    ,((0x025A0,0x025FF),"Geometric Shapes")
+    ,((0x027C0,0x027EF),"Miscellaneous Mathematical Symbols-A")
+    ,((0x027F0,0x027FF),"Supplemental Arrows-A")
+    ,((0x02800,0x028FF),"Braille Patterns")
+    ,((0x02900,0x0297F),"Supplemental Arrows-B")
+    ,((0x02980,0x029FF),"Miscellaneous Mathematical Symbols-B")
+    ,((0x02A00,0x02AFF),"Supplemental Mathematical Operators")
     ,((0x1D000,0x1D0FF),"Byzantine Musical Symbols")
     ,((0x1D100,0x1D1FF),"Musical Symbols")
-    ,((0x1D200,0x1D24F),"Ancient Greek Musical Notation")]
+    ,((0x1D200,0x1D24F),"Ancient Greek Musical Notation")
+    ]
 
