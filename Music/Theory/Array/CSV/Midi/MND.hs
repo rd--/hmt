@@ -46,6 +46,9 @@ param_pp k =
 -- The command is a string, @on@ and @off@ are standard, other commands may be present.
 --
 -- > unwords csv_mnd_hdr == "time on/off note velocity channel param"
+--
+-- > all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
+-- > csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
 type MND t n = (t,String,n,n,Channel,[Param])
 
 csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MND t m]
