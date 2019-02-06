@@ -521,7 +521,7 @@ tseq_add_nil_after nil n sq = sq ++ [(tseq_end sq + n,nil)]
 wseq_sort :: Ord t => Wseq t a -> Wseq t a
 wseq_sort = sortBy (compare `on` (fst . fst))
 
--- | Transform 'Wseq' to 'Tseq' by discaring durations.
+-- | Transform 'Wseq' to 'Tseq' by discarding durations.
 wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
 

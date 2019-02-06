@@ -386,7 +386,10 @@ cycles n = transpose . S.chunksOf n
 filter_halt :: (a -> Bool) -> (a -> Bool) -> [a] -> [a]
 filter_halt sel end = filter sel . takeWhile end
 
--- | Variant of 'filter' that lifts kept elements to 'Just', and marks removed elements as 'Nothing'.
+-- | Variant of 'Data.List.filter' that retains 'Nothing' as a
+-- placeholder for removed elements.
+--
+-- > filter_maybe even [1..4] == [Nothing,Just 2,Nothing,Just 4]
 filter_maybe :: (a -> Bool) -> [a] -> [Maybe a]
 filter_maybe f = map (\e -> if f e then Just e else Nothing)
 

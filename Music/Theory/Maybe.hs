@@ -76,9 +76,3 @@ maybe_predicate f i =
 maybe_filter :: (a -> Bool) -> [Maybe a] -> [Maybe a]
 maybe_filter = map . maybe_predicate
 
--- | Variant of 'Data.List.filter' that retains 'Nothing' as a
--- placeholder for removed elements.
---
--- > filter_maybe even [1..4] == [Nothing,Just 2,Nothing,Just 4]
-filter_maybe :: (a -> Bool) -> [a] -> [Maybe a]
-filter_maybe f = maybe_filter f . map Just
