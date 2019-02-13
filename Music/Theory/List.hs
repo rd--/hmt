@@ -416,31 +416,39 @@ replace_at ns i x =
 
 -- * Association lists
 
--- | Equivalent to 'groupBy' '==' 'on' /f/.
---
--- > let r = [[(1,'a'),(1,'b')],[(2,'c')],[(3,'d'),(3,'e')],[(4,'f')]]
--- > in group_on fst (zip [1,1,2,3,3,4] "abcdef") == r
-group_on :: Eq x => (a -> x) -> [a] -> [[a]]
-group_on f = map (map snd) . groupBy ((==) `on` fst) . map (\x -> (f x,x))
+-- | Equivalent to 'groupBy' /eq/ 'on' /f/.
+group_by_on :: (x -> x -> Bool) -> (t -> x) -> [t] -> [[t]]
+group_by_on eq f = map (map snd) . groupBy (eq `on` fst) . map (\x -> (f x,x))
 
--- | Given accesors for /key/ and /value/ collate adjacent values.
-collate_on_adjacent :: (Eq k,Ord k) => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
-collate_on_adjacent f g =
+-- | 'group_by_on' of '=='.
+--
+-- > r = [[(1,'a'),(1,'b')],[(2,'c')],[(3,'d'),(3,'e')],[(4,'f')]]
+-- > group_on fst (zip [1,1,2,3,3,4] "abcdef") == r
+group_on :: Eq x => (a -> x) -> [a] -> [[a]]
+group_on = group_by_on (==)
+
+-- | Given an equality predicate and accesors for /key/ and /value/ collate adjacent values.
+collate_by_on_adjacent :: (k -> k -> Bool) -> (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
+collate_by_on_adjacent eq f g =
     let h l = case l of
-                [] -> error "collate_on_adjacent"
+                [] -> error "collate_by_on_adjacent"
                 l0:_ -> (f l0,map g l)
-    in map h . group_on f
+    in map h . group_by_on eq f
+
+-- | 'collate_by_on_adjacent' of '=='
+collate_on_adjacent :: Eq k => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
+collate_on_adjacent = collate_by_on_adjacent (==)
 
 -- | 'collate_on_adjacent' of 'fst' and 'snd'.
 --
 -- > collate_adjacent (zip "TDD" "xyz") == [('T',"x"),('D',"yz")]
-collate_adjacent :: Ord a => [(a,b)] -> [(a,[b])]
+collate_adjacent :: Eq a => [(a,b)] -> [(a,[b])]
 collate_adjacent = collate_on_adjacent fst snd
 
 -- | 'sortOn' prior to 'collate_on_adjacent'.
 --
--- > let r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
--- > in collate_on fst snd (zip "ABCBCD" "abcdef") == r
+-- > r = [('A',"a"),('B',"bd"),('C',"ce"),('D',"f")]
+-- > collate_on fst snd (zip "ABCBCD" "abcdef") == r
 collate_on :: Ord k => (a -> k) -> (a -> v) -> [a] -> [(k,[v])]
 collate_on f g = collate_on_adjacent f g . sortOn f
 
