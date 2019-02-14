@@ -357,6 +357,7 @@ seq_partition voice sq =
 tseq_partition :: Ord v => (a -> v) -> Tseq t a -> [(v,Tseq t a)]
 tseq_partition = seq_partition
 
+-- | Type specialised 'seq_partition'.
 wseq_partition :: Ord v => (a -> v) -> Wseq t a -> [(v,Wseq t a)]
 wseq_partition = seq_partition
 
@@ -425,6 +426,7 @@ seq_tcoalesce eq_f jn_f =
 tseq_tcoalesce :: Eq t => (a -> a -> a) -> Tseq t a -> Tseq t a
 tseq_tcoalesce = seq_tcoalesce (==)
 
+-- | Type specialised 'seq_tcoalesce'.
 wseq_tcoalesce :: ((t,t) -> (t,t) -> Bool) -> (a -> a -> a) -> Wseq t a -> Wseq t a
 wseq_tcoalesce = seq_tcoalesce
 
@@ -525,51 +527,70 @@ wseq_sort = sortBy (compare `on` (fst . fst))
 wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
 
-wseq_overlap_f :: (Eq e,Ord t,Num t) =>
-                  (e -> e -> Bool) -> (t -> t) -> ((t,t),e) -> Wseq t e -> Maybe (Wseq t e)
-wseq_overlap_f eq_fn dur_fn ((t,d),a) sq =
-  case find (eq_fn a . snd) sq of
-    Nothing -> Nothing
-    Just ((t',d'),a') ->
-      if t == t'
-      then if d <= d'
-           then Just sq -- delete LHS
-           else Just (((t,d),a) : delete ((t',d'),a') sq) -- delete RHS
-      else if t' < t + d
-           then Just (((t,dur_fn (t' - t)),a) : sq) -- truncate LHS
-           else Nothing
+-- | Are /e/ equal and do nodes overlap?
+wseq_nodes_overlap :: (Ord t,Num t) => (e -> e -> Bool) -> ((t,t),e) -> ((t,t),e) -> Bool
+wseq_nodes_overlap eq_f ((t1,d1),a1) ((t2,_d2),a2) = eq_f a1 a2 && (t1 == t2 || t2 < t1 + d1)
 
--- | Determine if sequence has overlapping equal nodes.
-wseq_has_overlaps :: (Ord t, Num t, Eq e) => (e -> e -> Bool) -> Wseq t e -> Bool
+-- | Find first node at /sq/ that overlaps with /e0/, if there is one.
+--   Note: this could halt early, ie. when t2 > (t1 + d1).
+wseq_find_overlap_1 :: (Ord t,Num t) => (e -> e -> Bool) -> ((t,t),e) -> Wseq t e -> Bool
+wseq_find_overlap_1 eq_f e0 = isJust . find (wseq_nodes_overlap eq_f e0)
+
+-- | Determine if sequence has any overlapping equal nodes, stops after finding first instance.
+wseq_has_overlaps :: (Ord t, Num t) => (e -> e -> Bool) -> Wseq t e -> Bool
 wseq_has_overlaps eq_fn =
   let recur sq =
         case sq of
           [] -> False
-          h:sq' ->
-            case wseq_overlap_f eq_fn id h sq' of
-              Nothing -> recur sq'
-              Just _ -> True
-    in recur
+          e0:sq' -> if wseq_find_overlap_1 eq_fn e0 sq then True else recur sq'
+  in recur
 
-{- | Edit durations to ensure that nodes don't overlap.  If equal nodes
-     begin simultaneously delete the shorter node.  If a node
-     extends into a later node shorten the initial duration (apply /dur_fn/ to iot).
+{- | Remove overlaps by deleting any overlapping nodes.
+
+> let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
+> wseq_remove_overlaps_rm (==) sq == [((0,1),'a'),((1,5),'a')]
+-}
+wseq_remove_overlaps_rm :: (Ord t,Num t) => (e -> e -> Bool) -> Wseq t e -> Wseq t e
+wseq_remove_overlaps_rm eq_f sq =
+  case sq of
+    [] -> []
+    e0:sq' -> e0 : wseq_remove_overlaps_rm eq_f (filter (not . wseq_nodes_overlap eq_f e0) sq')
+
+{- | Find first instance of overlap of /e/ at /sq/ and re-write durations so nodes don't overlap.
+     If equal nodes begin simultaneously delete the shorter node (eithe LHS or RHS).
+     If a node extends into a later node shorten the initial (LHS) duration (apply /dur_fn/ to iot).
+-}
+wseq_remove_overlap_rw_1 :: (Ord t,Num t) =>
+                            (e -> e -> Bool) -> (t -> t) -> ((t,t),e) -> Wseq t e -> Maybe (Wseq t e)
+wseq_remove_overlap_rw_1 eq_f dur_fn ((t,d),a) sq =
+  let n_eq ((t1,d1),e1) ((t2,d2),e2) = t1 == t2 && d1 == d2 && eq_f e1 e2
+  in case find (eq_f a . snd) sq of
+       Nothing -> Nothing
+       Just ((t',d'),a') ->
+         if t == t'
+         then if d <= d'
+         then Just sq -- delete LHS
+              else Just (((t,d),a) : deleteBy n_eq ((t',d'),a') sq) -- delete RHS
+         else if t' < t + d
+              then Just (((t,dur_fn (t' - t)),a) : sq) -- truncate LHS
+              else Nothing
+
+{- | Run 'wseq_remove_overlap_rw_1' until sequence has no overlaps.
 
 > let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
 > let r = [((0,1),'a'),((1,2),'a'),((3,1),'a')]
 > wseq_has_overlaps (==) sq == True
-> wseq_remove_overlaps (==) id sq == r
-> wseq_has_overlaps (==) (wseq_remove_overlaps (==) id sq) == False
+> wseq_remove_overlaps_rw (==) id sq == r
+> wseq_has_overlaps (==) (wseq_remove_overlaps_rw (==) id sq) == False
 
 -}
-wseq_remove_overlaps :: (Eq e,Ord t,Num t) =>
-                        (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e
-wseq_remove_overlaps eq_fn dur_fn =
+wseq_remove_overlaps_rw :: (Ord t,Num t) => (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e
+wseq_remove_overlaps_rw eq_f dur_fn =
   let recur sq =
         case sq of
           [] -> []
           h:sq' ->
-            case wseq_overlap_f eq_fn dur_fn h sq' of
+            case wseq_remove_overlap_rw_1 eq_f dur_fn h sq' of
               Nothing -> h : recur sq'
               Just sq'' -> recur sq''
     in recur
@@ -578,7 +599,7 @@ wseq_remove_overlaps eq_fn dur_fn =
 seq_unjoin :: [(t,[e])] -> [(t,e)]
 seq_unjoin = let f (t,e) = zip (repeat t) e in concatMap f
 
--- | Type specialised.
+-- | Type specialised 'seq_unjoin'.
 wseq_unjoin :: Wseq t [e] -> Wseq t e
 wseq_unjoin = seq_unjoin
 
@@ -700,7 +721,7 @@ tseq_begin_end_accum =
 wseq_begin_end_accum :: (Eq e, Ord t, Num t) => Wseq t e -> (Bool, Tseq t ([e],[e],[e]))
 wseq_begin_end_accum sq =
   let ol = wseq_has_overlaps (==) sq
-      sq_edit = if ol then wseq_remove_overlaps (==) id sq else sq
+      sq_edit = if ol then wseq_remove_overlaps_rw (==) id sq else sq
       a_sq = tseq_begin_end_accum (tseq_group (wseq_begin_end sq_edit))
   in (ol,a_sq)
 
