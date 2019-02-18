@@ -20,7 +20,7 @@ import qualified Music.Theory.Pitch.Note as T {- hmt -}
 type Octave_PitchClass i = (i,i)
 
 -- | Normalise 'Octave_PitchClass' value, ie. ensure pitch-class is in (0,11).
-octave_pitchclass_nrm :: Integral i => Octave_PitchClass i -> Octave_PitchClass i
+octave_pitchclass_nrm :: (Ord i,Num i) => Octave_PitchClass i -> Octave_PitchClass i
 octave_pitchclass_nrm (o,pc) =
     if pc > 11
     then octave_pitchclass_nrm (o+1,pc-12)
@@ -31,18 +31,17 @@ octave_pitchclass_nrm (o,pc) =
 -- | Transpose 'Octave_PitchClass' value.
 octave_pitchclass_trs :: Integral i => i -> Octave_PitchClass i -> Octave_PitchClass i
 octave_pitchclass_trs n (o,pc) =
-    let pc' = fromIntegral pc
-        k = pc' + n
+    let k = pc + n
         (i,j) = k `divMod` 12
-    in (fromIntegral o + fromIntegral i,fromIntegral j)
+    in (o + i,j)
 
 -- | 'Octave_PitchClass' value to integral /midi/ note number.
-octave_pitchclass_to_midi :: Integral i => Octave_PitchClass i -> i
+octave_pitchclass_to_midi :: Num i => Octave_PitchClass i -> i
 octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 -- | Inverse of 'octave_pitchclass_to_midi'.
 --
-  -- > map midi_to_octave_pitchclass [60,84,91] == [(4,0),(6,0),(6,7)]
+-- > map midi_to_octave_pitchclass [60,84,91] == [(4,0),(6,0),(6,7)]
 midi_to_octave_pitchclass :: Integral i => i -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (n - 12) `divMod` 12
 
