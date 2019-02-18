@@ -792,10 +792,10 @@ dseq_to_tseq_last t0 sq = dseq_to_tseq t0 (snd (last sq)) sq
 
 -- | 'Iseq' to 'Tseq', requires t0.
 --
--- > let r = zip [0,1,3,6,8] "abcde"
+-- > let r = zip [1,3,6,8,9] "abcde"
 -- > iseq_to_tseq 0 (zip [1,2,3,2,1] "abcde") == r
 iseq_to_tseq :: Num t => t -> Iseq t a -> Tseq t a
-iseq_to_tseq t0 = T.rezip (T.dx_d t0) id
+iseq_to_tseq t0 = T.rezip (tail . T.dx_d t0) id
 
 -- | The conversion requires a start time and does not consult the
 -- /logical/ duration.
