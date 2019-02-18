@@ -637,6 +637,8 @@ begin_end_map f x =
       Begin a -> Begin (f a)
       End a -> End (f a)
 
+instance Functor Begin_End where fmap = begin_end_map
+
 -- | Structural comparison at 'Begin_End', 'Begin' compares less than 'End'.
 cmp_begin_end :: Begin_End a -> Begin_End b -> Ordering
 cmp_begin_end p q =
@@ -660,6 +662,7 @@ begin_end_to_either p =
       Begin a -> Left a
       End a -> Right a
 
+-- | Equivalent to 'partitionEithers'.
 begin_end_partition :: [Begin_End a] -> ([a],[a])
 begin_end_partition =
   let f e (p,q) = case e of
@@ -674,18 +677,17 @@ begin_end_track st e =
     Begin x -> x : st
     End x -> delete x st
 
--- | Convert 'Wseq' to 'Tseq' transforming elements to 'Begin_End'.
---   When merging, /end/ elements precede /begin/ elements at equal times.
---
--- > let {sq = [((0,5),'a'),((2,2),'b')]
--- >     ;r = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]}
--- > in wseq_begin_end sq == r
---
--- > let {sq = [((0,1),'a'),((1,1),'b'),((2,1),'c')]
--- >     ;r = [(0,Begin 'a'),(1,End 'a')
--- >          ,(1,Begin 'b'),(2,End 'b')
--- >          ,(2,Begin 'c'),(3,End 'c')]}
--- > in wseq_begin_end sq == r
+{- | Convert 'Wseq' to 'Tseq' transforming elements to 'Begin_End'.
+     When merging, /end/ elements precede /begin/ elements at equal times.
+
+> let sq = [((0,5),'a'),((2,2),'b')]
+> let r = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]
+> wseq_begin_end sq == r
+
+> let sq = [((0,1),'a'),((1,1),'b'),((2,1),'c')]
+> let r = [(0,Begin 'a'),(1,End 'a'),(1,Begin 'b'),(2,End 'b'),(2,Begin 'c'),(3,End 'c')]
+> wseq_begin_end sq == r
+-}
 wseq_begin_end :: (Num t, Ord t) => Wseq t a -> Tseq t (Begin_End a)
 wseq_begin_end sq =
     let f ((t,d),a) = [(t,Begin a),(t + d,End a)]
@@ -772,25 +774,28 @@ useq_to_wseq t0 = dseq_to_wseq t0 . useq_to_dseq
 -- /eof/ marker. Productive given indefinite input sequence.
 --
 -- > let r = zip [0,1,3,6,8,9] "abcde|"
--- > in dseq_to_tseq 0 '|' (zip [1,2,3,2,1] "abcde") == r
+-- > dseq_to_tseq 0 '|' (zip [1,2,3,2,1] "abcde") == r
 --
--- > let {d = zip [1,2,3,2,1] "abcde"
--- >     ;r = zip [0,1,3,6,8,9,10] "abcdeab"}
--- > in take 7 (dseq_to_tseq 0 undefined (cycle d)) == r
+-- > let d = zip [1,2,3,2,1] "abcde"
+-- > let r = zip [0,1,3,6,8,9,10] "abcdeab"
+-- > take 7 (dseq_to_tseq 0 undefined (cycle d)) == r
 dseq_to_tseq :: Num t => t -> a -> Dseq t a -> Tseq t a
-dseq_to_tseq t0 nil sq =
-    let (d,a) = unzip sq
-        t = T.dx_d t0 d
-        a' = a ++ [nil]
-    in zip t a'
+dseq_to_tseq t0 nil = T.rezip (T.dx_d t0) (T.snoc nil)
 
 -- | Variant where the /nil/ value is taken from the last element of
 -- the sequence.
 --
 -- > let r = zip [0,1,3,6,8,9] "abcdee"
--- > in dseq_to_tseq_last 0 (zip [1,2,3,2,1] "abcde") == r
+-- > dseq_to_tseq_last 0 (zip [1,2,3,2,1] "abcde") == r
 dseq_to_tseq_last :: Num t => t -> Dseq t a -> Tseq t a
 dseq_to_tseq_last t0 sq = dseq_to_tseq t0 (snd (last sq)) sq
+
+-- | 'Iseq' to 'Tseq', requires t0.
+--
+-- > let r = zip [0,1,3,6,8] "abcde"
+-- > iseq_to_tseq 0 (zip [1,2,3,2,1] "abcde") == r
+iseq_to_tseq :: Num t => t -> Iseq t a -> Tseq t a
+iseq_to_tseq t0 = T.rezip (T.dx_d t0) id
 
 -- | The conversion requires a start time and does not consult the
 -- /logical/ duration.
@@ -853,7 +858,7 @@ tseq_to_iseq =
 -- | Requires start time.
 --
 -- > let r = zip (zip [0,1,3,6,8,9] [1,2,3,2,1]) "abcde"
--- > in dseq_to_wseq 0 (zip [1,2,3,2,1] "abcde") == r
+-- > dseq_to_wseq 0 (zip [1,2,3,2,1] "abcde") == r
 dseq_to_wseq :: Num t => t -> Dseq t a -> Wseq t a
 dseq_to_wseq t0 sq =
     let (d,a) = unzip sq

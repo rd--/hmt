@@ -313,6 +313,10 @@ interleave_continue p q =
 interleave_rotations :: Int -> Int -> [b] -> [b]
 interleave_rotations i j s = interleave (rotate_left i s) (rotate_left j s)
 
+-- | 'unzip', apply /f1/ and /f2/ and 'zip'.
+rezip :: ([t] -> [u]) -> ([v] -> [w]) -> [(t,v)] -> [(u,w)]
+rezip f1 f2 l = let (p,q) = unzip l in zip (f1 p) (f2 q)
+
 -- | Generalised histogram, with equality function for grouping and comparison function for sorting.
 generic_histogram_by :: Integral i => (a->a->Bool) -> (Maybe (a->a->Ordering)) -> [a] -> [(a,i)]
 generic_histogram_by eq_f cmp_f x =
@@ -796,6 +800,12 @@ sort_group_on f = group_on f . sortOn f
 -- > Just 's' `mcons` "omething" == "something"
 mcons :: Maybe a -> [a] -> [a]
 mcons e l = maybe l (:l) e
+
+-- | Cons onto end of list.
+--
+-- > snoc 4 [1,2,3] == [1,2,3,4]
+snoc :: a -> [a] -> [a]
+snoc e l = l ++ [e]
 
 -- * Ordering
 
