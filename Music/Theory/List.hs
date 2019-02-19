@@ -484,6 +484,23 @@ assoc_merge p q =
         q' = filter ((`notElem` p_k) . fst) q
     in p ++ q'
 
+-- | Keys are in ascending order, the entry retrieved is the rightmose with
+--   a key less than or equal to the key requested.
+--   If the key requested is less than the initial key, or the list is empty, returns 'Nothing'.
+--
+-- > let m = [(1,'a'),(4,'x'),(4,'b'),(5,'c')]
+-- > mapMaybe (ord_map_locate m) [1 .. 6] == [(1,'a'),(1,'a'),(1,'a'),(4,'b'),(5,'c'),(5,'c')]
+-- > ord_map_locate m 0 == Nothing
+ord_map_locate :: Ord k => [(k,v)] -> k -> Maybe (k,v)
+ord_map_locate mp i =
+    let f (k0,v0) xs =
+          case xs of
+            [] -> if i >= k0 then Just (k0,v0) else error "ord_map_locate?"
+            ((k1,v1):xs') -> if i >= k0 && i < k1 then Just (k0,v0) else f (k1,v1) xs'
+    in case mp of
+         [] -> Nothing
+         (k0,v0):mp' -> if i < k0 then Nothing else f (k0,v0) mp'
+
 -- * Δ
 
 -- | Intervals to values, zero is /n/.
@@ -568,11 +585,11 @@ lookup_def k d = fromMaybe d . lookup k
 -- > reverse_lookup 'c' [] == Nothing
 -- > reverse_lookup 'b' (zip [1..] ['a'..]) == Just 2
 -- > lookup 2 (zip [1..] ['a'..]) == Just 'b'
-reverse_lookup :: Eq b => b -> [(a,b)] -> Maybe a
+reverse_lookup :: Eq v => v -> [(k,v)] -> Maybe k
 reverse_lookup k = fmap fst . find ((== k) . snd)
 
 -- | Erroring variant.
-reverse_lookup_err :: Eq b => b -> [(a,b)] -> a
+reverse_lookup_err :: Eq v => v -> [(k,v)] -> k
 reverse_lookup_err k = fromMaybe (error "reverse_lookup") . reverse_lookup k
 
 {-
