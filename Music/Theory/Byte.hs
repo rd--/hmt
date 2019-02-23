@@ -1,13 +1,53 @@
 -- | Byte functions.
 module Music.Theory.Byte where
 
-import qualified Data.ByteString as B {- bytestring -}
 import Data.Char {- base -}
-import Data.List.Split {- split -}
 import Data.Maybe {- base -}
+import Data.Word {- base -}
 import Numeric {- base -}
 
+import qualified Data.ByteString as B {- bytestring -}
+import Data.List.Split {- split -}
+import qualified Safe {- safe -}
+
+import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+
+-- * Enumerations & Char
+
+-- | 'toEnum' of 'T.word8_to_int'
+word8_to_enum :: Enum e => Word8 -> e
+word8_to_enum = toEnum . T.word8_to_int
+
+-- | 'T.int_to_word8_maybe' of 'fromEnum'
+enum_to_word8 :: Enum e => e -> Maybe Word8
+enum_to_word8 = T.int_to_word8_maybe . fromEnum
+
+-- | Type-specialised 'word8_to_enum'
+--
+-- > map word8_to_char [60,62] == "<>"
+word8_to_char :: Word8 -> Char
+word8_to_char = word8_to_enum
+
+-- | 'T.int_to_word8' of 'fromEnum'
+char_to_word8 :: Char -> Word8
+char_to_word8 = T.int_to_word8 . fromEnum
+
+-- | 'T.int_to_word8' of 'digitToInt'
+digit_to_word8 :: Char -> Word8
+digit_to_word8 = T.int_to_word8 . digitToInt
+
+-- | 'intToDigit' of 'T.word8_to_int'
+word8_to_digit :: Word8 -> Char
+word8_to_digit = intToDigit . T.word8_to_int
+
+-- * Indexing
+
+-- | 'Safe.at' of 'T.word8_to_int'
+word8_at :: [t] -> Word8 -> t
+word8_at l = Safe.at l . T.word8_to_int
+
+-- * Bytes
 
 -- | Given /n/ in (0,255) make two character hex string.
 --
@@ -30,12 +70,15 @@ byte_seq_hex_pp :: (Integral i, Show i) => [i] -> String
 byte_seq_hex_pp = unwords . map byte_hex_pp_err
 
 -- | Read two character hexadecimal string.
+--
+-- > map read_hex_byte (words "0F F0") == [0x0F,0xF0]
 read_hex_byte :: (Eq t,Num t) => String -> t
 read_hex_byte s =
     case s of
       [_,_] -> T.reads_to_read_precise_err "readHex" readHex s
       _ -> error "read_hex_byte"
 
+-- | 'read_hex_byte' of 'words'
 read_hex_byte_seq :: (Eq t,Num t) => String -> [t]
 read_hex_byte_seq = map read_hex_byte . words
 
@@ -43,6 +86,7 @@ read_hex_byte_seq = map read_hex_byte . words
 load_byte_seq :: Integral i => FilePath -> IO [i]
 load_byte_seq = fmap (map fromIntegral . B.unpack) . B.readFile
 
+-- | Store binary 'U8' sequence to file.
 store_byte_seq :: Integral i => FilePath -> [i] -> IO ()
 store_byte_seq fn = B.writeFile fn . B.pack . map fromIntegral
 

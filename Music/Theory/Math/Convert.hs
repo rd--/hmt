@@ -4,7 +4,7 @@
 > map int_to_word8_maybe [-1,0,255,256] == [Nothing,Just 0,Just 255,Nothing]
 
 > map integer_to_int64_maybe [-2 ^ 63 - 1,2 ^ 63] == [Nothing,Nothing]
-> map integer_to_word64_maybe [2 ^64 - 1,2 ^ 64] == [Just 18446744073709551615,Nothing]
+> map integer_to_word64_maybe [2 ^ 64 - 1,2 ^ 64] == [Just 18446744073709551615,Nothing]
 
 > map int16_to_float [-1,0,1] == [-1,0,1]
 
@@ -13,6 +13,8 @@ module Music.Theory.Math.Convert where
 
 import Data.Int {- base -}
 import Data.Word {- base -}
+
+-- * Numerical conversions
 
 -- | Type specialised 'realToFrac'
 real_to_float :: Real t => t -> Float
