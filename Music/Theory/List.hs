@@ -1206,6 +1206,43 @@ replace_ix f i p =
     let (q,r:s) = splitAt i p
     in q ++ (f r : s)
 
+-- | List equality, ignoring indicated indices.
+--
+-- > list_eq_ignoring_indices [3,5] "abcdefg" "abc.e.g" == True
+list_eq_ignoring_indices :: (Eq t,Integral i) => [i] -> [t] -> [t] -> Bool
+list_eq_ignoring_indices x =
+  let f n p q =
+        case (p,q) of
+          ([],[]) -> True
+          ([],_) -> False
+          (_,[]) -> False
+          (p1:p',q1:q') -> if n `elem` x || p1 == q1
+                           then f (n + 1) p' q'
+                           else False
+  in f 0
+
+-- | Edit list to have /v/ at indices /k/.
+--   Replacement assoc-list must be ascending.
+--   All replacements must be in range.
+--
+-- > list_set_indices [(2,'C'),(4,'E')] "abcdefg" == "abCdEfg"
+-- > list_set_indices [] "abcdefg" == "abcdefg"
+-- > list_set_indices [(9,'I')] "abcdefg" == undefined
+list_set_indices :: (Eq ix, Num ix) => [(ix,t)] -> [t] -> [t]
+list_set_indices =
+  let f n r l =
+        case (r,l) of
+          ([],_) -> l
+          (_,[]) -> error "list_set_indices: out of range?"
+          ((k,v):r',l0:l') -> if n == k
+                              then v : f (n + 1) r' l'
+                              else l0 : f (n + 1) r l'
+  in f 0
+
+-- | Variant of 'list_set_indices' with one replacement.
+list_set_ix :: (Eq t, Num t) => t -> a -> [a] -> [a]
+list_set_ix k v = list_set_indices [(k,v)]
+
 -- | Cyclic indexing function.
 --
 -- > map (at_cyclic "cycle") [0..9] == "cyclecycle"
