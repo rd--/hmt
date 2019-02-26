@@ -1,7 +1,5 @@
 import Data.Char {- base -}
-import Data.Int {- base -}
 import Data.List {- base -}
-import Data.Word {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
@@ -141,13 +139,16 @@ fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
       l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
   putStrLn (unlines l)
 
+{-
+import Data.Int {- base -}
+import Data.Word {- base -}
+
 int_to_int8 :: Int -> Int8
 int_to_int8 = fromIntegral
 
 int8_to_word8 :: Int8 -> Word8
 int8_to_word8 = fromIntegral
 
-{-
 midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,T.Cents,Int) -> IO ()
 midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
