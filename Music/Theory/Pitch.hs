@@ -454,12 +454,27 @@ midi_detune_is_normal = cents_is_normal . snd
 --
 -- > map midi_detune_normalise [(60,-250),(60,-75),(60,75),(60,250)]
 midi_detune_normalise :: (Ord c,Num c) => Midi_Detune' c -> Midi_Detune' c
-midi_detune_normalise (m,c) =
-    if c > 50
-    then midi_detune_normalise (m + 1,c - 100)
-    else if c > (-50)
-         then (m,c)
-         else midi_detune_normalise (m - 1,c + 100)
+midi_detune_normalise =
+  let recur (m,c) =
+        if c > 50
+        then recur (m + 1,c - 100)
+        else if c > (-50)
+             then (m,c)
+             else recur (m - 1,c + 100)
+  in recur
+
+-- | In normal-positive form the detune is in the range (0,+100].
+--
+-- > map midi_detune_normalise_positive [(60,-250),(60,-75),(60,75),(60,250)]
+midi_detune_normalise_positive :: (Ord c,Num c) => Midi_Detune' c -> Midi_Detune' c
+midi_detune_normalise_positive =
+  let recur (m,c) =
+        if c < 0
+        then recur (m - 1,c + 100)
+        else if c > 100
+        then recur (m + 1,c - 100)
+        else (m,c)
+  in recur
 
 -- | Inverse of 'cps_to_midi_detune', given frequency of ISO @A4@.
 midi_detune_to_cps_f0 :: Real c => Double -> Midi_Detune' c -> Double

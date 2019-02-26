@@ -1,4 +1,3 @@
-import qualified Data.ByteString as B {- bytestring -}
 import Data.Char {- base -}
 import Data.Int {- base -}
 import Data.List {- base -}
@@ -148,8 +147,7 @@ int_to_int8 = fromIntegral
 int8_to_word8 :: Int8 -> Word8
 int8_to_word8 = fromIntegral
 
--- > midi_tbl_binary_mnn_cents_tuning_d12 "/home/rohan/data/dexed/meanquar.bin" ("meanquar",0,0)
--- > midi_tbl_binary_mnn_cents_tuning_d12 "/home/rohan/data/dexed/young-lm_piano.bin" ("young-lm_piano",-74.7,-3)
+{-
 midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,T.Cents,Int) -> IO ()
 midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
@@ -157,6 +155,19 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
       pp_f n = let (mnn,dt) = T.midi_detune_normalise (tun_f n)
                in [int_to_int8 mnn,int_to_int8 (round dt)]
   B.writeFile fn (B.pack (map int8_to_word8 (concatMap pp_f [0 .. 127])))
+-}
+
+-- > midi_tbl_mnn_cents_tuning_d12 ("meanquar",0,0)
+-- > midi_tbl_mnn_cents_tuning_d12 ("young-lm_piano",-74.7,-3)
+midi_tbl_mnn_cents_tuning_d12 :: (String,T.Cents,Int) -> IO ()
+midi_tbl_mnn_cents_tuning_d12 (nm,c,k) = do
+  t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
+  let u8_pp = T.pad_left ' ' 3 . show
+      r_pp = T.pad_left ' ' 7 . T.real_pp 4
+      tun_f = T.d12_midi_tuning_f (t,c,k)
+      pp_f n = let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
+               in concat [u8_pp mnn,",",r_pp dt]
+  putStrLn (unlines (map pp_f [0 .. 127]))
 
 ratio_cents_pp :: Rational -> String
 ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
@@ -187,7 +198,7 @@ help =
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
-    ,"midi-table binary-mnn-cents d12 name:string cents:real mnn:int output-file"
+    ,"midi-table mnn-cents d12 name:string cents:real mnn:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
@@ -220,8 +231,8 @@ main = do
         intnam_lookup (map T.read_ratio_with_div_err r_sq)
     ["intnam","search",txt] ->
         intnam_search txt
-    ["midi-table","binary-mnn-cents","d12",scl_nm,c,k,fn] ->
-        midi_tbl_binary_mnn_cents_tuning_d12 fn (scl_nm,read c,read k)
+    ["midi-table","mnn-cents","d12",scl_nm,c,k] ->
+        midi_tbl_mnn_cents_tuning_d12 (scl_nm,read c,read k)
     "search":ty:ci:lm:txt ->
         case ty of
           "scale" -> search_scale (ci == "ci",nil_or_read lm) txt
