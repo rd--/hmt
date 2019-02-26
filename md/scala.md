@@ -153,6 +153,14 @@ MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
  94 6543.81  Ab8    -26.5 1864.66      Bb6   2173.5
 --- ------- ---- -------- ------- -------- --------
 
+# midi-table
+
+~~~~
+$ hmt-scala midi-table mnn-cents d12 young-lm_piano -74.7 -3
+$ hmt-scala midi-table mnn-cents d12 meanquar 0 0
+$
+~~~~
+
 # fluidsynth
 
 Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
