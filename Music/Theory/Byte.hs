@@ -7,7 +7,7 @@ import Data.Word {- base -}
 import Numeric {- base -}
 
 import qualified Data.ByteString as B {- bytestring -}
-import Data.List.Split {- split -}
+import qualified Data.List.Split as Split {- split -}
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.Math.Convert as T {- hmt -}
@@ -102,4 +102,4 @@ load_hex_byte_seq = fmap (map read_hex_byte_err . words) . readFile
 
 -- | Store 'U8' sequence as hexadecimal text, /k/ words per line.
 store_hex_byte_seq :: (Integral i,Show i) => Int -> FilePath -> [i] -> IO ()
-store_hex_byte_seq k fn = writeFile fn . unlines . map unwords . chunksOf k . map byte_hex_pp_err
+store_hex_byte_seq k fn = writeFile fn . unlines . map unwords . Split.chunksOf k . map byte_hex_pp_err
