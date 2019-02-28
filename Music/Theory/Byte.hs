@@ -65,13 +65,13 @@ byte_hex_pp_err = fromMaybe (error "byte_hex_pp") . byte_hex_pp
 
 -- | 'unwords' of 'byte_hex_pp_err'.
 --
--- > byte_seq_hex_pp [0x0F,0xF0] == "0F F0"
+-- > byte_seq_hex_pp [0x0F,0xF0] == "0FF0"
 byte_seq_hex_pp :: (Integral i, Show i) => [i] -> String
-byte_seq_hex_pp = unwords . map byte_hex_pp_err
+byte_seq_hex_pp = concatMap byte_hex_pp_err
 
 -- | Read two character hexadecimal string.
 --
--- > mapMaybe read_hex_byte (words "0F F0 F") == [0x0F,0xF0]
+-- > mapMaybe read_hex_byte (Split.chunksOf 2 "0FF0F") == [0x0F,0xF0]
 read_hex_byte :: (Eq t,Num t) => String -> Maybe t
 read_hex_byte s =
     case s of
@@ -82,9 +82,11 @@ read_hex_byte s =
 read_hex_byte_err :: (Eq t,Num t) => String -> t
 read_hex_byte_err = fromMaybe (error "read_hex_byte") . read_hex_byte
 
--- | 'read_hex_byte_err' of 'words'
+-- | Sequence of 'read_hex_byte_err'
+--
+-- > read_hex_byte_seq "000FF0FF" == [0x00,0x0F,0xF0,0xFF]
 read_hex_byte_seq :: (Eq t,Num t) => String -> [t]
-read_hex_byte_seq = map read_hex_byte_err . words
+read_hex_byte_seq = map read_hex_byte_err . Split.chunksOf 2
 
 -- * IO
 
@@ -96,10 +98,10 @@ load_byte_seq = fmap (map fromIntegral . B.unpack) . B.readFile
 store_byte_seq :: Integral i => FilePath -> [i] -> IO ()
 store_byte_seq fn = B.writeFile fn . B.pack . map fromIntegral
 
--- | Load hexadecimal text 'U8' sequence from file.
-load_hex_byte_seq :: Integral i => FilePath -> IO [i]
-load_hex_byte_seq = fmap (map read_hex_byte_err . words) . readFile
+-- | Load hexadecimal text 'U8' sequences from file.
+load_hex_byte_seq :: Integral i => FilePath -> IO [[i]]
+load_hex_byte_seq = fmap (map (map read_hex_byte_err . Split.chunksOf 2) . lines) . readFile
 
--- | Store 'U8' sequence as hexadecimal text, /k/ words per line.
-store_hex_byte_seq :: (Integral i,Show i) => Int -> FilePath -> [i] -> IO ()
-store_hex_byte_seq k fn = writeFile fn . unlines . map unwords . Split.chunksOf k . map byte_hex_pp_err
+-- | Store 'U8' sequences as hexadecimal text, one sequence per line.
+store_hex_byte_seq :: (Integral i,Show i) => FilePath -> [[i]] -> IO ()
+store_hex_byte_seq fn = writeFile fn . unlines . map byte_seq_hex_pp
