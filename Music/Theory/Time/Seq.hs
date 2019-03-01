@@ -588,17 +588,14 @@ wseq_remove_overlap_rw_1 eq_f dur_fn ((t,d),a) sq =
 {- | Run 'wseq_remove_overlap_rw_1' until sequence has no overlaps.
 
 > let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
-> let r = [((0,1),'a'),((1,2),'a'),((3,1),'a')]
 > wseq_has_overlaps (==) sq == True
 > let sq_rw = wseq_remove_overlaps_rw (==) id sq
-> sq_rw == r
-> wseq_has_overlaps (==) sq_rw
-> wseq_has_overlaps (==) (wseq_remove_overlaps_rw (==) id sq) == False
+> sq_rw == [((0,1),'a'),((1,2),'a'),((3,1),'a')]
+> wseq_has_overlaps (==) sq_rw == False
 
 > import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 > let csv_fn = "/home/rohan/uc/the-center-is-between-us/visitants/csv/midi/air.B.1.csv"
 > sq <- T.csv_midi_read_wseq csv_fn :: IO (Wseq Double (T.Event Double))
-> 
 
 -}
 wseq_remove_overlaps_rw :: (Ord t,Num t) => (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e
