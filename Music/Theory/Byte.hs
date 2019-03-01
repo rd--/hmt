@@ -105,3 +105,15 @@ load_hex_byte_seq = fmap (map read_hex_byte_seq . lines) . readFile
 -- | Store 'U8' sequences as hexadecimal text, one sequence per line.
 store_hex_byte_seq :: (Integral i,Show i) => FilePath -> [[i]] -> IO ()
 store_hex_byte_seq fn = writeFile fn . unlines . map byte_seq_hex_pp
+
+{-
+
+import qualified Data.ByteString.Base64 as Base64 {- base64-bytestring -}
+let fn = "/home/rohan/sw/hsc3-data/data/yamaha/dx7/rom/ROM1A.syx"
+b <- load_byte_seq fn :: IO [Word8]
+let e = B.unpack (Base64.encode (B.pack b))
+let r = B.unpack (Base64.decodeLenient (B.pack e))
+(length b,length e,length r,b == r) == (4104,5472,4104,True)
+map word8_to_char e
+
+-}
