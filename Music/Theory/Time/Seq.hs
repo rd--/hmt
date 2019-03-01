@@ -528,33 +528,43 @@ wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
 
 -- | Are /e/ equal and do nodes overlap?
+--   Nodes are ascending, so overlap if they begin at the same time,
+--   or the second begins before the first ends.
 wseq_nodes_overlap :: (Ord t,Num t) => (e -> e -> Bool) -> ((t,t),e) -> ((t,t),e) -> Bool
-wseq_nodes_overlap eq_f ((t1,d1),a1) ((t2,_d2),a2) = eq_f a1 a2 && (t1 == t2 || t2 < t1 + d1)
+wseq_nodes_overlap eq_f ((t1,d1),a1) ((t2,_d2),a2) = eq_f a1 a2 && (t1 == t2 || t2 < (t1 + d1))
 
 -- | Find first node at /sq/ that overlaps with /e0/, if there is one.
---   Note: this could halt early, ie. when t2 > (t1 + d1).
+--   Note: this could, but does not, halt early, ie. when t2 > (t1 + d1).
 wseq_find_overlap_1 :: (Ord t,Num t) => (e -> e -> Bool) -> ((t,t),e) -> Wseq t e -> Bool
 wseq_find_overlap_1 eq_f e0 = isJust . find (wseq_nodes_overlap eq_f e0)
 
 -- | Determine if sequence has any overlapping equal nodes, stops after finding first instance.
+--
+-- > wseq_has_overlaps (==) [] == False
+-- > wseq_has_overlaps (==) [((0,1),'x')]
 wseq_has_overlaps :: (Ord t, Num t) => (e -> e -> Bool) -> Wseq t e -> Bool
 wseq_has_overlaps eq_fn =
   let recur sq =
         case sq of
           [] -> False
-          e0:sq' -> if wseq_find_overlap_1 eq_fn e0 sq then True else recur sq'
+          e0:sq' -> if wseq_find_overlap_1 eq_fn e0 sq' then True else recur sq'
   in recur
 
 {- | Remove overlaps by deleting any overlapping nodes.
 
 > let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
-> wseq_remove_overlaps_rm (==) sq == [((0,1),'a'),((1,5),'a')]
+> wseq_has_overlaps (==) sq == True
+> let sq_rw = wseq_remove_overlaps_rm (==) sq
+> sq_rw == [((0,1),'a'),((1,5),'a')]
+> wseq_has_overlaps (==) sq_rw
 -}
 wseq_remove_overlaps_rm :: (Ord t,Num t) => (e -> e -> Bool) -> Wseq t e -> Wseq t e
-wseq_remove_overlaps_rm eq_f sq =
-  case sq of
-    [] -> []
-    e0:sq' -> e0 : wseq_remove_overlaps_rm eq_f (filter (not . wseq_nodes_overlap eq_f e0) sq')
+wseq_remove_overlaps_rm eq_f =
+  let recur sq =
+        case sq of
+          [] -> []
+          e0:sq' -> e0 : recur (filter (not . wseq_nodes_overlap eq_f e0) sq')
+  in recur
 
 {- | Find first instance of overlap of /e/ at /sq/ and re-write durations so nodes don't overlap.
      If equal nodes begin simultaneously delete the shorter node (eithe LHS or RHS).
@@ -580,8 +590,15 @@ wseq_remove_overlap_rw_1 eq_f dur_fn ((t,d),a) sq =
 > let sq = [((0,1),'a'),((0,5),'a'),((1,5),'a'),((3,1),'a')]
 > let r = [((0,1),'a'),((1,2),'a'),((3,1),'a')]
 > wseq_has_overlaps (==) sq == True
-> wseq_remove_overlaps_rw (==) id sq == r
+> let sq_rw = wseq_remove_overlaps_rw (==) id sq
+> sq_rw == r
+> wseq_has_overlaps (==) sq_rw
 > wseq_has_overlaps (==) (wseq_remove_overlaps_rw (==) id sq) == False
+
+> import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
+> let csv_fn = "/home/rohan/uc/the-center-is-between-us/visitants/csv/midi/air.B.1.csv"
+> sq <- T.csv_midi_read_wseq csv_fn :: IO (Wseq Double (T.Event Double))
+> 
 
 -}
 wseq_remove_overlaps_rw :: (Ord t,Num t) => (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e

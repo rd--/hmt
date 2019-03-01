@@ -100,7 +100,7 @@ store_byte_seq fn = B.writeFile fn . B.pack . map fromIntegral
 
 -- | Load hexadecimal text 'U8' sequences from file.
 load_hex_byte_seq :: Integral i => FilePath -> IO [[i]]
-load_hex_byte_seq = fmap (map (map read_hex_byte_err . Split.chunksOf 2) . lines) . readFile
+load_hex_byte_seq = fmap (map read_hex_byte_seq . lines) . readFile
 
 -- | Store 'U8' sequences as hexadecimal text, one sequence per line.
 store_hex_byte_seq :: (Integral i,Show i) => FilePath -> [[i]] -> IO ()
