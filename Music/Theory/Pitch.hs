@@ -101,6 +101,26 @@ midi_to_octpc = midi_to_octave_pitchclass
 
 -- * Octave & fractional pitch-class
 
+-- | (octave,pitch-class) to fractional octave.
+--   This is an odd notation, but can be useful for writing pitch data where a float is required.
+--   Note this is not a linear octave, for that see 'Sound.SC3.Common.Math. oct_to_cps '.
+--
+-- > map octpc_to_foct [(4,0),(4,7),(5,11)] == [4.00,4.07,5.11]
+octpc_to_foct :: (Integral i, Fractional r) => (i,i) -> r
+octpc_to_foct (o,pc) = fromIntegral o + (fromIntegral pc / 100)
+
+-- | Inverse of 'octpc_to_foct'.
+--
+-- > map foct_to_octpc [4.00,4.07,5.11] == [(4,0),(4,7),(5,11)]
+foct_to_octpc :: (Integral i, RealFrac r) => r -> (i,i)
+foct_to_octpc x =
+  let (p,q) = T.integral_and_fractional_parts x
+  in (p,floor (q * 100))
+
+-- | 'octpc_to_midi' of 'foct_to_octpc'.
+foct_to_midi :: Double -> Midi
+foct_to_midi = octpc_to_midi . foct_to_octpc
+
 -- | Fractional midi note number.
 type FMidi = Double
 
