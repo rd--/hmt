@@ -1,9 +1,10 @@
 -- | Regular matrix array data, CSV, column & row indexing.
 module Music.Theory.Array.CSV where
 
-import qualified Data.Array as A {- array -}
 import Data.List {- base -}
 
+import qualified Data.Array as A {- array -}
+import qualified Safe {- safe -}
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 
 import qualified Music.Theory.Array as T {- hmt -}
@@ -86,15 +87,15 @@ csv_table_write_def f fn tbl = csv_table_write f def_csv_opt fn (Nothing,tbl)
 
 -- | @0@-indexed (row,column) cell lookup.
 table_lookup :: T.Table a -> (Int,Int) -> a
-table_lookup t (r,c) = (t !! r) !! c
+table_lookup t (r,c) = let ix = Safe.atNote "table_lookup" in (t `ix` r) `ix` c
 
 -- | Row data.
 table_row :: T.Table a -> R.Row_Ref -> [a]
-table_row t r = t !! R.row_index r
+table_row t r = Safe.atNote "table_row" t (R.row_index r)
 
 -- | Column data.
 table_column :: T.Table a -> R.Column_Ref -> [a]
-table_column t c = transpose t !! R.column_index c
+table_column t c = Safe.atNote "table_column" (transpose t) (R.column_index c)
 
 -- | Lookup value across columns.
 table_column_lookup :: Eq a => T.Table a -> (R.Column_Ref,R.Column_Ref) -> a -> Maybe a
@@ -111,7 +112,7 @@ table_cell t (c,r) =
 -- | @0@-indexed (row,column) cell lookup over column range.
 table_lookup_row_segment :: T.Table a -> (Int,(Int,Int)) -> [a]
 table_lookup_row_segment t (r,(c0,c1)) =
-    let r' = t !! r
+    let r' = Safe.atNote "table_lookup_row_segment" t r
     in take (c1 - c0 + 1) (drop c0 r')
 
 -- | Range of cells from row.
@@ -134,7 +135,7 @@ table_row_segment t (r,c) =
 table_to_array :: T.Table a -> A.Array R.Cell_Ref a
 table_to_array t =
     let nr = length t
-        nc = length (t !! 0)
+        nc = length (Safe.atNote "table_to_array" t 0)
         bnd = (R.cell_ref_minima,(toEnum (nc - 1),nr))
         asc = zip (R.cell_range_row_order bnd) (concat t)
     in A.array bnd asc

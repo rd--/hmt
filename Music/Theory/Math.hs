@@ -100,7 +100,7 @@ ratio_pp r =
 -- 'gcd' of @n@ and @d@ is not @1@.
 --
 -- > let r = [False,True,False]
--- > in map rational_simplifies [(2,3),(4,6),(5,7)] == r
+-- > map rational_simplifies [(2,3),(4,6),(5,7)] == r
 rational_simplifies :: Integral a => (a,a) -> Bool
 rational_simplifies (n,d) = gcd n d /= 1
 
@@ -125,13 +125,9 @@ ratio_nd_sum r = numerator r + denominator r
 -- > let r = approxRational pi 1e-100
 -- > r == 884279719003555 / 281474976710656
 -- > show_rational_decimal 12 r == "3.141592653590"
+-- > show_rational_decimal 3 (-100) == "-100.000"
 show_rational_decimal :: Int -> Rational -> String
-show_rational_decimal n r =
-    let d = round (abs r * 10^n)
-        s = show (d :: Integer)
-        s' = replicate (n - length s + 1) '0' ++ s
-        (h, f) = splitAt (length s' - n) s'
-    in  (if r < 0 then "-" else "") ++ h ++ "." ++ f
+show_rational_decimal n = double_pp n . fromRational
 
 -- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
 -- to exponential notation very readily.
@@ -140,9 +136,26 @@ show_rational_decimal n r =
 realfloat_pp :: RealFloat a => Int -> a -> String
 realfloat_pp k n = showFFloat (Just k) n ""
 
+-- | Is /n/ a whole (integral) value.
+--
+-- > map real_is_whole [-1.0,-0.5,0.0,0.5,1.0] == [True,False,True,False,True]
+real_is_whole :: Real n => n -> Bool
+real_is_whole = (== 1) . denominator . toRational
+
 -- | Show /r/ as float to /k/ places.
+--
+-- > map (real_pp 4) [1,1.1,1.12,1.123,1.1234]
 real_pp :: Real t => Int -> t -> String
-real_pp k t = showFFloat (Just k) (T.real_to_double t) ""
+real_pp k = realfloat_pp k . T.real_to_double
+
+-- | Prints /n/ as integral or to at most /k/ decimal places.
+--
+-- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234] == ["1","1.1","1.12","1.123","1.1234"]
+real_pp_trunc :: Real t => Int -> t -> String
+real_pp_trunc k n =
+  if real_is_whole n
+  then show (numerator (toRational n))
+  else dropWhileEnd (== '0') (real_pp k n)
 
 -- | Type specialised 'realfloat_pp'.
 float_pp :: Int -> Float -> String

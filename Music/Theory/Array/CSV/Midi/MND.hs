@@ -39,7 +39,7 @@ param_parse str =
 
 param_pp :: Int -> [Param] -> String
 param_pp k =
-    let f (lhs,rhs) = concat [lhs,"=",T.real_pp k rhs]
+    let f (lhs,rhs) = concat [lhs,"=",T.real_pp_trunc k rhs]
     in intercalate ";" . map f
 
 -- | Midi note data, the type parameters are to allow for fractional note & velocity values.

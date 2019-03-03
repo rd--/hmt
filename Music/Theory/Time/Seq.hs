@@ -842,14 +842,14 @@ tseq_to_dseq empty sq =
 
 -- | The last element of 'Tseq' is required to be an /eof/ marker that
 -- has no duration and is not represented in the 'Wseq'.  The duration
--- of each value is either derived from the value, if an /dur/
+-- of each value is either derived from the value, if a /dur/
 -- function is given, or else the inter-offset time.
 --
 -- > let r = wseq_zip [0,1,3,6,8] [1,2,3,2,1] "abcde"
--- > in tseq_to_wseq Nothing (zip [0,1,3,6,8,9] "abcde|") == r
+-- > tseq_to_wseq Nothing (zip [0,1,3,6,8,9] "abcde|") == r
 --
 -- > let r = wseq_zip [0,1,3,6,8] (map fromEnum "abcde") "abcde"
--- > in tseq_to_wseq (Just fromEnum) (zip [0,1,3,6,8,9] "abcde|") == r
+-- > tseq_to_wseq (Just fromEnum) (zip [0,1,3,6,8,9] "abcde|") == r
 tseq_to_wseq :: Num t => Maybe (a -> t) -> Tseq t a -> Wseq t a
 tseq_to_wseq dur_f sq =
     let (t,a) = unzip sq
