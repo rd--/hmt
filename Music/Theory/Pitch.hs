@@ -111,11 +111,11 @@ octpc_to_foct (o,pc) = fromIntegral o + (fromIntegral pc / 100)
 
 -- | Inverse of 'octpc_to_foct'.
 --
--- > map foct_to_octpc [4.00,4.07,5.11] == [(4,0),(4,7),(5,11)]
+-- > map foct_to_octpc [3.11,4.00,4.07,5.11] == [(3,11),(4,0),(4,7),(5,11)]
 foct_to_octpc :: (Integral i, RealFrac r) => r -> (i,i)
 foct_to_octpc x =
   let (p,q) = T.integral_and_fractional_parts x
-  in (p,floor (q * 100))
+  in (p,round (q * 100))
 
 -- | 'octpc_to_midi' of 'foct_to_octpc'.
 foct_to_midi :: Double -> Midi

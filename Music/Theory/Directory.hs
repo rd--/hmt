@@ -21,6 +21,9 @@ path_scan_err p x =
     in fmap (fromMaybe err) (path_scan p x)
 
 -- | Subset of files in /dir/ with an extension in /ext/.
+--   Extensions include the leading dot.
+--
+-- > dir_subset [".hs"] "/home/rohan/sw/hmt/cmd"
 dir_subset :: [String] -> FilePath -> IO [FilePath]
 dir_subset ext dir = do
   let f nm = takeExtension nm `elem` ext
