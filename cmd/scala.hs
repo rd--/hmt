@@ -8,6 +8,7 @@ import qualified Music.Theory.Array.MD as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
@@ -167,7 +168,7 @@ midi_tbl_mnn_cents_tuning_d12 (nm,c,k) = do
       r_pp = T.pad_left ' ' 7 . T.real_pp 4
       tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n = let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
-               in concat [u8_pp mnn,",",r_pp dt]
+               in concat [u8_pp (T.int_to_word8 mnn `mod` 0x80),",",r_pp dt]
   putStrLn (unlines (map pp_f [0 .. 127]))
 
 ratio_cents_pp :: Rational -> String
