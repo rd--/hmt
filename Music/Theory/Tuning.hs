@@ -31,14 +31,14 @@ fratio_to_cents = (1200 *) . logBase 2 . realToFrac
 
 -- | Frequency /n/ cents from /f/.
 --
--- > import Music.Theory.Pitch
+-- > import Music.Theory.Pitch {- hmt -}
 -- > map (cps_shift_cents 440) [-100,100] == map octpc_to_cps [(4,8),(4,10)]
 cps_shift_cents :: Floating a => a -> a -> a
 cps_shift_cents f = (* f) . cents_to_fratio
 
 -- | Interval in /cents/ from /p/ to /q/, ie. 'ratio_to_cents' of /p/ '/' /q/.
 --
--- > cps_difference_cents 440 (octpc_to_cps (5,2)) == 500
+-- > map (round . cps_difference_cents 440) [412,octpc_to_cps (5,2)] == [-114,500]
 --
 -- > let abs_dif i j = abs (i - j)
 -- > cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9
