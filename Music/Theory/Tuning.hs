@@ -38,7 +38,7 @@ cps_shift_cents f = (* f) . cents_to_fratio
 
 -- | Interval in /cents/ from /p/ to /q/, ie. 'ratio_to_cents' of /p/ '/' /q/.
 --
--- > map (round . cps_difference_cents 440) [412,octpc_to_cps (5,2)] == [-114,500]
+-- > map (round . cps_difference_cents 440) [412,415,octpc_to_cps (5,2)] == [-114,-101,500]
 --
 -- > let abs_dif i j = abs (i - j)
 -- > cps_difference_cents 440 (fmidi_to_cps 69.1) `abs_dif` 10 < 1e9

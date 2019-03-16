@@ -26,6 +26,7 @@ near_rat = flip approxRational 0.01
 -- | Enumeration of gamelan instrument families.
 data Instrument_Family
     = Bonang
+    | Gambang
     | Gender
     | Gong
     | Saron
@@ -39,6 +40,7 @@ instrument_family_set = T.enum_univ
 data Instrument_Name
     = Bonang_Barung -- ^ Bonang Barung (horizontal gong, middle)
     | Bonang_Panerus -- ^ Bonang Panerus (horizontal gong, high)
+    | Gambang_Kayu -- ^ Gambang Kayu (wooden key&resonator)
     | Gender_Barung -- ^ Gender Barung (key&resonator, middle)
     | Gender_Panerus -- ^ Gender Panembung (key&resonator, high)
     | Gender_Panembung -- ^ Gender Panembung, Slenthem (key&resonator, low)
@@ -47,29 +49,30 @@ data Instrument_Name
     | Kempul -- ^ Kempul (hanging gong, middle)
     | Kempyang -- ^ Kempyang (horizontal gong, high)
     | Kenong -- ^ Kenong (horizontal gong, low)
-    | Ketuk -- ^ Ketuk (horizontal gong, middle)
+    | Ketuk -- ^ Ketuk, Kethuk (horizontal gong, middle)
     | Saron_Barung -- ^ Saron Barung, Saron (key, middle)
     | Saron_Demung -- ^ Saron Demung, Demung (key, low)
     | Saron_Panerus -- ^ Saron Panerus, Peking (key, high)
       deriving (Enum,Bounded,Eq,Ord,Show,Read)
 
-instrument_family :: Instrument_Name -> Maybe Instrument_Family
+instrument_family :: Instrument_Name -> Instrument_Family
 instrument_family nm =
     case nm of
-      Bonang_Barung -> Just Bonang
-      Bonang_Panerus -> Just Bonang
-      Gender_Barung -> Just Gender
-      Gender_Panerus -> Just Gender
-      Gender_Panembung -> Just Gender
-      Gong_Ageng -> Just Gong
-      Gong_Suwukan -> Just Gong
-      Kempul -> Just Gong
-      Kempyang -> Nothing
-      Kenong -> Nothing
-      Ketuk -> Nothing
-      Saron_Barung -> Just Saron
-      Saron_Demung -> Just Saron
-      Saron_Panerus -> Just Saron
+      Bonang_Barung -> Bonang
+      Bonang_Panerus -> Bonang
+      Gambang_Kayu -> Gambang
+      Gender_Barung -> Gender
+      Gender_Panerus -> Gender
+      Gender_Panembung -> Gender
+      Gong_Ageng -> Gong
+      Gong_Suwukan -> Gong
+      Kempul -> Gong
+      Kempyang -> Gong
+      Kenong -> Gong
+      Ketuk -> Gong
+      Saron_Barung -> Saron
+      Saron_Demung -> Saron
+      Saron_Panerus -> Saron
 
 instrument_name_pp :: Instrument_Name -> String
 instrument_name_pp =
@@ -82,6 +85,7 @@ instrument_name_clef nm =
     case nm of
       Bonang_Barung -> T.Clef T.Treble 0
       Bonang_Panerus -> T.Clef T.Treble 1
+      Gambang_Kayu -> T.Clef T.Treble 0
       Gender_Barung -> T.Clef T.Treble 0
       Gender_Panerus -> T.Clef T.Treble 1
       Gender_Panembung -> T.Clef T.Bass 0
@@ -191,18 +195,15 @@ tone_12et_pitch_detune' = fromJust_err "tone_12et_pitch_detune" . tone_12et_pitc
 tone_12et_fmidi :: Tone -> Rational
 tone_12et_fmidi = near_rat . T.pitch_to_fmidi . tone_12et_pitch'
 
-tone_family :: Tone -> Maybe Instrument_Family
+tone_family :: Tone -> Instrument_Family
 tone_family = instrument_family . tone_instrument_name
 
-tone_family_err :: Tone -> Instrument_Family
-tone_family_err = fromJust_err "tone_family" . tone_family
-
 tone_in_family :: Instrument_Family -> Tone -> Bool
-tone_in_family c t = tone_family t == Just c
+tone_in_family c t = tone_family t == c
 
 select_tones :: Instrument_Family -> [Tone] -> [Maybe Tone]
 select_tones c =
-    let f t = if tone_family t == Just c then Just t else Nothing
+    let f t = if tone_family t == c then Just t else Nothing
     in map f
 
 -- | Specify subset as list of families and scales.
@@ -211,7 +212,7 @@ type Tone_Subset = ([Instrument_Family],[Scale])
 -- | Extract subset of 'Tone_Set'.
 tone_subset :: Tone_Subset -> Tone_Set -> Tone_Set
 tone_subset (fm,sc) =
-    let f t = fromJust_err "tone_subset" (tone_family t) `elem` fm &&
+    let f t = tone_family t `elem` fm &&
               fromJust_err "tone_subset" (tone_scale t) `elem` sc
     in filter f
 
@@ -253,7 +254,7 @@ tone_class_p (nm,sc) t =
 
 tone_family_class_p :: (Instrument_Family,Scale) -> Tone -> Bool
 tone_family_class_p (fm,sc) t =
-    instrument_family (tone_instrument_name t) == Just fm &&
+    instrument_family (tone_instrument_name t) == fm &&
     tone_scale t == Just sc
 
 -- | Given a 'Tone_Set', find those 'Tone's that are within 'T.Cents' of 'Frequency'.
