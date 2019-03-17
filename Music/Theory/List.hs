@@ -600,6 +600,9 @@ reverse_lookup key ls =
       (x,y):ls' -> if key == y then Just x else reverse_lookup key ls'
 -}
 
+-- | Erroring variant of 'find'.
+find_err :: (t -> Bool) -> [t] -> t
+find_err f = fromMaybe (error "find") . find f
 
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
 -- right of the list, and it to the right whether equal or not.

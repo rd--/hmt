@@ -170,76 +170,76 @@ note_gamut_elem (Note s1 p1) (Note s2 p2) =
   then error "note_gamut_elem?"
   else note_range_elem s1 p1 p2
 
-data Tone = Tone {tone_instrument_name :: Instrument_Name
-                 ,tone_note :: Maybe Note
-                 ,tone_frequency :: Maybe Frequency
-                 ,tone_annotation :: Maybe Annotation}
-             deriving (Eq,Show)
+data Tone t = Tone {tone_instrument_name :: Instrument_Name
+                   ,tone_note :: Maybe Note
+                   ,tone_frequency :: Maybe Frequency
+                   ,tone_annotation :: Maybe t}
+              deriving (Eq,Show)
 
-tone_frequency_err :: Tone -> Frequency
+tone_frequency_err :: Tone t -> Frequency
 tone_frequency_err = fromJust_err "tone_frequency" . tone_frequency
 
 -- | Orderable if frequency is given.
-instance Ord Tone where compare = tone_compare_frequency
+instance Eq t => Ord (Tone t) where compare = tone_compare_frequency
 
 -- | Constructor for 'Tone' without /frequency/ or /annotation/.
-plain_tone :: Instrument_Name -> Scale -> Octave -> Degree -> Tone
+plain_tone :: Instrument_Name -> Scale -> Octave -> Degree -> Tone t
 plain_tone nm sc o d = Tone nm (Just (Note sc (Pitch o d))) Nothing Nothing
 
 -- | Tones are considered /equivalent/ if they have the same
 -- 'Instrument_Name' and 'Note'.
-tone_equivalent :: Tone -> Tone -> Bool
+tone_equivalent :: Tone t -> Tone t -> Bool
 tone_equivalent p q =
     let Tone nm nt _ _ = p
         Tone nm' nt' _ _ = q
     in nm == nm' && nt == nt'
 
-tone_24et_pitch :: Tone -> Maybe T.Pitch
+tone_24et_pitch :: Tone t -> Maybe T.Pitch
 tone_24et_pitch =
     let f i = let (_,pt,_,_,_) = T.nearest_24et_tone i in pt
     in fmap f . tone_frequency
 
-tone_24et_pitch' :: Tone -> T.Pitch
+tone_24et_pitch' :: Tone t -> T.Pitch
 tone_24et_pitch' = fromJust_err "tone_24et_pitch" . tone_24et_pitch
 
-tone_24et_pitch_detune :: Tone -> Maybe T.Pitch_Detune
+tone_24et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
 tone_24et_pitch_detune = fmap T.nearest_pitch_detune_24et . tone_frequency
 
-tone_24et_pitch_detune' :: Tone -> T.Pitch_Detune
+tone_24et_pitch_detune' :: Tone t -> T.Pitch_Detune
 tone_24et_pitch_detune' = fromJust_err "tone_24et_pitch_detune" . tone_24et_pitch_detune
 
-tone_fmidi :: Tone -> Double
+tone_fmidi :: Tone t -> Double
 tone_fmidi = T.cps_to_fmidi . tone_frequency_err
 
 -- | Fractional (rational) 24-et midi note number of 'Tone'.
-tone_24et_fmidi :: Tone -> Rational
+tone_24et_fmidi :: Tone t -> Rational
 tone_24et_fmidi = near_rat . T.pitch_to_fmidi . tone_24et_pitch'
 
-tone_12et_pitch :: Tone -> Maybe T.Pitch
+tone_12et_pitch :: Tone t -> Maybe T.Pitch
 tone_12et_pitch =
     let f i = let (_,pt,_,_,_) = T.nearest_12et_tone i in pt
     in fmap f . tone_frequency
 
-tone_12et_pitch' :: Tone -> T.Pitch
+tone_12et_pitch' :: Tone t -> T.Pitch
 tone_12et_pitch' = fromJust_err "tone_12et_pitch" . tone_12et_pitch
 
-tone_12et_pitch_detune :: Tone -> Maybe T.Pitch_Detune
+tone_12et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
 tone_12et_pitch_detune = fmap T.nearest_pitch_detune_12et . tone_frequency
 
-tone_12et_pitch_detune' :: Tone -> T.Pitch_Detune
+tone_12et_pitch_detune' :: Tone t -> T.Pitch_Detune
 tone_12et_pitch_detune' = fromJust_err "tone_12et_pitch_detune" . tone_12et_pitch_detune
 
 -- | Fractional (rational) 24-et midi note number of 'Tone'.
-tone_12et_fmidi :: Tone -> Rational
+tone_12et_fmidi :: Tone t -> Rational
 tone_12et_fmidi = near_rat . T.pitch_to_fmidi . tone_12et_pitch'
 
-tone_family :: Tone -> Instrument_Family
+tone_family :: Tone t -> Instrument_Family
 tone_family = instrument_family . tone_instrument_name
 
-tone_in_family :: Instrument_Family -> Tone -> Bool
+tone_in_family :: Instrument_Family -> Tone t -> Bool
 tone_in_family c t = tone_family t == c
 
-select_tones :: Instrument_Family -> [Tone] -> [Maybe Tone]
+select_tones :: Instrument_Family -> [Tone t] -> [Maybe (Tone t)]
 select_tones c =
     let f t = if tone_family t == c then Just t else Nothing
     in map f
@@ -248,7 +248,7 @@ select_tones c =
 type Tone_Subset = ([Instrument_Family],[Scale])
 
 -- | Extract subset of 'Tone_Set'.
-tone_subset :: Tone_Subset -> Tone_Set -> Tone_Set
+tone_subset :: Tone_Subset -> Tone_Set t -> Tone_Set t
 tone_subset (fm,sc) =
     let f t = tone_family t `elem` fm &&
               fromJust_err "tone_subset" (tone_scale t) `elem` sc
@@ -260,43 +260,43 @@ data Instrument = Instrument {instrument_name :: Instrument_Name
                              ,instrument_frequencies :: Maybe [Frequency]}
                   deriving (Eq,Show)
 
-type Tone_Set = [Tone]
-type Tone_Group = [Tone_Set]
+type Tone_Set t = [Tone t]
+type Tone_Group t = [Tone_Set t]
 type Gamelan = [Instrument]
 
-tone_scale :: Tone -> Maybe Scale
+tone_scale :: Tone t -> Maybe Scale
 tone_scale = fmap note_scale . tone_note
 
-tone_pitch :: Tone -> Maybe Pitch
+tone_pitch :: Tone t -> Maybe Pitch
 tone_pitch = fmap note_pitch . tone_note
 
-tone_degree :: Tone -> Maybe Degree
+tone_degree :: Tone t -> Maybe Degree
 tone_degree = fmap pitch_degree . tone_pitch
 
-tone_degree' :: Tone -> Degree
+tone_degree' :: Tone t -> Degree
 tone_degree' = fromJust_err "tone_degree" . tone_degree
 
-tone_octave :: Tone -> Maybe Octave
+tone_octave :: Tone t -> Maybe Octave
 tone_octave = fmap pitch_octave . tone_pitch
 
-tone_class :: Tone -> (Instrument_Name,Maybe Scale)
+tone_class :: Tone t -> (Instrument_Name,Maybe Scale)
 tone_class t = (tone_instrument_name t,tone_scale t)
 
 instrument_class :: Instrument -> (Instrument_Name,Maybe Scale)
 instrument_class i = (instrument_name i,instrument_scale i)
 
-tone_class_p :: (Instrument_Name, Scale) -> Tone -> Bool
+tone_class_p :: (Instrument_Name, Scale) -> Tone t -> Bool
 tone_class_p (nm,sc) t =
     tone_instrument_name t == nm &&
     tone_scale t == Just sc
 
-tone_family_class_p :: (Instrument_Family,Scale) -> Tone -> Bool
+tone_family_class_p :: (Instrument_Family,Scale) -> Tone t -> Bool
 tone_family_class_p (fm,sc) t =
     instrument_family (tone_instrument_name t) == fm &&
     tone_scale t == Just sc
 
 -- | Given a 'Tone_Set', find those 'Tone's that are within 'T.Cents' of 'Frequency'.
-tone_set_near_frequency :: Tone_Set -> T.Cents -> Frequency -> Tone_Set
+tone_set_near_frequency :: Tone_Set t -> T.Cents -> Frequency -> Tone_Set t
 tone_set_near_frequency t k n =
     let near i = abs (T.cps_difference_cents i n) <= k
         near_t i = maybe False near (tone_frequency i)
@@ -304,7 +304,7 @@ tone_set_near_frequency t k n =
 
 -- | Compare 'Tone's by frequency.  'Tone's without frequency compare
 -- as if at frequency @0@.
-tone_compare_frequency :: Tone -> Tone -> Ordering
+tone_compare_frequency :: Tone t -> Tone t -> Ordering
 tone_compare_frequency = compare `on` (maybe 0 id . tone_frequency)
 
 -- | If all /f/ of /a/ are 'Just' /b/, then 'Just' /[b]/, else
@@ -314,7 +314,7 @@ map_maybe_uniform f x =
     let x' = map f x
     in if any isNothing x' then Nothing else Just (catMaybes x')
 
-instrument :: Tone_Set -> Instrument
+instrument :: Tone_Set t -> Instrument
 instrument c =
     let sf = fmap note_scale . tone_note
         pf = fmap note_pitch . tone_note
@@ -328,7 +328,7 @@ instrument c =
          t:_ -> Instrument (tone_instrument_name t) (sf t) p f
          [] -> undefined
 
-instruments :: Tone_Set -> [Instrument]
+instruments :: Tone_Set t -> [Instrument]
 instruments c =
     let c' = sortBy (compare `on` tone_instrument_name) c
         c'' = groupBy ((==) `on` tone_class) c'
@@ -358,13 +358,13 @@ degree_index s d = findIndex (== d) (scale_degrees s)
 
 -- * Tone set
 
-tone_set_gamut :: Tone_Set -> Maybe (Pitch,Pitch)
+tone_set_gamut :: Tone_Set t -> Maybe (Pitch,Pitch)
 tone_set_gamut g =
     case mapMaybe (fmap note_pitch . tone_note) g of
       [] -> Nothing
       p -> Just (minimum p,maximum p)
 
-tone_set_instrument :: Tone_Set -> (Instrument_Name,Maybe Scale) -> Tone_Set
+tone_set_instrument :: Tone_Set t -> (Instrument_Name,Maybe Scale) -> Tone_Set t
 tone_set_instrument db (i,s) =
     let f t = tone_class t == (i,s)
     in filter f db
