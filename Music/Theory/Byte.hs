@@ -63,7 +63,7 @@ byte_hex_pp n =
 byte_hex_pp_err :: (Integral i, Show i) => i -> String
 byte_hex_pp_err = fromMaybe (error "byte_hex_pp") . byte_hex_pp
 
--- | 'unwords' of 'byte_hex_pp_err'.
+-- | 'concatMap' of 'byte_hex_pp_err'.
 --
 -- > byte_seq_hex_pp [0x0F,0xF0] == "0FF0"
 byte_seq_hex_pp :: (Integral i, Show i) => [i] -> String
@@ -87,6 +87,12 @@ read_hex_byte_err = fromMaybe (error "read_hex_byte") . read_hex_byte
 -- > read_hex_byte_seq "000FF0FF" == [0x00,0x0F,0xF0,0xFF]
 read_hex_byte_seq :: (Eq t,Num t) => String -> [t]
 read_hex_byte_seq = map read_hex_byte_err . Split.chunksOf 2
+
+-- | Variant that filters white space.
+--
+-- > read_hex_byte_seq_ws "00 0F F0 FF" == [0x00,0x0F,0xF0,0xFF]
+read_hex_byte_seq_ws :: (Eq t,Num t) => String -> [t]
+read_hex_byte_seq_ws = read_hex_byte_seq . filter (not . isSpace)
 
 -- * IO
 
