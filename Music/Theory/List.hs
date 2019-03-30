@@ -92,6 +92,12 @@ on_elem e = S.defaultSplitter { S.delimiter = S.Delimiter [(==) e] }
 split_before :: Eq a => a -> [a] -> [[a]]
 split_before = S.split . S.keepDelimsL . on_elem
 
+-- | Split before any of the indicated set of delimiters.
+--
+-- > split_before_any ",;" ";a,b,c;d;" == ["",";a",",b",",c",";d",";"]
+split_before_any :: Eq a => [a] -> [a] -> [[a]]
+split_before_any = S.split . S.keepDelimsL . S.oneOf
+
 -- | Singleton variant of 'S.splitOn'.
 --
 -- > split_on_1 ":" "graph:layout" == Just ("graph","layout")
