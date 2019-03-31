@@ -65,9 +65,9 @@ byte_hex_pp_err = fromMaybe (error "byte_hex_pp") . byte_hex_pp
 
 -- | 'concatMap' of 'byte_hex_pp_err'.
 --
--- > byte_seq_hex_pp [0x0F,0xF0] == "0FF0"
-byte_seq_hex_pp :: (Integral i, Show i) => [i] -> String
-byte_seq_hex_pp = concatMap byte_hex_pp_err
+-- > byte_seq_hex_pp True [0x0F,0xF0] == "0F F0"
+byte_seq_hex_pp :: (Integral i, Show i) => Bool -> [i] -> String
+byte_seq_hex_pp ws = (if ws then unwords else concat) . map byte_hex_pp_err
 
 -- | Read two character hexadecimal string.
 --
@@ -110,7 +110,7 @@ load_hex_byte_seq = fmap (map read_hex_byte_seq . lines) . readFile
 
 -- | Store 'U8' sequences as hexadecimal text, one sequence per line.
 store_hex_byte_seq :: (Integral i,Show i) => FilePath -> [[i]] -> IO ()
-store_hex_byte_seq fn = writeFile fn . unlines . map byte_seq_hex_pp
+store_hex_byte_seq fn = writeFile fn . unlines . map (byte_seq_hex_pp False)
 
 {-
 
