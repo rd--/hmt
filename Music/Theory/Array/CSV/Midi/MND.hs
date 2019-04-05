@@ -101,6 +101,9 @@ csv_mnd_write r_prec nm =
 -- | (p0=midi-note,p1=velocity,channel,param)
 type Event n = (n,n,Channel,[Param])
 
+event_map :: (t -> u,t -> u,Channel -> Channel,[Param] -> [Param]) -> Event t -> Event u
+event_map (f1,f2,f3,f4) (mnn,vel,ch,param) = (f1 mnn,f2 vel,f3 ch,f4 param)
+
 -- | Translate from 'Tseq' form to 'Wseq' form.
 midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.Begin_End (Event n)) -> T.Wseq t (Event n)
 midi_tseq_to_midi_wseq = T.tseq_begin_end_to_wseq (\(n0,_,c0,_) (n1,_,c1,_) -> c0 == c1 && n0 == n1)
