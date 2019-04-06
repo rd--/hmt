@@ -63,7 +63,8 @@ byte_hex_pp n =
 byte_hex_pp_err :: (Integral i, Show i) => i -> String
 byte_hex_pp_err = fromMaybe (error "byte_hex_pp") . byte_hex_pp
 
--- | 'concatMap' of 'byte_hex_pp_err'.
+-- | 'byte_hex_pp_err' either plain (ws = False) or with spaces (ws = True).
+--   Plain is the same format written by xxd -p and read by xxd -r -p.
 --
 -- > byte_seq_hex_pp True [0x0F,0xF0] == "0F F0"
 byte_seq_hex_pp :: (Integral i, Show i) => Bool -> [i] -> String
