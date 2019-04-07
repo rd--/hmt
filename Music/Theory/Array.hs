@@ -1,3 +1,4 @@
+-- | Array & table functions
 module Music.Theory.Array where
 
 import Data.List {- base -}
@@ -7,9 +8,11 @@ import qualified Music.Theory.List as T {- hmt -}
 
 -- * Association List (List Array)
 
+-- | 'T.minmax' of /k/.
 larray_bounds :: Ord k => [(k,v)] -> (k,k)
 larray_bounds = T.minmax . map fst
 
+-- | 'A.array' of association list.
 larray :: A.Ix k => [(k,v)] -> A.Array k v
 larray a = A.array (larray_bounds a) a
 
@@ -20,19 +23,24 @@ larray a = A.array (larray_bounds a) a
 -- columns.
 type Table a = [[a]]
 
+-- | Table row count.
 tbl_rows :: Table t -> Int
 tbl_rows = length
 
+-- | Table column count, assumes table is regular.
 tbl_columns :: Table t -> Int
 tbl_columns tbl =
   case tbl of
     [] -> 0
     r0:_ -> length r0
 
--- > tbl_is_regular [[0..3],[4..7],[8..11]]
+-- | Determine is table is regular, ie. all rows have the same number of columns.
+--
+-- > tbl_is_regular [[0..3],[4..7],[8..11]] == True
 tbl_is_regular :: Table t -> Bool
 tbl_is_regular = (== 1) . length . nub . map length
 
+-- | Map /f/ at table, padding short rows with /k/.
 tbl_make_regular :: (t -> u,u) -> Table t -> Table u
 tbl_make_regular (f,k) tbl =
     let z = maximum (map length tbl)

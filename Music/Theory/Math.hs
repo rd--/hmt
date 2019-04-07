@@ -4,6 +4,7 @@ module Music.Theory.Math where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import Data.Word {- base -}
 import Numeric {- base -}
 
 import qualified Music.Theory.Math.Convert as T
@@ -264,3 +265,19 @@ ns_mean =
 square :: Num a => a -> a
 square n = n * n
 
+-- * Hex
+
+-- | Read hex value from string of at most /k/ places.
+read_hex_sz :: (Eq n, Num n) => Int -> String -> n
+read_hex_sz k str =
+  if length str > k
+  then error "read_hex_sz? = > K"
+  else case readHex str of
+         [(r,[])] -> r
+         _ -> error "read_hex_sz? = PARSE"
+
+-- | Read hexadecimal representation of 32-bt unsigned word.
+--
+-- > map read_hex_word32 ["00000000","12345678","FFFFFFFF"] == [minBound,305419896,maxBound]
+read_hex_word32 :: String -> Word32
+read_hex_word32 = read_hex_sz 8
