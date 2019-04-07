@@ -13,6 +13,26 @@ import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
+-- * FIELD / QUOTE
+
+-- | Quoting is required is the string has a double-quote, comma newline or carriage-return.
+csv_requires_quote :: String -> Bool
+csv_requires_quote = any (`elem` "\",\n\r")
+
+-- | Quoting places double-quotes at the start and end and escapes double-quotes.
+csv_quote :: String -> String
+csv_quote fld =
+  let esc s =
+        case s of
+          [] -> []
+          '"':s' -> '"' : '"' : esc s'
+          c:s' -> c : esc s'
+  in '"' : esc fld ++ "\""
+
+-- | Quote field if required.
+csv_quote_if_req :: String -> String
+csv_quote_if_req fld = if csv_requires_quote fld then csv_quote fld else fld
+
 -- * TABLE
 
 -- | When reading a CSV file is the first row a header?
