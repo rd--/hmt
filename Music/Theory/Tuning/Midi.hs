@@ -32,9 +32,10 @@ lift_tuning_f tn_f = Just . tn_f
 lift_sparse_tuning_f :: Sparse_Midi_Tuning_F -> Sparse_Midi_Tuning_ST_F st
 lift_sparse_tuning_f tn_f st k = (st,tn_f k)
 
--- | (t,c,k) where t=tuning (must have 12 divisions of octave),
--- c=cents deviation (ie. constant detune offset), k=midi offset
--- (ie. value to be added to incoming midi note number).
+-- | (t,c,k) where
+--   t=tuning (must have 12 divisions of octave),
+--   c=cents deviation (ie. constant detune offset),
+--   k=midi offset (ie. value to be added to incoming midi note number).
 type D12_Midi_Tuning = (Tuning,Cents,Int)
 
 -- | 'Midi_Tuning_F' for 'D12_Midi_Tuning'.
@@ -51,8 +52,8 @@ d12_midi_tuning_f (t,c_diff,k) n =
               Nothing -> error "d12_midi_tuning_f: pc?"
               Just c -> (n,c + c_diff)
 
--- | (t,f0,k,g) where t=tuning, f0=fundamental frequency, k=midi note
--- number for f0, g=gamut
+-- | (t,f0,k,g) where
+--   t=tuning, f0=fundamental-frequency, k=midi-note-number (for f0), g=gamut
 type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
 
 -- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is sparse, it is only

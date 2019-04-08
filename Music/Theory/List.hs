@@ -919,6 +919,8 @@ merge_set = merge_set_by compare
 > in merge_by_resolve left cmp p q == left_r &&
 >    merge_by_resolve right cmp p q == right_r
 
+> merge_by_resolve (\x _ -> x) (compare `on` fst) [(0,'A'),(1,'B'),(4,'E')] (zip [1..] "bcd")
+
 -}
 merge_by_resolve :: (a -> a -> a) -> Compare_F a -> [a] -> [a] -> [a]
 merge_by_resolve jn cmp =
@@ -931,6 +933,13 @@ merge_by_resolve jn cmp =
                                EQ -> jn l r : recur p' q'
                                GT -> r : recur p q'
     in recur
+
+-- | Merge two sorted (ascending) sequences.
+--   Where elements compare equal, select element from left input.
+--
+-- > asc_seq_left_biased_merge_by (compare `on` fst) [(0,'A'),(1,'B'),(4,'E')] (zip [1..] "bcd")
+asc_seq_left_biased_merge_by :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
+asc_seq_left_biased_merge_by = merge_by_resolve (\x _ -> x)
 
 -- | First non-ascending pair of elements.
 find_non_ascending :: (a -> a -> Ordering) -> [a] -> Maybe (a,a)

@@ -36,12 +36,14 @@ octave_pitchclass_trs n (o,pc) =
     in (o + i,j)
 
 -- | 'Octave_PitchClass' value to integral /midi/ note number.
+--
+-- > map octave_pitchclass_to_midi [(-1,9),(8,0)] == map (+ 9) [0,99]
 octave_pitchclass_to_midi :: Num i => Octave_PitchClass i -> i
 octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 -- | Inverse of 'octave_pitchclass_to_midi'.
 --
--- > map midi_to_octave_pitchclass [60,84,91] == [(4,0),(6,0),(6,7)]
+-- > map midi_to_octave_pitchclass [0,60,84,91] == [(-1,0),(4,0),(6,0),(6,7)]
 midi_to_octave_pitchclass :: Integral i => i -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (n - 12) `divMod` 12
 
