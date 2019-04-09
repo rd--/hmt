@@ -102,6 +102,7 @@ Library
                    Music.Theory.Metric.Morris_1980
                    Music.Theory.Metric.Polansky_1996
                    Music.Theory.Monad
+                   Music.Theory.Opt
                    Music.Theory.Ord
                    Music.Theory.Parse
                    Music.Theory.Permutations
