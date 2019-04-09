@@ -562,13 +562,13 @@ is_superset = flip is_subset
 -- | Is /p/ a subsequence of /q/, ie. synonym for 'isInfixOf'.
 --
 -- > subsequence [1,2] [1,2,3] == True
-subsequence :: (Eq a) => [a] -> [a] -> Bool
+subsequence :: Eq a => [a] -> [a] -> Bool
 subsequence = isInfixOf
 
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
 --
 -- > elem_index_unique 'a' "abcda" == undefined
-elem_index_unique :: (Eq a) => a -> [a] -> Int
+elem_index_unique :: Eq a => a -> [a] -> Int
 elem_index_unique e p =
     case elemIndices e p of
       [i] -> i
@@ -585,6 +585,20 @@ lookup_err n = fromMaybe (error "lookup") . lookup n
 -- | 'lookup' variant with default value.
 lookup_def :: Eq k => k -> v -> [(k,v)] -> v
 lookup_def k d = fromMaybe d . lookup k
+
+-- | If /l/ is empty 'Nothing', else 'Just' /l/.
+non_empty :: [t] -> Maybe [t]
+non_empty l = if null l then Nothing else Just l
+
+-- | Variant on 'filter' that selects all matches.
+--
+-- > lookup_set 1 (zip [1,2,3,4,1] "abcde") == Just "ae"
+lookup_set :: Eq k => k -> [(k,v)] -> Maybe [v]
+lookup_set k = non_empty . map snd . filter ((== k) . fst)
+
+-- | Erroring variant.
+lookup_set_err :: Eq k => k -> [(k,v)] -> [v]
+lookup_set_err k = fromMaybe (error "lookup_set?") . lookup_set k
 
 -- | Reverse lookup.
 --
