@@ -23,6 +23,21 @@ path_scan_err p x =
     let err = (error ("path_scan: " ++ show p ++ ": " ++ x))
     in fmap (fromMaybe err) (path_scan p x)
 
+-- | Find files having indicated filename.
+--   This runs the system utility /find/, so is UNIX only.
+--
+-- > dir_find "DX7-ROM1A.syx" "/home/rohan/sw/hsc3-data/data/yamaha/"
+dir_find :: FilePath -> FilePath -> IO [FilePath]
+dir_find fn dir = fmap lines (readProcess "find" [dir,"-name",fn] "")
+
+-- | Require that exactly one file is located, else error.
+dir_find_1 :: FilePath -> FilePath -> IO FilePath
+dir_find_1 fn dir = do
+  r <- dir_find fn dir
+  case r of
+    [x] -> return x
+    _ -> error "dir_find_1?"
+
 -- | Find files having case-insensitive filename extension.
 --   This runs the system utility /find/, so is UNIX only.
 --
