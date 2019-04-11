@@ -23,6 +23,15 @@ path_scan_err p x =
     let err = (error ("path_scan: " ++ show p ++ ": " ++ x))
     in fmap (fromMaybe err) (path_scan p x)
 
+-- | Get list of files at dir with ext, ie. ls dir/*.ext
+--
+-- > dir_list_ext "/home/rohan/rd/j/" ".hs"
+dir_list_ext :: FilePath -> String -> IO [FilePath]
+dir_list_ext dir ext = do
+  l <- listDirectory dir
+  let fn = filter ((==) ext . takeExtension) l
+  return (sort fn)
+
 -- | Find files having indicated filename.
 --   This runs the system utility /find/, so is UNIX only.
 --
