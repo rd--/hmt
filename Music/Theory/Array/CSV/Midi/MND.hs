@@ -104,6 +104,12 @@ type Event n = (n,n,Channel,[Param])
 event_map :: (t -> u,t -> u,Channel -> Channel,[Param] -> [Param]) -> Event t -> Event u
 event_map (f1,f2,f3,f4) (mnn,vel,ch,param) = (f1 mnn,f2 vel,f3 ch,f4 param)
 
+event_cast :: (t -> u) -> Event t -> Event u
+event_cast f = event_map (f,f,id,id)
+
+event_transpose :: Num a => a -> Event a -> Event a
+event_transpose x = event_map ((+) x,id,id,id)
+
 -- | Translate from 'Tseq' form to 'Wseq' form.
 midi_tseq_to_midi_wseq :: (Num t,Eq n) => T.Tseq t (T.Begin_End (Event n)) -> T.Wseq t (Event n)
 midi_tseq_to_midi_wseq = T.tseq_begin_end_to_wseq (\(n0,_,c0,_) (n1,_,c1,_) -> c0 == c1 && n0 == n1)
