@@ -101,12 +101,15 @@ csv_mnd_write r_prec nm =
 -- | (p0=midi-note,p1=velocity,channel,param)
 type Event n = (n,n,Channel,[Param])
 
+-- | Apply (mnn-f,vel-f,ch-f,param-f) to Event.
 event_map :: (t -> u,t -> u,Channel -> Channel,[Param] -> [Param]) -> Event t -> Event u
 event_map (f1,f2,f3,f4) (mnn,vel,ch,param) = (f1 mnn,f2 vel,f3 ch,f4 param)
 
+-- | Apply /f/ at mnn and vel fields.
 event_cast :: (t -> u) -> Event t -> Event u
 event_cast f = event_map (f,f,id,id)
 
+-- | Add /x/ to mnn field.
 event_transpose :: Num a => a -> Event a -> Event a
 event_transpose x = event_map ((+) x,id,id,id)
 
