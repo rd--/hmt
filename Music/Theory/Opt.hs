@@ -9,13 +9,16 @@ To fetch options use 'opt_get' and 'opt_read'.
 -}
 module Music.Theory.Opt where
 
+import Control.Monad {- base -}
 import Data.Either {- base -}
 import Data.Maybe {- base -}
 import System.Environment {- base -}
+import System.Exit {- base -}
 
 import qualified Data.List.Split as Split {- split -}
 
 -- | (KEY,VALUE)
+--   Key does not include leading '--'.
 type OPT = (String,String)
 
 -- | (KEY,VALUE,TYPE,NOTE)
@@ -28,6 +31,10 @@ opt_plain (k,v,_,_) = (k,v)
 -- | OPT_USR to help string.
 opt_usr_help :: OPT_USR -> String
 opt_usr_help (k,v,t,n) = concat [k,":",t," -- ",n,"; default=",v]
+
+-- | 'unlines' of 'opt_usr_help'
+opt_help :: [OPT_USR] -> String
+opt_help = unlines . map opt_usr_help
 
 -- | Lookup KEY in OPT, error if non-existing.
 opt_get :: [OPT] -> String -> String
@@ -70,6 +77,15 @@ opt_proc def arg =
   let (o,a) = opt_set_parse arg
   in (opt_merge o (map opt_plain def),a)
 
--- | 'opt_merge' and 'opt_set_parse' of 'getArgs'
-get_opt_arg :: [OPT_USR] -> IO ([OPT],[String])
-get_opt_arg def = fmap ((\(o,a) -> (opt_merge o (map opt_plain def),a)) . opt_set_parse) getArgs
+-- | Print usage pre-amble and 'opt_help'.
+opt_usage :: [String] -> [OPT_USR] -> IO ()
+opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitWith ExitSuccess
+
+-- | 'opt_merge' and 'opt_set_parse' of 'getArgs'.
+--   If arguments include -h or --help run 'opt_usage'
+get_opt_arg :: [String] -> [OPT_USR] -> IO ([OPT],[String])
+get_opt_arg usg def = do
+  a <- getArgs
+  when ("-h" `elem` a || "--help" `elem` a) (opt_usage usg def)
+  let (o,p) = opt_set_parse a
+  return (opt_merge o (map opt_plain def),p)
