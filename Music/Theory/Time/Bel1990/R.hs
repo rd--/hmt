@@ -25,7 +25,7 @@ import qualified Text.Parsec as P {- parsec -}
 import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as T
-import qualified Music.Theory.Math as T
+import qualified Music.Theory.Show as T
 
 -- * Bel
 

@@ -7,8 +7,8 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 

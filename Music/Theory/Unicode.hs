@@ -278,3 +278,175 @@ unicode_blocks =
     ,((0x1D200,0x1D24F),"Ancient Greek Musical Notation")
     ]
 
+-- * BAGUA, EIGHT TRI-GRAMS
+
+-- | Bagua tri-grams.
+--
+-- > putStrLn $ unicode_table_hs (unicode_table_block (fst bagua) tbl)
+bagua :: Unicode_Block
+bagua = ((0x02630,0x02637),"BAGUA")
+
+{- | Table of eight tri-grams.
+
+HEAVEN,乾,Qián,☰,111
+LAKE,兌,Duì,☱,110
+FIRE,離,Lí,☲,101
+THUNDER,震,Zhèn,☳,100
+WIND,巽,Xùn,☴,011
+WATER,坎,Kǎn,☵,010
+MOUNTAIN,艮,Gèn,☶,001
+EARTH,坤,Kūn,☷,000
+
+-}
+bagua_tbl :: Unicode_Table
+bagua_tbl =
+  [(0x2630,"TRIGRAM FOR HEAVEN")
+  ,(0x2631,"TRIGRAM FOR LAKE")
+  ,(0x2632,"TRIGRAM FOR FIRE")
+  ,(0x2633,"TRIGRAM FOR THUNDER")
+  ,(0x2634,"TRIGRAM FOR WIND")
+  ,(0x2635,"TRIGRAM FOR WATER")
+  ,(0x2636,"TRIGRAM FOR MOUNTAIN")
+  ,(0x2637,"TRIGRAM FOR EARTH")]
+
+-- * YIJING (I-CHING), SIXTY-FOUR HEXAGRAMS
+
+-- | Yijing hexagrams in King Wen sequence.
+--
+-- > putStrLn $ unicode_table_hs (unicode_table_block (fst yijing) tbl)
+yijing :: Unicode_Block
+yijing = ((0x04DC0,0x04DFF),"YIJING")
+
+{- | Yijing hexagrams in King Wen sequence.
+
+䷀,乾,qián,111,111
+䷁,坤,kūn,000,000
+䷂,屯,chún,100,010
+䷃,蒙,méng,010,001
+䷄,需,xū,111,010
+䷅,訟,sòng,010,111
+䷆,師,shī,010,000
+䷇,比,bǐ,000,010
+䷈,小畜,xiǎo chù,111,011
+䷉,履,lǚ,110,111
+䷊,泰,tài,111,000
+䷋,否,pǐ,000,111
+䷌,同人,tóng rén,101,111
+䷍,大有,dà yǒu,111,101
+䷎,謙,qiān,001,000
+䷏,豫,yù,000,100
+䷐,隨,suí,100,110
+䷑,蠱,gŭ,011,001
+䷒,臨,lín,110,000
+䷓,觀,guān,000,011
+䷔,噬嗑,shì kè,100,101
+䷕,賁,bì,101,001
+䷖,剝,bō,000,001
+䷗,復,fù,100,000
+䷘,無妄,wú wàng,100,111
+䷙,大畜,dà chù,111,001
+䷚,頤,yí,100,001
+䷛,大過,dà guò,011,110
+䷜,坎,kǎn,010,010
+䷝,離,lí,101,101
+䷞,咸,xián,001,110
+䷟,恆,héng,011,100
+䷠,遯,dùn,001,111
+䷡,大壯,dà zhuàng,111,100
+䷢,晉,jìn,000,101
+䷣,明夷,míng yí,101,000
+䷤,家人,jiā rén,101,011
+䷥,睽,kuí,110,101
+䷦,蹇,jiǎn,001,010
+䷧,解,xiè,010,100
+䷨,損,sǔn,110,001
+䷩,益,yì,100,011
+䷪,夬,guài,111,110
+䷫,姤,gòu,011,111
+䷬,萃,cuì,000,110
+䷭,升,shēng,011,000
+䷮,困,kùn,010,110
+䷯,井,jǐng,011,010
+䷰,革,gé,101,110
+䷱,鼎,dǐng,011,101
+䷲,震,zhèn,100,100
+䷳,艮,gèn,001,001
+䷴,漸,jiàn,001,011
+䷵,歸妹,guī mèi,110,100
+䷶,豐,fēng,101,100
+䷷,旅,lǚ,001,101
+䷸,巽,xùn,011,011
+䷹,兌,duì,110,110
+䷺,渙,huàn,010,011
+䷻,節,jié,110,010
+䷼,中孚,zhōng fú,110,011
+䷽,小過,xiǎo guò,001,110
+䷾,既濟,jì jì,101,010
+䷿,未濟,wèi jì,010,101
+-}
+yijing_tbl :: Unicode_Table
+yijing_tbl =
+  [(0x4dc0,"HEXAGRAM FOR THE CREATIVE HEAVEN")
+  ,(0x4dc1,"HEXAGRAM FOR THE RECEPTIVE EARTH")
+  ,(0x4dc2,"HEXAGRAM FOR DIFFICULTY AT THE BEGINNING")
+  ,(0x4dc3,"HEXAGRAM FOR YOUTHFUL FOLLY")
+  ,(0x4dc4,"HEXAGRAM FOR WAITING")
+  ,(0x4dc5,"HEXAGRAM FOR CONFLICT")
+  ,(0x4dc6,"HEXAGRAM FOR THE ARMY")
+  ,(0x4dc7,"HEXAGRAM FOR HOLDING TOGETHER")
+  ,(0x4dc8,"HEXAGRAM FOR SMALL TAMING")
+  ,(0x4dc9,"HEXAGRAM FOR TREADING")
+  ,(0x4dca,"HEXAGRAM FOR PEACE")
+  ,(0x4dcb,"HEXAGRAM FOR STANDSTILL")
+  ,(0x4dcc,"HEXAGRAM FOR FELLOWSHIP")
+  ,(0x4dcd,"HEXAGRAM FOR GREAT POSSESSION")
+  ,(0x4dce,"HEXAGRAM FOR MODESTY")
+  ,(0x4dcf,"HEXAGRAM FOR ENTHUSIASM")
+  ,(0x4dd0,"HEXAGRAM FOR FOLLOWING")
+  ,(0x4dd1,"HEXAGRAM FOR WORK ON THE DECAYED")
+  ,(0x4dd2,"HEXAGRAM FOR APPROACH")
+  ,(0x4dd3,"HEXAGRAM FOR CONTEMPLATION")
+  ,(0x4dd4,"HEXAGRAM FOR BITING THROUGH")
+  ,(0x4dd5,"HEXAGRAM FOR GRACE")
+  ,(0x4dd6,"HEXAGRAM FOR SPLITTING APART")
+  ,(0x4dd7,"HEXAGRAM FOR RETURN")
+  ,(0x4dd8,"HEXAGRAM FOR INNOCENCE")
+  ,(0x4dd9,"HEXAGRAM FOR GREAT TAMING")
+  ,(0x4dda,"HEXAGRAM FOR MOUTH CORNERS")
+  ,(0x4ddb,"HEXAGRAM FOR GREAT PREPONDERANCE")
+  ,(0x4ddc,"HEXAGRAM FOR THE ABYSMAL WATER")
+  ,(0x4ddd,"HEXAGRAM FOR THE CLINGING FIRE")
+  ,(0x4dde,"HEXAGRAM FOR INFLUENCE")
+  ,(0x4ddf,"HEXAGRAM FOR DURATION")
+  ,(0x4de0,"HEXAGRAM FOR RETREAT")
+  ,(0x4de1,"HEXAGRAM FOR GREAT POWER")
+  ,(0x4de2,"HEXAGRAM FOR PROGRESS")
+  ,(0x4de3,"HEXAGRAM FOR DARKENING OF THE LIGHT")
+  ,(0x4de4,"HEXAGRAM FOR THE FAMILY")
+  ,(0x4de5,"HEXAGRAM FOR OPPOSITION")
+  ,(0x4de6,"HEXAGRAM FOR OBSTRUCTION")
+  ,(0x4de7,"HEXAGRAM FOR DELIVERANCE")
+  ,(0x4de8,"HEXAGRAM FOR DECREASE")
+  ,(0x4de9,"HEXAGRAM FOR INCREASE")
+  ,(0x4dea,"HEXAGRAM FOR BREAKTHROUGH")
+  ,(0x4deb,"HEXAGRAM FOR COMING TO MEET")
+  ,(0x4dec,"HEXAGRAM FOR GATHERING TOGETHER")
+  ,(0x4ded,"HEXAGRAM FOR PUSHING UPWARD")
+  ,(0x4dee,"HEXAGRAM FOR OPPRESSION")
+  ,(0x4def,"HEXAGRAM FOR THE WELL")
+  ,(0x4df0,"HEXAGRAM FOR REVOLUTION")
+  ,(0x4df1,"HEXAGRAM FOR THE CAULDRON")
+  ,(0x4df2,"HEXAGRAM FOR THE AROUSING THUNDER")
+  ,(0x4df3,"HEXAGRAM FOR THE KEEPING STILL MOUNTAIN")
+  ,(0x4df4,"HEXAGRAM FOR DEVELOPMENT")
+  ,(0x4df5,"HEXAGRAM FOR THE MARRYING MAIDEN")
+  ,(0x4df6,"HEXAGRAM FOR ABUNDANCE")
+  ,(0x4df7,"HEXAGRAM FOR THE WANDERER")
+  ,(0x4df8,"HEXAGRAM FOR THE GENTLE WIND")
+  ,(0x4df9,"HEXAGRAM FOR THE JOYOUS LAKE")
+  ,(0x4dfa,"HEXAGRAM FOR DISPERSION")
+  ,(0x4dfb,"HEXAGRAM FOR LIMITATION")
+  ,(0x4dfc,"HEXAGRAM FOR INNER TRUTH")
+  ,(0x4dfd,"HEXAGRAM FOR SMALL PREPONDERANCE")
+  ,(0x4dfe,"HEXAGRAM FOR AFTER COMPLETION")
+  ,(0x4dff,"HEXAGRAM FOR BEFORE COMPLETION")]

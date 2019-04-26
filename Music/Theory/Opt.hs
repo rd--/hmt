@@ -1,5 +1,7 @@
 {- | Very simple CLI option parser.
 
+Only allows options of the form --key=value, with the form --key equal to --key=True.
+
 A list of OPT_USR describes the options and provides default values.
 
 'get_opt_arg' merges user and default values into a table with values for all options.
@@ -28,9 +30,9 @@ type OPT_USR = (String,String,String,String)
 opt_plain :: OPT_USR -> OPT
 opt_plain (k,v,_,_) = (k,v)
 
--- | OPT_USR to help string.
+-- | OPT_USR to help string, indent is two spaces.
 opt_usr_help :: OPT_USR -> String
-opt_usr_help (k,v,t,n) = concat [k,":",t," -- ",n,"; default=",v]
+opt_usr_help (k,v,t,n) = concat ["  ",k,":",t," -- ",n,"; default=",v]
 
 -- | 'unlines' of 'opt_usr_help'
 opt_help :: [OPT_USR] -> String
@@ -52,7 +54,7 @@ opt_parse :: String -> Maybe OPT
 opt_parse s =
   case s of
     '-':'-':o -> case Split.splitOn "=" o of
-                   [lhs] -> Just (lhs,"true")
+                   [lhs] -> Just (lhs,"True")
                    [lhs,rhs] -> Just (lhs,rhs)
                    _ -> error "opt_parse"
     _ -> Nothing

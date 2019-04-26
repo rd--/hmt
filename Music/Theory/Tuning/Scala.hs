@@ -21,8 +21,8 @@ import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 

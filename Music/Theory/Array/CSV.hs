@@ -72,6 +72,10 @@ csv_table_read (hdr,delim,brk,_) f fn = do
 csv_table_read_def :: (String -> a) -> FilePath -> IO (T.Table a)
 csv_table_read_def f = fmap snd . csv_table_read def_csv_opt f
 
+-- | Read plain CSV 'T.Table'.
+csv_table_read_plain :: FilePath -> IO (T.Table String)
+csv_table_read_plain = csv_table_read_def id
+
 -- | Read and process @CSV@ 'CSV_Table'.
 csv_table_with :: CSV_Opt -> (String -> a) -> FilePath -> (CSV_Table a -> b) -> IO b
 csv_table_with opt f fn g = fmap g (csv_table_read opt f fn)
@@ -104,6 +108,10 @@ csv_table_write f opt fn csv = T.write_file_utf8 fn (csv_table_pp f opt csv)
 -- | Write 'Table' only (no header) with 'def_csv_opt'.
 csv_table_write_def :: (a -> String) -> FilePath -> T.Table a -> IO ()
 csv_table_write_def f fn tbl = csv_table_write f def_csv_opt fn (Nothing,tbl)
+
+-- | Write plain CSV 'Table'.
+csv_table_write_plain :: FilePath -> T.Table String -> IO ()
+csv_table_write_plain = csv_table_write_def id
 
 -- | @0@-indexed (row,column) cell lookup.
 table_lookup :: T.Table a -> (Int,Int) -> a

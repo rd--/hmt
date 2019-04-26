@@ -12,6 +12,7 @@ import Data.Word {- base -}
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
 -- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.

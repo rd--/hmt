@@ -13,6 +13,7 @@ import qualified Text.Parsec.String as P {- parsec -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 
 -- * Octave & pitch-class (generic)
 
@@ -43,7 +44,7 @@ octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 
 -- | Inverse of 'octave_pitchclass_to_midi'.
 --
--- > map midi_to_octave_pitchclass [0,60,84,91] == [(-1,0),(4,0),(6,0),(6,7)]
+-- > map midi_to_octave_pitchclass [0,36,60,84,91] == [(-1,0),(2,0),(4,0),(6,0),(6,7)]
 midi_to_octave_pitchclass :: Integral i => i -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (n - 12) `divMod` 12
 

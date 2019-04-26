@@ -9,7 +9,7 @@ import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Music.Theory.Graph.Johnson_2014 as OH {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}

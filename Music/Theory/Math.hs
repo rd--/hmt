@@ -4,8 +4,6 @@ module Music.Theory.Math where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
-import Data.Word {- base -}
-import Numeric {- base -}
 
 import qualified Music.Theory.Math.Convert as T
 
@@ -67,36 +65,6 @@ whole_to_precision k = zero_to_precision k . fractional_part . T.real_to_double
 sawtooth_wave :: RealFrac a => a -> a
 sawtooth_wave n = n - floor_f n
 
--- | Pretty printer for 'Rational' using @/@ and eliding denominators of @1@.
---
--- > map rational_pp [1,3/2,5/4,2] == ["1","3/2","5/4","2"]
-rational_pp :: (Show a,Integral a) => Ratio a -> String
-rational_pp r =
-    let n = numerator r
-        d = denominator r
-    in if d == 1
-       then show n
-       else concat [show n,"/",show d]
-
--- | Parser for 'rational_pp'.
---
--- > map rational_parse ["1","3/2","5/4","2"] == [1,3/2,5/4,2]
--- > rational_parse "" == undefined
-rational_parse :: (Read t,Integral t) => String -> Ratio t
-rational_parse s =
-  case break (== '/') s of
-    ([],_) -> error "rational_parse"
-    (n,[]) -> read n % 1
-    (n,_:d) -> read n % read d
-
--- | Pretty print ratio as @:@ separated integers.
---
--- > map ratio_pp [1,3/2,2] == ["1:1","3:2","2:1"]
-ratio_pp :: Rational -> String
-ratio_pp r =
-    let (n,d) = rational_nd r
-    in concat [show n,":",show d]
-
 -- | Predicate that is true if @n/d@ can be simplified, ie. where
 -- 'gcd' of @n@ and @d@ is not @1@.
 --
@@ -121,61 +89,11 @@ rational_whole_err = fromMaybe (error "rational_whole") . rational_whole
 ratio_nd_sum :: Num a => Ratio a -> a
 ratio_nd_sum r = numerator r + denominator r
 
--- | Show rational to /n/ decimal places.
---
--- > let r = approxRational pi 1e-100
--- > r == 884279719003555 / 281474976710656
--- > show_rational_decimal 12 r == "3.141592653590"
--- > show_rational_decimal 3 (-100) == "-100.000"
-show_rational_decimal :: Int -> Rational -> String
-show_rational_decimal n = double_pp n . fromRational
-
--- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
--- to exponential notation very readily.
---
--- > [show 0.01,realfloat_pp 2 0.01] == ["1.0e-2","0.01"]
-realfloat_pp :: RealFloat a => Int -> a -> String
-realfloat_pp k n = showFFloat (Just k) n ""
-
 -- | Is /n/ a whole (integral) value.
 --
 -- > map real_is_whole [-1.0,-0.5,0.0,0.5,1.0] == [True,False,True,False,True]
 real_is_whole :: Real n => n -> Bool
 real_is_whole = (== 1) . denominator . toRational
-
--- | Show /r/ as float to /k/ places.
---
--- > map (real_pp 4) [1,1.1,1.12,1.123,1.1234]
-real_pp :: Real t => Int -> t -> String
-real_pp k = realfloat_pp k . T.real_to_double
-
--- | Prints /n/ as integral or to at most /k/ decimal places.
---
--- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234] == ["1","1.1","1.12","1.123","1.1234"]
-real_pp_trunc :: Real t => Int -> t -> String
-real_pp_trunc k n =
-  if real_is_whole n
-  then show (numerator (toRational n))
-  else dropWhileEnd (== '0') (real_pp k n)
-
--- | Type specialised 'realfloat_pp'.
-float_pp :: Int -> Float -> String
-float_pp = realfloat_pp
-
--- | Type specialised 'realfloat_pp'.
-double_pp :: Int -> Double -> String
-double_pp = realfloat_pp
-
--- | Show /only/ positive and negative values, always with sign.
---
--- > map num_diff_str [-2,-1,0,1,2] == ["-2","-1","","+1","+2"]
--- > map show [-2,-1,0,1,2] == ["-2","-1","0","1","2"]
-num_diff_str :: (Num a, Ord a, Show a) => a -> String
-num_diff_str n =
-    case compare n 0 of
-      LT -> '-' : show (abs n)
-      EQ -> ""
-      GT -> '+' : show n
 
 -- | 'fromInteger' . 'floor'.
 floor_f :: (RealFrac a, Num b) => a -> b
@@ -265,19 +183,3 @@ ns_mean =
 square :: Num a => a -> a
 square n = n * n
 
--- * Hex
-
--- | Read hex value from string of at most /k/ places.
-read_hex_sz :: (Eq n, Num n) => Int -> String -> n
-read_hex_sz k str =
-  if length str > k
-  then error "read_hex_sz? = > K"
-  else case readHex str of
-         [(r,[])] -> r
-         _ -> error "read_hex_sz? = PARSE"
-
--- | Read hexadecimal representation of 32-bt unsigned word.
---
--- > map read_hex_word32 ["00000000","12345678","FFFFFFFF"] == [minBound,305419896,maxBound]
-read_hex_word32 :: String -> Word32
-read_hex_word32 = read_hex_sz 8

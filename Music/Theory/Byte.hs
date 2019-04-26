@@ -2,16 +2,23 @@
 module Music.Theory.Byte where
 
 import Data.Char {- base -}
+import Data.Int {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 import Numeric {- base -}
 
 import qualified Data.ByteString as B {- bytestring -}
+import qualified Data.ByteString.Lazy as L {- bytestring -}
 import qualified Data.List.Split as Split {- split -}
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+
+-- * LBS
+
+lbs_section :: Int64 -> Int64 -> L.ByteString -> L.ByteString
+lbs_section n m = L.take m . L.drop n
 
 -- * Enumerations & Char
 

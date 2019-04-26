@@ -5,6 +5,7 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import Data.Word {- base -}
 import Numeric {- base -}
 
 -- | Transform 'ReadS' function into precise 'Read' function.
@@ -111,7 +112,7 @@ read_fractional_allow_trailing_point_err = read_err . delete_trailing_point
 
 -- | Type specialised 'read_maybe'.
 --
--- > map read_maybe_int ["2","2:","2\n"] == [Just 2,Nothing,Just 2]
+-- > map read_maybe_int ["2","2:","2\n","x"] == [Just 2,Nothing,Just 2,Nothing]
 read_maybe_int :: String -> Maybe Int
 read_maybe_int = read_maybe
 
@@ -141,8 +142,49 @@ read_rational = read_err
 
 -- * Numeric variants
 
+-- | Read binary integer.
+--
+-- > mapMaybe read_bin (words "000 001 010 011 100 101 110 111") == [0 .. 7]
+read_bin :: Integral a => String -> Maybe a
+read_bin = fmap fst . listToMaybe . readInt 2 (`elem` "01") digitToInt
+
+-- | Erroring variant.
+read_bin_err :: Integral a => String -> a
+read_bin_err = fromMaybe (error "read_bin") . read_bin
+
+-- * HEX
+
 -- | Error variant of 'readHex'.
 --
 -- > read_hex_err "F0B0" == 61616
 read_hex_err :: (Eq n,Num n) => String -> n
 read_hex_err = reads_to_read_precise_err "readHex" readHex
+
+-- | Read hex value from string of at most /k/ places.
+read_hex_sz :: (Eq n, Num n) => Int -> String -> n
+read_hex_sz k str =
+  if length str > k
+  then error "read_hex_sz? = > K"
+  else case readHex str of
+         [(r,[])] -> r
+         _ -> error "read_hex_sz? = PARSE"
+
+-- | Read hexadecimal representation of 32-bit unsigned word.
+--
+-- > map read_hex_word32 ["00000000","12345678","FFFFFFFF"] == [minBound,305419896,maxBound]
+read_hex_word32 :: String -> Word32
+read_hex_word32 = read_hex_sz 8
+
+-- * RATIONAL
+
+-- | Parser for 'rational_pp'.
+--
+-- > map rational_parse ["1","3/2","5/4","2"] == [1,3/2,5/4,2]
+-- > rational_parse "" == undefined
+rational_parse :: (Read t,Integral t) => String -> Ratio t
+rational_parse s =
+  case break (== '/') s of
+    ([],_) -> error "rational_parse"
+    (n,[]) -> read n % 1
+    (n,_:d) -> read n % read d
+
