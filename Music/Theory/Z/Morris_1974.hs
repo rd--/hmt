@@ -1,6 +1,6 @@
 -- | Robert Morris and D. Starr. \"The Structure of All-Interval Series\".
 -- /Journal of Music Theory/, 18:364-389, 1974.
-module Music.Theory.Z12.Morris_1974 where
+module Music.Theory.Z.Morris_1974 where
 
 import qualified Control.Monad.Logic as L {- logict -}
 

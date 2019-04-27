@@ -75,3 +75,32 @@ z_tto_rel m z x y =
 -- > map (z_pcset mod12) [[0,6],[6,12],[12,18]] == replicate 3 [0,6]
 z_pcset :: Ord t => Z t -> [t] -> [t]
 z_pcset z = nub . sort . map z
+
+-- | Transpose by n.
+--
+-- > z_tto_tn mod12 4 [1,5,6] == [5,9,10]
+-- > z_tto_tn mod12 4 [0,4,8] == [0,4,8]
+z_tto_tn :: Integral i => Z i -> i -> [i] -> [i]
+z_tto_tn z n = sort . map (z_add z n)
+
+-- | Invert about n.
+--
+-- > z_tto_invert mod12 6 [4,5,6] == [6,7,8]
+-- > z_tto_invert mod12 0 [0,1,3] == [0,9,11]
+z_tto_invert :: Integral i => Z i -> i -> [i] -> [i]
+z_tto_invert z n = sort . map (\p -> z_sub z n (z_sub z p n))
+
+-- | Composition of 'z_tto_invert' about @0@ and 'z_tto_tn'.
+--
+-- > z_tto_tni mod12 4 [1,5,6] == [3,10,11]
+-- > (z_tto_invert mod12 0 . z_tto_tn mod12 4) [1,5,6] == [2,3,7]
+z_tto_tni :: Integral i => Z i -> i -> [i] -> [i]
+z_tto_tni z n = z_tto_tn z n . z_tto_invert z 0
+
+-- | T-related sets of /p/.
+--
+-- > length (z_tto_t_related mod12 [0,1,3]) == 12
+-- > z_tto_t_related mod12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
+z_tto_t_related :: Integral i => Z i -> [i] -> [[i]]
+z_tto_t_related z p = nub (map (\q -> z_tto_tn z q p) [0..11])
+

@@ -1,5 +1,5 @@
--- | Allen Forte. /The Structure of Atonal Music/. Yale University
--- Press, New Haven, 1973.
+-- | Allen Forte. /The Structure of Atonal Music/.
+--   Yale University Press, New Haven, 1973.
 module Music.Theory.Z.Forte_1973 where
 
 import Data.List {- base -}
@@ -32,17 +32,13 @@ ti_rotations z p =
         r = T.rotations (sort p) ++ T.rotations (sort q)
     in map (z_sro_tn_to z 0) r
 
--- | Variant with default value for empty input list case.
-minimumBy_or :: t -> (t -> t -> Ordering) -> [t] -> t
-minimumBy_or p f q = if null q then p else minimumBy f q
-
 -- | Prime form rule requiring comparator, considering 't_rotations'.
 t_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
-t_cmp_prime z f = minimumBy_or [] f . t_rotations z
+t_cmp_prime z f = T.minimumBy_or [] f . t_rotations z
 
 -- | Prime form rule requiring comparator, considering 'ti_rotations'.
 ti_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
-ti_cmp_prime z f = minimumBy_or [] f . ti_rotations z
+ti_cmp_prime z f = T.minimumBy_or [] f . ti_rotations z
 
 -- | Forte comparison function (rightmost first then leftmost outwards).
 --
@@ -56,7 +52,7 @@ forte_cmp p  q  =
       _ -> let r = compare (last p) (last q)
            in if r == EQ then compare p q else r
 
--- | Forte prime form, ie. 'cmp_prime' of 'forte_cmp'.
+-- | Forte prime form, ie. 'ti_cmp_prime' of 'forte_cmp'.
 --
 -- > forte_prime mod12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
 -- > forte_prime mod5 [0,1,4] == [0,1,2]
@@ -137,10 +133,13 @@ sc_univ z =
 -- | Synonym for 'String'.
 type SC_Name = String
 
+-- | Table of (SC-NAME,PCSET).
+type SC_Table n = [(SC_Name,[n])]
+
 -- | The set-class table (Forte prime forms).
 --
 -- > length sc_table == 224
-sc_table :: Num n => [(SC_Name,[n])]
+sc_table :: Num n => SC_Table n
 sc_table =
     [("0-1",[])
     ,("1-1",[0])
@@ -368,7 +367,7 @@ sc_table =
     ,("12-1",[0,1,2,3,4,5,6,7,8,9,10,11])]
 
 -- | Unicode (non-breaking hyphen) variant.
-sc_table_unicode :: Num n => [(SC_Name,[n])]
+sc_table_unicode :: Num n => SC_Table n
 sc_table_unicode =
     let f = map (\c -> if c == '-' then non_breaking_hypen else c)
     in map (\(nm,pc) -> (f nm,pc)) sc_table
@@ -380,14 +379,17 @@ sc_table_unicode =
 forte_prime_name :: (Num n,Eq n) => [n] -> (SC_Name,[n])
 forte_prime_name p = fromMaybe (error "forte_prime_name") (find (\(_,q) -> p == q) sc_table)
 
-sc_tbl_lookup :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> Maybe (SC_Name,[i])
+-- | Lookup entry for set in table.
+sc_tbl_lookup :: Integral i => Z i -> SC_Table i -> [i] -> Maybe (SC_Name,[i])
 sc_tbl_lookup z tbl p = find (\(_,q) -> forte_prime z p == q) tbl
 
-sc_tbl_lookup_err :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> (SC_Name,[i])
+-- | Erroring variant
+sc_tbl_lookup_err :: Integral i => Z i -> SC_Table i -> [i] -> (SC_Name,[i])
 sc_tbl_lookup_err z tbl = fromMaybe (error "sc_tbl_lookup") . sc_tbl_lookup z tbl
 
-sc_name' :: Integral i => Z i -> [(SC_Name,[i])] -> [i] -> SC_Name
-sc_name' z tbl = fst . sc_tbl_lookup_err z tbl
+-- | 'fst' of 'sc_tbl_lookup_err'
+sc_name_tbl :: Integral i => Z i -> SC_Table i -> [i] -> SC_Name
+sc_name_tbl z tbl = fst . sc_tbl_lookup_err z tbl
 
 -- | Lookup a set-class name.  The input set is subject to
 -- 'forte_prime' before lookup.
@@ -395,7 +397,7 @@ sc_name' z tbl = fst . sc_tbl_lookup_err z tbl
 -- > sc_name mod12 [0,2,3,6,7] == "5-Z18"
 -- > sc_name mod12 [0,1,4,6,7,8] == "6-Z17"
 sc_name :: Integral i => Z i -> [i] -> SC_Name
-sc_name z = sc_name' z sc_table
+sc_name z = sc_name_tbl z sc_table
 
 -- | Long name (ie. with enumeration of prime form).
 --
@@ -407,7 +409,7 @@ sc_name_long z p =
 
 -- | Unicode (non-breaking hyphen) variant.
 sc_name_unicode :: Integral i => Z i -> [i] -> SC_Name
-sc_name_unicode z = sc_name' z sc_table_unicode
+sc_name_unicode z = sc_name_tbl z sc_table_unicode
 
 -- | Lookup a set-class given a set-class name.
 --
@@ -427,6 +429,7 @@ scs_n n = filter ((== n) . genericLength) scs
 -- | Vector indicating degree of intersection with inversion at each transposition.
 --
 -- > tics mod12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
+-- > map (tics mod12) scs
 tics :: Integral i => Z i -> [i] -> [Int]
 tics z p =
     let q = z_sro_t_related z (z_sro_invert z 0 p)

@@ -143,6 +143,12 @@ z_sro_tni z n = z_sro_tn z n . z_sro_invert z 0
 z_sro_mn :: (Integral i, Functor f) => Z i -> i -> f i -> f i
 z_sro_mn z n = fmap (z_mul z n)
 
+-- | M5, ie. 'mn' @5@.
+--
+-- > z_sro_m5 mod12 [0,1,3] == [0,5,3]
+z_sro_m5 :: (Integral i, Functor f) => Z i -> f i -> f i
+z_sro_m5 z = z_sro_mn z 5
+
 -- | T-related sequences of /p/.
 --
 -- > length (z_sro_t_related mod12 [0,3,6,9]) == 12
@@ -164,6 +170,14 @@ z_sro_ti_related z p = nub (z_sro_t_related z p ++ z_sro_t_related z (z_sro_inve
 -- > length (z_sro_rti_related mod12 [0,3,6,9]) == 24
 z_sro_rti_related :: Integral i => Z i -> [i] -> [[i]]
 z_sro_rti_related z p = let q = z_sro_ti_related z p in nub (q ++ map reverse q)
+
+-- | T\/M\/I-related sequences of /p/, duplicates removed.
+z_sro_tmi_related :: Integral i => Z i -> [i] -> [[i]]
+z_sro_tmi_related z p = let q = z_sro_ti_related z p in nub (q ++ map (z_sro_m5 z) q)
+
+-- | R\/T\/M\/I-related sequences of /p/, duplicates removed.
+z_sro_rtmi_related :: Integral i => Z i -> [i] -> [[i]]
+z_sro_rtmi_related z p = let q = z_sro_tmi_related z p in nub (q ++ map reverse q)
 
 -- * Sequence operations
 

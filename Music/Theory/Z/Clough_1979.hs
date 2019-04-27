@@ -6,8 +6,9 @@ import Data.List {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- type Z7 = Int
-
+-- | Shift sequence so the initial value is zero.
+--
+-- > transpose_to_zero [1,2,5] == [0,1,4]
 transpose_to_zero :: Num n => [n] -> [n]
 transpose_to_zero p =
     case p of
@@ -33,8 +34,10 @@ dpcset_complement :: Integral n => [n] -> [n]
 dpcset_complement p = filter (`notElem` p) z7_univ
 
 -- | Interval class predicate (ie. 'is_z4').
+--
+-- > map is_ic [-1 .. 4] == [False,True,True,True,True,False]
 is_ic :: Integral n => n -> Bool
-is_ic n = n >= 0 && n < 4
+is_ic = is_z4
 
 -- | Interval to interval class.
 --
@@ -48,7 +51,7 @@ i_to_ic n = if n > 3 then 7 - n else n
 is_chord :: Integral n => [n] -> Bool
 is_chord = (== 7) . sum
 
--- | Interval vector.
+-- | Interval vector, given list of intervals.
 --
 -- > iv [2,2,3] == [0,2,1]
 iv :: Integral n => [n] -> [n]
@@ -97,20 +100,28 @@ iseq = map mod7 . T.d_dx
 
 -- * Z
 
+-- | Is /n/ in (0,/m/ - 1).
 is_z_n :: Integral n => n -> n -> Bool
 is_z_n m n = n >= 0 && n < m
 
-is_z4 :: Integral n => n -> Bool
-is_z4 = is_z_n 4
-
+-- | Z /m/ universe, ie [0 .. m-1].
 z_n_univ :: Integral n => n -> [n]
 z_n_univ m = [0 .. m - 1]
 
+-- | 'is_z_n' of 4.
+is_z4 :: Integral n => n -> Bool
+is_z4 = is_z_n 4
+
+-- | 'z_n_univ' of 7.
+--
+-- > z7_univ == [0 .. 6]
 z7_univ :: Integral n => [n]
 z7_univ = z_n_univ 7
 
+-- | 'is_z_n' of 7.
 is_z7 :: Integral n => n -> Bool
 is_z7 = is_z_n 7
 
+-- | 'mod' 7.
 mod7 :: Integral n => n -> n
 mod7 n = n `mod` 7

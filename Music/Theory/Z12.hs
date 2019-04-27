@@ -19,9 +19,11 @@ Aspects of the 'Enum' instance are cyclic.
 module Music.Theory.Z12 where
 
 import Data.Char {- base -}
+import Data.Int {- base -}
 import Data.List {- base -}
-import qualified Data.Modular as M {- modular-arithmetic -}
 import qualified GHC.TypeLits as L {- base -}
+
+import qualified Data.Modular as M {- modular-arithmetic -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
@@ -32,7 +34,9 @@ type Z n = M.Mod Int n
 --
 -- > map negate [0::Z12 .. 0xB] == [0,0xB,0xA,9,8,7,6,5,4,3,2,1]
 -- > map (+ 5) [0::Z12 .. 11] == [5,6,7,8,9,0xA,0xB,0,1,2,3,4]
-type Z12 = M.Mod Int 12
+--
+-- > 2 ^ (1::Z12) == undefined
+type Z12 = M.Mod Int8 12
 
 -- | Cyclic form of 'enumFromThenTo'.
 --
@@ -64,6 +68,7 @@ enumFromTo_cyc n m =
 to_Z12 :: Integral i => i -> Z12
 to_Z12 = M.toMod . fromIntegral
 
+-- | Type specialised 'to_Z12'.
 int_to_Z12 :: Int -> Z12
 int_to_Z12 = to_Z12
 
@@ -71,6 +76,7 @@ int_to_Z12 = to_Z12
 from_Z12 :: Integral i => Z12 -> i
 from_Z12 = fromIntegral . M.unMod
 
+-- | Type specialised 'from_Z12'.
 int_from_Z12 :: Z12 -> Int
 int_from_Z12 = from_Z12
 
@@ -84,7 +90,7 @@ complement = (\\) [0 .. 11]
 --
 -- > map z12_to_char [0 .. 11] == "0123456789AB"
 z12_to_char :: Z12 -> Char
-z12_to_char = toUpper . intToDigit . M.unMod
+z12_to_char = toUpper . intToDigit . fromIntegral . M.unMod
 
 -- | Z12 to character (10 -> A, 11 -> B).
 --

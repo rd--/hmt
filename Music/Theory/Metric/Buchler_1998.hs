@@ -3,13 +3,13 @@
 -- thesis, University of Rochester, 1998
 module Music.Theory.Metric.Buchler_1998 where
 
+import Data.Int {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.List as T
-import qualified Music.Theory.Z12.Forte_1973 as T
+import qualified Music.Theory.Z.Forte_1973 as T
 import qualified Music.Theory.Set.List as T
-import Music.Theory.Z12 (Z12)
 
 -- | Predicate for list with cardinality /n/.
 of_c :: Integral n => n -> [a] -> Bool
@@ -18,7 +18,7 @@ of_c n = (== n) . genericLength
 -- | Set classes of cardinality /n/.
 --
 -- > sc_table_n 2 == [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]]
-sc_table_n :: (Integral n) => n -> [[Z12]]
+sc_table_n :: (Integral n) => n -> [[Int8]]
 sc_table_n n = filter (of_c n) (map snd T.sc_table)
 
 -- | Minima and maxima of ICV of SCs of cardinality /n/.
@@ -27,7 +27,7 @@ sc_table_n n = filter (of_c n) (map snd T.sc_table)
 icv_minmax :: (Integral n, Integral b) => n -> ([b], [b])
 icv_minmax n =
     let t = sc_table_n n
-        i = transpose (map T.icv t)
+        i = transpose (map (T.icv 12) t)
     in (map minimum i,map maximum i)
 
 data R = MIN | MAX deriving (Eq,Show)
@@ -43,10 +43,10 @@ r_pp r =
       MAX -> "-"
 
 -- | 'SATV' element measure with given funtion.
-satv_f :: (Integral n) => ((n,n,n) -> D n) -> [Z12] -> [D n]
+satv_f :: (Integral n) => ((n,n,n) -> D n) -> [Int8] -> [D n]
 satv_f f p =
     let n = length p
-        i = T.icv p
+        i = T.icv 12 p
         (l,r) = icv_minmax n
     in map f (zip3 l i r)
 
@@ -68,7 +68,7 @@ satv_pp (i,j) = T.bracket ('(',')') (satv_e_pp i ++ "," ++ satv_e_pp j)
 --
 -- > satv_e_pp (satv_a [0,1,2,6,7,8]) == "<-1,+2,+0,+0,-1,-0>"
 -- > satv_e_pp (satv_a [0,1,2,3,4]) == "<-0,-1,-2,+0,+0,+0>"
-satv_a :: Integral i => [Z12] -> [D i]
+satv_a :: Integral i => [Int8] -> [D i]
 satv_a =
     let f (l,i,r) = let l' = abs (i - l)
                         r' = abs (i - r)
@@ -81,7 +81,7 @@ satv_a =
 --
 -- > satv_e_pp (satv_b [0,1,2,6,7,8]) == "<+4,-4,-5,-4,+4,+3>"
 -- > satv_e_pp (satv_b [0,1,2,3,4]) == "<+4,+3,+2,-3,-4,-2>"
-satv_b :: Integral i => [Z12] -> [D i]
+satv_b :: Integral i => [Int8] -> [D i]
 satv_b =
     let f (l,i,r) = let l' = abs (i - l)
                         r' = abs (i - r)
@@ -102,7 +102,7 @@ satv_b =
 -- > satv_pp (satv [0,1,2,3,4,6]) == "(<-1,-2,-2,+0,+1,+1>,<+4,+4,+3,-4,-4,-2>)"
 -- > satv_pp (satv [0,1,3,6,8]) == "(<+1,-2,-2,+0,-1,-1>,<-3,+2,+2,-3,+3,+1>)"
 -- > satv_pp (satv [0,2,3,5,7,9]) == "(<+1,-2,-2,+0,-1,+1>,<-4,+4,+3,-4,+4,-2>)"
-satv :: Integral i => [Z12] -> SATV i
+satv :: Integral i => [Int8] -> SATV i
 satv p = (satv_a p,satv_b p)
 
 -- | 'SATV' reorganised by 'R'.
@@ -120,7 +120,7 @@ abs_dif i j = abs (i - j)
 -- | Sum of numerical components of @a@ and @b@ parts of 'SATV'.
 --
 -- > satv_n_sum (satv [0,1,2,6,7,8]) == [5,6,5,4,5,3]
--- > satv_n_sum (satv [0,3,6,9]) = [3,3,4,3,3,2]
+-- > satv_n_sum (satv [0,3,6,9]) == [3,3,4,3,3,2]
 satv_n_sum :: Num c => SATV c -> [c]
 satv_n_sum (i,j) = zipWith (+) (map snd i) (map snd j)
 
@@ -148,7 +148,7 @@ two_part_difference_vector_set i j =
 -- > satsim [0,1,2,3,4] [0,1,4,5,7] == 8/21
 -- > satsim [0,1,2,3,4] [0,2,4,6,8] == 4/7
 -- > satsim [0,1,4,5,7] [0,2,4,6,8] == 4/7
-satsim :: Integral a => [Z12] -> [Z12] -> Ratio a
+satsim :: Integral a => [Int8] -> [Int8] -> Ratio a
 satsim p q =
     let i = satv p
         j = satv q
@@ -161,7 +161,7 @@ satsim p q =
 -- | Table of 'satsim' measures for all @SC@ pairs.
 --
 -- > length satsim_table == 24310
-satsim_table :: Integral i => [(([Z12],[Z12]),Ratio i)]
+satsim_table :: Integral i => [(([Int8],[Int8]),Ratio i)]
 satsim_table =
     let f (i,j) = ((i,j),satsim i j)
         t = filter ((`notElem` [0,1,12]) . length) (map snd T.sc_table)

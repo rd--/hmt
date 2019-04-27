@@ -7,18 +7,22 @@ import Data.List {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 
 -- | The modulo function for Z.
+--   /t/ must be signed, see 'z_sub'.
 type Z t = (t -> t)
 
 -- | Is /n/ in (0,/m/-1).
 is_z_n :: (Num a, Ord a) => a -> a -> Bool
 is_z_n m n = n >= 0 && n < m
 
+-- | 'mod' 5.
 mod5 :: Integral i => Z i
 mod5 n = n `mod` 5
 
+-- | 'mod' 7.
 mod7 :: Integral i => Z i
 mod7 n = n `mod` 7
 
+-- | 'mod' 12.
 mod12 :: Integral i => Z i
 mod12 n = n `mod` 12
 
@@ -28,11 +32,13 @@ lift_unary_Z z f n = z (f n)
 lift_binary_Z :: Z i -> (s -> t -> i) -> s -> t -> i
 lift_binary_Z z f n1 n2 = z (n1 `f` n2)
 
+-- | Add two Z.
+--
 -- > import Music.Theory.Z
 -- > import qualified Music.Theory.Z12 as Z12
 -- > z_add id (11::Z12.Z12) 5 == 4
 -- > (11::Z12.Z12) + 5 == 4
--- > map (z_add mod12 4) [1,5,6] == [5,9,10]
+-- > map (z_add mod12 4) [1,5,6,11] == [5,9,10,3]
 z_add :: Integral i => Z i -> i -> i -> i
 z_add z = lift_binary_Z z (+)
 
@@ -47,14 +53,15 @@ z_add z = lift_binary_Z z (+)
 z_sub :: Integral i => Z i -> i -> i -> i
 z_sub z = lift_binary_Z z (-)
 
-{- | Allowing unsigned /i/ is rather inefficient...
-z_sub :: Integral i => Z i -> i -> i -> i
-z_sub z p q =
+-- | Allowing unsigned /i/ is rather inefficient...
+--
+-- > z_sub_unsigned mod12 (0::Word8) 8 == 4
+z_sub_unsigned :: Integral i => Z i -> i -> i -> i
+z_sub_unsigned z p q =
     if p > q
     then z (p - q)
     else let m = z_modulus z
          in z (p + m - q)
--}
 
 z_mul :: Integral i => Z i -> i -> i -> i
 z_mul z = lift_binary_Z z (*)
@@ -79,9 +86,13 @@ to_Z z = z_fromInteger z . fromIntegral
 from_Z :: (Integral i,Num n) => i -> n
 from_Z = fromIntegral
 
--- | Modulus of /z/.
+-- | Determine modulus of /z/.  This is linear-time in the modulus.
 --
+-- > z_modulus (flip mod 7) == 7
 -- > z_modulus mod12 == 12
+--
+-- > import Data.Int
+-- > z_modulus (id :: (Int8 -> Int8)) == undefined
 z_modulus :: Integral i => Z i -> i
 z_modulus z = maybe (error "z_modulus") (fromIntegral . (+ 1)) (findIndex ((== 0) . z) [1..])
 
@@ -125,23 +136,32 @@ z_toInteger z = to_Z z
 
 -- * Z16
 
+-- | 'mod' 16.
 mod16 :: Integral i => Z i
 mod16 n = n `mod` 16
 
+-- | Type generalised 'intToDigit'.
+--
+-- > map integral_to_digit [0 .. 15] == "0123456789abcdef"
 integral_to_digit :: Integral t => t -> Char
 integral_to_digit = intToDigit . fromIntegral
 
+-- | 'is_z_n' 16.
 is_z16 :: Integral t => t -> Bool
 is_z16 = is_z_n 16
 
+-- | Alias for 'integral_to_digit'.
 z16_to_char :: Integral t => t -> Char
 z16_to_char = integral_to_digit
 
+-- | 'z16_to_char' in braces, {1,2,3}.
 z16_set_pp :: Integral t => [t] -> String
 z16_set_pp = T.bracket ('{','}') . map z16_to_char
 
+-- | 'z16_to_char' in arrows, <1,2,3>.
 z16_seq_pp :: Integral t => [t] -> String
 z16_seq_pp = T.bracket ('<','>') . map z16_to_char
 
+-- | 'z16_to_char' in brackets, [1,2,3].
 z16_vec_pp :: Integral t => [t] -> String
 z16_vec_pp = T.bracket ('[',']') . map z16_to_char

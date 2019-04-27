@@ -1042,6 +1042,10 @@ fill_gaps_ascending' def (l,r) =
                                else (m,e) : recur (n + 1) x'
     in recur l
 
+-- | Variant with default value for empty input list case.
+minimumBy_or :: t -> (t -> t -> Ordering) -> [t] -> t
+minimumBy_or p f q = if null q then p else minimumBy f q
+
 -- | 'minimum' and 'maximum' in one pass.
 --
 -- > minmax "minimumandmaximum" == ('a','x')

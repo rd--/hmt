@@ -7,84 +7,99 @@ import Data.Bits {- base -}
 import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Data.Word {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
-
+import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Z as Z {- hmt -}
-import qualified Music.Theory.Z.SRO as Z {- hmt -}
+import qualified Music.Theory.Z.SRO as SRO {- hmt -}
 
 -- | Coding.
-type Code = Int
+type Code = Word64
+
+-- | Number of bits at 'Code'.
+code_len :: Num n => n
+code_len = 64
 
 -- | Bit array.
-type Array = [Bool]
+type Bit_Array = [Bool]
 
--- | Pretty printer for 'Array'.
-array_pp :: Array -> String
-array_pp = map intToDigit . map fromEnum
+-- | Logical complement.
+bit_array_complement :: Bit_Array -> Bit_Array
+bit_array_complement = map not
 
--- | Parse PP of 'Array'.
+-- | Pretty printer for 'Bit_Array'.
+bit_array_pp :: Bit_Array -> String
+bit_array_pp = map intToDigit . map fromEnum
+
+-- | Parse PP of 'Bit_Array'.
 --
--- > parse_array "01001" == [False,True,False,False,True]
-parse_array :: String -> Array
-parse_array = map (toEnum . digitToInt)
+-- > bit_array_parse "01001" == [False,True,False,False,True]
+bit_array_parse :: String -> Bit_Array
+bit_array_parse = map (toEnum . digitToInt)
 
--- | Generate 'Code' from 'Array', the coding is most to least significant.
---
--- > array_to_code (map toEnum [1,1,0,0,1,0,0,0,1,1,1,0,0]) == 6428
-array_to_code :: Array -> Code
-array_to_code a =
-    let n = length a
-        f e j = if e then 2 ^ (n - j - 1) else 0
-    in sum (zipWith f a [0..])
+-- * MSB (BIG-ENDIAN)
 
--- | Inverse of 'array_to_code'.
+-- | Generate 'Code' from 'Bit_Array', the coding is most to least significant.
 --
--- > code_to_array 13 6428 == map toEnum [1,1,0,0,1,0,0,0,1,1,1,0,0]
-code_to_array :: Int -> Code -> Array
-code_to_array n c = map (testBit c) [n - 1, n - 2 .. 0]
+-- > map (bit_array_to_code . bit_array_parse) (words "000 001 010 011 100 101 110 111") == [0..7]
+-- > bit_array_to_code (bit_array_parse "1100100011100") == 6428
+bit_array_to_code :: Bit_Array -> Code
+bit_array_to_code a =
+  let n = length a
+      f e j = if e then 2 ^ (n - j - 1) else 0
+  in if n > code_len
+     then error "bit_array_to_code: > SZ"
+     else sum (zipWith f a [0..])
 
--- | Array to set.
+-- | Inverse of 'bit_array_to_code'.
 --
--- > array_to_set (map toEnum [1,1,0,0,1,0,0,0,1,1,1,0,0]) == [0,1,4,8,9,10]
--- > encode [0,1,4,8,9,10] == 1811
-array_to_set :: Integral i => [Bool] -> [i]
-array_to_set =
+-- > code_to_bit_array 13 6428 == bit_array_parse "1100100011100"
+code_to_bit_array :: Int -> Code -> Bit_Array
+code_to_bit_array n c =
+  if n > code_len
+  then error "code_to_bit_array: > SZ"
+  else map (testBit c) [n - 1, n - 2 .. 0]
+
+-- | 'Bit_Array' to set.
+--
+-- > bit_array_to_set (bit_array_parse "1100100011100") == [0,1,4,8,9,10]
+-- > set_to_code 13 [0,1,4,8,9,10] == 6428
+bit_array_to_set :: Integral i => Bit_Array -> [i]
+bit_array_to_set =
     let f (i,e) = if e then Just i else Nothing
     in mapMaybe f . zip [0..]
 
--- | Inverse of 'array_to_set', /z/ is the degree of the array.
-set_to_array :: Integral i => i -> [i] -> Array
-set_to_array z p = map (`elem` p) [0 .. z - 1]
+-- | Inverse of 'bit_array_to_set', /z/ is the degree of the array.
+set_to_bit_array :: Integral i => i -> [i] -> Bit_Array
+set_to_bit_array z p =
+  if z > code_len
+  then error "set_to_bit_array: > SZ"
+  else map (`elem` p) [0 .. z - 1]
 
--- | 'array_to_code' of 'set_to_array'.
+-- | 'bit_array_to_code' of 'set_to_bit_array'.
 --
 -- > set_to_code 12 [0,2,3,5] == 2880
--- > map (set_to_code 12) (T.z_ti_related (flip mod 12) [0,2,3,5])
+-- > map (set_to_code 12) (SRO.z_sro_ti_related (flip mod 12) [0,2,3,5])
 set_to_code :: Integral i => i -> [i] -> Code
-set_to_code z = array_to_code . set_to_array z
-
--- | Logical complement.
-array_complement :: Array -> Array
-array_complement = map not
+set_to_code z = bit_array_to_code . set_to_bit_array z
 
 -- | The /prime/ form is the 'maximum' encoding.
 --
--- > array_is_prime (set_to_array 12 [0,2,3,5]) == False
-array_is_prime :: Array -> Bool
-array_is_prime a =
-    let c = array_to_code a
-        p = array_to_set a
+-- > bit_array_is_prime (set_to_bit_array 12 [0,2,3,5]) == False
+bit_array_is_prime :: Bit_Array -> Bool
+bit_array_is_prime a =
+    let c = bit_array_to_code a
+        p = bit_array_to_set a
         n = length a
         z = flip mod n
-        u = maximum (map (set_to_code n) (Z.z_sro_ti_related z p))
+        u = maximum (map (set_to_code n) (SRO.z_sro_ti_related z p))
     in c == u
 
 -- | The augmentation rule adds @1@ in each empty slot at end of array.
 --
--- > map array_pp (array_augment (parse_array "01000")) == ["01100","01010","01001"]
-array_augment :: Array -> [Array]
-array_augment a =
+-- > map bit_array_pp (bit_array_augment (bit_array_parse "01000")) == ["01100","01010","01001"]
+bit_array_augment :: Bit_Array -> [Bit_Array]
+bit_array_augment a =
     let (z,a') = break id (reverse a)
         a'' = reverse a'
         n = length z
@@ -93,55 +108,61 @@ array_augment a =
     in map (a'' ++) x
 
 -- | Enumerate first half of the set-classes under given /prime/ function.
--- The second half can be derived as the complement of the first.
+--   The second half can be derived as the complement of the first.
 --
--- > import Music.Theory.Z12.Forte_1973
+-- > import Music.Theory.Z.Forte_1973
 -- > length scs == 224
 -- > map (length . scs_n) [0..12] == [1,1,6,12,29,38,50,38,29,12,6,1,1]
 --
--- > let z12 = map (fmap (map array_to_set)) (enumerate_half array_is_prime 12)
+-- > let z12 = map (fmap (map bit_array_to_set)) (enumerate_half bit_array_is_prime 12)
 -- > map (length . snd) z12 == [1,1,6,12,29,38,50]
 --
 -- This can become slow, edit /z/ to find out.  It doesn't matter
 -- about /n/.  This can be edited so that small /n/ would run quickly
 -- even for large /z/.
 --
--- > fmap (map array_to_set) (lookup 5 (enumerate_half array_is_prime 16))
-enumerate_half :: (Array -> Bool) -> Int -> [(Int,[Array])]
+-- > fmap (map bit_array_to_set) (lookup 5 (enumerate_half bit_array_is_prime 16))
+enumerate_half :: (Bit_Array -> Bool) -> Int -> [(Int,[Bit_Array])]
 enumerate_half pr n =
     let a0 = replicate n False
         f k a = if k >= n `div` 2
                 then []
-                else let r = filter pr (array_augment a)
+                else let r = filter pr (bit_array_augment a)
                      in (k + 1,r) : concatMap (f (k + 1)) r
         jn l = case l of
                  (x,y):l' -> (x,concat (y : map snd l'))
                  _ -> error ""
-        post_proc = map jn . T.group_on fst . sortOn fst
+        post_proc = map jn . List.group_on fst . sortOn fst
     in post_proc ((0,[a0]) : f 0 a0)
 
--- * Alternate (reverse) form.
+-- * LSB - LITTLE-ENDIAN
+
+-- | If the size of the set is '>' 'code_len' then 'error', else 'id'.
+set_coding_validate :: [t] -> [t]
+set_coding_validate l = if length l <= code_len then l else error "set_coding_validate: SIZE"
 
 -- | Encoder for 'encode_prime'.
 --
--- > encode [0,1,3,6,8,9] == 843
-encode :: Integral i => [i] -> Code
-encode = sum . map (2 ^)
+-- > map set_encode [[0,1,3,7,8],[0,1,3,6,8,9]] == [395,843]
+--
+-- > map (set_to_code 12) [[0,1,3,7,8],[0,1,3,6,8,9]] == [3352,3372]
+set_encode :: Integral i => [i] -> Code
+set_encode = sum . map (2 ^) . set_coding_validate
 
 -- | Decoder for 'encode_prime'.
 --
--- > decode 12 843 == [0,1,3,6,8,9]
-decode :: Integral i => i -> Code -> [i]
-decode z n =
-    let f i = (i,testBit n (fromIntegral i))
+-- > map (set_decode 12) [395,843] == [[0,1,3,7,8],[0,1,3,6,8,9]]
+set_decode :: Integral i => Int -> Code -> [i]
+set_decode z n =
+    let f i = (fromIntegral i,testBit n i)
     in map fst (filter snd (map f [0 .. z - 1]))
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --
--- > encode_prime Z.mod12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
+-- > set_encode_prime Z.mod12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
 -- > Music.Theory.Z12.Rahn_1980.rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
-encode_prime :: Integral i => Z.Z i -> [i] -> [i]
-encode_prime z s =
-    let t = map (\x -> Z.z_sro_tn z x s) (Z.z_univ z)
-        c = t ++ map (Z.z_sro_invert z 0) t
-    in decode (Z.z_modulus z) (minimum (map encode c))
+set_encode_prime :: Integral i => Z.Z i -> [i] -> [i]
+set_encode_prime z s =
+    let t = map (\x -> SRO.z_sro_tn z x s) (Z.z_univ z)
+        c = t ++ map (SRO.z_sro_invert z 0) t
+    in set_decode (fromIntegral (Z.z_modulus z)) (minimum (map set_encode c))

@@ -167,23 +167,23 @@ Library
                    Music.Theory.Xenakis.Sieve
                    Music.Theory.Z
                    Music.Theory.Z.Boros_1990
+                   Music.Theory.Z.Castren_1994
                    Music.Theory.Z.Clough_1979
                    Music.Theory.Z.Drape_1999
                    Music.Theory.Z.Forte_1973
+                   Music.Theory.Z.Lewin_1980
+                   Music.Theory.Z.Literature
+                   Music.Theory.Z.Morris_1974
+                   Music.Theory.Z.Morris_1987
+                   Music.Theory.Z.Morris_1987.Parse
+                   Music.Theory.Z.Rahn_1980
                    Music.Theory.Z.Read_1978
                    Music.Theory.Z.TTO
                    Music.Theory.Z.SRO
                    Music.Theory.Z12
-                   Music.Theory.Z12.Castren_1994
                    Music.Theory.Z12.Drape_1999
                    Music.Theory.Z12.Forte_1973
-                   Music.Theory.Z12.Lewin_1980
-                   Music.Theory.Z12.Literature
-                   Music.Theory.Z12.Morris_1974
-                   Music.Theory.Z12.Morris_1987
-                   Music.Theory.Z12.Morris_1987.Parse
                    Music.Theory.Z12.Rahn_1980
-                   Music.Theory.Z12.Read_1978
                    Music.Theory.Z12.SRO
                    Music.Theory.Z12.TTO
 

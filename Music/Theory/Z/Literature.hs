@@ -1,5 +1,5 @@
 -- | Z12 set class database.
-module Music.Theory.Z12.Literature where
+module Music.Theory.Z.Literature where
 
 -- | Set class database with descriptors for historically and
 -- theoretically significant set classes, indexed by Forte name.
