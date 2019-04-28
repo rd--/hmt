@@ -11,6 +11,8 @@ import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 import qualified Music.Theory.Unicode as T {- hmt -}
 
+-- * LINE
+
 -- | Line, indicated as sum.
 data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
 
@@ -53,16 +55,9 @@ line_complement n =
       L9 -> Just L8
       _ -> Nothing
 
--- | Sequence of 6 'Line'.
-type Hexagram = [Line]
-
--- | Hexagrams are drawn upwards.
-hexagram_pp :: Hexagram -> String
-hexagram_pp = unlines . reverse . map line_ascii_pp
-
 {- | Sequence of sum values assigned to ascending four bit numbers.
 
-> import  Music.Theory.Bits {- hmt -}
+> import Music.Theory.Bits {- hmt -}
 > zip (map (gen_bitseq_pp 4) [0::Int .. 15]) (map line_ascii_pp four_coin_sequence)
 
 -}
@@ -72,6 +67,15 @@ four_coin_sequence =
     ,L7,L7,L7,L7
     ,L7,L8,L8,L8
     ,L8,L8,L8,L8]
+
+-- * HEXAGRAM
+
+-- | Sequence of 6 'Line'.
+type Hexagram = [Line]
+
+-- | Hexagrams are drawn upwards.
+hexagram_pp :: Hexagram -> String
+hexagram_pp = unlines . reverse . map line_ascii_pp
 
 -- | Generate hexagram (ie. sequence of six lines given by sum) using 'four_coin_sequence'.
 --
