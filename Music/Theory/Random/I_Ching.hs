@@ -27,9 +27,9 @@ type Line_Stat = (Line,(Rational,Rational,String,String,String))
 i_ching_chart :: [Line_Stat]
 i_ching_chart =
     [(L6,(1/16,2/16,"old yin","yin changing into yang","---x---"))
+    ,(L7,(5/16,6/16,"young yang","yang unchanging","-------"))
     ,(L8,(7/16,6/16,"young yin","yin unchanging","--- ---"))
-    ,(L9,(3/16,2/16,"old yang","yang changing into yin","---o---"))
-    ,(L7,(5/16,6/16,"young yang","yang unchanging","-------"))]
+    ,(L9,(3/16,2/16,"old yang","yang changing into yin","---o---"))]
 
 -- | Lines L6 and L7 are unbroken (since L6 is becoming L7).
 line_unbroken :: Line -> Bool
@@ -56,6 +56,7 @@ line_complement n =
       _ -> Nothing
 
 {- | Sequence of sum values assigned to ascending four bit numbers.
+     Sequence is in ascending probablity, ie: 1×6,3×9,5×7,7×8.
 
 > import Music.Theory.Bits {- hmt -}
 > zip (map (gen_bitseq_pp 4) [0::Int .. 15]) (map line_ascii_pp four_coin_sequence)
