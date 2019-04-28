@@ -457,7 +457,7 @@ complement: {1246789A} (TAI 8-Z15)
 multiplication-by-five-transform: {0317} (T0  4-Z29)
 $
 
-> putStr $ unlines $ si z12 [0,5,3,11]
+> putStr $ unlines $ si z12 [0,2,4,5,7,9,11] --[0,5,3,11]
 -}
 si :: (Integral i,Show i) => Z i -> [i] -> [String]
 si z p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_rhs_pp z p)

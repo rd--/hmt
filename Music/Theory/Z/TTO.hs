@@ -115,15 +115,23 @@ z_tto_m5 z = z_tto_mn z 5
 -- * SEQUENCE
 
 -- | T-related sets of /p/.
+z_tto_t_related_seq :: Integral i => Z i -> [i] -> [[i]]
+z_tto_t_related_seq z p = map (\q -> z_tto_tn z q p) [0..11]
+
+-- | Unique elements of 'z_tto_t_related_seq'.
 --
 -- > length (z_tto_t_related z12 [0,1,3]) == 12
 -- > z_tto_t_related z12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
 z_tto_t_related :: Integral i => Z i -> [i] -> [[i]]
-z_tto_t_related z p = nub (map (\q -> z_tto_tn z q p) [0..11])
+z_tto_t_related z = nub . z_tto_t_related_seq z
 
 -- | T\/I-related set of /p/.
+z_tto_ti_related_seq :: Integral i => Z i -> [i] -> [[i]]
+z_tto_ti_related_seq z p = z_tto_t_related z p ++ z_tto_t_related z (z_tto_invert z 0 p)
+
+-- | Unique elements of 'z_tto_ti_related_seq'.
 --
 -- > length (z_tto_ti_related z12 [0,1,3]) == 24
 -- > z_tto_ti_related z12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
 z_tto_ti_related :: Integral i => Z i -> [i] -> [[i]]
-z_tto_ti_related z p = nub (z_tto_t_related z p ++ z_tto_t_related z (z_tto_invert z 0 p))
+z_tto_ti_related z = nub . z_tto_ti_related_seq z
