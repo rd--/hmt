@@ -40,13 +40,13 @@ elem_by f e = any (f e)
 -- * TTO
 
 tto_tni_univ :: Integral i => [T.TTO i]
-tto_tni_univ = filter (not . T.tto_M) (T.z_tto_univ T.mod12)
+tto_tni_univ = filter (not . T.tto_M) (T.z_tto_univ T.z12)
 
 all_tn :: Integral i => [i] -> [[i]]
-all_tn p = map (\n -> map (T.z_add T.mod12 n) p) [0..11]
+all_tn p = map (\n -> map (T.z_add T.z12 n) p) [0..11]
 
 all_tni :: Integral i => [i] -> [[i]]
-all_tni p = map (\f -> T.z_tto_apply 5 T.mod12 f p) tto_tni_univ
+all_tni p = map (\f -> T.z_tto_apply 5 T.z12 f p) tto_tni_univ
 
 uniq_tni :: Integral i => [i] -> [[i]]
 uniq_tni = nub . all_tni
@@ -55,20 +55,21 @@ type PC = Int
 type PCSET = [PC]
 type SC = PCSET
 
+-- > pcset_trs 3 [0,1,9] == [0,3,4]
 pcset_trs :: Int -> PCSET -> PCSET
-pcset_trs n p = sort (map (T.mod12 . (+ n)) p)
+pcset_trs = T.z_tto_tn T.z12
 
 -- | Forte prime forms of the twelve trichordal set classes.
 --
 -- > length trichords == 12
 trichords :: [PCSET]
-trichords = filter ((== 3) . length) (T.sc_univ T.mod12)
+trichords = filter ((== 3) . length) (T.sc_univ T.z12)
 
 -- | Is a pcset self-inversional, ie. is the inversion of /p/ a transposition of /p/.
 --
 -- > map (\p -> (p,self_inv p)) trichords
 self_inv :: PCSET -> Bool
-self_inv p = elem_by set_eq (map (T.z_negate T.mod12) p) (all_tn p)
+self_inv p = elem_by set_eq (map (T.z_negate T.z12) p) (all_tn p)
 
 -- | Pretty printer, comma separated.
 --
@@ -86,14 +87,14 @@ pcset_pp_hex = map toUpper . concat . map (flip showHex "")
 
 -- | Forte prime form of the all-trichord hexachord.
 --
--- > T.sc_name T.mod12 ath == "6-Z17"
+-- > T.sc_name T.z12 ath == "6-Z17"
 -- > T.sc "6-Z17" == ath
 ath :: PCSET
 ath = [0,1,2,4,7,8]
 
 -- | Is /p/ an instance of 'ath'.
 is_ath :: PCSET -> Bool
-is_ath p = T.forte_prime T.mod12 p == ath
+is_ath p = T.forte_prime T.z12 p == ath
 
 -- | Table 1, p.20
 --
@@ -105,7 +106,7 @@ ath_univ = uniq_tni ath
 --
 -- > ath_tni [1,2,3,7,8,11] == T.TTO 3 False True
 ath_tni :: PCSET -> T.TTO PC
-ath_tni = singular "ath_tni" . filter (not . T.tto_M) . T.z_tto_rel 5 T.mod12 ath
+ath_tni = singular "ath_tni" . filter (not . T.tto_M) . T.z_tto_rel 5 T.z12 ath
 
 -- | Give label for instance of 'ath', prime forms are written H and inversions h.
 --
@@ -159,7 +160,7 @@ gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 table_3 :: [((PCSET,SC,T.SC_Name),(PCSET,SC,T.SC_Name))]
 table_3 =
     let f p = let q = ath_complement p
-                  i x = (x,T.forte_prime T.mod12 x,T.sc_name T.mod12 x)
+                  i x = (x,T.forte_prime T.z12 x,T.sc_name T.z12 x)
               in (i p,i q)
     in map f ath_trichords
 
@@ -187,7 +188,7 @@ table_4_md =
     in pp_tbl (Just hdr,map f table_4)
 
 table_5 :: [(PCSET,Int)]
-table_5 = T.histogram (map (T.forte_prime T.mod12) ath_trichords)
+table_5 = T.histogram (map (T.forte_prime T.z12) ath_trichords)
 
 -- > putStrLn $ unlines $ table_5_md
 table_5_md :: [String]

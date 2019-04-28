@@ -1,3 +1,4 @@
+-- | Twelve-tone operator.
 module Music.Theory.Z.TTO where
 
 import Data.List {- base -}
@@ -36,16 +37,18 @@ p_tto = do
 tto_parse :: Integral i => String -> TTO i
 tto_parse = either (\e -> error ("tto_parse failed\n" ++ show e)) id . P.parse p_tto ""
 
+-- * Z
+
 -- | The set of all 'TTO', given 'Z' function.
 --
--- > length (z_tto_univ mod12) == 48
--- > map tto_pp (z_tto_univ mod12)
+-- > length (z_tto_univ z12) == 48
+-- > map tto_pp (z_tto_univ z12)
 z_tto_univ :: Integral t => Z t -> [TTO t]
 z_tto_univ z = [TTO t m i | m <- [False,True], i <- [False,True], t <- z_univ z]
 
 -- | M is ordinarily 5, but can be specified here.
 --
--- > map (z_tto_f 5 mod12 (tto_parse "T1M")) [0,1,2,3] == [1,6,11,4]
+-- > map (z_tto_f 5 z12 (tto_parse "T1M")) [0,1,2,3] == [1,6,11,4]
 z_tto_f :: Integral t => t -> Z t -> TTO t -> (t -> t)
 z_tto_f mn z (TTO t m i) =
     let i_f = if i then z_negate z else id
@@ -55,52 +58,72 @@ z_tto_f mn z (TTO t m i) =
 
 -- | 'sort' of 'map' 'z_tto_f'.
 --
--- > z_tto_apply 5 mod12 (tto_parse "T1M") [0,1,2,3] == [1,4,6,11]
+-- > z_tto_apply 5 z12 (tto_parse "T1M") [0,1,2,3] == [1,4,6,11]
 z_tto_apply :: Integral t => t -> Z t -> TTO t -> [t] -> [t]
 z_tto_apply mn z o = sort . map (z_tto_f mn z o)
 
-tto_apply :: Integral t => t -> TTO t -> [t] -> [t]
-tto_apply mn = z_tto_apply mn id
-
 -- | Find 'TTO' that that map /x/ to /y/ given /m/ and /z/.
 --
--- > map tto_pp (z_tto_rel 5 mod12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
+-- > map tto_pp (z_tto_rel 5 z12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
 z_tto_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
 z_tto_rel m z x y =
     let q = T.set y
     in mapMaybe (\o -> if z_tto_apply m z o x == q then Just o else Nothing) (z_tto_univ z)
 
--- | 'nub' of 'sort' of 'map' /z/.
+-- * PLAIN
+
+-- | 'nub' of 'sort' of /z/.
 --
--- > map (z_pcset mod12) [[0,6],[6,12],[12,18]] == replicate 3 [0,6]
-z_pcset :: Ord t => Z t -> [t] -> [t]
-z_pcset z = nub . sort . map z
+-- > z_pcset z12 [1,13] == [1]
+-- > map (z_pcset z12) [[0,6],[6,12],[12,18]] == replicate 3 [0,6]
+z_pcset :: (Integral t,Ord t) => Z t -> [t] -> [t]
+z_pcset z = nub . sort . map (z_mod z)
 
 -- | Transpose by n.
 --
--- > z_tto_tn mod12 4 [1,5,6] == [5,9,10]
--- > z_tto_tn mod12 4 [0,4,8] == [0,4,8]
+-- > z_tto_tn z12 4 [1,5,6] == [5,9,10]
+-- > z_tto_tn z12 4 [0,4,8] == [0,4,8]
 z_tto_tn :: Integral i => Z i -> i -> [i] -> [i]
 z_tto_tn z n = sort . map (z_add z n)
 
 -- | Invert about n.
 --
--- > z_tto_invert mod12 6 [4,5,6] == [6,7,8]
--- > z_tto_invert mod12 0 [0,1,3] == [0,9,11]
+-- > z_tto_invert z12 6 [4,5,6] == [6,7,8]
+-- > z_tto_invert z12 0 [0,1,3] == [0,9,11]
 z_tto_invert :: Integral i => Z i -> i -> [i] -> [i]
 z_tto_invert z n = sort . map (\p -> z_sub z n (z_sub z p n))
 
 -- | Composition of 'z_tto_invert' about @0@ and 'z_tto_tn'.
 --
--- > z_tto_tni mod12 4 [1,5,6] == [3,10,11]
--- > (z_tto_invert mod12 0 . z_tto_tn mod12 4) [1,5,6] == [2,3,7]
+-- > z_tto_tni z12 4 [1,5,6] == [3,10,11]
+-- > (z_tto_invert z12 0 . z_tto_tn z12 4) [1,5,6] == [2,3,7]
 z_tto_tni :: Integral i => Z i -> i -> [i] -> [i]
 z_tto_tni z n = z_tto_tn z n . z_tto_invert z 0
 
+-- | Modulo-z multiplication
+--
+-- > z_tto_mn z12 11 [0,1,4,9] == z_tto_invert z12 0 [0,1,4,9]
+z_tto_mn :: Integral i => Z i -> i -> [i] -> [i]
+z_tto_mn z n = sort . map (z_mul z n)
+
+-- | M5, ie. 'mn' @5@.
+--
+-- > z_tto_m5 z12 [0,1,3] == [0,3,5]
+z_tto_m5 :: Integral i => Z i -> [i] -> [i]
+z_tto_m5 z = z_tto_mn z 5
+
+-- * SEQUENCE
+
 -- | T-related sets of /p/.
 --
--- > length (z_tto_t_related mod12 [0,1,3]) == 12
--- > z_tto_t_related mod12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
+-- > length (z_tto_t_related z12 [0,1,3]) == 12
+-- > z_tto_t_related z12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
 z_tto_t_related :: Integral i => Z i -> [i] -> [[i]]
 z_tto_t_related z p = nub (map (\q -> z_tto_tn z q p) [0..11])
 
+-- | T\/I-related set of /p/.
+--
+-- > length (z_tto_ti_related z12 [0,1,3]) == 24
+-- > z_tto_ti_related z12 [0,3,6,9] == [[0,3,6,9],[1,4,7,10],[2,5,8,11]]
+z_tto_ti_related :: Integral i => Z i -> [i] -> [[i]]
+z_tto_ti_related z p = nub (z_tto_t_related z p ++ z_tto_t_related z (z_tto_invert z 0 p))

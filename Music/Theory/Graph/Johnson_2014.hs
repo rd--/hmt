@@ -2,6 +2,7 @@
 module Music.Theory.Graph.Johnson_2014 where
 
 import Control.Monad {- base -}
+import Data.Int {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
@@ -26,10 +27,7 @@ import qualified Music.Theory.Z.SRO as T {- hmt -}
 
 -- * Common
 
-type Z12 = Int
-
-mod12 :: Integral a => a -> a
-mod12 n = n `mod` 12
+type Z12 = Int8
 
 dif :: Num a => (a, a) -> a
 dif = uncurry (-)
@@ -144,8 +142,9 @@ gen_flt_graph opt = gen_flt_graph_pp opt set_pp
 
 -- * P.12
 
+-- > circ_5 12 0 == [0,7,2,9,4,11,6,1,8,3,10,5]
 circ_5 :: Integral a => Int -> a -> [a]
-circ_5 l n = take l (iterate (mod12 . (+ 7)) (mod12 n))
+circ_5 l n = take l (iterate (T.mod12 . (+ 7)) (T.mod12 n))
 
 all_pairs :: [t] -> [u] -> [(t,u)]
 all_pairs x y = [(p,q) | p <- x, q <- y]
@@ -161,7 +160,7 @@ p12_c5_eset =
     let l1 = circ_5 4 9 -- [9,4,11,6]
         l2 = circ_5 5 10 -- [10,5,0,7,2]
         l3 = circ_5 3 1 -- [1,8,3]
-        align p q = filter ((== 4) . mod12 . dif) (all_pairs p q)
+        align p q = filter ((== 4) . T.mod12 . dif) (all_pairs p q)
     in concatMap adj [l1,l2,l3] ++ align l1 l2 ++ align l2 l3
 
 e_add_label :: (T.EDGE v -> l) -> [T.EDGE v] -> [T.EDGE_L v l]
@@ -194,7 +193,7 @@ p12_euler_plane_gr = T.euler_plane_to_dot_rat (0,True) p12_euler_plane
 p14_eset :: ([(Int, Int)], [(Int, Int)], [(Int, Int)])
 p14_eset =
   let univ = [0 .. 11]
-      trs n = map (mod12 . (+ n))
+      trs n = map (T.mod12 . (+ n))
       e_par = zip univ univ
       e_rel = zip univ (trs 9 univ)
       e_med = zip univ (trs 4 univ)
@@ -274,7 +273,7 @@ p31_f_4_22 :: [Z12]
 p31_f_4_22 = [0,2,4,7]
 
 p31_e_set :: [([Z12],[Z12])]
-p31_e_set = T.e_univ_select_u_edges (doi_of 3) (map sort (T.z_sro_ti_related mod12 p31_f_4_22))
+p31_e_set = T.e_univ_select_u_edges (doi_of 3) (map sort (T.z_sro_ti_related T.z12 p31_f_4_22))
 
 p31_gr :: [String]
 p31_gr = gen_graph_ul [] set_pp p31_e_set
@@ -292,15 +291,15 @@ p114_mk_o el =
 
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
-  let n = (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
+  let n = (map sort (T.z_sro_ti_related T.z12 p114_f_3_7))
   in gen_flt_graph (p114_mk_o el) flt n
 
-p114_f37_sc_pp :: [Int] -> String
-p114_f37_sc_pp = set_pp_tto_rel mod12 [0,2,5]
+p114_f37_sc_pp :: [Z12] -> String
+p114_f37_sc_pp = set_pp_tto_rel T.z12 [0,2,5]
 
 p114_g0 :: [String]
 p114_g0 =
-  let mk_e flt = gen_u_edges flt (map sort (T.z_sro_ti_related mod12 p114_f_3_7))
+  let mk_e flt = gen_u_edges flt (map sort (T.z_sro_ti_related T.z12 p114_f_3_7))
   in gen_graph_ul (p114_mk_o (2.5::Double)) p114_f37_sc_pp (mk_e (doi_of 2))
 
 p114_g1 :: [String]
@@ -388,7 +387,7 @@ p162_gr =
 -- > M.size p172_nd_map == 24
 p172_nd_map :: M.Map Int [Z12]
 p172_nd_map =
-    let nd_exp = map sort (T.z_sro_ti_related mod12 [0,1,3,7])
+    let nd_exp = map sort (T.z_sro_ti_related T.z12 [0,1,3,7])
     in M.fromList (zip [0..] nd_exp)
 
 p172_nd_e_set :: [(Int,Int)]
@@ -422,7 +421,7 @@ p172_g2 = gen_graph_ul [] p172_set_pp p172_nd_e_set_alt
 
 p172_g3 :: [String]
 p172_g3 =
-  let m_set_pp_tto_rel = set_pp_tto_rel mod12 [0,1,3,7] . m_get p172_nd_map
+  let m_set_pp_tto_rel = set_pp_tto_rel T.z12 [0,1,3,7] . m_get p172_nd_map
   in gen_graph_ul [("node:shape","box"),("edge:len","2.0")] m_set_pp_tto_rel p172_nd_e_set
 
 -- | 'T.TTO' T/n/.
@@ -476,7 +475,7 @@ partition_ic n p =
 
 p177_gr_set :: [(String,[String])]
 p177_gr_set =
-    let p_set = concatMap (T.z_sro_ti_related mod12) [[0::Int,1,4,6],[0,1,3,7]]
+    let p_set = concatMap (T.z_sro_ti_related T.z12) [[0::Int,1,4,6],[0,1,3,7]]
     in [("p177.0.dot",gen_graph_ul [] set_pp (map (partition_ic 4) p_set))
        ,("p177.1.dot",gen_graph_ul_ty "circo" set_pp (map (partition_ic 6) p_set))
        ,("p177.2.dot"
@@ -501,7 +500,7 @@ mk_bridge :: SC -> PCSET -> PCSET -> [PCSET]
 mk_bridge r p q =
     let n = length r - length p
         c = T.combinations n [0..11]
-        f s = T.forte_prime mod12 (p ++ s) == r && T.forte_prime mod12 (q ++ s) == r
+        f s = T.forte_prime T.z12 (p ++ s) == r && T.forte_prime T.z12 (q ++ s) == r
     in filter f c
 
 -- | 'concatMap' of 'mk_bridge'.
@@ -518,7 +517,7 @@ mk_bridge_set_seq r_set k_seq =
 
 -- > zip [0..] (mk_bridge_set_seq ait p178_i6_seq)
 p178_i6_seq :: [PCSET]
-p178_i6_seq = map (sort . (\n -> T.z_pcset mod12 [n,n+6])) [0..6]
+p178_i6_seq = map (sort . (\n -> T.z_pcset T.z12 [n,n+6])) [0..6]
 
 p178_ch :: [(PCSET,[PCSET],PCSET)]
 p178_ch = zip3 p178_i6_seq (mk_bridge_set_seq ait p178_i6_seq) (tail p178_i6_seq)

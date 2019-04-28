@@ -8,6 +8,7 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.List as T
+import qualified Music.Theory.Z as T
 import qualified Music.Theory.Z.Forte_1973 as T
 import qualified Music.Theory.Set.List as T
 
@@ -27,7 +28,7 @@ sc_table_n n = filter (of_c n) (map snd T.sc_table)
 icv_minmax :: (Integral n, Integral b) => n -> ([b], [b])
 icv_minmax n =
     let t = sc_table_n n
-        i = transpose (map (T.icv 12) t)
+        i = transpose (map (T.icv T.z12) t)
     in (map minimum i,map maximum i)
 
 data R = MIN | MAX deriving (Eq,Show)
@@ -46,7 +47,7 @@ r_pp r =
 satv_f :: (Integral n) => ((n,n,n) -> D n) -> [Int8] -> [D n]
 satv_f f p =
     let n = length p
-        i = T.icv 12 p
+        i = T.icv T.z12 p
         (l,r) = icv_minmax n
     in map f (zip3 l i r)
 

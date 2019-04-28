@@ -5,6 +5,7 @@ module Music.Theory.Metric.Morris_1980 where
 import Data.Int {- base -}
 import Data.Ratio {- base -}
 
+import Music.Theory.Z {- hmt -}
 import Music.Theory.Z.Forte_1973 {- hmt -}
 
 -- | SIM
@@ -14,8 +15,8 @@ import Music.Theory.Z.Forte_1973 {- hmt -}
 -- > sim [0,1,2,4,5,8] [0,1,3,7] == 9
 sim :: Integral a => [Int8] -> [Int8] -> a
 sim r s =
-    let r' = icv 12 r
-        s' = icv 12 s
+    let r' = icv z12 r
+        s' = icv z12 s
         t = zipWith (-) r' s'
     in sum (map abs t)
 
@@ -28,6 +29,6 @@ sim r s =
 -- > asim [0,1,4,5,7] [0,2,4,6,8] == 3/5
 asim :: (Integral n) => [Int8] -> [Int8] -> Ratio n
 asim r s =
-    let r' = icv 12 r
-        s' = icv 12 s
+    let r' = icv z12 r
+        s' = icv z12 s
     in sim r s % (sum r' + sum s')

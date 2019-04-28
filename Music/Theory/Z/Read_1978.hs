@@ -91,7 +91,7 @@ bit_array_is_prime a =
     let c = bit_array_to_code a
         p = bit_array_to_set a
         n = length a
-        z = flip mod n
+        z = Z.Z n
         u = maximum (map (set_to_code n) (SRO.z_sro_ti_related z p))
     in c == u
 

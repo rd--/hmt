@@ -84,8 +84,8 @@ ic z i = if i <= (z `div` 2) then i else z - i
 -- | Forte notation for interval class vector.
 --
 -- > icv 12 [0,1,2,4,7,8] == [3,2,2,3,3,2]
-icv :: (Integral i, Num n) => i -> [i] -> [n]
-icv z s =
+icv :: (Integral i, Num n) => Z i -> [i] -> [n]
+icv (Z z) s =
     let i = map (ic z . flip mod z . uncurry (-)) (S.pairs s)
         f l = (head l,genericLength l)
         j = map f (group (sort i))
@@ -440,7 +440,7 @@ tics z p =
 -- | Locate /Z/ relation of set class.
 --
 -- > fmap (sc_name mod12) (z_relation_of 12 (sc "7-Z12")) == Just "7-Z36"
-z_relation_of :: Integral i => i -> [i] -> Maybe [i]
+z_relation_of :: Integral i => Z i -> [i] -> Maybe [i]
 z_relation_of z x =
     let n = length x
         eq_i :: [Integer] -> [Integer] -> Bool
