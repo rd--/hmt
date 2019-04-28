@@ -159,8 +159,8 @@ set_decode z n =
 
 -- | Binary encoding prime form algorithm, equalivalent to Rahn.
 --
--- > set_encode_prime Z.mod12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
--- > Music.Theory.Z12.Rahn_1980.rahn_prime [0,1,3,6,8,9] == [0,2,3,6,7,9]
+-- > set_encode_prime Z.z12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
+-- > Music.Theory.Z.Rahn_1980.rahn_prime Z.z12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
 set_encode_prime :: Integral i => Z.Z i -> [i] -> [i]
 set_encode_prime z s =
     let t = map (\x -> SRO.z_sro_tn z x s) (Z.z_univ z)

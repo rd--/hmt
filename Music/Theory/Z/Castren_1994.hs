@@ -1,5 +1,6 @@
--- | Marcus Castrén. /RECREL: A Similarity Measure for Set-Classes/. PhD
--- thesis, Sibelius Academy, Helsinki, 1994.
+-- | Marcus Castrén.
+--   /RECREL: A Similarity Measure for Set-Classes/.
+--   PhD thesis, Sibelius Academy, Helsinki, 1994.
 module Music.Theory.Z.Castren_1994 where
 
 import Data.Int {- base -}
@@ -41,7 +42,7 @@ sc_t_ti p =
 -- > lookup "5-Z18B" t_sc_table == Just [0,2,3,6,7]
 t_sc_table :: [(Forte.SC_Name,[Z12])]
 t_sc_table =
-    let f x = let nm = Forte.sc_name z12 x
+    let f x = let nm = Forte.sc_name x
               in case sc_t_ti x of
                    Nothing -> [(nm,x)]
                    Just (p,q) -> [(nm++"A",p),(nm++"B",q)]

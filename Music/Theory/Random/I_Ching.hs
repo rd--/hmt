@@ -1,13 +1,15 @@
-{-# Language BinaryLiterals #-}
-
+-- | YIJING / I-CHING
 module Music.Theory.Random.I_Ching where
 
 import Control.Monad {- base -}
 import Data.Maybe {- base -}
+import Data.Int {- base -}
 import System.Random {- random -}
 
 import qualified Music.Theory.Bits as T {- hmt -}
+import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
+import qualified Music.Theory.Unicode as T {- hmt -}
 
 -- | Line, indicated as sum.
 data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
@@ -19,6 +21,7 @@ data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
 -}
 type Line_Stat = (Line,(Rational,Rational,String,String,String))
 
+-- | I-CHING chart as sequence of 4 'Line_Stat'.
 i_ching_chart :: [Line_Stat]
 i_ching_chart =
     [(L6,(1/16,2/16,"old yin","yin changing into yang","---x---"))
@@ -30,6 +33,7 @@ i_ching_chart =
 line_unbroken :: Line -> Bool
 line_unbroken n = n `elem` [L6,L7]
 
+-- | If /b/ then L7 else L8.
 line_from_bit :: Bool -> Line
 line_from_bit b = if b then L7 else L8
 
@@ -49,6 +53,7 @@ line_complement n =
       L9 -> Just L8
       _ -> Nothing
 
+-- | Sequence of 6 'Line'.
 type Hexagram = [Line]
 
 -- | Hexagrams are drawn upwards.
@@ -58,7 +63,7 @@ hexagram_pp = unlines . reverse . map line_ascii_pp
 {- | Sequence of sum values assigned to ascending four bit numbers.
 
 > import  Music.Theory.Bits {- hmt -}
-> zip (map (gen_bitseq_pp 4) [0::Int .. 15]) (map line_ascii_pp_err four_coin_sequence)
+> zip (map (gen_bitseq_pp 4) [0::Int .. 15]) (map line_ascii_pp four_coin_sequence)
 
 -}
 four_coin_sequence :: [Line]
@@ -88,7 +93,7 @@ hexagram_complement h =
     let f n = fromMaybe n (line_complement n)
     in if hexagram_has_complement h then Just (map f h) else Nothing
 
--- | Names of hexagrams, in King Wen order.
+-- | Names of hexagrams, in King Wen order (see also data/csv/combinatorics/yijing.csv)
 --
 -- > length hexagram_names == 64
 hexagram_names :: [(String,String)]
@@ -163,30 +168,47 @@ hexagram_names =
 -- > import Data.List.Split {- split -}
 -- > mapM_ putStrLn (chunksOf 8 hexagram_unicode_sequence)
 hexagram_unicode_sequence :: [Char]
-hexagram_unicode_sequence = map toEnum [0x4DC0 .. 0x4DFF]
+hexagram_unicode_sequence = map (toEnum . fst) T.yijing_tbl
 
-hexagram_to_binary :: Hexagram -> Int
+-- | Binary form of 'Hexagram'.
+hexagram_to_binary :: Hexagram -> Int8
 hexagram_to_binary = T.pack_bitseq . map line_unbroken
 
--- > let h = hexagram_from_binary 0b100010
--- > putStrLn (hexagram_pp h)
--- > gen_bitseq_pp 6 (hexagram_to_binary h) == "100010"
-hexagram_from_binary :: Int -> Hexagram
+-- | Show binary form.
+hexagram_to_binary_str :: Hexagram -> String
+hexagram_to_binary_str = T.gen_bitseq_pp 6 . hexagram_to_binary
+
+-- | Inverse of 'hexagram_to_binary'.
+hexagram_from_binary :: Int8 -> Hexagram
 hexagram_from_binary = map line_from_bit . T.gen_bitseq 6
 
+-- | Read binary form.
+--
+-- > let h = hexagram_from_binary_str "100010"
+-- > putStrLn (hexagram_pp h)
+-- > hexagram_to_binary_str h == "100010"
+hexagram_from_binary_str :: String -> Hexagram
+hexagram_from_binary_str = hexagram_from_binary . T.read_bin_err
+
+-- * TRIGRAM
+
+-- | Unicode sequence of trigrams (unicode order).
+--
 -- > import Data.List {- base -}
 -- > putStrLn (intersperse ' ' trigram_unicode_sequence)
 trigram_unicode_sequence :: [Char]
-trigram_unicode_sequence = map toEnum [0x2630 .. 0x2637]
+trigram_unicode_sequence = map (toEnum . fst) T.bagua_tbl
 
--- > map p8_third trigram_chart == [7,6,5,4,3,2,1,0]
-trigram_chart :: Num i => [(i, Char, i, Char, String, Char, String, Char)]
+-- | (INDEX,UNICODE,BIT-SEQUENCE,NAME,NAME-TRANSLITERATION,NATURE-IMAGE,DIRECTION,ANIMAL)
+--
+-- > map (T.read_bin_err . T.p8_third) trigram_chart == [7,6,5,4,3,2,1,0]
+trigram_chart :: [(Int, Char, String, Char, String, Char, String, Char)]
 trigram_chart =
-    [(1,'☰',0b111,'乾',"qián",'天',"NW",'馬')
-    ,(2,'☱',0b110,'兌',"duì",'澤',"W",'羊')
-    ,(3,'☲',0b101,'離',"lí",'火',"S",'雉')
-    ,(4,'☳',0b100,'震',"zhèn",'雷',"E",'龍')
-    ,(5,'☴',0b011,'巽',"xùn",'風',"SE",'雞')
-    ,(6,'☵',0b010,'坎',"kǎn",'水',"N",'豕')
-    ,(7,'☶',0b001,'艮',"gèn",'山',"NE",'狗')
-    ,(8,'☷',0b000,'坤',"kūn",'地',"SW",'牛')]
+    [(1,'☰',"111",'乾',"qián",'天',"NW",'馬')
+    ,(2,'☱',"110",'兌',"duì",'澤',"W",'羊')
+    ,(3,'☲',"101",'離',"lí",'火',"S",'雉')
+    ,(4,'☳',"100",'震',"zhèn",'雷',"E",'龍')
+    ,(5,'☴',"011",'巽',"xùn",'風',"SE",'雞')
+    ,(6,'☵',"010",'坎',"kǎn",'水',"N",'豕')
+    ,(7,'☶',"001",'艮',"gèn",'山',"NE",'狗')
+    ,(8,'☷',"000",'坤',"kūn",'地',"SW",'牛')]

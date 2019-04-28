@@ -17,6 +17,7 @@ import qualified Music.Theory.Graph.FGL as T {- hmt -}
 import qualified Music.Theory.Key as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
+import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
@@ -89,7 +90,7 @@ set_pp :: Show t => [t] -> String
 set_pp = intercalate "," . map show
 
 tto_rel_to :: Integral t => T.Z t -> [t] -> [t] -> [T.TTO t]
-tto_rel_to z p = T.z_tto_rel 5 z p
+tto_rel_to z p q = T.z_tto_rel 5 z (T.set p) (T.set q)
 
 set_pp_tto_rel :: (Integral t, Show t) => T.Z t -> [t] -> [t] -> String
 set_pp_tto_rel z p = intercalate "," . map T.tto_pp . tto_rel_to z p
@@ -426,11 +427,11 @@ p172_g3 =
 
 -- | 'T.TTO' T/n/.
 tto_tn :: Integral t => t -> T.TTO t
-tto_tn n = T.TTO (T.mod12 n) False False
+tto_tn n = T.TTO (T.mod12 n) 1 False
 
 -- | 'Z.TTO' T/n/I.
 tto_tni :: Integral t => t -> T.TTO t
-tto_tni n = T.TTO (T.mod12 n) False True
+tto_tni n = T.TTO (T.mod12 n) 1 True
 
 gen_tto_alt_seq :: Integral t => (t -> T.TTO t,t -> T.TTO t) -> Int -> t -> t -> t -> [T.TTO t]
 gen_tto_alt_seq (f,g) k n m x =
@@ -442,7 +443,7 @@ gen_tto_alt_seq (f,g) k n m x =
 -- interval, /m/ is the interval between the T & I sequence.
 --
 -- > r = ["T0 T5I T3 T8I T6 T11I T9 T2I","T1 T6I T4 T9I T7 T0I T10 T3I"]
--- > map (unwords . map Z.tto_pp . gen_tni_seq 4 3 5) [0,1] == r
+-- > map (unwords . map T.tto_pp . gen_tni_seq 4 3 5) [0,1] == r
 gen_tni_seq :: Integral t => Int -> t -> t -> t -> [T.TTO t]
 gen_tni_seq = gen_tto_alt_seq (tto_tn,tto_tni)
 
@@ -450,7 +451,7 @@ gen_tni_seq = gen_tto_alt_seq (tto_tn,tto_tni)
 p172_c4 :: [[T.TTO Int]]
 p172_c4 = map (gen_tni_seq 3 4 9) [0 .. 3] ++ map (gen_tni_seq 2 6 11) [0 .. 5]
 
-tto_seq_edges :: Show t => [[T.TTO t]] -> [(String, String)]
+tto_seq_edges :: (Show t,Num t,Eq t) => [[T.TTO t]] -> [(String, String)]
 tto_seq_edges = nub . sort . concatMap (map T.t2_sort . adj_cyc . map T.tto_pp)
 
 p172_g4 :: [String]

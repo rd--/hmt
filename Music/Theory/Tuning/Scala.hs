@@ -199,7 +199,7 @@ scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
 scale_eqn :: Eq n => Int -> Scale n -> Scale n -> Bool
 scale_eqn k (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && length (intersect p0 p1) >= k
 
-  -- | Is `s1` a proper subset of `s2`.
+-- | Is `s1` a proper subset of `s2`.
 scale_sub :: Eq n => Scale n -> Scale n -> Bool
 scale_sub (_,_,d0,p0) (_,_,d1,p1) = d0 < d1 && intersect p0 p1 == p0
 

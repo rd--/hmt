@@ -16,7 +16,7 @@ import Music.Theory.Z.SRO {- hmt -}
 
 -- | T-related rotations of /p/.
 --
--- > t_rotations mod12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]]
+-- > t_rotations z12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]]
 t_rotations :: Integral i => Z i -> [i] -> [[i]]
 t_rotations z p =
     let r = T.rotations (sort p)
@@ -24,8 +24,7 @@ t_rotations z p =
 
 -- | T\/I-related rotations of /p/.
 --
--- > ti_rotations mod12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10]
--- >                               ,[0,9,11],[0,2,3],[0,1,10]]
+-- > ti_rotations z12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10],[0,9,11],[0,2,3],[0,1,10]]
 ti_rotations :: Integral i => Z i -> [i] -> [[i]]
 ti_rotations z p =
     let q = z_sro_invert z 0 p
@@ -54,18 +53,18 @@ forte_cmp p  q  =
 
 -- | Forte prime form, ie. 'ti_cmp_prime' of 'forte_cmp'.
 --
--- > forte_prime mod12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
--- > forte_prime mod5 [0,1,4] == [0,1,2]
+-- > forte_prime z12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
+-- > forte_prime z5 [0,1,4] == [0,1,2]
 --
--- > S.set (map (forte_prime mod5) (S.powerset [0..4]))
--- > S.set (map (forte_prime mod7) (S.powerset [0..6]))
+-- > S.set (map (forte_prime z5) (S.powerset [0..4]))
+-- > S.set (map (forte_prime z7) (S.powerset [0..6]))
 forte_prime :: Integral i => Z i -> [i] -> [i]
 forte_prime z = ti_cmp_prime z forte_cmp
 
 -- | Transpositional equivalence prime form, ie. 't_cmp_prime' of
 -- 'forte_cmp'.
 --
--- > (forte_prime mod12 [0,2,3],t_prime mod12 [0,2,3]) == ([0,1,3],[0,2,3])
+-- > (forte_prime z12 [0,2,3],t_prime z12 [0,2,3]) == ([0,1,3],[0,2,3])
 t_prime :: Integral i => Z i -> [i] -> [i]
 t_prime z = t_cmp_prime z forte_cmp
 
@@ -77,7 +76,7 @@ t_prime z = t_cmp_prime z forte_cmp
 -- > map (ic 7) [0..6] == [0,1,2,3,3,2,1]
 -- > map (ic 5) [1,2,3,4] == [1,2,2,1]
 -- > map (ic 12) [5,6,7] == [5,6,5]
--- > map (ic 12 . to_Z mod12) [-13,-1,0,1,13] == [1,1,0,1,1]
+-- > map (ic 12 . to_Z z12) [-13,-1,0,1,13] == [1,1,0,1,1]
 ic :: Integral i => i -> i -> i
 ic z i = if i <= (z `div` 2) then i else z - i
 
@@ -116,11 +115,11 @@ bip z = sort . map (ic z . flip mod z) . T.d_dx
 >         ,[0,1,2,3,4],[0,1,2,3,5],[0,1,2,4,5]
 >         ,[0,1,2,3,4,5]
 >         ,[0,1,2,3,4,5,6]]
-> in sc_univ mod7 == r
+> sc_univ z7 == r
 
-> sort (sc_univ mod12) == sort (map snd sc_table)
+> sort (sc_univ z12) == sort (map snd sc_table)
 
-> zipWith (\p q -> (p == q,p,q)) (sc_univ mod12) (map snd sc_table)
+> zipWith (\p q -> (p == q,p,q)) (sc_univ z12) (map snd sc_table)
 
 -}
 sc_univ :: Integral i => Z i -> [[i]]
@@ -392,19 +391,19 @@ sc_name_tbl :: Integral i => Z i -> SC_Table i -> [i] -> SC_Name
 sc_name_tbl z tbl = fst . sc_tbl_lookup_err z tbl
 
 -- | Lookup a set-class name.  The input set is subject to
--- 'forte_prime' before lookup.
+-- 'forte_prime' of 'z12' before lookup.
 --
--- > sc_name mod12 [0,2,3,6,7] == "5-Z18"
--- > sc_name mod12 [0,1,4,6,7,8] == "6-Z17"
-sc_name :: Integral i => Z i -> [i] -> SC_Name
-sc_name z = sc_name_tbl z sc_table
+-- > sc_name [0,2,3,6,7] == "5-Z18"
+-- > sc_name [0,1,4,6,7,8] == "6-Z17"
+sc_name :: Integral i => [i] -> SC_Name
+sc_name = sc_name_tbl z12 sc_table
 
 -- | Long name (ie. with enumeration of prime form).
 --
--- > sc_name_long mod12 [0,1,4,6,7,8] == "6-Z17[012478]"
-sc_name_long :: Integral i => Z i -> [i] -> SC_Name
-sc_name_long z p =
-    let (nm,p') = sc_tbl_lookup_err z sc_table p
+-- > sc_name_long [0,1,4,6,7,8] == "6-Z17[012478]"
+sc_name_long :: Integral i => [i] -> SC_Name
+sc_name_long p =
+    let (nm,p') = sc_tbl_lookup_err z12 sc_table p
     in nm ++ z16_vec_pp p'
 
 -- | Unicode (non-breaking hyphen) variant.
@@ -428,8 +427,8 @@ scs_n n = filter ((== n) . genericLength) scs
 
 -- | Vector indicating degree of intersection with inversion at each transposition.
 --
--- > tics mod12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
--- > map (tics mod12) scs
+-- > tics z12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
+-- > map (tics z12) scs
 tics :: Integral i => Z i -> [i] -> [Int]
 tics z p =
     let q = z_sro_t_related z (z_sro_invert z 0 p)
@@ -439,7 +438,7 @@ tics z p =
 
 -- | Locate /Z/ relation of set class.
 --
--- > fmap (sc_name mod12) (z_relation_of 12 (sc "7-Z12")) == Just "7-Z36"
+-- > fmap sc_name (z_relation_of z12 (sc "7-Z12")) == Just "7-Z36"
 z_relation_of :: Integral i => Z i -> [i] -> Maybe [i]
 z_relation_of z x =
     let n = length x

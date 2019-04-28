@@ -177,7 +177,7 @@ ess :: Integral i => Z i -> [i] -> [i] -> [[i]]
 ess z p q = filter (`is_embedding` q) (z_sro_rtmi_related z p)
 
 -- | Forte name (ie 'sc_name').
-fn :: Integral i => Z i -> [i] -> String
+fn :: Integral i => [i] -> String
 fn = sc_name
 
 -- | Z-12 cycles.
@@ -304,14 +304,14 @@ imb cs p =
 3-2
 3-11
 
-> issb (Z12.sc "3-7") (Z12.sc "6-32") == ["3-2","3-7","3-11"]
+> issb (sc "3-7") (sc "6-32") == ["3-2","3-7","3-11"]
 
 -}
-issb :: Integral i => Z i -> [i] -> [i] -> [String]
-issb z p q =
+issb :: Integral i => [i] -> [i] -> [String]
+issb p q =
     let k = length q - length p
-        f = any id . map (\x -> forte_prime z (p ++ x) == q) . z_tto_ti_related z
-    in map (sc_name z) (filter f (cf [k] scs))
+        f = any id . map (\x -> forte_prime z12 (p ++ x) == q) . z_tto_ti_related z12
+    in map sc_name (filter f (cf [k] scs))
 
 -- | Matrix search.
 --
@@ -361,7 +361,7 @@ pci z i p =
 
 -}
 rs :: Integral t => t -> Z t -> [t] -> [t] -> [TTO t]
-rs = z_tto_rel
+rs m z p q = z_tto_rel m z (set p) (set q)
 
 {- | Relate segments.
 
@@ -374,7 +374,7 @@ rs = z_tto_rel
 >>> $ pct rsg 0123 B614
 >>> r3RT1M
 
-> let sros = map sro_parse . words
+> let sros = map (sro_parse 5) . words
 > rsg 5 z12 [1,5,6] [3,11,10] == sros "T4I r1RT4MI"
 > rsg 5 z12 [0,1,2,3] [0,5,10,3] == sros "T0M RT3MI"
 > rsg 5 z12 [0,1,2,3] [4,11,6,1] == sros "T4MI RT1M"
@@ -382,7 +382,7 @@ rs = z_tto_rel
 
 -}
 rsg :: Integral i => i -> Z i -> [i] -> [i] -> [SRO i]
-rsg m z x y = filter (\o -> z_sro_apply m z o x == y) (z_sro_univ (length x) z)
+rsg m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
 
 -- | Subsets.
 sb :: Integral i => Z i -> [[i]] -> [[i]]
@@ -420,25 +420,25 @@ type SI i = ([i],TTO i,[i])
 -- | Calculator for si.
 --
 -- > si_calc z12 [0,5,3,11]
-si_calc :: Integral i => Z i -> [i] -> (SI i,[i],[Int],SI i,SI i)
-si_calc z p =
+si_calc :: Integral i => [i] -> (SI i,[i],[Int],SI i,SI i)
+si_calc p =
     let n = length p
-        p_icv = fromIntegral n : icv z p
-        gen_si x = let x_f = forte_prime z x
-                       x_o:_ = rs 5 z x_f x
+        p_icv = fromIntegral n : icv z12 p
+        gen_si x = let x_f = forte_prime z12 x
+                       x_o:_ = rs 5 z12 x_f x
                    in (nub (sort x),x_o,x_f)
-    in (gen_si p,p_icv,tics z p,gen_si (z_complement z p),gen_si (map (z_mul z 5) p))
+    in (gen_si p,p_icv,tics z12 p,gen_si (z_complement z12 p),gen_si (map (z_mul z12 5) p))
 
 -- | Pretty printer for RHS for si.
 --
 -- > si_rhs_pp z12 [0,5,3,11]
-si_rhs_pp :: (Integral i,Show i) => Z i -> [i] -> [String]
-si_rhs_pp z p =
+si_rhs_pp :: (Integral i,Show i) => [i] -> [String]
+si_rhs_pp p =
     let pf_pp concise (x_o,x_f) =
-            concat [tto_pp x_o," ",sc_name z x_f
+            concat [tto_pp x_o," ",sc_name x_f
                    ,if concise then "" else z16_vec_pp x_f]
         si_pp (x,x_o,x_f) = concat [z16_set_pp x," (",pf_pp True (x_o,x_f),")"]
-        ((p',p_o,p_f),p_icv,p_tics,c,m) = si_calc z p
+        ((p',p_o,p_f),p_icv,p_tics,c,m) = si_calc p
     in [z16_set_pp p'
        ,pf_pp False (p_o,p_f)
        ,z16_vec_pp p_icv
@@ -457,10 +457,10 @@ complement: {1246789A} (TAI 8-Z15)
 multiplication-by-five-transform: {0317} (T0  4-Z29)
 $
 
-> putStr $ unlines $ si z12 [0,2,4,5,7,9,11] --[0,5,3,11]
+> putStr $ unlines $ si [0,5,3,11]
 -}
-si :: (Integral i,Show i) => Z i -> [i] -> [String]
-si z p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_rhs_pp z p)
+si :: (Integral i,Show i) => [i] -> [String]
+si p = zipWith (\k v -> concat [k,": ",v]) si_hdr (si_rhs_pp p)
 
 {- | Super set-class.
 
@@ -534,7 +534,7 @@ sra z = map (z_sro_tn_to z 0) . rotations
 
 -}
 sro :: Integral i => Z i -> SRO i -> [i] -> [i]
-sro z o = z_sro_apply 5 z o
+sro z o = z_sro_apply z o
 
 {- | tmatrix
 

@@ -174,10 +174,11 @@ csv_mndd_parse_f cnv (hdr,dat) =
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
          Nothing -> err "no header?"
 
+-- | Pars midi note/duration data from CSV table.
 csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
 csv_mndd_parse = csv_mndd_parse_f id
 
-  -- | Midi note/duration data.
+-- | 'csv_mndd_parse' of 'load_csv'
 csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
 csv_mndd_read = fmap csv_mndd_parse . load_csv
 

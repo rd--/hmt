@@ -40,13 +40,13 @@ elem_by f e = any (f e)
 -- * TTO
 
 tto_tni_univ :: Integral i => [T.TTO i]
-tto_tni_univ = filter (not . T.tto_M) (T.z_tto_univ T.z12)
+tto_tni_univ = filter ((== 1) . T.tto_M) (T.z_tto_univ 5 T.z12)
 
 all_tn :: Integral i => [i] -> [[i]]
 all_tn p = map (\n -> map (T.z_add T.z12 n) p) [0..11]
 
 all_tni :: Integral i => [i] -> [[i]]
-all_tni p = map (\f -> T.z_tto_apply 5 T.z12 f p) tto_tni_univ
+all_tni p = map (\f -> T.z_tto_apply T.z12 f p) tto_tni_univ
 
 uniq_tni :: Integral i => [i] -> [[i]]
 uniq_tni = nub . all_tni
@@ -87,7 +87,7 @@ pcset_pp_hex = map toUpper . concat . map (flip showHex "")
 
 -- | Forte prime form of the all-trichord hexachord.
 --
--- > T.sc_name T.z12 ath == "6-Z17"
+-- > T.sc_name ath == "6-Z17"
 -- > T.sc "6-Z17" == ath
 ath :: PCSET
 ath = [0,1,2,4,7,8]
@@ -104,9 +104,9 @@ ath_univ = uniq_tni ath
 
 -- | Calculate 'T.TTO' of pcset, which must be an instance of 'ath'.
 --
--- > ath_tni [1,2,3,7,8,11] == T.TTO 3 False True
+-- > ath_tni [1,2,3,7,8,11] == T.TTO 3 1 True
 ath_tni :: PCSET -> T.TTO PC
-ath_tni = singular "ath_tni" . filter (not . T.tto_M) . T.z_tto_rel 5 T.z12 ath
+ath_tni = singular "ath_tni" . filter ((== 1) . T.tto_M) . T.z_tto_rel 5 T.z12 ath
 
 -- | Give label for instance of 'ath', prime forms are written H and inversions h.
 --
@@ -160,7 +160,7 @@ gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 table_3 :: [((PCSET,SC,T.SC_Name),(PCSET,SC,T.SC_Name))]
 table_3 =
     let f p = let q = ath_complement p
-                  i x = (x,T.forte_prime T.z12 x,T.sc_name T.z12 x)
+                  i x = (x,T.forte_prime T.z12 x,T.sc_name x)
               in (i p,i q)
     in map f ath_trichords
 
