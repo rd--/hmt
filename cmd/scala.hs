@@ -4,14 +4,14 @@ import System.Environment {- base -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
-import qualified Music.Theory.Array.MD as T {- hmt -}
+import qualified Music.Theory.Array.Text as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
@@ -96,12 +96,12 @@ cps_tbl fmt tbl mnn_rng = do
           in [show i
              ,cps_pp cps,T.pitch_pp_iso nr,cents_pp (T.cps_difference_cents nr_cps cps)
              ,cps_pp ref,T.pitch_pp_iso p,cents_pp (T.cps_difference_cents ref cps)]
-      hdr = Just ["MNN"
-                 ,"CPS","ET12","CENTS-/+"
-                 ,"REF CPS","REF ET12","CENTS-/+"]
+      hdr = ["MNN"
+            ,"CPS","ET12","CENTS-/+"
+            ,"REF CPS","REF ET12","CENTS-/+"]
       dat = map (t_pp . gen_t) (rng_enum mnn_rng)
       ln = case fmt of
-             "md" -> T.md_table T.md_opt_simple (hdr,dat)
+             "md" -> T.table_pp T.table_opt_simple (hdr : dat)
              "csv" -> map (intercalate ",") dat
              _ -> error "cps_tbl: fmt?"
   putStr (unlines ln)

@@ -1,11 +1,13 @@
 import Data.Char {- base -}
+import Data.Int {- base -}
 import System.Environment {- base -}
 
-import qualified Music.Theory.Z.SRO as Z
+import Music.Theory.Z
+import Music.Theory.Z.Drape_1999
+import Music.Theory.Z.Forte_1973
+import Music.Theory.Z.SRO
 
-import Music.Theory.Z12
-import Music.Theory.Z12.Drape_1999
-import qualified Music.Theory.Z12.Forte_1973 as Z12
+type Z12 = Int8
 
 help :: [String]
 help =
@@ -19,18 +21,18 @@ help =
     ,"pct tmatrix pcseg"
     ,"pct trs [-m] pcseg"]
 
-pco_parse :: String -> [Z12]
-pco_parse = map char_to_z12
-
-pco_pp :: [Z12] -> String
-pco_pp = map z12_to_char
-
 z16_seq_parse :: String -> [Int]
 z16_seq_parse = map digitToInt
 
+pco_parse :: String -> [Z12]
+pco_parse = map fromIntegral . z16_seq_parse
+
+pco_pp :: [Z12] -> String
+pco_pp = map (toUpper . integral_to_digit)
+
 -- > cset_parse "34" == [3,4]
 cset_parse :: String -> [Int]
-cset_parse = z16_seq_parse
+cset_parse = map digitToInt
 
 type CMD = String -> String
 
@@ -42,10 +44,10 @@ mk_cmd_many f = unlines . map pco_pp . f . pco_parse
 
 -- > ess_cmd "0164325" "23A" == unlines ["923507A","2B013A9"]
 ess_cmd :: String -> CMD
-ess_cmd p = mk_cmd_many (ess (pco_parse p))
+ess_cmd p = mk_cmd_many (ess z12 (pco_parse p))
 
 fl_c_cmd :: CMD
-fl_c_cmd = unlines . map Z12.sc_name . concatMap Z12.scs_n . cset_parse
+fl_c_cmd = unlines . map sc_name . concatMap scs_n . cset_parse
 
 frg_cmd :: CMD
 frg_cmd p =
@@ -53,29 +55,29 @@ frg_cmd p =
     in unlines [frg_pp p',ic_cycle_vector_pp (ic_cycle_vector p')]
 
 pi_cmd :: String -> CMD
-pi_cmd p = mk_cmd_many (pci (z16_seq_parse p))
+pi_cmd p = mk_cmd_many (pci z12 (z16_seq_parse p))
 
 scc_cmd :: String -> CMD
-scc_cmd p = mk_cmd_many (scc (Z12.sc p))
+scc_cmd p = mk_cmd_many (scc z12 (sc p))
 
 si_cmd :: CMD
 si_cmd = unlines . si . pco_parse
 
 -- > spsc_cmd ["4-11","4-12"] == "5-26[02458]\n"
 spsc_cmd :: [String] -> String
-spsc_cmd = unlines . map Z12.sc_name_long . spsc . map Z12.sc
+spsc_cmd = unlines . map sc_name_long . spsc z12 . map sc
 
 sra_cmd :: CMD
-sra_cmd = mk_cmd_many sra
+sra_cmd = mk_cmd_many (sra z12)
 
 sro_cmd :: String -> CMD
-sro_cmd o = mk_cmd (sro (Z.sro_parse o))
+sro_cmd o = mk_cmd (sro z12 (sro_parse 5 o))
 
 -- > tmatrix_cmd "1258"
 tmatrix_cmd :: CMD
-tmatrix_cmd = mk_cmd_many tmatrix
+tmatrix_cmd = mk_cmd_many (tmatrix z12)
 
--- > trs_cmd trs "024579" "642"
+-- > trs_cmd (trs z12) "024579" "642"
 trs_cmd :: ([Z12] -> [Z12] -> [[Z12]]) -> String -> CMD
 trs_cmd f p = mk_cmd_many (f (pco_parse p))
 
@@ -98,6 +100,6 @@ main = do
     ["sra"] -> interact_ln sra_cmd
     ["sro",o] -> interact_ln (sro_cmd o)
     ["tmatrix",p] -> putStr (tmatrix_cmd p)
-    ["trs",p] -> interact_ln (trs_cmd trs p)
-    ["trs","-m",p] -> interact_ln (trs_cmd trs_m p)
+    ["trs",p] -> interact_ln (trs_cmd (trs z12) p)
+    ["trs","-m",p] -> interact_ln (trs_cmd (trs_m z12) p)
     _ -> putStrLn (unlines help)
