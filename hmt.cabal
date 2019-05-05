@@ -48,7 +48,7 @@ Library
                    Music.Theory.Array.CSV.Midi.MND
                    Music.Theory.Array.CSV.Midi.SKINI
                    Music.Theory.Array.Direction
-                   Music.Theory.Array.MD
+                   Music.Theory.Array.Text
                    Music.Theory.Bits
                    Music.Theory.Bjorklund
                    Music.Theory.Block_Design.Johnson_2007
