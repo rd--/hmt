@@ -94,6 +94,7 @@ Library
                    Music.Theory.Map
                    Music.Theory.Math
                    Music.Theory.Math.Convert
+                   Music.Theory.Math.Convert.FX
                    Music.Theory.Math.OEIS
                    Music.Theory.Maybe
                    Music.Theory.Meter.Barlow_1987
