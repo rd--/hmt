@@ -464,9 +464,10 @@ iseq_group = group_f (\_ d -> d == 0)
 -- * Fill
 
 -- | Set durations so that there are no gaps or overlaps.
+--   For entries with the same start time this leads to zero durations.
 --
--- > let r = wseq_zip [0,3,5] [3,2,1] "abc"
--- > in wseq_fill_dur (wseq_zip [0,3,5] [2,1,1] "abc") == r
+-- > let r = wseq_zip [0,3,3,5] [3,0,2,1] "abcd"
+-- > wseq_fill_dur (wseq_zip [0,3,3,5] [2,1,2,1] "abcd") == r
 wseq_fill_dur :: Num t => Wseq t a -> Wseq t a
 wseq_fill_dur l =
     let f (((t1,_),e),((t2,_),_)) = ((t1,t2-t1),e)
@@ -662,6 +663,8 @@ cmp_begin_end p q =
       (End _,End _) -> EQ
       (End _,Begin _) -> GT
 
+--instance Eq t => Ord (Begin_End t) where compare = cmp_begin_end
+
 -- | Translate container types.
 either_to_begin_end :: Either a a -> Begin_End a
 either_to_begin_end p =
@@ -734,6 +737,7 @@ tseq_begin_end_accum =
     in snd . mapAccumL f []
 
 -- | Variant that initially transforms 'Wseq' into non-overlapping begin-end sequence.
+--   If the sequence was edited for overlaps this is indicated.
 wseq_begin_end_accum :: (Eq e, Ord t, Num t) => Wseq t e -> (Bool, Tseq t ([e],[e],[e]))
 wseq_begin_end_accum sq =
   let ol = wseq_has_overlaps (==) sq

@@ -14,12 +14,6 @@ read_wseq_i = T.csv_midi_read_wseq
 read_wseq_r :: FilePath -> IO (T.Wseq Double (T.Event Double))
 read_wseq_r = T.csv_midi_read_wseq
 
-{-
-csv_mnd_onsets :: Int -> FilePath -> FilePath -> IO ()
-csv_mnd_onsets p i_fn o_fn = do
-  m <- read_wseq_i i_fn
--}
-
 mnd_to_mndd_i :: Int -> FilePath -> FilePath -> IO ()
 mnd_to_mndd_i p i_fn o_fn = do
   m <- read_wseq_i i_fn
@@ -41,7 +35,7 @@ main = do
 
 {-
 fn = "/home/rohan/uc/invisible/heliotrope/csv/rough/00.csv"
-csv_mnd_to_csv_mndd 4 fn "/tmp/t.csv"
-csv_mnd_onsets 4 fn "/dev/stdout"
+mnd_to_mndd_i 4 fn "/tmp/t-mndd.csv"
+mndd_transpose_r 4 (-12) fn "/tmp/t-trs.csv"
 -}
 

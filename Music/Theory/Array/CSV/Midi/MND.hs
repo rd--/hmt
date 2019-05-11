@@ -156,6 +156,14 @@ csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
 type MNDD t n = (t,t,String,n,n,Channel,[Param])
 
+-- | Compare sequence is: start-time,channel-number,note-number,velocity,duration,param.
+mndd_compare :: (Ord t,Ord n) => MNDD t n -> MNDD t n -> Ordering
+mndd_compare x1 x2 =
+  case (x1,x2) of
+    ((t1,d1,"note",n1,v1,c1,p1),(t2,d2,"note",n2,v2,c2,p2)) ->
+      compare (t1,c1,n1,v1,d1,p1) (t2,c2,n2,v2,d2,p2)
+    _ -> compare x1 x2
+
 csv_mndd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MNDD t m]
 csv_mndd_parse_f cnv (hdr,dat) =
     let err x = error ("csv_mndd_read: " ++ x)
