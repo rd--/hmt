@@ -565,6 +565,10 @@ is_superset = flip is_subset
 subsequence :: Eq a => [a] -> [a] -> Bool
 subsequence = isInfixOf
 
+-- | Erroring variant of 'findIndex'.
+findIndex_err :: (a -> Bool) -> [a] -> Int
+findIndex_err f = fromMaybe (error "findIndex?") . findIndex f
+
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
 --
 -- > elem_index_unique 'a' "abcda" == undefined
@@ -640,26 +644,32 @@ find_bounds' f l x =
                      then Left ((p,q),GT)
                      else if g (p,q) then Right (p,q) else find_bounds' f l' x
 
-decide_nearest' :: Ord o => (p -> o) -> (p,p) -> p
-decide_nearest' f (p,q) = if f p < f q then p else q
+decide_nearest_f :: Ord o => Bool -> (p -> o) -> (p,p) -> p
+decide_nearest_f bias_left f (p,q) =
+  case compare (f p) (f q) of
+    LT -> p
+    EQ -> if bias_left then p else q
+    GT -> q
 
 -- | Decide if value is nearer the left or right value of a range.
-decide_nearest :: (Num o,Ord o) => o -> (o, o) -> o
-decide_nearest x = decide_nearest' (abs . (x -))
+--
+-- > decide_nearest 2 (1,3)
+decide_nearest :: (Num o,Ord o) => Bool -> o -> (o,o) -> o
+decide_nearest bias_left x = decide_nearest_f bias_left (abs . (x -))
 
 -- | Find the number that is nearest the requested value in an
 -- ascending list of numbers.
 --
 -- > map (find_nearest_err [0,3.5,4,7]) [-1,1,3,5,7,9] == [0,0,3.5,4,7,7]
-find_nearest_err :: (Num n,Ord n) => [n] -> n -> n
-find_nearest_err l x =
+find_nearest_err :: (Num n,Ord n) => Bool -> [n] -> n -> n
+find_nearest_err bias_left l x =
     case find_bounds' compare (adj2 1 l) x of
       Left ((p,_),GT) -> p
       Left ((_,q),_) -> q
-      Right (p,q) -> decide_nearest x (p,q)
+      Right (p,q) -> decide_nearest bias_left x (p,q)
 
-find_nearest :: (Num n,Ord n) => [n] -> n -> Maybe n
-find_nearest l x = if null l then Nothing else Just (find_nearest_err l x)
+find_nearest :: (Num n,Ord n) => Bool -> [n] -> n -> Maybe n
+find_nearest bias_left l x = if null l then Nothing else Just (find_nearest_err bias_left l x)
 
 -- | Basis of 'find_bounds'.  There is an option to consider the last
 -- element specially, and if equal to the last span is given.
