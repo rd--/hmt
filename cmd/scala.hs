@@ -7,7 +7,6 @@ import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 import qualified Music.Theory.Array.Text as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
@@ -135,8 +134,8 @@ fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n = let (mnn,dt) = tun_f n
                    cents = fromIntegral mnn * 100 + dt
-                   cents' = if cents < 0 then 0 else cents
-               in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents'
+                   cents_non_neg = if cents < 0 then 0 else cents
+               in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents_non_neg
       l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
   putStrLn (unlines l)
 
@@ -159,17 +158,20 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
   B.writeFile fn (B.pack (map int8_to_word8 (concatMap pp_f [0 .. 127])))
 -}
 
--- > midi_tbl_mnn_cents_tuning_d12 ("meanquar",0,0)
--- > midi_tbl_mnn_cents_tuning_d12 ("young-lm_piano",-74.7,-3)
-midi_tbl_mnn_cents_tuning_d12 :: (String,T.Cents,Int) -> IO ()
-midi_tbl_mnn_cents_tuning_d12 (nm,c,k) = do
+-- > midi_tbl_tuning_d12 "freq" ("meanquar",0,0)
+-- > midi_tbl_tuning_d12 "mnn-cents" ("young-lm_piano",-74.7,-3)
+midi_tbl_tuning_d12 :: String -> (String,T.Cents,Int) -> IO ()
+midi_tbl_tuning_d12 typ (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
-  let u8_pp = T.pad_left ' ' 3 . show
-      r_pp = T.pad_left ' ' 7 . T.real_pp 4
-      tun_f = T.d12_midi_tuning_f (t,c,k)
-      pp_f n = let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
-               in concat [u8_pp (T.int_to_word8 mnn `mod` 0x80),",",r_pp dt]
-  putStrLn (unlines (map pp_f [0 .. 127]))
+  let tun_f = T.d12_midi_tuning_f (t,c,k)
+      pp_f n =
+        case typ of
+          "freq" -> printf "%3d,%10.4f" n (T.midi_detune_to_cps (tun_f n))
+          "mnn-cents" ->
+            let (mnn,dt) = T.midi_detune_normalise (tun_f n)
+            in printf "%3d,%3d,%8.4f" n (mnn `mod` 0x80) dt
+          _ -> error "midi_tbl_tuning_d12"
+  putStr (unlines (map pp_f [0 .. 127]))
 
 ratio_cents_pp :: Rational -> String
 ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
@@ -200,7 +202,7 @@ help =
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
-    ,"midi-table mnn-cents d12 name:string cents:real mnn:int"
+    ,"midi-table freq|mnn-cents d12 name:string cents:real mnn:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
@@ -233,8 +235,8 @@ main = do
         intnam_lookup (map T.read_ratio_with_div_err r_sq)
     ["intnam","search",txt] ->
         intnam_search txt
-    ["midi-table","mnn-cents","d12",scl_nm,c,k] ->
-        midi_tbl_mnn_cents_tuning_d12 (scl_nm,read c,read k)
+    ["midi-table",typ,"d12",scl_nm,c,k] ->
+        midi_tbl_tuning_d12 typ (scl_nm,read c,read k)
     "search":ty:ci:lm:txt ->
         case ty of
           "scale" -> search_scale (ci == "ci",nil_or_read lm) txt

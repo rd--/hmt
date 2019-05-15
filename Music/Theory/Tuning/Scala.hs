@@ -345,9 +345,9 @@ pitch_pp p =
 
 -- | Pretty print 'Scale' in @Scala@ format.
 --
--- > s <- scl_load "et19"
--- > s <- scl_load "young-lm_piano"
--- > putStr $ unlines $ scale_pp s
+-- > scl <- scl_load "et19"
+-- > scl <- scl_load "young-lm_piano"
+-- > putStr $ unlines $ scale_pp scl
 scale_pp :: Show i => Scale i -> [String]
 scale_pp (nm,dsc,k,p) =
     ["! " ++ nm ++ ".scl"
@@ -367,7 +367,7 @@ dist_get_dir = getEnv "SCALA_DIST_DIR"
 -- | Load file from 'dist_get_dir'.
 --
 -- > s <- load_dist_file "intnam.par"
--- > length s == 473
+-- > length s == 516
 load_dist_file :: FilePath -> IO [String]
 load_dist_file nm = do
   d <- dist_get_dir

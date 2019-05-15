@@ -1,7 +1,8 @@
 [env](#env),
-[db-stat](#db-stat),
+[db-stat](#db-stat), [db-summarise](#db-summarise),
 [search scale](#search-scale), [search mode](#search-mode),
-[cps-table](#cps-tbl),
+[midi-table](#midi-tbl),
+[fluidsynth](#fluidsynth),
 [intnam lookup](#intnam-lookup), [intnam search](#intnam-search)
 
 # env
@@ -155,8 +156,10 @@ MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
 
 # midi-table
 
+Table with 128 entries mapping midi-note-number to either frequence or midi-detune values.
+
 ~~~~
-$ hmt-scala midi-table mnn-cents d12 young-lm_piano -74.7 -3
+$ hmt-scala midi-table freq d12 young-lm_piano -74.7 -3
 $ hmt-scala midi-table mnn-cents d12 meanquar 0 0
 $
 ~~~~
@@ -164,6 +167,7 @@ $
 # fluidsynth
 
 Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
+Columns are: bank, program, midi-note-number, non-negative-cents (0 = C-1)
 
 ~~~~
 $ hmt-scala fluidsynth d12 young-lm_piano -74.7 -3 "La Monte Young, The Well Tuned Piano" 0 0

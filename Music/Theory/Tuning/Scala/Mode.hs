@@ -5,9 +5,9 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.Function as T
-import qualified Music.Theory.List as T
-import qualified Music.Theory.Tuning.Scala as T
+import qualified Music.Theory.Function as Function {- hmt -}
+import qualified Music.Theory.List as List {- hmt -}
+import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 -- | (start-degree,intervals,description)
 type MODE = (Int,[Int],String)
@@ -46,7 +46,7 @@ modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
 -- > sq [2,1,2,1,2,1,2,1]
 -- > sq (replicate 12 1)
 modenam_search_seq1 :: MODENAM -> [Int] -> Maybe MODE
-modenam_search_seq1 mn = T.unlist1 . modenam_search_seq mn
+modenam_search_seq1 mn = List.unlist1 . modenam_search_seq mn
 
 -- | Search for mode by description text.
 --
@@ -69,10 +69,11 @@ mode_stat (d,i,s) =
 -- > map non_implicit_degree ["4","[4]"] == [Nothing,Just 4]
 non_implicit_degree :: String -> Maybe Int
 non_implicit_degree s =
-    case T.unbracket s of
-      Just ('[',s',']') -> Just (read s')
+    case List.unbracket s of
+      Just ('[',x,']') -> Just (read x)
       _ -> Nothing
 
+-- | Predicate form
 is_non_implicit_degree :: String -> Bool
 is_non_implicit_degree = isJust . non_implicit_degree
 
@@ -81,7 +82,7 @@ is_integer = all isDigit
 
 parse_modenam_entry :: [String] -> MODE
 parse_modenam_entry w =
-    let (n0:n,c) = span (T.predicate_or is_non_implicit_degree is_integer) w
+    let (n0:n,c) = span (Function.predicate_or is_non_implicit_degree is_integer) w
     in case non_implicit_degree n0 of
          Nothing -> (0,map read (n0:n),unwords c)
          Just d -> (d,map read n,unwords c)
@@ -90,28 +91,30 @@ parse_modenam_entry w =
 join_long_lines :: [String] -> [String]
 join_long_lines l =
     case l of
-      p:q:l' -> case T.separate_last' p of
+      p:q:l' -> case List.separate_last' p of
                   (p',Just '\\') -> join_long_lines ((p' ++ q) : l')
                   _ -> p : join_long_lines (q : l')
       _ -> l
 
+-- | Parse joined non-comment lines of modenam file.
 parse_modenam :: [String] -> MODENAM
 parse_modenam l =
     case l of
-      n:x:m -> let n' = read n :: Int
-                   x' = read x :: Int
-                   m' = map (parse_modenam_entry . words) m
-               in if n' == length m' then (n',x',m') else error "parse_modenam"
+      n_str:x_str:m_str ->
+        let n = read n_str :: Int
+            x = read x_str :: Int
+            m = map (parse_modenam_entry . words) m_str
+        in if n == length m then (n,x,m) else error "parse_modenam"
       _ -> error "parse_modenam"
 
 -- * IO
 
--- | 'parse_modenam' of 'T.load_dist_file' of @modenam.par@.
+-- | 'parse_modenam' of 'Scala.load_dist_file' of @modenam.par@.
 --
 -- > mn <- load_modenam
 -- > let (n,x,m) = mn
--- > n == 2125 && x == 15 && length m == n
+-- > n == 2776 && x == 15 && length m == n
 load_modenam :: IO MODENAM
 load_modenam = do
-  l <- T.load_dist_file "modenam.par"
-  return (parse_modenam (T.filter_comments (join_long_lines l)))
+  l <- Scala.load_dist_file "modenam.par"
+  return (parse_modenam (Scala.filter_comments (join_long_lines l)))
