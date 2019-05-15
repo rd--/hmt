@@ -88,10 +88,11 @@ gen_cps_tuning_tbl tn_f =
 
 -- | Given an 'MNN_CPS_Table' /tbl/, a list of @CPS@ /c/, and a @MNN@ /m/
 -- find the @CPS@ in /c/ that is nearest to the @CPS@ in /t/ for /m/.
+-- In equal distance cases bias left.
 dtt_lookup :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (Maybe v,Maybe v)
 dtt_lookup tbl cps n =
     let f = lookup n tbl
-    in (f,fmap (T.find_nearest_err cps) f)
+    in (f,fmap (T.find_nearest_err True cps) f)
 
 -- | Require table be non-sparse.
 dtt_lookup_err :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (k,v,v)
