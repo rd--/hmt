@@ -169,7 +169,7 @@ midi_tbl_tuning_d12 typ (nm,c,k) = do
           "freq" -> printf "%3d,%10.4f" n (T.midi_detune_to_cps (tun_f n))
           "mts" ->
             let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
-            in printf "%3d,%3d,%8.4f" n (mnn `mod` 0x80) dt
+            in printf "%3d,%3d,%7.4f" n (mnn `mod` 0x80) dt
           _ -> error "midi_tbl_tuning_d12"
   putStr (unlines (map pp_f [0 .. 127]))
 
