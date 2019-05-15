@@ -159,7 +159,7 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 -}
 
 -- > midi_tbl_tuning_d12 "freq" ("meanquar",0,0)
--- > midi_tbl_tuning_d12 "mnn-cents" ("young-lm_piano",-74.7,-3)
+-- > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
 midi_tbl_tuning_d12 :: String -> (String,T.Cents,Int) -> IO ()
 midi_tbl_tuning_d12 typ (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
@@ -167,8 +167,8 @@ midi_tbl_tuning_d12 typ (nm,c,k) = do
       pp_f n =
         case typ of
           "freq" -> printf "%3d,%10.4f" n (T.midi_detune_to_cps (tun_f n))
-          "mnn-cents" ->
-            let (mnn,dt) = T.midi_detune_normalise (tun_f n)
+          "mts" ->
+            let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
             in printf "%3d,%3d,%8.4f" n (mnn `mod` 0x80) dt
           _ -> error "midi_tbl_tuning_d12"
   putStr (unlines (map pp_f [0 .. 127]))

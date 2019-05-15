@@ -156,11 +156,13 @@ MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
 
 # midi-table
 
-Table with 128 entries mapping midi-note-number to either frequence or midi-detune values.
+Table with 128 entries mapping midi-note-number to either frequency or MTS values.
+
+MTS (MIDI-TUNING-STANDARD) values are (midi-note-number,positive-cents).
 
 ~~~~
 $ hmt-scala midi-table freq d12 young-lm_piano -74.7 -3
-$ hmt-scala midi-table mnn-cents d12 meanquar 0 0
+$ hmt-scala midi-table mts d12 meanquar 0 0
 $
 ~~~~
 
