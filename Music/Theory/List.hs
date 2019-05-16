@@ -629,59 +629,65 @@ find_err :: (t -> Bool) -> [t] -> t
 find_err f = fromMaybe (error "find") . find f
 
 -- | Basis of 'find_bounds_scl', indicates if /x/ is to the left or
--- right of the list, and it to the right whether equal or not.
+-- right of the list, and if to the right whether equal or not.
 -- 'Right' values will be correct if the list is not ascending,
 -- however 'Left' values only make sense for ascending ranges.
 --
--- > map (find_bounds' compare [(0,1),(1,2)]) [-1,0,1,2,3]
-find_bounds' :: (t -> s -> Ordering) -> [(t,t)] -> s -> Either ((t,t),Ordering) (t,t)
-find_bounds' f l x =
+-- > map (find_bounds_cmp compare [(0,1),(1,2)]) [-1,0,1,2,3]
+find_bounds_cmp :: (t -> s -> Ordering) -> [(t,t)] -> s -> Either ((t,t),Ordering) (t,t)
+find_bounds_cmp f l x =
     let g (p,q) = f p x /= GT && f q x == GT
     in case l of
-         [] -> error "find_bounds': nil"
+         [] -> error "find_bounds_cmp: nil"
          [(p,q)] -> if g (p,q) then Right (p,q) else Left ((p,q),f q x)
          (p,q):l' -> if f p x == GT
                      then Left ((p,q),GT)
-                     else if g (p,q) then Right (p,q) else find_bounds' f l' x
+                     else if g (p,q) then Right (p,q) else find_bounds_cmp f l' x
 
-decide_nearest_f :: Ord o => Bool -> (p -> o) -> (p,p) -> p
+decide_nearest_f :: Ord o => Bool -> (p -> o) -> (p,p) -> ((x,x) -> x)
 decide_nearest_f bias_left f (p,q) =
   case compare (f p) (f q) of
-    LT -> p
-    EQ -> if bias_left then p else q
-    GT -> q
+    LT -> fst
+    EQ -> if bias_left then fst else snd
+    GT -> snd
 
--- | Decide if value is nearer the left or right value of a range.
+-- | Decide if value is nearer the left or right value of a range, return 'fst' or 'snd'.
 --
--- > decide_nearest 2 (1,3)
-decide_nearest :: (Num o,Ord o) => Bool -> o -> (o,o) -> o
+-- > (decide_nearest True 2 (1,3)) ("left","right") == "left"
+decide_nearest :: (Num o,Ord o) => Bool -> o -> (o,o) -> ((x,x) -> x)
 decide_nearest bias_left x = decide_nearest_f bias_left (abs . (x -))
+
+-- | /sel_f/ gets comparison key from /t/.
+find_nearest_by :: (Ord n,Num n) => (t -> n) -> Bool -> [t] -> n -> t
+find_nearest_by sel_f bias_left l x =
+  let cmp_f i j = compare (sel_f i) j
+  in case find_bounds_cmp cmp_f (adj2 1 l) x of
+       Left ((p,_),GT) -> p
+       Left ((_,q),_) -> q
+       Right (p,q) -> (decide_nearest bias_left x (sel_f p,sel_f q)) (p,q)
 
 -- | Find the number that is nearest the requested value in an
 -- ascending list of numbers.
 --
--- > map (find_nearest_err [0,3.5,4,7]) [-1,1,3,5,7,9] == [0,0,3.5,4,7,7]
+-- > map (find_nearest_err True [0,3.5,4,7]) [-1,1,3,5,7,9] == [0,0,3.5,4,7,7]
 find_nearest_err :: (Num n,Ord n) => Bool -> [n] -> n -> n
-find_nearest_err bias_left l x =
-    case find_bounds' compare (adj2 1 l) x of
-      Left ((p,_),GT) -> p
-      Left ((_,q),_) -> q
-      Right (p,q) -> decide_nearest bias_left x (p,q)
+find_nearest_err = find_nearest_by id
 
 find_nearest :: (Num n,Ord n) => Bool -> [n] -> n -> Maybe n
 find_nearest bias_left l x = if null l then Nothing else Just (find_nearest_err bias_left l x)
 
 -- | Basis of 'find_bounds'.  There is an option to consider the last
 -- element specially, and if equal to the last span is given.
+--
+-- scl=special-case-last
 find_bounds_scl :: Bool -> (t -> s -> Ordering) -> [(t,t)] -> s -> Maybe (t,t)
 find_bounds_scl scl f l x =
-    case find_bounds' f l x of
+    case find_bounds_cmp f l x of
          Right r -> Just r
          Left (r,EQ) -> if scl then Just r else Nothing
          _ -> Nothing
 
--- | Find adjacent elements of list that bound element under given
--- comparator.
+-- | Find adjacent elements of list that bound element under given comparator.
 --
 -- > let {f = find_bounds True compare [1..5]
 -- >     ;r = [Nothing,Just (1,2),Just (3,4),Just (4,5)]}
