@@ -9,6 +9,8 @@ import System.Process {- process -}
 
 -- | Scan a list of directories until a file is located, or not.
 --   This does not traverse any sub-directory structure.
+--
+-- > mapM (path_scan ["/sbin","/usr/bin"]) ["fsck","ghc"]
 path_scan :: [FilePath] -> FilePath -> IO (Maybe FilePath)
 path_scan p fn =
     case p of
@@ -53,6 +55,14 @@ dir_find_1 fn dir = do
 -- > dir_find_ext ".syx" "/home/rohan/sw/hsc3-data/data/yamaha/"
 dir_find_ext :: String -> FilePath -> IO [FilePath]
 dir_find_ext ext dir = fmap lines (readProcess "find" [dir,"-iname",'*' : ext] "")
+
+-- | Post-process 'dir_find_ext' to delete starting directory.
+--
+-- > dir_find_ext_rel ".syx" "/home/rohan/sw/hsc3-data/data/yamaha/"
+dir_find_ext_rel :: String -> FilePath -> IO [FilePath]
+dir_find_ext_rel ext dir =
+  let f = fromMaybe (error "dir_find_ext_rel?") . stripPrefix dir
+  in fmap (map f) (dir_find_ext ext dir)
 
 -- | Subset of files in /dir/ with an extension in /ext/.
 --   Extensions include the leading dot and are case-sensitive.
