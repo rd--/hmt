@@ -178,11 +178,11 @@ rq_can_notate x =
 --
 --   ppm = pulses-per-minute, rq = rational-quarter-note
 --
--- > map (\sd -> rq_to_seconds (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
--- > map (rq_to_seconds 90) [1,2,3,4] == [2/3,1 + 1/3,2,2 + 2/3]
--- > map (rq_to_seconds 90) [0::RQ,1,1 + 1/2,1 + 3/4,1 + 7/8,2]
-rq_to_seconds :: Fractional a => a -> a -> a
-rq_to_seconds ppm rq = rq * (60 / ppm)
+-- > map (\sd -> rq_to_seconds_ppm (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
+-- > map (rq_to_seconds_ppm 90) [1,2,3,4] == [2/3,1 + 1/3,2,2 + 2/3]
+-- > map (rq_to_seconds_ppm 90) [0::RQ,1,1 + 1/2,1 + 3/4,1 + 7/8,2]
+rq_to_seconds_ppm :: Fractional a => a -> a -> a
+rq_to_seconds_ppm ppm rq = rq * (60 / ppm)
 
 -- | PPM given that /rq/ has duration /x/, ie. inverse of 'rq_to_seconds'
 --
