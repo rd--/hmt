@@ -22,7 +22,7 @@ path_scan p fn =
 -- | Erroring variant.
 path_scan_err :: [FilePath] -> FilePath -> IO FilePath
 path_scan_err p x =
-    let err = (error ("path_scan: " ++ show p ++ ": " ++ x))
+    let err = error (concat ["path_scan: ",show p,": ",x])
     in fmap (fromMaybe err) (path_scan p x)
 
 -- | Get list of files at dir with ext, ie. ls dir/*.ext

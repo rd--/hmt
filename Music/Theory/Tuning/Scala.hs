@@ -313,7 +313,7 @@ scl_load_dir d = T.dir_subset [".scl"] d >>= mapM scl_load
 --
 -- > db <- scl_load_db
 -- > length db == 4809 {- scala/87/scl/ -}
--- > mapM_ (putStrLn.unlines.scale_stat) (filter (not . perfect_octave) db)
+-- > mapM_ (putStrLn . unlines . scale_stat) (filter (not . perfect_octave) db)
 scl_load_db :: (Read i, Integral i) => IO [Scale i]
 scl_load_db = do
   dir <- scl_get_dir
@@ -372,3 +372,21 @@ load_dist_file :: FilePath -> IO [String]
 load_dist_file nm = do
   d <- dist_get_dir
   fmap lines (readFile (d </> nm))
+
+-- * QUERY
+
+{-
+> db <- scl_load_db
+> c = [0,83,199,308,388,507,579,695,778,899,1004,1084,1200]
+> r = scl_db_query_cdiff_asc db c
+> mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
+-}
+scl_db_query_cdiff_asc :: Integral t => [Scale t] -> [t] -> [(t,Scale t)]
+scl_db_query_cdiff_asc db c =
+  let n = length c - 1
+      db_f = filter ((== n) . scale_degree) db
+      c_d = T.d_dx c
+      c_r = map (T.dx_d 0) (T.rotations c_d)
+      ndiff x = sum . map abs . zipWith (-) x
+      ndiff_all_r scl = let x = scale_cents_i scl in minimum . map (ndiff x)
+  in sort (map (\scl -> (ndiff_all_r scl c_r,scl)) db_f)
