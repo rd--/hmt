@@ -122,6 +122,9 @@ approximate_ratio = fromRational
 -- hence of the octave into @1200@ parts.
 type Cents = Double
 
+-- | Integral cents value.
+type Cents_I = Int
+
 -- | Type specialised 'fratio_to_cents'.
 approximate_ratio_to_cents :: Approximate_Ratio -> Cents
 approximate_ratio_to_cents = fratio_to_cents

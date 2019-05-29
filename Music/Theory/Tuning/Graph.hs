@@ -35,26 +35,26 @@ g_edge_list (_,e) r =
 -- | Flip a ratio in (1,2) and multiply by 2.
 --
 -- > import Data.Ratio {- base -}
--- > map rflip [5%4,3%2,7%4] == [8%5,4%3,8%7]
--- > map rflip [3/2,5/4,7/4]
-rflip :: R -> R
-rflip n = if n < 1 || n > 2 then error "rflip" else 1 / n * 2
+-- > map r_flip [5%4,3%2,7%4] == [8%5,4%3,8%7]
+-- > map r_flip [3/2,5/4,7/4] == [4/3,8/5,8/7]
+r_flip :: R -> R
+r_flip n = if n < 1 || n > 2 then error "r_flip" else 1 / n * 2
 
--- | r = ration, nrm = normalise
+-- | r = ratio, nrm = normalise
 --
--- > map rnrm [3/2,5/4] == [4/3,5/4]
-rnrm :: R -> R
-rnrm = T.ratio_interval_class_by id
+-- > map r_nrm [3/2,5/4] == [4/3,5/4]
+r_nrm :: R -> R
+r_nrm = T.ratio_interval_class_by id
 
 -- | The folded interval from p to q.
 --
--- > rrel (1,3/2) == 4/3
-rrel :: (R,R) -> R
-rrel (p,q) = T.fold_ratio_to_octave_err (p / q)
+-- > r_rel (1,3/2) == 4/3
+r_rel :: (R,R) -> R
+r_rel (p,q) = T.fold_ratio_to_octave_err (p / q)
 
 -- | The interval set /i/ and it's 'rflip.
 iset_sym :: [R] -> [R]
-iset_sym l = l ++ map rflip l
+iset_sym l = l ++ map r_flip l
 
 -- | The graph with vertices /scl_r/ and all edges where the interval (i,j) is in /iset/.
 mk_graph :: [R] -> [R] -> G
@@ -64,14 +64,14 @@ mk_graph iset scl_r =
     p <- scl_r,
     q <- scl_r,
     p < q,
-    let r = rnrm (rrel (p,q)),
+    let r = r_nrm (r_rel (p,q)),
     r `elem` iset_sym iset])
 
 -- | Require r to have a perfect octave as last element, and remove it.
 rem_oct :: [R] -> [R]
 rem_oct r = if last r /= 2 then error "rem_oct" else T.drop_last r
 
-mk_graph_scl :: [R] -> T.Scale Integer -> G
+mk_graph_scl :: [R] -> T.Scale -> G
 mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
 
 r_pcset :: [R] -> [Int]

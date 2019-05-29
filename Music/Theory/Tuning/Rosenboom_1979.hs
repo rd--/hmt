@@ -73,7 +73,7 @@ dr_scale_tbl_12et = map T.nearest_12et_tone dr_scale
 
 -- > Scala.scale_verify dr_scale_scala
 -- > putStrLn $ unlines $ Scala.scale_pp dr_scale_scala
-dr_scale_scala :: Scala.Scale Integer
+dr_scale_scala :: Scala.Scale
 dr_scale_scala =
     let f (r,(_,p,_,_,_)) = (T.pitch_to_midi p :: Int,r)
         sq = map f (zip dr_tuning dr_scale_tbl_12et)
