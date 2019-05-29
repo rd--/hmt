@@ -382,19 +382,28 @@ load_dist_file nm = do
 
 -- * QUERY
 
-{-
-> db <- scl_load_db
-> c = [0,83,199,308,388,507,579,695,778,899,1004,1084,1200]
-> c = [0.41,82.54,198.86,307.85,388.12,507.19,578.91,695.34,777.80,898.73,1003.93,1084.47]
-> r = scl_db_query_cdiff_asc db c
-> mapM_ (putStrLn . unlines . scale_stat . snd) (take 20 r)
+{- | Sum of absolute of differences to scale given in cents, sorted, with rotation.
+
+> scl <- scl_load "mean2nine"
+> c = [0.4,82.5,192.6,307.8,388.1,502.0,584.0,695.3,777.8,890.4,1003.9,1084.5,1200.0]
+> scl_cdiff c scl
 -}
-scl_db_query_cdiff_asc :: [Scale] -> [T.Cents] -> [(Double,Scale)]
+scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,Int)]
+scl_cdiff_abs_sum c scl =
+  let r = map (T.dx_d 0) (T.rotations (T.d_dx (scale_cents scl)))
+      ndiff = sum . map abs . zipWith (-) c
+  in sort (zip (map ndiff r) [0..])
+
+{- | Sort DB into ascending order of sum of absolute of differences to scale given in cents.
+     All rotations of the scale are considered.
+
+> db <- scl_load_db
+> c = [0.4,82.5,192.6,307.8,388.1,502.0,584.0,695.3,777.8,890.4,1003.9,1084.5,1200.0]
+> r = scl_db_query_cdiff_asc db c
+> mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
+-}
+scl_db_query_cdiff_asc :: [Scale] -> [T.Cents] -> [((Double,Int),Scale)]
 scl_db_query_cdiff_asc db c =
   let n = length c - 1
-      db_f = filter ((== n) . scale_degree) db
-      c_d = T.d_dx c
-      c_r = map (T.dx_d 0) (T.rotations c_d)
-      ndiff x = sum . map abs . zipWith (-) x
-      ndiff_all_r scl = let x = scale_cents scl in minimum . map (ndiff x)
-  in sort (map (\scl -> (ndiff_all_r scl c_r,scl)) db_f)
+      db_n = filter ((== n) . scale_degree) db
+  in sort (map (\scl -> (head (scl_cdiff_abs_sum c scl),scl)) db_n)
