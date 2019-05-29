@@ -80,7 +80,7 @@ pitch_type_predominant p =
 
 -- * Scale
 
--- | A scale has a name, a description, a degree, and a list of 'Pitch'es.
+-- | A scale has a name, a description, a degree, and a sequence of pitches.
 type Scale = (String,String,Int,[Pitch])
 
 -- | The name of a scale.
@@ -123,7 +123,7 @@ perfect_octave :: Scale -> Bool
 perfect_octave s =
   case scale_octave s of
     Just (Right 2) -> True
-    Just (Left 1200) -> True
+    Just (Left 1200.0) -> True
     _ -> False
 
 -- | Are all pitches of the same type.
@@ -328,15 +328,19 @@ scl_load_db = do
 -- | Simple plain-text display of scale data.
 scale_stat :: Scale -> [String]
 scale_stat s =
-    let ty = uniform_pitch_type (scale_pitches s)
-    in ["scale-name        : " ++ scale_name s
-       ,"scale-description : " ++ scale_description s
-       ,"scale-degree      : " ++ show (scale_degree s)
-       ,"scale-type        : " ++ maybe "non-uniform" show ty
-       ,"perfect-octave    : " ++ show (perfect_octave s)
-       ,"scale-cents-i     : " ++ show (scale_cents_i s)
-       ,if ty == Just Pitch_Ratio
-        then "scale-ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req s))
+    let p = scale_pitches s
+        u_ty = uniform_pitch_type p
+        n_ty = let p_ty = pitch_type_predominant p
+                   (p_i,p_j) = pitch_representations p
+               in concat ["non-uniform (",show p_ty,",",show p_i,":",show p_j,")"]
+    in ["name        : " ++ scale_name s
+       ,"description : " ++ scale_description s
+       ,"degree      : " ++ show (scale_degree s)
+       ,"type        : " ++ maybe n_ty show u_ty
+       ,"perfect-oct : " ++ show (perfect_octave s)
+       ,"cents-i     : " ++ show (scale_cents_i s)
+       ,if u_ty == Just Pitch_Ratio
+        then "ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req s))
         else ""]
 
 -- | Pretty print 'Pitch' in @Scala@ format.
@@ -381,16 +385,16 @@ load_dist_file nm = do
 {-
 > db <- scl_load_db
 > c = [0,83,199,308,388,507,579,695,778,899,1004,1084,1200]
-> c = [-7,76,186,302,383,497,579,695,773,890,1004,1081,1200]
+> c = [0.41,82.54,198.86,307.85,388.12,507.19,578.91,695.34,777.80,898.73,1003.93,1084.47]
 > r = scl_db_query_cdiff_asc db c
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 20 r)
 -}
-scl_db_query_cdiff_asc :: [Scale] -> [T.Cents_I] -> [(Int,Scale)]
+scl_db_query_cdiff_asc :: [Scale] -> [T.Cents] -> [(Double,Scale)]
 scl_db_query_cdiff_asc db c =
   let n = length c - 1
       db_f = filter ((== n) . scale_degree) db
       c_d = T.d_dx c
       c_r = map (T.dx_d 0) (T.rotations c_d)
       ndiff x = sum . map abs . zipWith (-) x
-      ndiff_all_r scl = let x = scale_cents_i scl in minimum . map (ndiff x)
+      ndiff_all_r scl = let x = scale_cents scl in minimum . map (ndiff x)
   in sort (map (\scl -> (ndiff_all_r scl c_r,scl)) db_f)
