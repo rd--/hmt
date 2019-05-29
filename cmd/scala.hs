@@ -23,7 +23,7 @@ type R = Double
 
 db_stat :: IO ()
 db_stat = do
-  db <- T.scl_load_db :: IO [T.Scale Integer]
+  db <- T.scl_load_db
   let po = filter (== Just (Right 2)) (map T.scale_octave db)
       uf = filter T.is_scale_uniform db
       r = ["# entries        : " ++ show (length db)
@@ -34,7 +34,7 @@ db_stat = do
 -- > db_summarise (Just 15) (Just 65)
 db_summarise :: Maybe Int -> Maybe Int -> IO ()
 db_summarise nm_lim dsc_lim = do
-  db <- T.scl_load_db :: IO [T.Scale Integer]
+  db <- T.scl_load_db
   let nm_seq = map T.scale_name db
       nm_max = maybe (maximum (map length nm_seq)) id nm_lim
       dsc_seq = map T.scale_description db
@@ -63,7 +63,7 @@ search (load_f,descr_f,stat_f) (ci,lm) txt = do
 -- > search_scale (True,Nothing) ["xenakis"]
 -- > search_scale (True,Just 75) ["lamonte","young"]
 search_scale :: (Bool,Maybe Int) -> [String] -> IO ()
-search_scale = search (T.scl_load_db :: IO [T.Scale Integer],T.scale_description,T.scale_stat)
+search_scale = search (T.scl_load_db,T.scale_description,T.scale_stat)
 
 -- > search_mode (True,Nothing) ["xenakis"]
 search_mode :: (Bool,Maybe Int) -> [String] -> IO ()
@@ -71,13 +71,13 @@ search_mode = search (fmap T.modenam_modes T.load_modenam,T.mode_description,T.m
 
 stat_all :: Maybe Int -> IO ()
 stat_all lm = do
-  db <- T.scl_load_db :: IO [T.Scale Integer]
+  db <- T.scl_load_db
   mapM_ (putStrLn . unlines . map (cut lm) . T.scale_stat) db
 
 -- > stat_by_name Nothing "young-lm_piano"
 stat_by_name :: Maybe Int -> FilePath -> IO ()
 stat_by_name lm nm = do
-  sc <- T.scl_load nm :: IO (T.Scale Integer)
+  sc <- T.scl_load nm :: IO T.Scale
   putStrLn (unlines (map (cut lm) (T.scale_stat sc)))
 
 -- > rng_enum (60,72) == [60 .. 72]

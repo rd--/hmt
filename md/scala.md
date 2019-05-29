@@ -46,29 +46,29 @@ $
 
 ~~~~
 $ hmt-scala search scale ci 75 la monte young
-scale-name        : young-lm_guitar
-scale-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92,
-scale-degree      : 12
-scale-type        : Pitch_Ratio
-perfect-octave    : True
-scale-cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
-scale-ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
+name        : young-lm_guitar
+description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.o
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
+ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
 
-scale-name        : young-lm_piano
-scale-description : LaMonte Young's Well-Tuned Piano
-scale-degree      : 12
-scale-type        : Pitch_Ratio
-perfect-octave    : True
-scale-cents-i     : [0,177,204,240,444,471,675,702,738,942,969,1173,1200]
-scale-ratios      : 1,567/512,9/8,147/128,1323/1024,21/16,189/128,3/2,49/32
+name        : young-lm_piano
+description : LaMonte Young's Well-Tuned Piano
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,177,204,240,471,444,675,702,738,969,942,1173,1200]
+ratios      : 1,567/512,9/8,147/128,21/16,1323/1024,189/128,3/2,49/32,7/4,4
 
-scale-name        : young-lm_piano_1964
-scale-description : LaMonte Young's Well-Tuned Piano (1964)
-scale-degree      : 12
-scale-type        : Pitch_Ratio
-perfect-octave    : True
-scale-cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
-scale-ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4
+name        : young-lm_piano_1964
+description : LaMonte Young's Well-Tuned Piano (1964)
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
+ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4,31/16
 $
 ~~~~
 
