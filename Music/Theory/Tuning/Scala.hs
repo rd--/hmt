@@ -384,9 +384,9 @@ load_dist_file nm = do
 
 {- | Sum of absolute of differences to scale given in cents, sorted, with rotation.
 
-> scl <- scl_load "mean2nine"
-> c = [0.4,82.5,192.6,307.8,388.1,502.0,584.0,695.3,777.8,890.4,1003.9,1084.5,1200.0]
-> scl_cdiff c scl
+> scl <- scl_load "holder"
+> c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
+> scl_cdiff_abs_sum c scl
 -}
 scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,Int)]
 scl_cdiff_abs_sum c scl =
