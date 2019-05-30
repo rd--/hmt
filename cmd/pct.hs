@@ -46,8 +46,11 @@ mk_cmd_many f = unlines . map pco_pp . f . pco_parse
 ess_cmd :: String -> CMD
 ess_cmd p = mk_cmd_many (ess z12 (pco_parse p))
 
+z12_sc_name :: [Z12] -> SC_Name
+z12_sc_name = sc_name
+
 fl_c_cmd :: CMD
-fl_c_cmd = unlines . map sc_name . concatMap scs_n . cset_parse
+fl_c_cmd = unlines . map z12_sc_name . concatMap scs_n . cset_parse
 
 frg_cmd :: CMD
 frg_cmd p =
@@ -63,9 +66,12 @@ scc_cmd p = mk_cmd_many (scc z12 (sc p))
 si_cmd :: CMD
 si_cmd = unlines . si . pco_parse
 
+z12_sc_name_long :: [Z12] -> SC_Name
+z12_sc_name_long = sc_name_long
+
 -- > spsc_cmd ["4-11","4-12"] == "5-26[02458]\n"
 spsc_cmd :: [String] -> String
-spsc_cmd = unlines . map sc_name_long . spsc z12 . map sc
+spsc_cmd = unlines . map z12_sc_name_long . spsc z12 . map sc
 
 sra_cmd :: CMD
 sra_cmd = mk_cmd_many (sra z12)

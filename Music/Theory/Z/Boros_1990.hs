@@ -63,7 +63,7 @@ pcset_trs = T.z_tto_tn T.z12
 --
 -- > length trichords == 12
 trichords :: [PCSET]
-trichords = filter ((== 3) . length) (T.sc_univ T.z12)
+trichords = filter ((== 3) . length) (T.z_sc_univ T.z12)
 
 -- | Is a pcset self-inversional, ie. is the inversion of /p/ a transposition of /p/.
 --
@@ -94,7 +94,7 @@ ath = [0,1,2,4,7,8]
 
 -- | Is /p/ an instance of 'ath'.
 is_ath :: PCSET -> Bool
-is_ath p = T.forte_prime T.z12 p == ath
+is_ath p = T.z_forte_prime T.z12 p == ath
 
 -- | Table 1, p.20
 --
@@ -160,7 +160,7 @@ gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 table_3 :: [((PCSET,SC,T.SC_Name),(PCSET,SC,T.SC_Name))]
 table_3 =
     let f p = let q = ath_complement p
-                  i x = (x,T.forte_prime T.z12 x,T.sc_name x)
+                  i x = (x,T.z_forte_prime T.z12 x,T.sc_name x)
               in (i p,i q)
     in map f ath_trichords
 
@@ -188,7 +188,7 @@ table_4_md =
     in pp_tbl (hdr : map f table_4)
 
 table_5 :: [(PCSET,Int)]
-table_5 = T.histogram (map (T.forte_prime T.z12) ath_trichords)
+table_5 = T.histogram (map (T.z_forte_prime T.z12) ath_trichords)
 
 -- > putStrLn $ unlines $ table_5_md
 table_5_md :: [String]

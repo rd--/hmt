@@ -30,7 +30,7 @@ sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
     if inv_sym p
     then Nothing
-    else Just (p,Forte.t_prime z12 (SRO.z_sro_invert z12 0 p))
+    else Just (p,Forte.z_t_prime z12 (SRO.z_sro_invert z12 0 p))
 
 -- | Transpositional equivalence variant of Forte's 'sc_table'.  The
 -- inversionally related classes are distinguished by labels @A@ and
@@ -55,7 +55,7 @@ t_sc_table =
 -- > t_sc_name [0,1,4,6,7,8] == "6-Z17B"
 t_sc_name :: [Z12] -> Forte.SC_Name
 t_sc_name p =
-    let n = find (\(_,q) -> Forte.t_prime z12 p == q) t_sc_table
+    let n = find (\(_,q) -> Forte.z_t_prime z12 p == q) t_sc_table
     in fst (fromJust n)
 
 -- | Lookup a set-class given a set-class name.
@@ -138,7 +138,7 @@ ti_n_class_vector n x =
 -- > dyad_class_percentage_vector [0,1,4,5,7] == [20,10,20,20,20,10]
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
-    let p' = Forte.icv z12 p
+    let p' = Forte.z_icv z12 p
     in map (sum p' *) p'
 
 -- | /rel/ metric.

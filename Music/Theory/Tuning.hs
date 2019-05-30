@@ -11,7 +11,6 @@ import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Ord as T {- hmt -}
-import qualified Music.Theory.Z as T {- hmt -}
 
 -- * Math/Floating
 

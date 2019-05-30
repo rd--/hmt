@@ -145,7 +145,7 @@ gen_flt_graph opt = gen_flt_graph_pp opt set_pp
 
 -- > circ_5 12 0 == [0,7,2,9,4,11,6,1,8,3,10,5]
 circ_5 :: Integral a => Int -> a -> [a]
-circ_5 l n = take l (iterate (T.mod12 . (+ 7)) (T.mod12 n))
+circ_5 l n = take l (iterate (T.z_mod T.z12 . (+ 7)) (T.z_mod T.z12 n))
 
 all_pairs :: [t] -> [u] -> [(t,u)]
 all_pairs x y = [(p,q) | p <- x, q <- y]
@@ -161,7 +161,7 @@ p12_c5_eset =
     let l1 = circ_5 4 9 -- [9,4,11,6]
         l2 = circ_5 5 10 -- [10,5,0,7,2]
         l3 = circ_5 3 1 -- [1,8,3]
-        align p q = filter ((== 4) . T.mod12 . dif) (all_pairs p q)
+        align p q = filter ((== 4) . T.z_mod T.z12 . dif) (all_pairs p q)
     in concatMap adj [l1,l2,l3] ++ align l1 l2 ++ align l2 l3
 
 e_add_label :: (T.EDGE v -> l) -> [T.EDGE v] -> [T.EDGE_L v l]
@@ -194,7 +194,7 @@ p12_euler_plane_gr = T.euler_plane_to_dot_rat (0,True) p12_euler_plane
 p14_eset :: ([(Int, Int)], [(Int, Int)], [(Int, Int)])
 p14_eset =
   let univ = [0 .. 11]
-      trs n = map (T.mod12 . (+ n))
+      trs n = map (T.z_mod T.z12 . (+ n))
       e_par = zip univ univ
       e_rel = zip univ (trs 9 univ)
       e_med = zip univ (trs 4 univ)
@@ -265,7 +265,7 @@ p14_nrt_gr =
           ,("node:fontsize","10")
           ,("node:fontname","century schoolbook")
           ,("edge:len","1")]
-      pp = (\v -> [("label",T.pc_pp (T.mod12 v))],\_ -> [])
+      pp = (\v -> [("label",T.pc_pp (T.z_mod T.z12 v))],\_ -> [])
   in gen_graph o pp e
 
 -- * P.31
@@ -427,11 +427,11 @@ p172_g3 =
 
 -- | 'T.TTO' T/n/.
 tto_tn :: Integral t => t -> T.TTO t
-tto_tn n = T.TTO (T.mod12 n) 1 False
+tto_tn n = T.TTO (T.z_mod T.z12 n) 1 False
 
 -- | 'Z.TTO' T/n/I.
 tto_tni :: Integral t => t -> T.TTO t
-tto_tni n = T.TTO (T.mod12 n) 1 True
+tto_tni n = T.TTO (T.z_mod T.z12 n) 1 True
 
 gen_tto_alt_seq :: Integral t => (t -> T.TTO t,t -> T.TTO t) -> Int -> t -> t -> t -> [T.TTO t]
 gen_tto_alt_seq (f,g) k n m x =
@@ -501,7 +501,7 @@ mk_bridge :: SC -> PCSET -> PCSET -> [PCSET]
 mk_bridge r p q =
     let n = length r - length p
         c = T.combinations n [0..11]
-        f s = T.forte_prime T.z12 (p ++ s) == r && T.forte_prime T.z12 (q ++ s) == r
+        f s = T.z_forte_prime T.z12 (p ++ s) == r && T.z_forte_prime T.z12 (q ++ s) == r
     in filter f c
 
 -- | 'concatMap' of 'mk_bridge'.

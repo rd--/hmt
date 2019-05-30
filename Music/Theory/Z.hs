@@ -1,4 +1,4 @@
--- | Z-/n/ functions with modulo function as parameter.
+-- | Z-/n/ functions
 module Music.Theory.Z where
 
 import Data.Char {- base -}
@@ -6,47 +6,33 @@ import Data.List {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- | 'mod' 5.
-mod5 :: Integral i => i -> i
-mod5 n = n `mod` 5
+-- | Z type.
+--
+-- > map z_modulus [z7,z12] == [7,12]
+data Z i = Z {z_modulus :: i}
 
--- | 'mod' 7.
-mod7 :: Integral i => i -> i
-mod7 n = n `mod` 7
-
--- | 'mod' 12.
-mod12 :: Integral i => i -> i
-mod12 n = n `mod` 12
-
-
--- | 'mod' 16.
-mod16 :: Integral i => i -> i
-mod16 n = n `mod` 16
-
-data Z i = Z i
-
+-- | 'mod' of 'Z'.
+--
+-- > map (z_mod z12) [-1,0,1,11,12,13] == [11,0,1,11,0,1]
 z_mod :: Integral i => Z i -> i -> i
 z_mod (Z i) n = mod n i
 
-z5,z7,z12,z16 :: Integral i => Z i
+-- | Common moduli in music theory.
+z5,z7,z12,z16 :: Num i => Z i
 z5 = Z 5
 z7 = Z 7
 z12 = Z 12
 z16 = Z 16
-
--- | The modulo function for Z.
---   /t/ must be signed, see 'z_sub'.
---type Z t = (t -> t)
 
 -- | Is /n/ in (0,/m/-1).
 is_z_n :: (Num a, Ord a) => a -> a -> Bool
 is_z_n m n = n >= 0 && n < m
 
 lift_unary_Z :: Integral i => Z i -> (t -> i) -> t -> i
-lift_unary_Z z f n = z_mod z (f n)
+lift_unary_Z z f = z_mod z . f
 
 lift_binary_Z :: Integral i => Z i -> (s -> t -> i) -> s -> t -> i
-lift_binary_Z z f n1 n2 = z_mod z (n1 `f` n2)
+lift_binary_Z z f n1 = z_mod z . f n1
 
 -- | Add two Z.
 --
@@ -58,7 +44,7 @@ z_add z = lift_binary_Z z (+)
 --
 -- > z_sub z12 0 8 == 4
 --
--- > import Data.Word
+-- > import Data.Word {- base -}
 -- > z_sub z12 (0::Word8) 8 == 8
 -- > ((0 - 8) :: Word8) == 248
 -- > 248 `mod` 12 == 8
@@ -72,8 +58,7 @@ z_sub_unsigned :: (Integral i,Ord i) => Z i -> i -> i -> i
 z_sub_unsigned z p q =
     if p > q
     then z_mod z (p - q)
-    else let m = z_modulus z
-         in z_mod z (p + m - q)
+    else z_mod z (p + z_modulus z - q)
 
 z_mul :: Integral i => Z i -> i -> i -> i
 z_mul z = lift_binary_Z z (*)
@@ -97,13 +82,6 @@ to_Z z = z_fromInteger z . fromIntegral
 
 from_Z :: (Integral i,Num n) => i -> n
 from_Z i = fromIntegral i
-
--- | Determine modulus of /z/.  This is linear-time in the modulus.
---
--- > z_modulus z7 == 7
--- > z_modulus z12 == 12
-z_modulus :: Z i -> i
-z_modulus (Z i) = i
 
 -- | Universe of 'Z'.
 --
@@ -129,10 +107,6 @@ div_err s p q = if q == 0 then error ("div_err: zero" ++ s) else p `div` q
 
 z_div :: Integral i => Z i -> i -> i -> i
 z_div z p = to_Z z . div_err "z_div" p
-
--- -- > z_mod mod12 6 12 == 6
--- z_mod :: Z i -> i -> i -> i
--- z_mod z p = to_Z z . mod p
 
 z_quotRem :: Integral i => Z i -> i -> i -> (i,i)
 z_quotRem z p q = (z_quot z p q,z_quot z p q)

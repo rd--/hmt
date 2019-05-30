@@ -12,9 +12,9 @@ rahn_cmp p q = compare (reverse p) (reverse q)
 
 -- | Rahn prime form, ie. 'Forte_1973.ti_cmp_prime' of 'rahn_cmp'.
 --
--- > rahn_prime z12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
-rahn_prime :: Integral i => Z i -> [i] -> [i]
-rahn_prime z = Forte_1973.ti_cmp_prime z rahn_cmp
+-- > z_rahn_prime z12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
+z_rahn_prime :: Integral i => Z i -> [i] -> [i]
+z_rahn_prime z = Forte_1973.z_ti_cmp_prime z rahn_cmp
 
 -- | The six sets where the Forte and Rahn prime forms differ.
 --   Given here in Forte prime form.

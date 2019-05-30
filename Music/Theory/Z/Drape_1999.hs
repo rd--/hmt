@@ -235,7 +235,7 @@ has_sc_pf pf p q =
 --
 -- > has_sc z12 [] [] == True
 has_sc :: Integral i => Z i -> [i] -> [i] -> Bool
-has_sc z = has_sc_pf (forte_prime z)
+has_sc z = has_sc_pf (z_forte_prime z)
 
 -- | Interval-class cycle vector.
 ic_cycle_vector :: Integral i => [i] -> T6 [Int]
@@ -310,7 +310,7 @@ imb cs p =
 issb :: Integral i => [i] -> [i] -> [String]
 issb p q =
     let k = length q - length p
-        f = any id . map (\x -> forte_prime z12 (p ++ x) == q) . z_tto_ti_related z12
+        f = any id . map (\x -> z_forte_prime z12 (p ++ x) == q) . z_tto_ti_related z12
     in map sc_name (filter f (cf [k] scs))
 
 -- | Matrix search.
@@ -423,8 +423,8 @@ type SI i = ([i],TTO i,[i])
 si_calc :: Integral i => [i] -> (SI i,[i],[Int],SI i,SI i)
 si_calc p =
     let n = length p
-        p_icv = fromIntegral n : icv z12 p
-        gen_si x = let x_f = forte_prime z12 x
+        p_icv = fromIntegral n : z_icv z12 p
+        gen_si x = let x_f = z_forte_prime z12 x
                        x_o:_ = rs 5 z12 x_f x
                    in (nub (sort x),x_o,x_f)
     in (gen_si p,p_icv,tics z12 p,gen_si (z_complement z12 p),gen_si (map (z_mul z12 5) p))

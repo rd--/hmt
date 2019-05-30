@@ -7,6 +7,22 @@ import Data.Ratio {- base -}
 
 import qualified Music.Theory.Math.Convert as T
 
+-- | 'mod' 5.
+mod5 :: Integral i => i -> i
+mod5 n = n `mod` 5
+
+-- | 'mod' 7.
+mod7 :: Integral i => i -> i
+mod7 n = n `mod` 7
+
+-- | 'mod' 12.
+mod12 :: Integral i => i -> i
+mod12 n = n `mod` 12
+
+-- | 'mod' 16.
+mod16 :: Integral i => i -> i
+mod16 n = n `mod` 16
+
 -- | Real (alias for 'Double').
 type R = Double
 

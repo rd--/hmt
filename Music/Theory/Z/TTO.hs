@@ -1,4 +1,4 @@
--- | Twelve-tone operator, operations on un-ordered pitch-class sets.
+-- | Generalised twelve-tone operations on un-ordered pitch-class sets with arbitrary Z.
 module Music.Theory.Z.TTO where
 
 import Data.List {- base -}
@@ -21,14 +21,14 @@ data TTO t = TTO {tto_T :: t,tto_M :: t,tto_I :: Bool}
 tto_identity :: Num t => TTO t
 tto_identity = TTO 0 1 False
 
--- | Pretty printer.
+-- | Pretty printer.  It is an error here is M is not 1 or 5.
 tto_pp :: (Show t,Num t,Eq t) => TTO t -> String
 tto_pp (TTO t m i) =
   concat ['T' : show t
          ,if m == 1 then "" else if m == 5 then "M" else error "tto_pp: M?"
          ,if i then "I" else ""]
 
--- | Parser for TTO.
+-- | Parser for TTO, requires value for M (ordinarily 5 for 12-tone TTO).
 p_tto :: Integral t => t -> P.GenParser Char () (TTO t)
 p_tto m_mul = do
   _ <- P.char 'T'
@@ -50,7 +50,7 @@ tto_M_set m (TTO t _ i) = TTO t m i
 
 -- * Z
 
--- | The set of all 'TTO', given 'Z' function.
+-- | The set of all 'TTO', given 'Z'.
 --
 -- > length (z_tto_univ 5 z12) == 48
 -- > map tto_pp (z_tto_univ 5 z12)
