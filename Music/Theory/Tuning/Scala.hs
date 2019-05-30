@@ -382,28 +382,36 @@ load_dist_file nm = do
 
 -- * QUERY
 
-{- | Sum of absolute of differences to scale given in cents, sorted, with rotation.
+-- | Sum of absolute differences to scale given in cents, sorted, with rotation.
+scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]
+scl_cdiff_abs_sum c scl =
+  let r = map (T.dx_d 0) (T.rotations (T.d_dx (scale_cents scl)))
+      ndiff x i = let d = zipWith (-) c x in (sum (map abs d),d,i)
+  in sort (zipWith ndiff r [0..])
+
+{- | Variant selecting only nearest and with post-processing function.
 
 > scl <- scl_load "holder"
 > c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
-> scl_cdiff_abs_sum c scl
+> scl_cdiff_abs_sum_1 round c scl == (5,[0,2,-1,1,0,-1,0,-1,0,0,0,0,0],0)
 -}
-scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,Int)]
-scl_cdiff_abs_sum c scl =
-  let r = map (T.dx_d 0) (T.rotations (T.d_dx (scale_cents scl)))
-      ndiff = sum . map abs . zipWith (-) c
-  in sort (zip (map ndiff r) [0..])
+scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (n,[n],Int)
+scl_cdiff_abs_sum_1 pp c scl =
+  case scl_cdiff_abs_sum c scl of
+    [] -> error "scl_cdiff_abs_sum_1"
+    (n,d,r):_ -> (pp n,map pp d,r)
 
 {- | Sort DB into ascending order of sum of absolute of differences to scale given in cents.
      All rotations of the scale are considered.
 
 > db <- scl_load_db
-> c = [0.4,82.5,192.6,307.8,388.1,502.0,584.0,695.3,777.8,890.4,1003.9,1084.5,1200.0]
-> r = scl_db_query_cdiff_asc db c
+> c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
+> r = scl_db_query_cdiff_asc round db c
+> fst (head r) == (5,[0,2,-1,1,0,-1,0,-1,0,0,0,0,0],0)
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
 -}
-scl_db_query_cdiff_asc :: [Scale] -> [T.Cents] -> [((Double,Int),Scale)]
-scl_db_query_cdiff_asc db c =
+scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((n,[n],Int),Scale)]
+scl_db_query_cdiff_asc pp db c =
   let n = length c - 1
       db_n = filter ((== n) . scale_degree) db
-  in sort (map (\scl -> (head (scl_cdiff_abs_sum c scl),scl)) db_n)
+  in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl,scl)) db_n)

@@ -12,16 +12,23 @@ import qualified Music.Theory.Math.Convert as T {- hmt -}
 
 -- * DIFF
 
+-- | Show positive and negative values always with sign, maybe show zero, maybe pad right.
+--
+-- > map (num_diff_str_opt (True,2)) [-2,-1,0,1,2] == ["-2","-1"," 0","+1","+2"]
+num_diff_str_opt :: (Ord a, Num a, Show a) => (Bool,Int) -> a -> String
+num_diff_str_opt (wr_0,k) n =
+  let r = case compare n 0 of
+            LT -> '-' : show (abs n)
+            EQ -> if wr_0 then "0" else ""
+            GT -> '+' : show n
+  in if k > 0 then T.pad_left ' ' k r else r
+
 -- | Show /only/ positive and negative values, always with sign.
 --
 -- > map num_diff_str [-2,-1,0,1,2] == ["-2","-1","","+1","+2"]
 -- > map show [-2,-1,0,1,2] == ["-2","-1","0","1","2"]
 num_diff_str :: (Num a, Ord a, Show a) => a -> String
-num_diff_str n =
-    case compare n 0 of
-      LT -> '-' : show (abs n)
-      EQ -> ""
-      GT -> '+' : show n
+num_diff_str = num_diff_str_opt (False,0)
 
 -- * RATIONAL
 
