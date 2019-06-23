@@ -569,6 +569,10 @@ subsequence = isInfixOf
 findIndex_err :: (a -> Bool) -> [a] -> Int
 findIndex_err f = fromMaybe (error "findIndex?") . findIndex f
 
+-- | Erroring variant of 'elemIndex'.
+elemIndex_err :: Eq a => a -> [a] -> Int
+elemIndex_err x = fromMaybe (error "ix_of") . elemIndex x
+
 -- | Variant of 'elemIndices' that requires /e/ to be unique in /p/.
 --
 -- > elem_index_unique 'a' "abcda" == undefined
