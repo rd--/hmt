@@ -42,6 +42,8 @@ dir_find :: FilePath -> FilePath -> IO [FilePath]
 dir_find fn dir = fmap lines (readProcess "find" [dir,"-name",fn] "")
 
 -- | Require that exactly one file is located, else error.
+--
+-- > dir_find_1 "DX7-ROM1A.syx" "/home/rohan/sw/hsc3-data/data/yamaha/"
 dir_find_1 :: FilePath -> FilePath -> IO FilePath
 dir_find_1 fn dir = do
   r <- dir_find fn dir
