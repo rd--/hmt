@@ -64,10 +64,10 @@ type FMINSEC = Double
 -- * T.UTCTime format strings.
 
 -- | 'T.parseTimeOrError' with 'T.defaultTimeLocale'.
-parse_time_str :: String -> String -> T.UTCTime
+parse_time_str :: T.ParseTime t => String -> String -> t
 parse_time_str = T.parseTimeOrError True T.defaultTimeLocale
 
-format_time_str :: String -> T.UTCTime -> String
+format_time_str :: T.FormatTime t => String -> t -> String
 format_time_str = T.formatTime T.defaultTimeLocale
 
 -- * ISO-8601
@@ -87,7 +87,7 @@ parse_iso8601_date s =
 --
 -- > format_iso8601_date True (parse_iso8601_date "2011-10-09") == "2011-10-09"
 -- > format_iso8601_date False (parse_iso8601_date "20190803") == "20190803"
-format_iso8601_date :: Bool -> T.UTCTime -> String
+format_iso8601_date :: T.FormatTime t => Bool -> t -> String
 format_iso8601_date ext = if ext then format_time_str "%F" else format_time_str "%Y%m%d"
 
 {- | Format date in ISO-8601 (@YYYY-WWW@) form.
@@ -96,7 +96,7 @@ format_iso8601_date ext = if ext then format_time_str "%F" else format_time_str 
 > map (format_iso8601_week . parse_iso8601_date) ["2017-01-01","2011-10-09"] == r
 
 -}
-format_iso8601_week :: T.UTCTime -> String
+format_iso8601_week :: T.FormatTime t => t -> String
 format_iso8601_week = format_time_str "%G-W%V"
 
 -- | Parse ISO-8601 time is extended (@HH:MM:SS@) or basic (@HHMMSS@) form.
@@ -114,7 +114,7 @@ parse_iso8601_time s =
 --
 -- > format_iso8601_time True (parse_iso8601_date_time "2011-10-09T21:44:00") == "21:44:00"
 -- > format_iso8601_time False (parse_iso8601_date_time "20190803T172511") == "172511"
-format_iso8601_time :: Bool -> T.UTCTime -> String
+format_iso8601_time :: T.FormatTime t => Bool -> t -> String
 format_iso8601_time ext = format_time_str (if ext then "%H:%M:%S" else "%H%M%S")
 
 -- | Parse date and time in extended or basic forms.
@@ -135,7 +135,7 @@ parse_iso8601_date_time s =
 > format_iso8601_date_time False t == "20111009T214400"
 
 -}
-format_iso8601_date_time :: Bool -> T.UTCTime -> String
+format_iso8601_date_time :: T.FormatTime t => Bool -> t -> String
 format_iso8601_date_time ext = format_time_str (if ext then "%FT%H:%M:%S" else "%Y%m%dT%H%M%S")
 
 -- * FSEC
