@@ -72,19 +72,25 @@ format_time_str = T.formatTime T.defaultTimeLocale
 
 -- * ISO-8601
 
--- | Parse date in ISO-8601 (@Y-m-d@) form.
+-- | Parse date in ISO-8601 extended (@YYYY-MM-DD@) or basic (@YYYYMMDD@) form.
 --
 -- > T.toGregorian (T.utctDay (parse_iso8601_date "2011-10-09")) == (2011,10,09)
+-- > T.toGregorian (T.utctDay (parse_iso8601_date "20190803")) == (2019,08,03)
 parse_iso8601_date :: String -> T.UTCTime
-parse_iso8601_date = parse_time_str "%F"
+parse_iso8601_date s =
+  case length s of
+    8 -> parse_time_str "%Y%m%d" s -- basic
+    10 -> parse_time_str "%F" s -- extended
+    _ -> error "parse_iso8601_date?"
 
--- | Format date in ISO-8601 (@Y-m-d@) form.
+-- | Format date in ISO-8601 form.
 --
--- > format_iso8601_date (parse_iso8601_date "2011-10-09") == "2011-10-09"
-format_iso8601_date :: T.UTCTime -> String
-format_iso8601_date = format_time_str "%F"
+-- > format_iso8601_date True (parse_iso8601_date "2011-10-09") == "2011-10-09"
+-- > format_iso8601_date False (parse_iso8601_date "20190803") == "20190803"
+format_iso8601_date :: Bool -> T.UTCTime -> String
+format_iso8601_date ext = if ext then format_time_str "%F" else format_time_str "%Y%m%d"
 
-{- | Format date in ISO-8601 (@Y-W@) form.
+{- | Format date in ISO-8601 (@YYYY-WWW@) form.
 
 > r = ["2016-W52","2011-W40"]
 > map (format_iso8601_week . parse_iso8601_date) ["2017-01-01","2011-10-09"] == r
@@ -93,32 +99,44 @@ format_iso8601_date = format_time_str "%F"
 format_iso8601_week :: T.UTCTime -> String
 format_iso8601_week = format_time_str "%G-W%V"
 
--- | Parse ISO-8601 @H:M:S@ time.
+-- | Parse ISO-8601 time is extended (@HH:MM:SS@) or basic (@HHMMSS@) form.
 --
--- > format_iso8601_time (parse_iso8601_time "21:44:00") == "21:44:00"
+-- > format_iso8601_time True (parse_iso8601_time "21:44:00") == "21:44:00"
+-- > format_iso8601_time False (parse_iso8601_time "172511") == "172511"
 parse_iso8601_time :: String -> T.UTCTime
-parse_iso8601_time = parse_time_str "%H:%M:%S"
+parse_iso8601_time s =
+  case length s of
+    6 -> parse_time_str "%H%M%S" s -- basic
+    8 -> parse_time_str "%H:%M:%S" s -- extended
+    _ -> error "parse_iso8601_time?"
 
--- | Format time in @H:M:S@ form.
+-- | Format time in ISO-8601 form.
 --
--- > format_iso8601_time (parse_iso8601_date_time "2011-10-09T21:44:00") == "21:44:00"
-format_iso8601_time :: T.UTCTime -> String
-format_iso8601_time = format_time_str "%H:%M:%S"
+-- > format_iso8601_time True (parse_iso8601_date_time "2011-10-09T21:44:00") == "21:44:00"
+-- > format_iso8601_time False (parse_iso8601_date_time "20190803T172511") == "172511"
+format_iso8601_time :: Bool -> T.UTCTime -> String
+format_iso8601_time ext = format_time_str (if ext then "%H:%M:%S" else "%H%M%S")
 
--- | Parse date in @Y-m-d@ and time in @H:M:%S@ forms.
+-- | Parse date and time in extended or basic forms.
 --
 -- > T.utctDayTime (parse_iso8601_date_time "2011-10-09T21:44:00") == T.secondsToDiffTime 78240
+-- > T.utctDayTime (parse_iso8601_date_time "20190803T172511") == T.secondsToDiffTime 62711
 parse_iso8601_date_time :: String -> T.UTCTime
-parse_iso8601_date_time = parse_time_str "%FT%H:%M:%S"
+parse_iso8601_date_time s =
+  case length s of
+    15 -> parse_time_str "%Y%m%dT%H%M%S" s -- basic
+    19 -> parse_time_str "%FT%H:%M:%S" s -- extended
+    _ -> error "parse_iso8601_date_time?"
 
-{- | Format date in @Y-m-d@ and time in @H:M:S@ forms.
+{- | Format date in @YYYY-MM-DD@ and time in @HH:MM:SS@ forms.
 
 > t = parse_iso8601_date_time "2011-10-09T21:44:00"
-> format_iso8601_date_time t == "2011-10-09T21:44:00"
+> format_iso8601_date_time True t == "2011-10-09T21:44:00"
+> format_iso8601_date_time False t == "20111009T214400"
 
 -}
-format_iso8601_date_time :: T.UTCTime -> String
-format_iso8601_date_time = format_time_str "%FT%H:%M:%S"
+format_iso8601_date_time :: Bool -> T.UTCTime -> String
+format_iso8601_date_time ext = format_time_str (if ext then "%FT%H:%M:%S" else "%Y%m%dT%H%M%S")
 
 -- * FSEC
 
