@@ -23,6 +23,7 @@ g6_dsc_load fn = do
   return r
 
 -- | Call nauty-listg to transform a sequence of G6.
+--   debian = nauty
 g6_to_edg :: [String] -> IO [T.EDG]
 g6_to_edg g6 = do
   r <- readProcess "nauty-listg" ["-q","-l0","-e"] (unlines g6)
