@@ -15,7 +15,7 @@ Euler totient function phi(n): count numbers <= n and prime to n.
 a000010 :: Integral n => [n]
 a000010 =
   let phi n = genericLength (filter (==1) (map (gcd n) [1..n]))
-  in map phi [1..]
+  in map phi [1::Integer ..]
 
 {- | <http://oeis.org/A000045>
 
@@ -67,7 +67,7 @@ a005728 :: Integral i => [i]
 a005728 =
   let phi n = genericLength (filter (==1) (map (gcd n) [1..n]))
       f n = if n == 0 then 1 else f (n - 1) + phi n
-  in map f [0..]
+  in map f [0::Integer ..]
 
 {- | <http://oeis.org/A005811>
 

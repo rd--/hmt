@@ -118,6 +118,7 @@ Library
                    Music.Theory.Pitch.Spelling.Key
                    Music.Theory.Pitch.Spelling.Table
                    Music.Theory.Random.I_Ching
+                   Music.Theory.Random.Jones_1981
                    Music.Theory.Read
                    Music.Theory.Set.List
                    Music.Theory.Set.Set
