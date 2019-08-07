@@ -86,6 +86,8 @@ a005811 =
 Triangle read by rows: row n gives numerators of Farey series of order n.
 
 > [0,1,0,1,1,0,1,1,2,1,0,1,1,1,2,3,1,0,1,1,1,2,1,3,2,3,4,1,0,1,1,1,1,2,1,3] `isPrefixOf` a006842
+> plot_p1_imp [take 200 (a006842 :: [Int])]
+> plot_p1_pt [take 10000 (a006842 :: [Int])]
 -}
 a006842 :: Integral i => [i]
 a006842 = map numerator (concatMap Math.farey [1..])
@@ -95,6 +97,8 @@ a006842 = map numerator (concatMap Math.farey [1..])
 Triangle read by rows: row n gives denominators of Farey series of order n
 
 > [1,1,1,2,1,1,3,2,3,1,1,4,3,2,3,4,1,1,5,4,3,5,2,5,3,4,5,1,1,6,5,4,3,5,2,5] `isPrefixOf` a006843
+> plot_p1_imp [take 200 (a006843 :: [Int])]
+> plot_p1_pt [take 10000 (a006843 :: [Int])]
 -}
 a006843 :: Integral i => [i]
 a006843 = map denominator (concatMap Math.farey [1..])

@@ -42,7 +42,7 @@ integer_and_fractional_parts = integral_and_fractional_parts
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
 --
 -- > import Sound.SC3.Plot {- hsc3-plot -}
--- > plotTable1 (map fractional_part [-2.0,-1.99 .. 2.0])
+-- > plot_p1_ln [map fractional_part [-2.0,-1.99 .. 2.0]]
 fractional_part :: RealFrac a => a -> a
 fractional_part = snd . integer_and_fractional_parts
 
@@ -77,7 +77,7 @@ whole_to_precision k = zero_to_precision k . fractional_part . T.real_to_double
 
 -- | <http://reference.wolfram.com/mathematica/ref/SawtoothWave.html>
 --
--- > plotTable1 (map sawtooth_wave [-2.0,-1.99 .. 2.0])
+-- > plot_p1_ln [map sawtooth_wave [-2.0,-1.99 .. 2.0]]
 sawtooth_wave :: RealFrac a => a -> a
 sawtooth_wave n = n - floor_f n
 
@@ -200,6 +200,9 @@ square :: Num a => a -> a
 square n = n * n
 
 -- | The totient function phi(n), also called Euler's totient function.
+--
+-- > import Sound.SC3.Plot {- hsc3-plot -}
+-- > plot_p1_stp [map totient [1::Int .. 100]]
 totient :: Integral i => i -> i
 totient n = genericLength (filter (==1) (map (gcd n) [1..n]))
 
