@@ -352,3 +352,34 @@ cents_diff_md = cents_diff_br ("^","^")
 cents_diff_html :: (Num a, Ord a, Show a) => a -> String
 cents_diff_html = cents_diff_br ("<SUP>","</SUP>")
 
+-- * Savart
+
+-- | Felix Savart (1791-1841), the ratio of 10:1 is assigned a value of 1000 savarts.
+type Savarts = Double
+
+-- | Ratio to savarts.
+--
+-- > fratio_to_savarts 10 == 1000
+-- > fratio_to_savarts 2 == 301.02999566398114
+fratio_to_savarts :: Floating a => a -> a
+fratio_to_savarts r = 1000 * logBase 10 r
+
+-- | Savarts to ratio.
+--
+-- > savarts_to_fratio 1000 == 10
+-- > savarts_to_fratio 301.02999566398118 == 2
+savarts_to_fratio :: Floating a => a -> a
+savarts_to_fratio s = 10 ** (s / 1000)
+
+-- | Savarts to cents.
+--
+-- > savarts_to_cents 1 == 3.9863137138648352
+savarts_to_cents :: Floating a => a -> a
+savarts_to_cents s = s * (6 / (5 * logBase 10 2))
+
+-- | Cents to savarts.
+--
+-- > cents_to_savarts 3.9863137138648352 == 1
+-- > cents_to_savarts 1200 == ratio_to_savarts 2
+cents_to_savarts :: Floating a => a -> a
+cents_to_savarts c = c / (6 / (5 * logBase 10 2))

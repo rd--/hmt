@@ -199,3 +199,21 @@ ns_mean =
 square :: Num a => a -> a
 square n = n * n
 
+-- | The totient function phi(n), also called Euler's totient function.
+totient :: Integral i => i -> i
+totient n = genericLength (filter (==1) (map (gcd n) [1..n]))
+
+-- | The /n/-th order Farey sequence.
+--
+-- > map (length . farey) [1 .. 12] == map farey_length [1 .. 12]
+farey :: Integral i => i -> [Ratio i]
+farey n =
+  let step (a,b,c,d) =
+        if c > n
+        then Nothing
+        else let k = (n + b) `quot` d in Just (c % d, (c,d,k * c - a,k * d - b))
+  in 0 : unfoldr step (0,1,1,n)
+
+-- | The length of the /n/-th order Farey sequence.
+farey_length :: Integral i => i -> i
+farey_length n = if n == 0 then 1 else farey_length (n - 1) + totient n

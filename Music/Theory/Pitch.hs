@@ -243,7 +243,7 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
 
 -- | Print fractional midi note number as ET12 pitch with cents detune in parentheses.
 --
--- > fmidi_et12_cents_pp 66.5 == "F♯4(+50)"
+-- > fmidi_et12_cents_pp pc_spell_ks 66.5 == "F♯4(+50)"
 fmidi_et12_cents_pp :: Spelling PitchClass -> Double -> String
 fmidi_et12_cents_pp sp =
     let f (m,c) =
