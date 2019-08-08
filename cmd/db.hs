@@ -21,24 +21,33 @@ db_store_ty ty fn =
       "csv" -> CSV.db_store_utf8 fn
       _ -> error "db_store_ty"
 
--- > convert ("plain","csv") ("/home/rohan/in/CREDITS.txt","/tmp/t.csv")
--- > convert ("json","csv") ("/home/rohan/ut/www-spr/data/db.js","/tmp/t.csv")
--- > convert ("json","plain") ("/home/rohan/ut/www-rd/data/db.js","/tmp/t.text")
--- > convert ("json","plain") ("/home/rohan/ut/www-spr/data/db.js","/tmp/t.text")
+-- > convert ("plain","csv") ("/home/rohan/ut/www-spr/data/db.text","/tmp/t.csv")
+-- > convert ("csv","json") ("/tmp/t.csv","/tmp/t.json")
 convert :: (String,String) -> (FilePath,FilePath) -> IO ()
 convert (input_ty,output_ty) (input_fn,output_fn) = do
   db <- db_load_ty input_ty input_fn
   db_store_ty output_ty output_fn db
 
+-- > stat "plain" "/home/rohan/ut/inland/db/artists.text"
+stat :: String -> FilePath -> IO ()
+stat ty fn = do
+  db <- db_load_ty ty fn
+  let ks = Common.db_key_set db
+  print ("#-records",length db)
+  print ("#-keys",length ks)
+  print ("key-set",unwords ks)
+
 help :: [String]
 help =
     ["convert input-type output-type input-file output-file"
+    ,"stat type file-name"
+    ,""
     ,"  type = csv | json | plain"]
 
 main :: IO ()
 main = do
   a <- getArgs
   case a of
-    ["convert",input_ty,output_ty,input_fn,output_fn] ->
-         convert (input_ty,output_ty) (input_fn,output_fn)
+    ["convert",i_ty,o_ty,i_fn,o_fn] -> convert (i_ty,o_ty) (i_fn,o_fn)
+    ["stat",ty,fn] -> stat ty fn
     _ -> putStrLn (unlines help)

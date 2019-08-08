@@ -202,7 +202,7 @@ help =
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
-    ,"midi-table freq|mnn-cents d12 name:string cents:real mnn:int"
+    ,"midi-table freq|mts d12 name:string cents:real mnn:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"
@@ -223,9 +223,9 @@ main = do
         cps_tbl_d12 fmt (nm,read c,read k) (read l,read r)
     ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] ->
         csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
-    ["db-stat"] ->
+    ["db","stat"] ->
         db_stat
-    ["db-summarise",nm_lim,dsc_lim] ->
+    ["db","summarise",nm_lim,dsc_lim] ->
         db_summarise (nil_or_read nm_lim) (nil_or_read dsc_lim)
     ["env"] ->
         env

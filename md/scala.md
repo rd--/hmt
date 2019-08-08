@@ -1,99 +1,12 @@
+[cps-tbl](#cps-tbl),
 [env](#env),
-[db-stat](#db-stat), [db-summarise](#db-summarise),
+[db stat](#db-stat), [db summarise](#db-summarise),
 [search scale](#search-scale), [search mode](#search-mode),
-[midi-table](#midi-tbl),
+[midi-table](#midi-table),
 [fluidsynth](#fluidsynth),
 [intnam lookup](#intnam-lookup), [intnam search](#intnam-search)
 
-# env
-
-Print environment variable names, and values if set.
-
-~~~~
-$ hmt-scala env
-SCALA_SCL_DIR = /home/rohan/data/scala/84/scl
-SCALA_DIST_DIR = /home/rohan/opt/build/scala-22-pc64-linux
-$
-~~~~
-
-# db-stat
-
-~~~~
-$ hmt-scala db-stat
-# entries        : 4590
-# perfect-octave : 3937
-# scale-uniform  : 2761
-$
-~~~~
-
-# db-summarise
-
-~~~~
-$ hmt-scala db-summarise 12 68 | grep convex | grep 7-limit
-diaconv1029  : convex closure of 7-limit diamond with respect to 1029/1024
-diaconv225   : convex closure of 7-limit diamond with respect to 225/224
-diaconv2401  : convex closure of 7-limit diamond with respect to 2401/2400
-diaconv3136  : convex closure of 7-limit diamond with respect to 3136/3125
-diaconv4375  : convex closure of 7-limit diamond with respect to 4375/4374
-diaconv5120  : convex closure of 7-limit diamond with respect to 5120/5103
-diaconv6144  : convex closure of 7-limit diamond with respect to 6144/6125
-diamond7_126 : 7-limit diamond starling (126/125) 5-limit convex closure
-diamond7_225 : 7-limit diamond marvel (225/224) 5-limit convex closure
-$
-~~~~
-
-# search scale
-
-~~~~
-$ hmt-scala search scale ci 75 la monte young
-name        : young-lm_guitar
-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.o
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
-ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
-
-name        : young-lm_piano
-description : LaMonte Young's Well-Tuned Piano
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,177,204,240,471,444,675,702,738,969,942,1173,1200]
-ratios      : 1,567/512,9/8,147/128,21/16,1323/1024,189/128,3/2,49/32,7/4,4
-
-name        : young-lm_piano_1964
-description : LaMonte Young's Well-Tuned Piano (1964)
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
-ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4,31/16
-$
-~~~~
-
-# search mode
-
-~~~~
-$ hmt-scala search mode ci nil xenakis
-mode-start-degree : 0
-mode-intervals    : 5,19,6,12,5,19,6
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Chromatic
-
-mode-start-degree : 0
-mode-intervals    : 7,16,7,12,7,16,7
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
-
-mode-start-degree : 0
-mode-intervals    : 12,11,7,12,12,11,7
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
-$
-~~~~
-
-## cps-tbl
+# cps-tbl <a id="cps-tbl"></a>
 
 Simple `CPS` table for tuning, indicating ET12 A=440 as reference.
 Table format can be `csv` or `md`.
@@ -101,8 +14,6 @@ The table is printed for indicated midi note number range (A0 = 21, C8 = 108).
 
 ~~~~
 $ hmt-scala cps-tbl md d12 young-lm_piano -74.7 -3 60 72
-~~~~
-
 MNN    CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
 --- ------ ---- -------- ------- -------- --------
  60 260.74   C4     -5.9  261.63       C4     -5.9
@@ -119,11 +30,7 @@ MNN    CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
  71 456.29  Bb4    -37.0  493.88       B4   -137.0
  72 521.48   C5     -5.9  523.25       C5     -5.9
 --- ------ ---- -------- ------- -------- --------
-
-~~~~
 $ hmt-scala cps-tbl md cps cet111 440 69 25 69 93
-~~~~
-
 MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
 --- ------- ---- -------- ------- -------- --------
  69 1308.76   E6    -12.8  440.00       A4   1887.2
@@ -153,8 +60,97 @@ MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
  93 6135.81   G8    -38.0 1760.00       A6   2162.0
  94 6543.81  Ab8    -26.5 1864.66      Bb6   2173.5
 --- ------- ---- -------- ------- -------- --------
+~~~~
 
-# midi-table
+# env <a id="env"></a>
+
+Print environment variable names, and values if set.
+
+~~~~
+$ hmt-scala env
+SCALA_SCL_DIR = /home/rohan/data/scala/84/scl
+SCALA_DIST_DIR = /home/rohan/opt/build/scala-22-pc64-linux
+$
+~~~~
+
+# db stat <a id="db-stat"></a>
+
+~~~~
+$ hmt-scala db stat
+# entries        : 4590
+# perfect-octave : 3937
+# scale-uniform  : 2761
+$
+~~~~
+
+# db summarise <a id="db-summarise"></a>
+
+~~~~
+$ hmt-scala db-summarise 12 68 | grep convex | grep 7-limit
+diaconv1029  : convex closure of 7-limit diamond with respect to 1029/1024
+diaconv225   : convex closure of 7-limit diamond with respect to 225/224
+diaconv2401  : convex closure of 7-limit diamond with respect to 2401/2400
+diaconv3136  : convex closure of 7-limit diamond with respect to 3136/3125
+diaconv4375  : convex closure of 7-limit diamond with respect to 4375/4374
+diaconv5120  : convex closure of 7-limit diamond with respect to 5120/5103
+diaconv6144  : convex closure of 7-limit diamond with respect to 6144/6125
+diamond7_126 : 7-limit diamond starling (126/125) 5-limit convex closure
+diamond7_225 : 7-limit diamond marvel (225/224) 5-limit convex closure
+$
+~~~~
+
+# search scale <a id="search-scale"></a>
+
+~~~~
+$ hmt-scala search scale ci 75 la monte young
+name        : young-lm_guitar
+description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.o
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
+ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
+
+name        : young-lm_piano
+description : LaMonte Young's Well-Tuned Piano
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,177,204,240,471,444,675,702,738,969,942,1173,1200]
+ratios      : 1,567/512,9/8,147/128,21/16,1323/1024,189/128,3/2,49/32,7/4,4
+
+name        : young-lm_piano_1964
+description : LaMonte Young's Well-Tuned Piano (1964)
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
+ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4,31/16
+$
+~~~~
+
+# search mode <a id="search-mode"></a>
+
+~~~~
+$ hmt-scala search mode ci nil xenakis
+mode-start-degree : 0
+mode-intervals    : 5,19,6,12,5,19,6
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Chromatic
+
+mode-start-degree : 0
+mode-intervals    : 7,16,7,12,7,16,7
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
+
+mode-start-degree : 0
+mode-intervals    : 12,11,7,12,12,11,7
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
+$
+~~~~
+
+# midi-table <a id="midi-table"></a>
 
 Table with 128 entries mapping midi-note-number to either frequency or MTS values.
 
@@ -162,11 +158,41 @@ MTS (MIDI-TUNING-STANDARD) values are (midi-note-number,positive-cents).
 
 ~~~~
 $ hmt-scala midi-table freq d12 young-lm_piano -74.7 -3
+...
+ 60,  260.7394
+ 61,  256.6653
+ 62,  293.3318
+ 63,  297.9879
+ 64,  329.9983
+ 65,  335.2363
+ 66,  342.2204
+ 67,  391.1091
+ 68,  384.9980
+ 69,  439.9977
+ 70,  446.9818
+ 71,  456.2939
+ 72,  521.4787
+...
 $ hmt-scala midi-table mts d12 meanquar 0 0
+...
+ 60, 60, 0.0000
+ 61, 60,76.0490
+ 62, 61,93.1569
+ 63, 63,10.2647
+ 64, 63,86.3137
+ 65, 65, 3.4216
+ 66, 65,79.4706
+ 67, 66,96.5784
+ 68, 67,72.6274
+ 69, 68,89.7353
+ 70, 70, 6.8431
+ 71, 70,82.8921
+ 72, 72, 0.0000
+...
 $
 ~~~~
 
-# fluidsynth
+# fluidsynth <a id="fluidsynth"></a>
 
 Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
 Columns are: bank, program, midi-note-number, non-negative-cents (0 = C-1)
@@ -190,7 +216,7 @@ tune 0 0 11 962.95
 $
 ~~~~
 
-# intnam lookup
+# intnam lookup <a id="intnam-lookup"></a>
 
 Lookup name of interval given by ratio, print also the cents value of the interval.
 
@@ -213,7 +239,7 @@ $ hmt-scala intnam lookup 256/243 264/256 288/264 294/288 324/294 4/3
 $
 ~~~~
 
-# intnam search
+# intnam search <a id="intnam-search"></a>
 
 Lookup intervals with names that, case insenstively, include the indicated text.
 
