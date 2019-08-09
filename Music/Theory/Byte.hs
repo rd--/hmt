@@ -2,23 +2,35 @@
 module Music.Theory.Byte where
 
 import Data.Char {- base -}
-import Data.Int {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 import Numeric {- base -}
 
 import qualified Data.ByteString as B {- bytestring -}
-import qualified Data.ByteString.Lazy as L {- bytestring -}
 import qualified Data.List.Split as Split {- split -}
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 
+{-
+import Data.Int {- base -}
+import qualified Data.ByteString.Lazy as L {- bytestring -}
+
 -- * LBS
 
+-- | Section function for 'L.ByteString', ie. from (n,m).
+--
+-- > lbs_slice 4 5 (L.pack [1..10]) == L.pack [5,6,7,8,9]
+lbs_slice :: Int64 -> Int64 -> L.ByteString -> L.ByteString
+lbs_slice n m = L.take m . L.drop n
+
+-- | Variant of slice with start and end indices (zero-indexed).
+--
+-- > lbs_section 4 8 (L.pack [1..]) == L.pack [5,6,7,8,9]
 lbs_section :: Int64 -> Int64 -> L.ByteString -> L.ByteString
-lbs_section n m = L.take m . L.drop n
+lbs_section l r = L.take (r - l + 1) . L.drop l
+-}
 
 -- * Enumerations & Char
 

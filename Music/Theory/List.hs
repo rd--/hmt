@@ -15,7 +15,7 @@ import qualified Data.List.Split.Internals as S {- split -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
--- | Data.Vector.slice, ie. starting index (zero-indexed) and number of elements.
+-- | 'Data.Vector.slice', ie. starting index (zero-indexed) and number of elements.
 --
 -- > slice 4 5 [1..] == [5,6,7,8,9]
 slice :: Int -> Int -> [a] -> [a]

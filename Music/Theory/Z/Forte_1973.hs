@@ -409,6 +409,7 @@ sc_name_unicode = sc_name_tbl sc_table_unicode
 sc :: Num n => SC_Name -> [n]
 sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
 
+-- | The set-class table (Forte prime forms), ie. 'snd' of 'sc_table'.
 scs :: Num n => [[n]]
 scs = map snd sc_table
 

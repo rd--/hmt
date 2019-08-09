@@ -34,16 +34,18 @@ type Iseq t a = [(t,a)]
 
 -- | Pattern sequence.
 -- The duration is a triple of /logical/, /sounding/ and /forward/ durations.
+-- Ie. the time it conceptually takes, the time it actually takes, and the time to the next event.
 type Pseq t a = [((t,t,t),a)]
 
 -- | Time-point sequence.
+-- /t/ is the start-time of the value.
 -- To express holes /a/ must have an /empty/ value.
 -- Duration can be encoded at /a/, or if implicit /a/ must include an end of sequence value.
 type Tseq t a = [(t,a)]
 
 -- | Window sequence.
--- /t/ is a duple of /time/ and /duration/.
--- Holes exist where @t(n) + d(n)@ '<' @t(n+1)@.
+-- /t/ is a duple of /start-time/ and /duration/.
+-- Holes exist where @st(n) + du(n)@ '<' @st(n+1)@.
 -- Overlaps exist where the same relation is '>'.
 type Wseq t a = [((t,t),a)]
 
@@ -128,7 +130,7 @@ wseq_until tm = takeWhile (\((t0,_),_) -> t0 <= tm)
 -- edges, ie. [t0,t1].  Halts processing at end of window.
 --
 -- > let r = [((5,1),'e'),((6,1),'f'),((7,1),'g'),((8,1),'h')]
--- > in wseq_twindow (5,9) (zip (zip [1..] (repeat 1)) ['a'..]) == r
+-- > wseq_twindow (5,9) (zip (zip [1..] (repeat 1)) ['a'..]) == r
 --
 -- > wseq_twindow (1,2) [((1,1),'a'),((1,2),'b')] == [((1,1),'a')]
 wseq_twindow :: (Num t, Ord t) => (t,t) -> Wseq t a -> Wseq t a
@@ -141,7 +143,7 @@ wseq_twindow (w0,w1) =
 -- of window.
 --
 -- > let sq = [((1,1),'a'),((1,2),'b')]
--- > in map (wseq_at sq) [1,2] == [sq,[((1,2),'b')]]
+-- > map (wseq_at sq) [1,2] == [sq,[((1,2),'b')]]
 --
 -- > wseq_at (zip (zip [1..] (repeat 1)) ['a'..]) 3 == [((3,1),'c')]
 wseq_at :: (Num t,Ord t) => Wseq t a -> t -> Wseq t a
@@ -155,7 +157,7 @@ wseq_at sq tm =
 -- of window.
 --
 -- > let sq = [((0,2),'a'),((0,4),'b'),((2,4),'c')]
--- > in wseq_at_window sq (1,3) == sq
+-- > wseq_at_window sq (1,3) == sq
 --
 -- > wseq_at_window (zip (zip [1..] (repeat 1)) ['a'..]) (3,4) == [((3,1),'c'),((4,1),'d')]
 wseq_at_window :: (Num t, Ord t) => Wseq t a -> (t,t) -> Wseq t a
@@ -368,10 +370,10 @@ seq_partition voice sq =
 
 -- | Type specialised 'seq_partition'.
 --
--- > let {p = zip [0,1,3,5] (zip (repeat 0) "abcd")
--- >     ;q = zip [2,4,6,7] (zip (repeat 1) "ABCD")
--- >     ;sq = tseq_merge p q}
--- > in tseq_partition fst sq == [(0,p),(1,q)]
+-- > let p = zip [0,1,3,5] (zip (repeat 0) "abcd")
+-- > let q = zip [2,4,6,7] (zip (repeat 1) "ABCD")
+-- > let sq = tseq_merge p q
+-- > tseq_partition fst sq == [(0,p),(1,q)]
 tseq_partition :: Ord v => (a -> v) -> Tseq t a -> [(v,Tseq t a)]
 tseq_partition = seq_partition
 
@@ -407,7 +409,7 @@ coalesce_m dec_f = coalesce_f dec_f mappend
 -- /element/, and a join function sums the /times/.
 --
 -- > let r = [(1,'a'),(2,'b'),(3,'c'),(2,'d'),(1,'e')]
--- > in seq_coalesce (==) const (useq_to_dseq (1,"abbcccdde")) == r
+-- > seq_coalesce (==) const (useq_to_dseq (1,"abbcccdde")) == r
 seq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> [(t,a)] -> [(t,a)]
 seq_coalesce dec_f jn_f =
     let dec_f' = dec_f `on` snd
@@ -422,9 +424,9 @@ dseq_coalesce = seq_coalesce
 -- 'dseq_coalesce' where the /join/ function is 'const'.  The
 -- implementation is simpler and non-recursive.
 --
--- > let {d = useq_to_dseq (1,"abbcccdde")
--- >     ;r = dseq_coalesce (==) const d}
--- > in dseq_coalesce' (==) d == r
+-- > let d = useq_to_dseq (1,"abbcccdde")
+-- > let r = dseq_coalesce (==) const d
+-- > dseq_coalesce' (==) d == r
 dseq_coalesce' :: Num t => (a -> a -> Bool) -> Dseq t a -> Dseq t a
 dseq_coalesce' eq =
     let f l = let (t,e:_) = unzip l in (sum t,e)
@@ -453,7 +455,7 @@ wseq_tcoalesce = seq_tcoalesce
 -- | Post-process 'groupBy' of /cmp/ 'on' 'fst'.
 --
 -- > let r = [(0,"a"),(1,"bc"),(2,"de"),(3,"f")]
--- > in group_f (==) (zip [0,1,1,2,2,3] ['a'..]) == r
+-- > group_f (==) (zip [0,1,1,2,2,3] ['a'..]) == r
 group_f :: (Eq t,Num t) => (t -> t -> Bool) -> [(t,a)] -> [(t,[a])]
 group_f cmp =
     let f l = let (t,a) = unzip l
@@ -465,7 +467,7 @@ group_f cmp =
 -- | Group values at equal time points.
 --
 -- > let r = [(0,"a"),(1,"bc"),(2,"de"),(3,"f")]
--- > in tseq_group (zip [0,1,1,2,2,3] ['a'..]) == r
+-- > tseq_group (zip [0,1,1,2,2,3] ['a'..]) == r
 --
 -- > tseq_group [(1,'a'),(1,'b')] == [(1,"ab")]
 -- > tseq_group [(1,'a'),(2,'b'),(2,'c')] == [(1,"a"),(2,"bc")]
@@ -475,7 +477,7 @@ tseq_group = group_f (==)
 -- | Group values where the inter-offset time is @0@ to the left.
 --
 -- > let r = [(0,"a"),(1,"bcd"),(1,"ef")]
--- > in iseq_group (zip [0,1,0,0,1,0] ['a'..]) == r
+-- > iseq_group (zip [0,1,0,0,1,0] ['a'..]) == r
 iseq_group :: (Eq t,Num t) => Iseq t a -> Iseq t [a]
 iseq_group = group_f (\_ d -> d == 0)
 
@@ -744,9 +746,9 @@ wseq_begin_end_either = tseq_map begin_end_to_either . wseq_begin_end
 
 -- | Variant that applies /begin/ and /end/ functions to nodes.
 --
--- > let {sq = [((0,5),'a'),((2,2),'b')]
--- >     ;r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]}
--- > in wseq_begin_end_f Data.Char.toUpper id sq == r
+-- > let sq = [((0,5),'a'),((2,2),'b')]
+-- > let r = [(0,'A'),(2,'B'),(4,'b'),(5,'a')]
+-- > wseq_begin_end_f Data.Char.toUpper id sq == r
 wseq_begin_end_f :: (Ord t,Num t) => (a -> b) -> (a -> b) -> Wseq t a -> Tseq t b
 wseq_begin_end_f f g = tseq_map (either f g) . wseq_begin_end_either
 
@@ -786,9 +788,9 @@ wseq_accumulate = tseq_accumulate . tseq_group . wseq_begin_end
 -- | Inverse of 'wseq_begin_end' given a predicate function for locating
 -- the /end/ node of a /begin/ node.
 --
--- > let {sq = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]
--- >     ;r = [((0,5),'a'),((2,2),'b')]}
--- > in tseq_begin_end_to_wseq (==) sq == r
+-- > let sq = [(0,Begin 'a'),(2,Begin 'b'),(4,End 'b'),(5,End 'a')]
+-- > let r = [((0,5),'a'),((2,2),'b')]
+-- > tseq_begin_end_to_wseq (==) sq == r
 tseq_begin_end_to_wseq :: Num t => (a -> a -> Bool) -> Tseq t (Begin_End a) -> Wseq t a
 tseq_begin_end_to_wseq cmp =
     let cmp' x e =
@@ -843,7 +845,7 @@ iseq_to_tseq t0 = T.rezip (tail . T.dx_d t0) id
 -- /logical/ duration.
 --
 -- > let p = pseq_zip (repeat undefined) (cycle [1,2]) (cycle [1,1,2]) "abcdef"
--- > in pseq_to_wseq 0 p == wseq_zip [0,1,2,4,5,6] (cycle [1,2]) "abcdef"
+-- > pseq_to_wseq 0 p == wseq_zip [0,1,2,4,5,6] (cycle [1,2]) "abcdef"
 pseq_to_wseq :: Num t => t -> Pseq t a -> Wseq t a
 pseq_to_wseq t0 sq =
     let (p,a) = unzip sq
@@ -856,10 +858,10 @@ pseq_to_wseq t0 sq =
 -- value is required in case the 'Tseq' does not begin at @0@.
 --
 -- > let r = zip [1,2,3,2,1] "abcde"
--- > in tseq_to_dseq undefined (zip [0,1,3,6,8,9] "abcde|") == r
+-- > tseq_to_dseq undefined (zip [0,1,3,6,8,9] "abcde|") == r
 --
 -- > let r = zip [1,2,3,2,1] "-abcd"
--- > in tseq_to_dseq '-' (zip [1,3,6,8,9] "abcd|") == r
+-- > tseq_to_dseq '-' (zip [1,3,6,8,9] "abcd|") == r
 tseq_to_dseq :: (Ord t,Num t) => a -> Tseq t a -> Dseq t a
 tseq_to_dseq empty sq =
     let (t,a) = unzip sq
@@ -912,16 +914,16 @@ dseq_to_wseq t0 sq =
 -- truncated.
 --
 -- > let w = wseq_zip [0,1,3,6,8,9] [1,2,3,2,1] "abcde"
--- > in wseq_to_dseq '-' w == zip [1,2,3,2,1] "abcde"
+-- > wseq_to_dseq '-' w == zip [1,2,3,2,1] "abcde"
 --
 -- > let w = wseq_zip [3,10] [6,2] "ab"
--- > in wseq_to_dseq '-' w == zip [3,6,1,2] "-a-b"
+-- > wseq_to_dseq '-' w == zip [3,6,1,2] "-a-b"
 --
 -- > let w = wseq_zip [0,1] [2,2] "ab"
--- > in wseq_to_dseq '-' w == zip [1,2] "ab"
+-- > wseq_to_dseq '-' w == zip [1,2] "ab"
 --
 -- > let w = wseq_zip [0,0,0] [2,2,2] "abc"
--- > in wseq_to_dseq '-' w == zip [0,0,2] "abc"
+-- > wseq_to_dseq '-' w == zip [0,0,2] "abc"
 wseq_to_dseq :: (Num t,Ord t) => a -> Wseq t a -> Dseq t a
 wseq_to_dseq empty sq =
     let f (((st0,d),e),((st1,_),_)) =
@@ -942,7 +944,7 @@ wseq_to_dseq empty sq =
 -- the end time of the overall sequence.
 --
 -- > let r = [[(0,'a'),(1,'b'),(3,'c')],[(4,'d'),(7,'e'),(9,'f')]]
--- > in dseql_to_tseql 0 [zip [1,2,1] "abc",zip [3,2,1] "def"] == (10,r)
+-- > dseql_to_tseql 0 [zip [1,2,1] "abc",zip [3,2,1] "def"] == (10,r)
 dseql_to_tseql :: Num t => t -> [Dseq t a] -> (t,[Tseq t a])
 dseql_to_tseql =
     let f z dv =
