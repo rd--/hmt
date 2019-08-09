@@ -1,15 +1,16 @@
 -- | Basic temporal sequence functions.
 module Music.Theory.Time.Seq where
 
+import Data.Bifunctor {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
-import qualified Data.List.Ordered as O {- data-ordlist -}
-import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
 
-import Music.Theory.Function {- hmt -}
+import qualified Data.List.Ordered as O {- data-ordlist -}
+import qualified Data.Map as M {- containers -}
+
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Ord as T {- hmt -}
@@ -48,16 +49,18 @@ type Wseq t a = [((t,t),a)]
 
 -- * Zip
 
+-- | Construct 'Pseq'.
 pseq_zip :: [t] -> [t] -> [t] -> [a] -> Pseq t a
 pseq_zip l o f a = (zip (zip3 l o f) a)
 
+-- | Construct 'Wseq'.
 wseq_zip :: [t] -> [t] -> [a] -> Wseq t a
 wseq_zip t d a = (zip (zip t d) a)
 
 -- * Time span
 
--- | Given functions for deriving start and end times calculate time
--- span of sequence.
+-- | Given functions for deriving start and end times calculate time span of sequence.
+--   Requires sequence be finite.
 --
 -- > seq_tspan id id [] == (0,0)
 -- > seq_tspan id id (zip [0..9] ['a'..]) == (0,9)
@@ -66,9 +69,11 @@ seq_tspan st et sq =
     (maybe 0 (st . fst) (headMay sq)
     ,maybe 0 (et . fst) (lastMay sq))
 
+-- | 'seq_tspan' for 'Tseq'.
 tseq_tspan :: Num t => Tseq t a -> (t,t)
 tseq_tspan = seq_tspan id id
 
+-- | 'seq_tspan' for 'Wseq'.
 wseq_tspan :: Num t => Wseq t a -> (t,t)
 wseq_tspan = seq_tspan fst (uncurry (+))
 
@@ -88,22 +93,25 @@ wseq_end = snd . wseq_tspan
 
 -- * Duration
 
+-- | Sum durations at 'Dseq', result is the end time of the last element.
 dseq_dur :: Num t => Dseq t a -> t
 dseq_dur = sum . map fst
 
+-- | Sum durations at 'Iseq', result is the start time of the last element.
 iseq_dur :: Num t => Iseq t a -> t
 iseq_dur = sum . map fst
 
+-- | Sum durations at 'Pseq', result is the end time of the last element.
 pseq_dur :: Num t => Pseq t a -> t
 pseq_dur = sum . map (T.t3_third . fst)
 
--- | The interval of 'tseq_tspan'.
+-- | The interval of 'tseq_tspan', ie. from the start of the first element to the start of the last.
 --
 -- > tseq_dur (zip [0..] "abcde|") == 5
 tseq_dur :: Num t => Tseq t a -> t
 tseq_dur = uncurry subtract . tseq_tspan
 
--- | The interval of 'wseq_tspan'.
+-- | The interval of 'wseq_tspan', ie. from the start of the first element to the end of the last.
 --
 -- > wseq_dur (zip (zip [0..] (repeat 2)) "abcde") == 6
 wseq_dur :: Num t => Wseq t a -> t
@@ -111,8 +119,7 @@ wseq_dur = uncurry subtract . wseq_tspan
 
 -- * Window
 
--- | Prefix of sequence where the start time precedes or is at the
--- indicate time.
+-- | Prefix of sequence where the start time precedes or is at the indicated time.
 wseq_until :: Ord t => t -> Wseq t a -> Wseq t a
 wseq_until tm = takeWhile (\((t0,_),_) -> t0 <= tm)
 
@@ -159,12 +166,15 @@ wseq_at_window sq (w0,w1) =
 
 -- * Append
 
+-- | Type specialised '++'
 dseq_append :: Dseq t a -> Dseq t a -> Dseq t a
 dseq_append = (++)
 
+-- | Type specialised '++'
 iseq_append :: Iseq t a -> Iseq t a -> Iseq t a
 iseq_append = (++)
 
+-- | Type specialised '++'
 pseq_append :: Pseq t a -> Pseq t a -> Pseq t a
 pseq_append = (++)
 
@@ -240,6 +250,7 @@ tseq_lookup_active_def def = tseq_lookup_active_by_def def compare
 
 -- * Lseq
 
+-- | Iterpolation type enumeration.
 data Interpolation_T = None | Linear
                      deriving (Eq,Enum,Show)
 
@@ -275,24 +286,31 @@ lseq_lookup_err cmp sq = fromMaybe (error "lseq_lookup") . lseq_lookup cmp sq
 
 -- * Map, Filter, Find
 
-seq_tmap :: (t -> t') -> [(t,a)] -> [(t',a)]
+-- | 'map' over time (/t/) data.
+seq_tmap :: (t1 -> t2) -> [(t1,a)] -> [(t2,a)]
 seq_tmap f = map (\(p,q) -> (f p,q))
 
-seq_map :: (b -> c) -> [(a,b)] -> [(a,c)]
+-- | 'map' over element (/e/) data.
+seq_map :: (e1 -> e2) -> [(t,e1)] -> [(t,e2)]
 seq_map f = map (\(p,q) -> (p,f q))
 
--- | Map /t/ and /e/ simultaneously.
-seq_bimap :: (t -> t') -> (e -> e') -> [(t,e)] -> [(t',e')]
-seq_bimap f g = map (\(p,q) -> (f p,g q))
+-- | 'map' /t/ and /e/ simultaneously.
+--
+-- > seq_bimap negate succ (zip [1..5] [0..4]) == [(-1,1),(-2,2),(-3,3),(-4,4),(-5,5)]
+seq_bimap :: (t1 -> t2) -> (e1 -> e2) -> [(t1,e1)] -> [(t2,e2)]
+seq_bimap f = map . bimap f
 
+-- | 'filter' over time (/t/) data.
 seq_tfilter :: (t -> Bool) -> [(t,a)] -> [(t,a)]
 seq_tfilter f = filter (f . fst)
 
+-- | 'filter' over element (/e/) data.
 seq_filter :: (b -> Bool) -> [(a,b)] -> [(a,b)]
 seq_filter f = filter (f . snd)
 
-seq_find :: (a -> Bool) -> [(t,a)] -> Maybe (t,a)
-seq_find f = let f' (_,a) = f a in find f'
+-- | 'find' over element (/e/) data.
+seq_find :: (e -> Bool) -> [(t,e)] -> Maybe (t,e)
+seq_find f = find (f . snd)
 
 -- * Maybe
 
@@ -306,10 +324,7 @@ seq_map_maybe f =
 seq_cat_maybes :: [(t,Maybe q)] -> [(t,q)]
 seq_cat_maybes = seq_map_maybe id
 
--- | If value is unchanged, according to /f/, replace with 'Nothing'.
---
--- > let r = [(1,'s'),(2,'t'),(4,'r'),(6,'i'),(7,'n'),(9,'g')]
--- > in seq_cat_maybes (seq_changed_by (==) (zip [1..] "sttrrinng")) == r
+-- | If value is unchanged at subsequent entry, according to /f/, replace with 'Nothing'.
 seq_changed_by :: (a -> a -> Bool) -> [(t,a)] -> [(t,Maybe a)]
 seq_changed_by f l =
     let recur z sq =
@@ -323,6 +338,9 @@ seq_changed_by f l =
          (t,e) : l' -> (t,Just e) : recur e l'
 
 -- | 'seq_changed_by' '=='.
+--
+-- > let r = [(1,'s'),(2,'t'),(4,'r'),(6,'i'),(7,'n'),(9,'g')]
+-- > seq_cat_maybes (seq_changed (zip [1..] "sttrrinng")) == r
 seq_changed :: Eq a => [(t,a)] -> [(t,Maybe a)]
 seq_changed = seq_changed_by (==)
 
@@ -330,11 +348,11 @@ seq_changed = seq_changed_by (==)
 
 -- | Apply /f/ at time points of 'Wseq'.
 wseq_tmap_st :: (t -> t) -> Wseq t a -> Wseq t a
-wseq_tmap_st f = let g (t,d) = (f t,d) in seq_tmap g
+wseq_tmap_st f = seq_tmap (bimap f id)
 
 -- | Apply /f/ at durations of elements of 'Wseq'.
 wseq_tmap_dur :: (t -> t) -> Wseq t a -> Wseq t a
-wseq_tmap_dur f = let g (t,d) = (t,f d) in seq_tmap g
+wseq_tmap_dur f = seq_tmap (bimap id f)
 
 -- * Partition
 
@@ -529,10 +547,12 @@ wseq_discard_dur :: Wseq t a -> Tseq t a
 wseq_discard_dur = let f ((t,_),e) = (t,e) in map f
 
 -- | Are /e/ equal and do nodes overlap?
---   Nodes are ascending, so overlap if they begin at the same time,
---   or the second begins before the first ends.
+--   Nodes are ascending, and so overlap if:
+--   1. they begin at the same time and the first has non-zero duration, or
+--   2. the second begins before the first ends.
 wseq_nodes_overlap :: (Ord t,Num t) => (e -> e -> Bool) -> ((t,t),e) -> ((t,t),e) -> Bool
-wseq_nodes_overlap eq_f ((t1,d1),a1) ((t2,_d2),a2) = eq_f a1 a2 && (t1 == t2 || t2 < (t1 + d1))
+wseq_nodes_overlap eq_f ((t1,d1),a1) ((t2,_d2),a2) =
+  eq_f a1 a2 && ((t1 == t2 && d1 > 0) || (t2 < (t1 + d1)))
 
 -- | Find first node at /sq/ that overlaps with /e0/, if there is one.
 --   Note: this could, but does not, halt early, ie. when t2 > (t1 + d1).
@@ -687,12 +707,16 @@ begin_end_partition =
                     End x -> (p,x:q)
   in foldr f ([],[])
 
--- | Add or delete element from accumulated state.
-begin_end_track :: Eq a => [a] -> Begin_End a -> [a]
-begin_end_track st e =
+-- | Add or delete element from accumulated state given equality function.
+begin_end_track_by :: (a -> a -> Bool) -> [a] -> Begin_End a -> [a]
+begin_end_track_by eq_f st e =
   case e of
     Begin x -> x : st
-    End x -> delete x st
+    End x -> deleteBy eq_f x st
+
+-- | 'begin_end_track_by' of '=='.
+begin_end_track :: Eq a => [a] -> Begin_End a -> [a]
+begin_end_track = begin_end_track_by (==)
 
 {- | Convert 'Wseq' to 'Tseq' transforming elements to 'Begin_End'.
      When merging, /end/ elements precede /begin/ elements at equal times.
@@ -711,7 +735,7 @@ wseq_begin_end sq =
         g l =
             case l of
               [] -> []
-              e:l' -> tseq_merge_by (T.ord_invert .: cmp_begin_end) e (g l')
+              e:l' -> tseq_merge_by (\x -> T.ord_invert . cmp_begin_end x) e (g l')
     in g (map f sq)
 
 -- | 'begin_end_to_either' of 'wseq_begin_end'.
@@ -929,8 +953,9 @@ dseql_to_tseql =
 
 -- * Cycle
 
-wseq_cycle' :: Num t => Wseq t a -> [Wseq t a]
-wseq_cycle' sq =
+-- | List of cycles of 'Wseq'.
+wseq_cycle_ls :: Num t => Wseq t a -> [Wseq t a]
+wseq_cycle_ls sq =
     let (_,et) = wseq_tspan sq
         t_sq = iterate (+ et) 0
     in map (\x -> wseq_tmap (\(t,d) -> (x + t,d)) sq) t_sq
@@ -939,19 +964,19 @@ wseq_cycle' sq =
 --
 -- > take 5 (wseq_cycle [((0,1),'a'),((3,3),'b')])
 wseq_cycle :: Num t => Wseq t a -> Wseq t a
-wseq_cycle = concat . wseq_cycle'
+wseq_cycle = concat . wseq_cycle_ls
 
 -- | Variant cycling only /n/ times.
 --
 -- > wseq_cycle_n 3 [((0,1),'a'),((3,3),'b')]
 wseq_cycle_n :: Num t => Int -> Wseq t a -> Wseq t a
-wseq_cycle_n n = concat . take n . wseq_cycle'
+wseq_cycle_n n = concat . take n . wseq_cycle_ls
 
 -- | 'wseq_until' of 'wseq_cycle'.
 wseq_cycle_until :: (Num t,Ord t) => t -> Wseq t a -> Wseq t a
 wseq_cycle_until et = wseq_until et . wseq_cycle
 
--- * Type specialised map
+-- * Type specialised maps
 
 dseq_tmap :: (t -> t') -> Dseq t a -> Dseq t' a
 dseq_tmap = seq_tmap
