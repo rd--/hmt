@@ -310,7 +310,7 @@ type Alteration_R = (Rational,String)
 -- | Transform 'Alteration_T' to 'Alteration_R'.
 --
 -- > let r = [(-1,"♭"),(0,"♮"),(1,"♯")]
--- > in map alteration_t' [Flat,Natural,Sharp] == r
+-- > map alteration_r [Flat,Natural,Sharp] == r
 alteration_r :: Alteration_T -> Alteration_R
 alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])
 

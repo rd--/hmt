@@ -159,13 +159,15 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 -}
 
 -- > midi_tbl_tuning_d12 "freq" ("meanquar",0,0)
--- > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
+-- > midi_tbl_tuning_d12 "fmidi" ("meanquar",0,0)
+-- > midi_tbl_tuning_d12 "fmidi" ("young-lm_piano",-74.7,-3)
 midi_tbl_tuning_d12 :: String -> (String,T.Cents,Int) -> IO ()
 midi_tbl_tuning_d12 typ (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n =
         case typ of
+          "fmidi" -> printf "%3d,%10.6f" n (T.midi_detune_to_fmidi (tun_f n))
           "freq" -> printf "%3d,%10.4f" n (T.midi_detune_to_cps (tun_f n))
           "mts" ->
             let (mnn,dt) = T.midi_detune_normalise_positive (tun_f n)
@@ -202,7 +204,7 @@ help =
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
-    ,"midi-table freq|mts d12 name:string cents:real mnn:int"
+    ,"midi-table fmidi|freq|mts d12 name:string cents:real mnn:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
     ,"stat scale lm|nil name:string|file-path"

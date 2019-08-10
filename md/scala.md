@@ -152,7 +152,7 @@ $
 
 # midi-table <a id="midi-table"></a>
 
-Table with 128 entries mapping midi-note-number to either frequency or MTS values.
+Table with 128 entries mapping midi-note-number to either fractional-midi, frequency or MTS values.
 
 MTS (MIDI-TUNING-STANDARD) values are (midi-note-number,positive-cents).
 
@@ -188,6 +188,22 @@ $ hmt-scala midi-table mts d12 meanquar 0 0
  70, 70, 6.8431
  71, 70,82.8921
  72, 72, 0.0000
+...
+$ hmt-scala midi-table fmidi d12 meanquar 0 0
+...
+ 60, 60.000000
+ 61, 60.760490
+ 62, 61.931569
+ 63, 63.102647
+ 64, 63.863137
+ 65, 65.034216
+ 66, 65.794706
+ 67, 66.965784
+ 68, 67.726274
+ 69, 68.897353
+ 70, 70.068431
+ 71, 70.828921
+ 72, 72.000000
 ...
 $
 ~~~~
