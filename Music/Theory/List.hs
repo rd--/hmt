@@ -582,7 +582,7 @@ elem_index_unique e p =
       [i] -> i
       _ -> error "elem_index_unique"
 
--- | Lookup that errors and prints message.
+-- | Lookup that errors and prints message and key.
 lookup_err_msg :: (Eq k,Show k) => String -> k -> [(k,v)] -> v
 lookup_err_msg err k = fromMaybe (error (err ++ ": " ++ show k)) . lookup k
 

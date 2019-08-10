@@ -158,7 +158,7 @@ fmidi_in_octave o m = let (_,pc) = fmidi_to_foctpc m in foctpc_to_fmidi (o,pc)
 -- | Print fractional midi note number as ET12 pitch with cents detune in parentheses.
 --
 -- > fmidi_et12_cents_pp T.pc_spell_ks 66.5 == "F♯4(+50)"
-fmidi_et12_cents_pp :: Spelling PitchClass -> Double -> String
+fmidi_et12_cents_pp :: Spelling PitchClass -> FMidi -> String
 fmidi_et12_cents_pp sp =
     let f (m,c) =
             let d = T.num_diff_str (round c :: Int)

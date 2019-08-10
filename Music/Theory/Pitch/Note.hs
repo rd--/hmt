@@ -35,7 +35,7 @@ note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
 --
 -- > map note_to_pc [C,E,G] == [0,4,7]
 note_to_pc :: Num i => Note_T -> i
-note_to_pc n = fromMaybe (error "note_to_pc") (lookup n note_pc_tbl)
+note_to_pc n = T.lookup_err_msg "note_to_pc" n note_pc_tbl
 
 -- | Inverse of 'note_to_pc'.
 --
@@ -189,6 +189,7 @@ alteration_clear_quarter_tone x =
       ThreeQuarterToneSharp -> Sharp
       _ -> x
 
+-- | Table of Unicode characters for alterations.
 alteration_symbol_tbl :: [(Alteration_T,Char)]
 alteration_symbol_tbl =
     [(DoubleFlat,'𝄫')
@@ -226,6 +227,7 @@ symbol_to_alteration_iso c =
       'x' -> Just DoubleSharp
       _ -> symbol_to_alteration c
 
+-- | ISO alteration table, strings not characters because of double flat.
 alteration_iso_tbl :: [(Alteration_T,String)]
 alteration_iso_tbl =
     [(DoubleFlat,"bb")
@@ -278,11 +280,14 @@ tonh_to_alteration s = T.reverse_lookup s alteration_tonh_tbl
 
 -- * 12-ET
 
+-- | Note and alteration to pitch-class, or not.
 note_alteration_to_pc :: (Note_T,Alteration_T) -> Maybe Int
 note_alteration_to_pc (n,a) =
     let n_pc = note_to_pc n
     in fmap ((`mod` 12) . (+ n_pc)) (alteration_to_diff a)
 
+-- | Error variant.
+--
 -- > map note_alteration_to_pc_err [(A,DoubleSharp),(B,Sharp),(C,Flat),(C,DoubleFlat)]
 note_alteration_to_pc_err :: (Note_T, Alteration_T) -> Int
 note_alteration_to_pc_err = fromMaybe (error "note_alteration_to_pc") . note_alteration_to_pc

@@ -4,6 +4,7 @@ module Music.Theory.Tuning.Midi where
 import Data.List {- base -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
+import Data.Word {- base -}
 import Safe {- safe -}
 
 import qualified Music.Theory.List as T {- hmt -}
@@ -70,12 +71,25 @@ cps_midi_tuning_f (t,f0,k,g) n =
 
 -- * Midi tuning tables.
 
+-- | midi-note-number -> fractional-midi-note-number table, possibly sparse.
+type MNN_FMNN_Table = [(Word8,Double)]
+
+-- | Load 'MNN_FMNN_Table' from two-column CSV file.
+mnn_fmnn_table_load_csv :: FilePath -> IO MNN_FMNN_Table
+mnn_fmnn_table_load_csv fn = do
+  s <- readFile fn
+  let f x = case break (== ',') x of
+              (lhs,_:rhs) -> (read lhs,read rhs)
+              _ -> error "mnn_fmidi_table_load_csv?"
+  return (map f (lines s))
+
 -- | Midi-note-number -> CPS table, possibly sparse.
 type MNN_CPS_Table = [(Int,Double)]
 
 -- | Generates 'MNN_CPS_Table' given 'Midi_Tuning_F' with keys for all valid @MNN@.
 --
 -- > import Sound.SC3.Plot
+-- > let f = cps_midi_tuning_f (equal_temperament 12,T.midi_to_cps 0,0,127)
 -- > plot_p2_ln [map (fmap round) (gen_cps_tuning_tbl f)]
 gen_cps_tuning_tbl :: Sparse_Midi_Tuning_F -> MNN_CPS_Table
 gen_cps_tuning_tbl tn_f =

@@ -160,7 +160,7 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 
 -- > midi_tbl_tuning_d12 "freq" ("meanquar",0,0)
 -- > midi_tbl_tuning_d12 "fmidi" ("meanquar",0,0)
--- > midi_tbl_tuning_d12 "fmidi" ("young-lm_piano",-74.7,-3)
+-- > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
 midi_tbl_tuning_d12 :: String -> (String,T.Cents,Int) -> IO ()
 midi_tbl_tuning_d12 typ (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
