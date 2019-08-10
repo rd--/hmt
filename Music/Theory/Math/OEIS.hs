@@ -21,10 +21,25 @@ a000010 =
 
 Fibonacci numbers
 
-> take 16 a000045 == [0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610]
+> [0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610] `isPrefixOf` a000045
 -}
 a000045 :: Num n => [n]
 a000045 = 0 : 1 : zipWith (+) a000045 (tail a000045)
+
+{- | https://oeis.org/A000201
+
+Lower Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi), where phi = (1+sqrt(5))/2 = A001622
+
+> [1,3,4,6,8,9,11,12,14,16,17,19,21,22,24,25,27,29,30,32,33,35,37,38,40,42] `isPrefixOf` a000201
+
+> import Sound.SC3.Plot {- hsc3-plot -}
+> plot_p1_imp [take 128 a000201 :: [Int]]
+-}
+a000201 :: Integral n => [n]
+a000201 =
+  let f (x:xs) (y:ys) = y : f xs (delete (x + y) ys)
+      f _ _ = error "a000201"
+  in f [1..] [1..]
 
 {- | <http://oeis.org/A000290>
 
@@ -35,11 +50,31 @@ The squares of the non-negative integers.
 a000290 :: Integral n => [n]
 a000290 = let square n = n * n in map square [0..]
 
+{- | <https://oeis.org/A001950>
+
+Upper Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi^2), where phi = (1+sqrt(5))/2
+
+> [2,5,7,10,13,15,18,20,23,26,28,31,34,36,39,41,44,47,49,52,54,57,60,62,65] `isPrefixOf` a001950
+-}
+a001950 :: Integral n => [n]
+a001950 = zipWith (+) a000201 [1..]
+
 -- | <http://oeis.org/A002267>
 --
 -- The 15 supersingular primes.
 a002267 :: Num n => [n]
 a002267 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 41, 47, 59, 71]
+
+{- | <https://oeis.org/A003849>
+
+The infinite Fibonacci word (start with 0, apply 0->01, 1->0, take limit).
+
+> [0,1,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,0,1,0,1,0,0,1,0,0,1,0,1,0] `isPrefixOf` a003849
+-}
+a003849 :: Num n => [n]
+a003849 =
+  let fws = [1] : [0] : zipWith (++) fws (tail fws)
+  in tail (concat fws)
 
 {- | <http://oeis.org/A004718>
 
@@ -47,8 +82,7 @@ Per Nørgård's "infinity sequence"
 
 > take 32 a004718 == [0,1,-1,2,1,0,-2,3,-1,2,0,1,2,-1,-3,4,1,0,-2,3,0,1,-1,2,-2,3,1,0,3,-2,-4,5]
 
-> import Sound.SC3.Plot {- hsc3-plot -}
-> plotImpulses [take 1024 a004718]
+> plot_p1_imp [take 1024 a004718]
 
 <https://www.tandfonline.com/doi/abs/10.1080/17459737.2017.1299807>
 <https://arxiv.org/pdf/1402.3091.pdf>
