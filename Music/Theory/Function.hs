@@ -25,16 +25,17 @@ const2 x _ _ = x
 
 -- * Predicate composition.
 
--- | '&&' of predicates.
+-- | '&&' of predicates, ie. do predicates /f/ and /g/ both hold at /x/.
 predicate_and :: (t -> Bool) -> (t -> Bool) -> t -> Bool
 predicate_and f g x = f x && g x
 
--- | 'all' of predicates.
+-- | List variant of 'predicate_and', ie. 'foldr1'
 --
 -- > let r = [False,False,True,False,True,False]
 -- > map (predicate_all [(> 0),(< 5),even]) [0..5] == r
 predicate_all :: [t -> Bool] -> t -> Bool
-predicate_all p x = all id (map ($ x) p)
+predicate_all = foldr1 predicate_and
+--predicate_all p x = all id (map ($ x) p)
 
 -- | '||' of predicates.
 predicate_or :: (t -> Bool) -> (t -> Bool) -> t -> Bool

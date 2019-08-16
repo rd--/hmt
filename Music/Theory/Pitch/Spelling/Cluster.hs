@@ -150,7 +150,7 @@ spell_cluster_octpc o =
 -- in octave @4@.
 --
 -- > let f = (fmap (map T.pitch_pp) . spell_cluster_c4)
--- > in map f [[11,0],[11]] == [Just ["B3","C4"],Just ["B4"]]
+-- > map f [[11,0],[11],[0,11]] == [Just ["B3","C4"],Just ["B4"],Nothing]
 --
 -- > fmap (map T.pitch_pp) (spell_cluster_c4 [10,11]) == Just ["A♯4","B4"]
 spell_cluster_c4 :: [T.PitchClass] -> Maybe [T.Pitch]
@@ -181,6 +181,8 @@ spell_cluster_c o =
 -- >     ;g = map T.pitch_pp .fromJust . spell_cluster_f f
 -- >     ;r = [["B3","C4"],["B3"],["C4"],["A♯4","B4"]]}
 -- > in map g [[11,0],[11],[0],[10,11]] == r
+--
+-- > map (spell_cluster_f (const 4)) [[0,11],[11,0],[6,7],[7,6]]
 spell_cluster_f :: (T.PitchClass -> T.Octave) -> [T.PitchClass] -> Maybe [T.Pitch]
 spell_cluster_f o_f p =
     let fn r = case r of
