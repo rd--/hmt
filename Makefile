@@ -1,5 +1,5 @@
 all:
-	(cd data/dot/tj/oh; sh mk.sh)
+	echo "hmt"
 
 push-rd:
 	darcs push -a rd@rohandrape.net:sw/hmt
@@ -14,3 +14,6 @@ clean:
 	cabal clean
 	rm -Rf dist
 	(cd cmd; make clean)
+
+mk-svg:
+	(cd data/dot/tj/oh; sh mk.sh)
