@@ -46,22 +46,27 @@ opt_get o k = fromMaybe (error ("opt_get: " ++ k)) (lookup k o)
 opt_read :: Read t => [OPT] -> String -> t
 opt_read o = read . opt_get o
 
+-- | Parse k or k=v string, else error.
+opt_param_parse :: String -> OPT
+opt_param_parse p =
+  case Split.splitOn "=" p of
+    [lhs] -> (lhs,"True")
+    [lhs,rhs] -> (lhs,rhs)
+    _ -> error ("opt_param_parse: " ++ p)
+
 -- | Parse option string of form "--opt" or "--key=value".
 --
--- > opt_parse "--opt" == Just ("opt","true")
+-- > opt_parse "--opt" == Just ("opt","True")
 -- > opt_parse "--key=value" == Just ("key","value")
 opt_parse :: String -> Maybe OPT
 opt_parse s =
   case s of
-    '-':'-':o -> case Split.splitOn "=" o of
-                   [lhs] -> Just (lhs,"True")
-                   [lhs,rhs] -> Just (lhs,rhs)
-                   _ -> error "opt_parse"
+    '-':'-':p -> Just (opt_param_parse p)
     _ -> Nothing
 
 -- | Parse option sequence, collating options and non-options.
 --
--- > opt_set_parse (words "--a --b=c d") == ([("a","true"),("b","c")],["d"])
+-- > opt_set_parse (words "--a --b=c d") == ([("a","True"),("b","c")],["d"])
 opt_set_parse :: [String] -> ([OPT],[String])
 opt_set_parse =
   let f s = maybe (Right s) Left (opt_parse s)
@@ -79,15 +84,34 @@ opt_proc def arg =
   let (o,a) = opt_set_parse arg
   in (opt_merge o (map opt_plain def),a)
 
+-- | Usage text
+type OPT_USG = [String]
+
 -- | Print usage pre-amble and 'opt_help'.
-opt_usage :: [String] -> [OPT_USR] -> IO ()
+opt_usage :: OPT_USG -> [OPT_USR] -> IO ()
 opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitWith ExitSuccess
 
--- | 'opt_merge' and 'opt_set_parse' of 'getArgs'.
+-- | Verify that all OPT have keys that are in OPT_USR
+opt_verify :: OPT_USG -> [OPT_USR] -> [OPT] -> IO ()
+opt_verify usg def =
+  let k_set = map (fst . opt_plain) def
+      f (k,_) = if k `elem` k_set
+                then return ()
+                else putStrLn ("UNKNOWN KEY: " ++ k ++ "\n") >> opt_usage usg def
+  in mapM_ f
+
+-- | 'opt_set_parse' and 'opt_verify' and 'opt_merge' of 'getArgs'.
 --   If arguments include -h or --help run 'opt_usage'
-get_opt_arg :: [String] -> [OPT_USR] -> IO ([OPT],[String])
-get_opt_arg usg def = do
+opt_get_arg :: OPT_USG -> [OPT_USR] -> IO ([OPT],[String])
+opt_get_arg usg def = do
   a <- getArgs
   when ("-h" `elem` a || "--help" `elem` a) (opt_usage usg def)
   let (o,p) = opt_set_parse a
+  opt_verify usg def o
   return (opt_merge o (map opt_plain def),p)
+
+-- | Parse param set, one parameter per line.
+--
+-- > opt_param_set_parse "a\nb=c" == [("a","True"),("b","c")]
+opt_param_set_parse :: String -> [OPT]
+opt_param_set_parse = map opt_param_parse . lines
