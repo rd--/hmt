@@ -19,12 +19,22 @@ import System.Exit {- base -}
 
 import qualified Data.List.Split as Split {- split -}
 
+import qualified Music.Theory.Read as T {- hmt -}
+
 -- | (KEY,VALUE)
 --   Key does not include leading '--'.
 type OPT = (String,String)
 
--- | (KEY,VALUE,TYPE,NOTE)
+-- | (KEY,DEFAULT-VALUE,TYPE,NOTE)
 type OPT_USR = (String,String,String,String)
+
+-- | Re-write default values at USR_OPT.
+opt_usr_set_def :: [OPT] -> [OPT_USR] -> [OPT_USR]
+opt_usr_set_def rw =
+  let f (k,v,ty,dsc) = case lookup k rw of
+                         Just v' -> (k,v',ty,dsc)
+                         Nothing -> (k,v,ty,dsc)
+  in map f
 
 -- | OPT_USR to OPT.
 opt_plain :: OPT_USR -> OPT
@@ -44,7 +54,7 @@ opt_get o k = fromMaybe (error ("opt_get: " ++ k)) (lookup k o)
 
 -- | 'read' of 'get_opt'
 opt_read :: Read t => [OPT] -> String -> t
-opt_read o = read . opt_get o
+opt_read o = T.read_err . opt_get o
 
 -- | Parse k or k=v string, else error.
 opt_param_parse :: String -> OPT
