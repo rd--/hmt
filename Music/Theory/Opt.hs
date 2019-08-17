@@ -100,14 +100,14 @@ opt_verify usg def =
                 else putStrLn ("UNKNOWN KEY: " ++ k ++ "\n") >> opt_usage usg def
   in mapM_ f
 
--- | 'opt_set_parse' and 'opt_verify' and 'opt_merge' of 'getArgs'.
+-- | 'opt_set_parse' and maybe 'opt_verify' and 'opt_merge' of 'getArgs'.
 --   If arguments include -h or --help run 'opt_usage'
-opt_get_arg :: OPT_USG -> [OPT_USR] -> IO ([OPT],[String])
-opt_get_arg usg def = do
+opt_get_arg :: Bool -> OPT_USG -> [OPT_USR] -> IO ([OPT],[String])
+opt_get_arg chk usg def = do
   a <- getArgs
   when ("-h" `elem` a || "--help" `elem` a) (opt_usage usg def)
   let (o,p) = opt_set_parse a
-  opt_verify usg def o
+  when chk (opt_verify usg def o)
   return (opt_merge o (map opt_plain def),p)
 
 -- | Parse param set, one parameter per line.
