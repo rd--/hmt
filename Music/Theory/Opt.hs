@@ -29,8 +29,8 @@ type OPT = (String,String)
 type OPT_USR = (String,String,String,String)
 
 -- | Re-write default values at USR_OPT.
-opt_usr_set_def :: [OPT] -> [OPT_USR] -> [OPT_USR]
-opt_usr_set_def rw =
+opt_usr_rw_def :: [OPT] -> [OPT_USR] -> [OPT_USR]
+opt_usr_rw_def rw =
   let f (k,v,ty,dsc) = case lookup k rw of
                          Just v' -> (k,v',ty,dsc)
                          Nothing -> (k,v,ty,dsc)
