@@ -155,9 +155,9 @@ alteration_72et_monzo n =
 -- > let {f = pitch'_pp . fst . pitch_72et
 -- >     ;r = "Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"}
 -- > in unwords (map f (zip (repeat 70) [0..9])) == r
-pitch_72et :: (Int,Int) -> (Pitch_R,Double)
+pitch_72et :: (Midi,Int) -> (Pitch_R,Double)
 pitch_72et (x,n) =
-    let p = midi_to_pitch pc_spell_ks x
+    let p = midi_to_pitch_ks x
         t = note p
         a = alteration p
         (t',n') = case a of

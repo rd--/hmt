@@ -5,7 +5,7 @@ import Data.List {- base -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
-import Safe {- safe -}
+import qualified Safe {- safe -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Map as T {- hmt -}
@@ -17,13 +17,13 @@ import Music.Theory.Tuning {- hmt -}
 -- | (/n/ -> /dt/).  Function from midi note number /n/ to
 -- 'Midi_Detune' /dt/.  The incoming note number is the key pressed,
 -- which may be distant from the note sounded.
-type Midi_Tuning_F = Int -> T.Midi_Detune
+type Midi_Tuning_F = T.Midi -> T.Midi_Detune
 
 -- | Variant for tunings that are incomplete.
-type Sparse_Midi_Tuning_F = Int -> Maybe T.Midi_Detune
+type Sparse_Midi_Tuning_F = T.Midi -> Maybe T.Midi_Detune
 
 -- | Variant for sparse tunings that require state.
-type Sparse_Midi_Tuning_ST_F st = st -> Int -> (st,Maybe T.Midi_Detune)
+type Sparse_Midi_Tuning_ST_F st = st -> T.Midi -> (st,Maybe T.Midi_Detune)
 
 -- | Lift 'Midi_Tuning_F' to 'Sparse_Midi_Tuning_F'.
 lift_tuning_f :: Midi_Tuning_F -> Sparse_Midi_Tuning_F
@@ -37,7 +37,7 @@ lift_sparse_tuning_f tn_f st k = (st,tn_f k)
 --   t=tuning (must have 12 divisions of octave),
 --   c=cents deviation (ie. constant detune offset),
 --   k=midi offset (ie. value to be added to incoming midi note number).
-type D12_Midi_Tuning = (Tuning,Cents,Int)
+type D12_Midi_Tuning = (Tuning,Cents,T.Midi)
 
 -- | 'Midi_Tuning_F' for 'D12_Midi_Tuning'.
 --
@@ -49,13 +49,13 @@ d12_midi_tuning_f (t,c_diff,k) n =
         dt = zipWith (-) (tn_cents t) [0,100 .. 1200]
     in if tn_divisions t /= 12
        then error "d12_midi_tuning_f: not d12"
-       else case dt `atMay` pc of
+       else case dt `Safe.atMay` pc of
               Nothing -> error "d12_midi_tuning_f: pc?"
               Just c -> (n,c + c_diff)
 
 -- | (t,f0,k,g) where
 --   t=tuning, f0=fundamental-frequency, k=midi-note-number (for f0), g=gamut
-type CPS_Midi_Tuning = (Tuning,Double,Int,Int)
+type CPS_Midi_Tuning = (Tuning,Double,T.Midi,Int)
 
 -- | 'Midi_Tuning_F' for 'CPS_Midi_Tuning'.  The function is sparse, it is only
 -- valid for /g/ values from /k/.
@@ -67,7 +67,7 @@ cps_midi_tuning_f :: CPS_Midi_Tuning -> Sparse_Midi_Tuning_F
 cps_midi_tuning_f (t,f0,k,g) n =
     let r = tn_approximate_ratios_cyclic t
         m = take g (map (T.cps_to_midi_detune . (* f0)) r)
-    in m `atMay` (n - k)
+    in m `Safe.atMay` T.midi_to_int (n - k)
 
 -- * Midi tuning tables.
 
@@ -84,7 +84,7 @@ mnn_fmnn_table_load_csv fn = do
   return (map f (lines s))
 
 -- | Midi-note-number -> CPS table, possibly sparse.
-type MNN_CPS_Table = [(Int,Double)]
+type MNN_CPS_Table = [(T.Midi,Double)]
 
 -- | Generates 'MNN_CPS_Table' given 'Midi_Tuning_F' with keys for all valid @MNN@.
 --

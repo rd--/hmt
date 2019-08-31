@@ -5,6 +5,7 @@ import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Data.Word {- base -}
 import Text.Printf {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
@@ -45,8 +46,8 @@ octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 -- | Inverse of 'octave_pitchclass_to_midi'.
 --
 -- > map midi_to_octave_pitchclass [0,36,60,84,91] == [(-1,0),(2,0),(4,0),(6,0),(6,7)]
-midi_to_octave_pitchclass :: Integral i => i -> Octave_PitchClass i
-midi_to_octave_pitchclass n = (n - 12) `divMod` 12
+midi_to_octave_pitchclass :: Integral i => Midi -> Octave_PitchClass i
+midi_to_octave_pitchclass n = (fromIntegral n - 12) `divMod` 12
 
 -- * Octave & PitchClass
 
@@ -87,14 +88,17 @@ octpc_range (l,r) =
 -- * Midi note number (0 - 127)
 
 -- | Midi note number
-type Midi = Int
+type Midi = Word8
+
+midi_to_int :: Midi -> Int
+midi_to_int = fromIntegral
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
 -- > map octpc_to_midi [(0,0),(2,6),(4,9),(9,0)] == [12,42,69,120]
 -- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
 octpc_to_midi :: OctPC -> Midi
-octpc_to_midi = octave_pitchclass_to_midi
+octpc_to_midi = fromIntegral . octave_pitchclass_to_midi
 
 -- | Inverse of 'octpc_to_midi'.
 --
@@ -252,7 +256,7 @@ octpc_to_pitch sp (o,pc) =
 -- > import Music.Theory.Pitch.Spelling.Table as T
 -- > let r = ["C4","E♭4","F♯4"]
 -- > map (pitch_pp . midi_to_pitch T.pc_spell_ks) [60,63,66] == r
-midi_to_pitch :: Integral i => Spelling i -> i -> Pitch
+midi_to_pitch :: Integral i => Spelling i -> Midi -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
 
 -- | Fractional midi note number to 'Pitch'.
@@ -465,7 +469,7 @@ cps_octave = fst . cps_to_octpc
 -- * MIDI detune (cents)
 
 -- | Midi note number with cents detune.
-type Midi_Detune' c = (Int,c)
+type Midi_Detune' c = (Midi,c)
 
 -- | Is cents in (-50,+50].
 --
@@ -677,7 +681,7 @@ pitch_class_pp = pitch_pp_opt (False,False)
 -- > pitch_class_names_12et pc_spell_ks 11 2 == ["B","C"]
 pitch_class_names_12et :: Integral n => Spelling n -> n -> n -> [String]
 pitch_class_names_12et sp k n =
-    let f = pitch_class_pp . midi_to_pitch sp
+    let f = pitch_class_pp . midi_to_pitch sp . fromIntegral
     in map f [60 + k .. 60 + k + n - 1]
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
