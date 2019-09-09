@@ -4,6 +4,7 @@ module Music.Theory.Tuning.Syntonic where
 import Data.List {- base -}
 
 import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- | Construct an isomorphic layout of /r/ rows and /c/ columns with
 -- an upper left value of /(i,j)/.

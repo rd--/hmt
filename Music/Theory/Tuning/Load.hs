@@ -8,6 +8,7 @@ import qualified Music.Theory.Pitch as T
 import qualified Music.Theory.Tuning as T
 import qualified Music.Theory.Tuning.Midi as T
 import qualified Music.Theory.Tuning.Scala as T
+import qualified Music.Theory.Tuning.Type as T
 
 -- | Load possibly sparse and possibly one-to-many
 -- (midi-note-number,cps-frequency) table from CSV file.

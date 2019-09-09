@@ -103,12 +103,12 @@ fx_main = do
 gen_type_abbvr :: (String, String) -> [String]
 gen_type_abbvr (p,q) = ["--| Alias",concat ["type ",q," = ",p]]
 
--- > map gen_type_abbvr int_abbrev_table
+-- > putStrLn $ unlines $ map (unlines . gen_type_abbvr) int_abbrev_table
 int_abbrev_table :: [(String,String)]
 int_abbrev_table =
   zip
-  ["Word8","Word16","Word32","Word64","Int8","Int16","Int32","Int64","Int","Integer"]
-  ["U8","U16","U32","U64","I8","I16","I32","I64","I","L"]
+  ["Word8","Word16","Word32","Word64","Int8","Int16","Int32","Int64","Int"]
+  ["U8","U16","U32","U64","I8","I16","I32","I64","Int"]
 
 float_abbrev_table :: [(String,String)]
 float_abbrev_table = zip ["Float","Double"] ["F32","F64"]

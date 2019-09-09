@@ -2,7 +2,7 @@
 -- _1/1, The Journal of the Just Intonation Newtork_, 1(4), Autumn 1985.
 module Music.Theory.Tuning.Polansky_1985c where
 
-import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- | The tuning has four octaves, these ratios are per-octave.
 ps5_jpr_r :: [[Rational]]

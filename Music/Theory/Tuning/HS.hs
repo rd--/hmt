@@ -7,6 +7,7 @@ import qualified Safe {- safe -}
 
 import qualified Music.Theory.Pitch as T {- hmt -}
 import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 
 -- | Harmonic series to /n/th partial, with indicated octave.

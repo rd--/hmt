@@ -4,7 +4,8 @@ module Music.Theory.Tuning.Polansky_1978 where
 
 import Data.List {- base -}
 
-import qualified Music.Theory.Tuning as T
+import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 {- | Three interlocking harmonic series on 1:5:3, by Larry Polansky in \"Psaltery\".
 

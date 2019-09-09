@@ -3,7 +3,7 @@
 -- 1997.  <http://www2.hmc.edu/~alves/pleng.html>
 module Music.Theory.Tuning.Alves_1997 where
 
-import Music.Theory.Tuning
+import Music.Theory.Tuning.Type
 
 -- > let c = [0,231,498,765,996]
 -- > in map (round.to_cents_r) alves_slendro_r == c

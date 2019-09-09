@@ -1,7 +1,7 @@
 -- | Terry Riley.
 module Music.Theory.Tuning.DB.Riley where
 
-import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- | Ratios for 'riley_albion'.
 --

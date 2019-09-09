@@ -25,6 +25,7 @@ import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 -- * Pitch
 
@@ -385,32 +386,35 @@ load_dist_file nm = do
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
 scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]
 scl_cdiff_abs_sum c scl =
-  let r = map (T.dx_d 0) (T.rotations (T.d_dx (scale_cents scl)))
+  let r = map (T.dx_d 0) (T.rotations (T.d_dx (sort (scale_cents scl))))
       ndiff x i = let d = zipWith (-) c x in (sum (map abs d),d,i)
   in sort (zipWith ndiff r [0..])
 
 {- | Variant selecting only nearest and with post-processing function.
 
 > scl <- scl_load "holder"
+> scale_cents_i scl
 > c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
-> scl_cdiff_abs_sum_1 round c scl == (5,[0,2,-1,1,0,-1,0,-1,0,0,0,0,0],0)
+> (_,r,_) = scl_cdiff_abs_sum_1 round c scl
+> r == [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
 -}
-scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (n,[n],Int)
+scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (Double,[n],Int)
 scl_cdiff_abs_sum_1 pp c scl =
   case scl_cdiff_abs_sum c scl of
     [] -> error "scl_cdiff_abs_sum_1"
-    (n,d,r):_ -> (pp n,map pp d,r)
+    (n,d,r):_ -> (n,map pp d,r)
 
 {- | Sort DB into ascending order of sum of absolute of differences to scale given in cents.
-     All rotations of the scale are considered.
+     Scales are sorted and all rotations are considered.
 
 > db <- scl_load_db
 > c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
 > r = scl_db_query_cdiff_asc round db c
-> fst (head r) == (5,[0,2,-1,1,0,-1,0,-1,0,0,0,0,0],0)
+> ((_,dx,_),_):_ = r
+> dx == [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
 -}
-scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((n,[n],Int),Scale)]
+scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((Double,[n],Int),Scale)]
 scl_db_query_cdiff_asc pp db c =
   let n = length c - 1
       db_n = filter ((== n) . scale_degree) db

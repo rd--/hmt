@@ -13,6 +13,7 @@ import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
 import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- | (/n/ -> /dt/).  Function from midi note number /n/ to
 -- 'Midi_Detune' /dt/.  The incoming note number is the key pressed,

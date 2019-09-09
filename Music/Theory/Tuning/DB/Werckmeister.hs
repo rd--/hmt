@@ -2,6 +2,7 @@
 module Music.Theory.Tuning.DB.Werckmeister where
 
 import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- | Approximate ratios for 'werckmeister_iii'.
 --

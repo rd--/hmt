@@ -2,22 +2,23 @@
 module Music.Theory.Tuning.DB.Gann where
 
 import Music.Theory.Tuning {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 -- * Historical
 
 -- | Cents for 'pietro_aaron_1523'.
 --
 -- > let c = [0,76,193,310,386,503,580,697,773,890,1007,1083]
--- > in map round pietro_aaron_1523_c == c
+-- > map round pietro_aaron_1523_c == c
 --
 -- > map ((+ 60) . (/ 100)) pietro_aaron_1523_c
 pietro_aaron_1523_c :: [Cents]
 pietro_aaron_1523_c =
     [0,76.0
     ,193.2,310.3
-    ,386.3
+    ,386.3 -- 5/4
     ,503.4,579.5
-    ,696.8,772.6
+    ,696.8,772.6 -- 25/16
     ,889.7,1006.8
     ,1082.9]
 
@@ -28,14 +29,14 @@ pietro_aaron_1523_c =
 --
 -- > import Music.Theory.Tuning.Scala
 -- > scl <- scl_load "meanquar"
--- > cents_i (scale_tuning 0.01 scl) == [0,76,193,310,386,503,579,697,773,890,1007,1083]
+-- > tn_cents_i (scale_to_tuning 0.01 scl) == [0,76,193,310,386,503,579,697,773,890,1007,1083]
 pietro_aaron_1523 :: Tuning
 pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
 
 -- | Cents for 'thomas_young_1799'.
 --
 -- > let c = [0,94,196,298,392,500,592,698,796,894,1000,1092]
--- > in map round thomas_young_1799_c == c
+-- > map round thomas_young_1799_c == c
 thomas_young_1799_c :: [Cents]
 thomas_young_1799_c =
     [0,93.9
@@ -51,7 +52,7 @@ thomas_young_1799_c =
 -- > cents_i thomas_young_1799 == [0,94,196,298,392,500,592,698,796,894,1000,1092]
 --
 -- > scl <- scl_load "young2"
--- > cents_i (scale_tuning 0.01 scl) == cents_i thomas_young_1799
+-- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i thomas_young_1799
 thomas_young_1799 :: Tuning
 thomas_young_1799 = Tuning (Right thomas_young_1799_c) 2
 
@@ -64,10 +65,10 @@ zarlino_1588_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3
 -- | Gioseffo Zarlino, 1588, see <http://www.kylegann.com/tuning.html>.
 --
 -- > divisions zarlino_1588 == 16
--- > cents_i zarlino_1588 == [0,71,182,204,294,316,386,498,569,590,702,773,884,996,1018,1088]
+-- > tn_cents_i zarlino_1588 == [0,71,182,204,294,316,386,498,569,590,702,773,884,996,1018,1088]
 --
 -- > scl <- scl_load "zarlino2"
--- > cents_i (scale_tuning 0.01 scl) == cents_i zarlino_1588
+-- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i zarlino_1588
 zarlino_1588 :: Tuning
 zarlino_1588 = Tuning (Left zarlino_1588_r) 2
 
@@ -76,7 +77,7 @@ zarlino_1588 = Tuning (Left zarlino_1588_r) 2
 -- | Ratios for 'ben_johnston_mtp_1977'.
 --
 -- > let c = [0,105,204,298,386,471,551,702,841,906,969,1088]
--- > in map (round . ratio_to_cents) ben_johnston_mtp_1977_r == c
+-- > map (round . ratio_to_cents) ben_johnston_mtp_1977_r == c
 ben_johnston_mtp_1977_r :: [Rational]
 ben_johnston_mtp_1977_r =
     [1,17/16
@@ -90,7 +91,7 @@ ben_johnston_mtp_1977_r =
 -- | Ben Johnston's \"Suite for Microtonal Piano\" (1977), see
 -- <http://www.kylegann.com/tuning.html>
 --
--- > cents_i ben_johnston_mtp_1977 == [0,105,204,298,386,471,551,702,841,906,969,1088]
+-- > tn_cents_i ben_johnston_mtp_1977 == [0,105,204,298,386,471,551,702,841,906,969,1088]
 ben_johnston_mtp_1977 :: Tuning
 ben_johnston_mtp_1977 = Tuning (Left ben_johnston_mtp_1977_r) 2
 
@@ -105,7 +106,7 @@ gann_arcana_xvi_r =
 -- | Kyle Gann, _Arcana XVI_, see <http://www.kylegann.com/Arcana.html>.
 --
 -- > let r = [0,84,112,204,267,316,347,386,471,498,520,583,663,702,734,814,845,884,898,969,1018,1049,1088,1161]
--- > in cents_i gann_arcana_xvi == r
+-- > tn_cents_i gann_arcana_xvi == r
 gann_arcana_xvi :: Tuning
 gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) 2
 
@@ -120,11 +121,10 @@ gann_superparticular_r =
 --
 -- > divisions gann_superparticular == 22
 --
--- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702
--- >         ,782,765,814,884,933,969,996,1018]
--- > in cents_i gann_superparticular == r
+-- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702,782,765,814,884,933,969,996,1018]
+-- > tn_cents_i gann_superparticular == r
 --
 -- > scl <- scl_load "gann_super"
--- > cents_i (scale_tuning 0.01 scl) == cents_i gann_superparticular
+-- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i gann_superparticular
 gann_superparticular :: Tuning
 gann_superparticular = Tuning (Left gann_superparticular_r) 2

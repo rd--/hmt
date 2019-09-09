@@ -162,6 +162,7 @@ Library
                    Music.Theory.Tuning.Scala.Mode
                    Music.Theory.Tuning.Sethares_1994
                    Music.Theory.Tuning.Syntonic
+                   Music.Theory.Tuning.Type
                    Music.Theory.Unicode
                    Music.Theory.Wyschnegradsky
                    Music.Theory.Xenakis.S4
