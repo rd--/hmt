@@ -125,8 +125,8 @@ foct_to_octpc x =
   in (p,round (q * 100))
 
 -- | 'octpc_to_midi' of 'foct_to_octpc'.
-foct_to_midi :: Double -> Midi
-foct_to_midi = octpc_to_midi . foct_to_octpc
+foct_to_midi :: (Integral i, RealFrac r) => r -> i
+foct_to_midi = octave_pitchclass_to_midi . foct_to_octpc
 
 -- * FMIDI
 
@@ -256,7 +256,7 @@ octpc_to_pitch sp (o,pc) =
 -- > import Music.Theory.Pitch.Spelling.Table as T
 -- > let r = ["C4","E♭4","F♯4"]
 -- > map (pitch_pp . midi_to_pitch T.pc_spell_ks) [60,63,66] == r
-midi_to_pitch :: Integral i => Spelling i -> Midi -> Pitch
+midi_to_pitch :: (Integral i,Integral k) => Spelling k -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
 
 -- | Fractional midi note number to 'Pitch'.
@@ -264,7 +264,7 @@ midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
 -- > fmidi_to_pitch T.pc_spell_ks 69.25 == Nothing
 fmidi_to_pitch :: RealFrac n => Spelling PitchClass -> n -> Maybe Pitch
 fmidi_to_pitch sp m =
-    let m' = round m
+    let m' = T.real_round_int m
         (Pitch n a o) = midi_to_pitch sp m'
         q = m - fromIntegral m'
     in case T.alteration_edit_quarter_tone q a of
@@ -681,7 +681,7 @@ pitch_class_pp = pitch_pp_opt (False,False)
 -- > pitch_class_names_12et pc_spell_ks 11 2 == ["B","C"]
 pitch_class_names_12et :: Integral n => Spelling n -> n -> n -> [String]
 pitch_class_names_12et sp k n =
-    let f = pitch_class_pp . midi_to_pitch sp . fromIntegral
+    let f = pitch_class_pp . midi_to_pitch sp . T.from_integral_to_int
     in map f [60 + k .. 60 + k + n - 1]
 
 -- | Pretty printer for 'Pitch' (ISO, ASCII, see 'alteration_iso').
