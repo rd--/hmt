@@ -46,7 +46,7 @@ octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 -- | Inverse of 'octave_pitchclass_to_midi'.
 --
 -- > map midi_to_octave_pitchclass [0,36,60,84,91] == [(-1,0),(2,0),(4,0),(6,0),(6,7)]
-midi_to_octave_pitchclass :: Integral i => Midi -> Octave_PitchClass i
+midi_to_octave_pitchclass :: (Integral m,Integral i) => m -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (fromIntegral n - 12) `divMod` 12
 
 -- * Octave & PitchClass
@@ -194,7 +194,7 @@ pitch_clear_quarter_tone p =
 --
 -- > pitch_to_octpc (Pitch F Sharp 4) == (4,6)
 pitch_to_octpc :: Integral i => Pitch -> Octave_PitchClass i
-pitch_to_octpc = midi_to_octave_pitchclass . pitch_to_midi
+pitch_to_octpc = midi_to_octave_pitchclass . T.int_id . pitch_to_midi
 
 -- | Is 'Pitch' 12-ET.
 pitch_is_12et :: Pitch -> Bool
@@ -442,8 +442,8 @@ cps_to_fmidi_f0 f0 a = (logBase 2 (a * (1 / f0)) * 12) + 69
 cps_to_fmidi :: Floating a => a -> a
 cps_to_fmidi = cps_to_fmidi_f0 440
 
--- | Frequency (cycles per second) to /midi/ note number, ie. 'round'
--- of 'cps_to_fmidi'.
+-- | Frequency (cycles per second) to /midi/ note number,
+-- ie. 'round' of 'cps_to_fmidi'.
 --
 -- > map cps_to_midi [261.6,440] == [60,69]
 cps_to_midi :: (Integral i,Floating f,RealFrac f) => f -> i
@@ -461,7 +461,7 @@ octpc_to_cps = octpc_to_cps_f0 440
 
 -- | 'midi_to_octpc' of 'cps_to_midi'.
 cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
-cps_to_octpc = midi_to_octave_pitchclass . cps_to_midi
+cps_to_octpc = midi_to_octave_pitchclass . T.real_round_int . cps_to_fmidi
 
 cps_octave :: (Floating f,RealFrac f) => f -> Octave
 cps_octave = fst . cps_to_octpc
