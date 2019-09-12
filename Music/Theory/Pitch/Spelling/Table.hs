@@ -91,7 +91,7 @@ octpc_to_pitch_ks :: Integral i => T.Octave_PitchClass i -> T.Pitch
 octpc_to_pitch_ks = T.octpc_to_pitch pc_spell_ks
 
 -- | 'midi_to_pitch' 'T.pc_spell_ks'.
-midi_to_pitch_ks :: T.Midi -> T.Pitch
+midi_to_pitch_ks :: Integral i => i -> T.Pitch
 midi_to_pitch_ks = T.midi_to_pitch (pc_spell_ks :: T.Spelling Int)
 
 fmidi_to_pitch_ks :: (Show n,RealFrac n) => n -> T.Pitch

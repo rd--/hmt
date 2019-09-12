@@ -15,5 +15,5 @@ spell_octpc_set o =
         Just r -> r
         Nothing -> map T.octpc_to_pitch_ks o
 
-spell_midi_set :: [T.Midi] -> [T.Pitch]
-spell_midi_set = spell_octpc_set . map T.midi_to_octpc
+spell_midi_set :: Integral i => [i] -> [T.Pitch]
+spell_midi_set = spell_octpc_set . map T.midi_to_octave_pitchclass
