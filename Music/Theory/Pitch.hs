@@ -468,9 +468,6 @@ cps_octave = fst . cps_to_octpc
 
 -- * MIDI detune (cents)
 
--- | Midi note number with cents detune.
-type Midi_Detune' c = (Midi,c)
-
 -- | Is cents in (-50,+50].
 --
 -- > map cents_is_normal [-250,-75,75,250] == replicate 4 False
@@ -478,13 +475,13 @@ cents_is_normal :: (Num c, Ord c) => c -> Bool
 cents_is_normal c = c > (-50) && c <= 50
 
 -- | 'cents_is_normal' of 'snd'.
-midi_detune_is_normal :: (Num c, Ord c) => Midi_Detune' c -> Bool
+midi_detune_is_normal :: (Num c, Ord c) => (x,c) -> Bool
 midi_detune_is_normal = cents_is_normal . snd
 
 -- | In normal form the detune is in the range (-50,+50] instead of [0,100) or wider.
 --
 -- > map midi_detune_normalise [(60,-250),(60,-75),(60,75),(60,250)]
-midi_detune_normalise :: (Ord c,Num c) => Midi_Detune' c -> Midi_Detune' c
+midi_detune_normalise :: (Num m,Ord c,Num c) => (m,c) -> (m,c)
 midi_detune_normalise =
   let recur (m,c) =
         if c > 50
@@ -497,7 +494,7 @@ midi_detune_normalise =
 -- | In normal-positive form the detune is in the range (0,+100].
 --
 -- > map midi_detune_normalise_positive [(60,-250),(60,-75),(60,75),(60,250)]
-midi_detune_normalise_positive :: (Ord c,Num c) => Midi_Detune' c -> Midi_Detune' c
+midi_detune_normalise_positive :: (Num m,Ord m,Ord c,Num c) => (m,c) -> (m,c)
 midi_detune_normalise_positive =
   let recur (m,c) =
         if c < 0
@@ -508,30 +505,30 @@ midi_detune_normalise_positive =
   in recur
 
 -- | Inverse of 'cps_to_midi_detune', given frequency of ISO @A4@.
-midi_detune_to_cps_f0 :: Real c => Double -> Midi_Detune' c -> Double
+midi_detune_to_cps_f0 :: (Integral m,Real c) => Double -> (m,c) -> Double
 midi_detune_to_cps_f0 f0 (m,c) = fmidi_to_cps_f0 f0 (fromIntegral m + (realToFrac c / 100))
 
 -- | Inverse of 'cps_to_midi_detune'.
 --
 -- > map midi_detune_to_cps [(69,0),(68,100)] == [440,440]
-midi_detune_to_cps :: Real c => Midi_Detune' c -> Double
+midi_detune_to_cps :: (Integral m,Real c) => (m,c) -> Double
 midi_detune_to_cps = midi_detune_to_cps_f0 440
 
 -- | 'Midi_Detune' to fractional midi note number.
 --
 -- > midi_detune_to_fmidi (60,50.0) == 60.50
-midi_detune_to_fmidi :: Real c => Midi_Detune' c -> Double
+midi_detune_to_fmidi :: (Integral m,Real c) => (m,c) -> Double
 midi_detune_to_fmidi (mnn,c) = fromIntegral mnn + (realToFrac c / 100)
 
 -- | 'Midi_Detune' to 'Pitch', detune must be precisely at a notateable Pitch.
 --
 -- > let p = Pitch {note = T.C, alteration = T.QuarterToneSharp, octave = 4}
 -- > midi_detune_to_pitch T.pc_spell_ks (midi_detune_nearest_24et (60,35)) == p
-midi_detune_to_pitch :: Real c => Spelling Int -> Midi_Detune' c -> Pitch
+midi_detune_to_pitch :: (Integral m,Real c) => Spelling Int -> (m,c) -> Pitch
 midi_detune_to_pitch sp = fmidi_to_pitch_err sp . cps_to_fmidi . midi_detune_to_cps
 
 -- | Midi note number with real-valued cents detune.
-type Midi_Detune = Midi_Detune' Double
+type Midi_Detune = (Midi,Double)
 
 -- | Fractional midi note number to 'Midi_Detune'.
 --
@@ -556,7 +553,7 @@ midi_detune_nearest_24et (m,dt) = midi_detune_normalise (m,T.round_to 50 dt)
 -- * MIDI cents
 
 -- | Midi note number with integral cents detune.
-type Midi_Cents = Midi_Detune' Int
+type Midi_Cents = (Midi,Int)
 
 midi_detune_to_midi_cents :: Midi_Detune -> Midi_Cents
 midi_detune_to_midi_cents (m,c) = (m,round c)

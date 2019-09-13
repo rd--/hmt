@@ -97,5 +97,5 @@ midi_to_pitch_ks = T.midi_to_pitch (pc_spell_ks :: T.Spelling Int)
 fmidi_to_pitch_ks :: (Show n,RealFrac n) => n -> T.Pitch
 fmidi_to_pitch_ks = T.fmidi_to_pitch_err pc_spell_ks
 
-midi_detune_to_pitch_ks :: Real c => T.Midi_Detune' c -> T.Pitch
+midi_detune_to_pitch_ks :: (Integral m,Real c) => (m,c) -> T.Pitch
 midi_detune_to_pitch_ks = T.midi_detune_to_pitch pc_spell_ks
