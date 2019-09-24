@@ -4,10 +4,10 @@
 -- Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
-import Data.List.Split {- split -}
-import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
+
+import Sound.SC3.Server.Param {- hsc3 -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
@@ -29,20 +29,6 @@ type Channel = Word8
 csv_mnd_hdr :: [String]
 csv_mnd_hdr = ["time","on/off","note","velocity","channel","param"]
 
-type Param = (String,Double)
-
-param_parse :: String -> [Param]
-param_parse str =
-    let f x = case splitOn "=" x of
-                [lhs,rhs] -> (lhs,read rhs)
-                _ -> error ("param_parse: " ++ x)
-    in if null str then [] else map f (splitOn ";" str)
-
-param_pp :: Int -> [Param] -> String
-param_pp k =
-    let f (lhs,rhs) = concat [lhs,"=",T.real_pp_trunc k rhs]
-    in intercalate ";" . map f
-
 -- | Midi note data, the type parameters are to allow for fractional note & velocity values.
 -- The command is a string, @on@ and @off@ are standard, other commands may be present.
 --
@@ -50,7 +36,7 @@ param_pp k =
 --
 -- > all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
 -- > csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
-type MND t n = (t,String,n,n,Channel,[Param])
+type MND t n = (t,String,n,n,Channel,Param)
 
 csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MND t m]
 csv_mnd_parse_f cnv (hdr,dat) =
@@ -62,7 +48,7 @@ csv_mnd_parse_f cnv (hdr,dat) =
                     ,cnv (T.reads_exact_err "note:real" mnn)
                     ,cnv (T.reads_exact_err "velocity:real" vel)
                     ,T.reads_exact_err "channel:int" ch
-                    ,param_parse pm)
+                    ,param_parse (';','=') pm)
                 _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
@@ -93,17 +79,17 @@ csv_mnd_write r_prec nm =
             ,data_value_pp r_prec mnn
             ,data_value_pp r_prec vel
             ,show ch
-            ,param_pp r_prec pm]
+            ,param_pp (';','=') r_prec pm]
         with_hdr dat = (Just csv_mnd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
 -- * MND Seq forms
 
 -- | (p0=midi-note,p1=velocity,channel,param)
-type Event n = (n,n,Channel,[Param])
+type Event n = (n,n,Channel,Param)
 
 -- | Apply (mnn-f,vel-f,ch-f,param-f) to Event.
-event_map :: (t -> u,t -> u,Channel -> Channel,[Param] -> [Param]) -> Event t -> Event u
+event_map :: (t -> u,t -> u,Channel -> Channel,Param -> Param) -> Event t -> Event u
 event_map (f1,f2,f3,f4) (mnn,vel,ch,param) = (f1 mnn,f2 vel,f3 ch,f4 param)
 
 -- | Apply /f/ at mnn and vel fields.
@@ -154,7 +140,7 @@ csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 -- The command is a string, @note@ is standard, other commands may be present.
 --
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
-type MNDD t n = (t,t,String,n,n,Channel,[Param])
+type MNDD t n = (t,t,String,n,n,Channel,Param)
 
 -- | Compare sequence is: start-time,channel-number,note-number,velocity,duration,param.
 mndd_compare :: (Ord t,Ord n) => MNDD t n -> MNDD t n -> Ordering
@@ -176,7 +162,7 @@ csv_mndd_parse_f cnv (hdr,dat) =
                   ,cnv (T.reads_exact_err "note" mnn)
                   ,cnv (T.reads_exact_err "velocity" vel)
                   ,T.reads_exact_err "channel" ch
-                  ,param_parse pm)
+                  ,param_parse (';','=') pm)
               _ -> err "entry?"
     in case hdr of
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
@@ -197,7 +183,7 @@ csv_mndd_write r_prec nm =
             [T.real_pp r_prec st,T.real_pp r_prec du,msg
             ,data_value_pp r_prec mnn,data_value_pp r_prec vel
             ,show ch
-            ,param_pp r_prec pm]
+            ,param_pp (';','=') r_prec pm]
         with_hdr dat = (Just csv_mndd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 

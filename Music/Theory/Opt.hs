@@ -52,6 +52,10 @@ opt_help = unlines . map opt_usr_help
 opt_get :: [OPT] -> String -> String
 opt_get o k = fromMaybe (error ("opt_get: " ++ k)) (lookup k o)
 
+-- | Variant that returns Nothing if the result is the empty string, else Just the result.
+opt_get_nil :: [OPT] -> String -> Maybe String
+opt_get_nil o k = let r = opt_get o k in if null r then Nothing else Just r
+
 -- | 'read' of 'get_opt'
 opt_read :: Read t => [OPT] -> String -> t
 opt_read o = T.read_err . opt_get o
