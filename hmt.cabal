@@ -29,6 +29,7 @@ Library
                    directory,
                    fgl,
                    filepath,
+                   hsc3 == 0.18.*,
                    lazy-csv,
                    logict,
                    multiset-comb,
