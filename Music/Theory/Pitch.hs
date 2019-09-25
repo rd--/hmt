@@ -324,31 +324,36 @@ fmidi_in_octave_above p q = let r = fmidi_in_octave_nearest p q in if r < p then
 fmidi_in_octave_below :: RealFrac a => a -> a -> a
 fmidi_in_octave_below p q = let r = fmidi_in_octave_nearest p q in if r > p then r - 12 else r
 
-cps_in_octave' :: Floating f => (f -> f -> f) -> f -> f -> f
-cps_in_octave' f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
+-- | CPS form of binary /fmidi/ function /f/.
+lift_fmidi_binop_to_cps :: Floating f => (f -> f -> f) -> f -> f -> f
+lift_fmidi_binop_to_cps f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
 
 -- | CPS form of 'fmidi_in_octave_nearest'.
 --
 -- > map cps_octave [440,256] == [4,4]
 -- > round (cps_in_octave_nearest 440 256) == 512
 cps_in_octave_nearest :: (Floating f,RealFrac f) => f -> f -> f
-cps_in_octave_nearest = cps_in_octave' fmidi_in_octave_nearest
+cps_in_octave_nearest = lift_fmidi_binop_to_cps fmidi_in_octave_nearest
 
--- | Raise or lower the frequency /q/ by octaves until it is in the
--- octave starting at /p/.
+-- | CPS form of 'fmidi_in_octave_above'.
 --
--- > cps_in_octave_above 55.0 392.0 == 98.0
-cps_in_octave_above :: (Ord a, Fractional a) => a -> a -> a
-cps_in_octave_above p =
-    let go q = if q > p * 2 then go (q / 2) else if q < p then go (q * 2) else q
-    in go
+-- > cps_in_octave_above 55.0 392.0 == 97.99999999999999
+cps_in_octave_above :: (Floating f,RealFrac f) => f -> f -> f
+cps_in_octave_above = lift_fmidi_binop_to_cps fmidi_in_octave_above
 
--- > cps_in_octave_above' 55.0 392.0 == 97.99999999999999
-cps_in_octave_above' :: (Floating f,RealFrac f) => f -> f -> f
-cps_in_octave_above' = cps_in_octave' fmidi_in_octave_above
-
+-- | CPS form of 'fmidi_in_octave_above'.
 cps_in_octave_below :: (Floating f,RealFrac f) => f -> f -> f
-cps_in_octave_below = cps_in_octave' fmidi_in_octave_below
+cps_in_octave_below = lift_fmidi_binop_to_cps fmidi_in_octave_below
+
+-- | Direct implementation of 'cps_in_octave_above'.
+--   Raise or lower the frequency /q/ by octaves until it is in the
+--   octave starting at /p/.
+--
+-- > cps_in_octave_above_direct 55.0 392.0 == 98.0
+cps_in_octave_above_direct :: (Ord a, Fractional a) => a -> a -> a
+cps_in_octave_above_direct p q =
+  let f = cps_in_octave_above_direct p
+  in if q > p * 2 then f (q / 2) else if q < p then f (q * 2) else q
 
 -- | Set octave of /p2/ so that it nearest to /p1/.
 --
@@ -408,7 +413,7 @@ midi_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . fromIntegral
 
 -- | 'midi_to_cps_f0' 440.
 --
--- > map midi_to_cps [60,69] == [261.6255653005986,440.0]
+-- > map (round . midi_to_cps) [59,60,69] == [247,262,440]
 midi_to_cps :: (Integral i,Floating f) => i -> f
 midi_to_cps = midi_to_cps_f0 440
 
