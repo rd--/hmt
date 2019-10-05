@@ -85,3 +85,9 @@ to_absolute_cwd x =
     then return x
     else fmap (</> x) getCurrentDirectory
 
+-- | 'createDirectoryIfMissing' (including parents) and then 'writeFile'
+writeFile_mkdir :: FilePath -> String -> IO ()
+writeFile_mkdir fn s = do
+  let dir = takeDirectory fn
+  createDirectoryIfMissing True dir
+  writeFile fn s

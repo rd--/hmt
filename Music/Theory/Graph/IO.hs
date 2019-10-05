@@ -1,3 +1,6 @@
+-- | IO for graph files, graph6, sparse6 and digraph6 encodings.
+--   <http://users.cecs.anu.edu.au/~bdm/nauty/>
+--   <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 module Music.Theory.Graph.IO where
 
 import Data.List.Split {- split -}
@@ -6,7 +9,7 @@ import System.Process {- process -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
--- * G6
+-- * G6 (graph6)
 
 -- | Load Graph6 file, discard optional header if present.
 g6_load :: FilePath -> IO [String]
@@ -33,6 +36,7 @@ g6_to_edg g6 = do
 g6_to_gr :: [String] -> IO [T.G]
 g6_to_gr = fmap (map T.edg_to_g) . g6_to_edg
 
+-- | 'g6_to_edg' of 'g6_dsc_load'.
 g6_dsc_load_edg :: FilePath -> IO [(String,T.EDG)]
 g6_dsc_load_edg fn = do
   dat <- g6_dsc_load fn
