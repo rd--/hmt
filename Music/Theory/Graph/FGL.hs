@@ -15,8 +15,8 @@ import qualified Control.Monad.Logic as L {- logict -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
-fgl_to_lve :: G.Graph gr => gr v e -> T.LVE v e
-fgl_to_lve gr = (G.labNodes gr,G.labEdges gr)
+fgl_to_lbl :: G.Graph gr => gr v e -> T.LBL v e
+fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
 
 -- | Synonym for 'G.noNodes'.
 g_degree :: G.Gr v e -> Int

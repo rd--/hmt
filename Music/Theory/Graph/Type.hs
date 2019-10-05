@@ -205,14 +205,3 @@ eset_to_lbl e =
   let v = nub (sort (concatMap (\(i,j) -> [i,j]) e))
       get_ix z = fromMaybe (error "lbl_recover") (elemIndex z v)
   in (zip [0..] v, map (\(i,j) -> ((get_ix i,get_ix j),())) e)
-
--- * LVE
-
--- | Minor variant on LBL.
-type LVE v e = ([(V,v)],[(V,V,e)])
-
-lbl_to_lve :: LBL v e -> LVE v e
-lbl_to_lve (v,e) = (v,map (\((i,j),k) -> (i,j,k)) e)
-
-gr_to_lve :: Eq t => GR t -> LVE t ()
-gr_to_lve = lbl_to_lve . gr_to_lbl

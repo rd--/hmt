@@ -153,26 +153,26 @@ type POS_FN v = (v -> (Int,Int))
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
 g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r * 100))]
 
-lve_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
-lve_to_dot g_typ opt (v_attr,e_attr) (v,e) =
+lbl_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
+lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =
     let ws s = if null s then "" else " " ++ s
         v_f (k,lbl) = concat [show k,ws (dot_attr_seq_pp (v_attr lbl)),";"]
-        e_f (lhs,rhs,lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
-                                   ,ws (dot_attr_seq_pp (e_attr lbl)),";"]
+        e_f ((lhs,rhs),lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
+                                     ,ws (dot_attr_seq_pp (e_attr lbl)),";"]
     in concat [[g_type_to_string g_typ," g {"]
               ,map dot_attr_set_pp (dot_attr_collate opt)
               ,map v_f v
               ,map e_f e
               ,["}"]]
 
-lve_to_udot :: [DOT_META_ATTR] -> GR_PP v e -> T.LVE v e -> [String]
-lve_to_udot o pp = lve_to_dot G_UGRAPH o pp
+lbl_to_udot :: [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
+lbl_to_udot o pp = lbl_to_dot G_UGRAPH o pp
 
 fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
-fgl_to_dot typ opt pp gr = lve_to_dot typ opt pp (T.fgl_to_lve gr)
+fgl_to_dot typ opt pp gr = lbl_to_dot typ opt pp (T.fgl_to_lbl gr)
 
 fgl_to_udot :: G.Graph gr => [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
-fgl_to_udot opt pp gr = lve_to_udot opt pp (T.fgl_to_lve gr)
+fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
 -- * IO
 
