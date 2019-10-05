@@ -49,9 +49,9 @@ partial f1 k = harmonic_series_cps f1 `Safe.at` (k - 1)
 -- > import Music.Theory.Pitch
 --
 -- > let r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
--- > let d = harmonic_series_cps_derived 5 (octpc_to_cps (1,4))
+-- > let d = harmonic_series_cps_derived 5 (T.octpc_to_cps (1,4))
 -- > map round (take 15 d) == r
-harmonic_series_cps_derived :: (Ord a, Fractional a, Enum a) => Int -> a -> [a]
+harmonic_series_cps_derived :: (Ord a, RealFrac a, Floating a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
     let f0 = T.cps_in_octave_above f1 (partial f1 k)
     in harmonic_series_cps f0
