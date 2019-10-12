@@ -4,6 +4,7 @@
 -- Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
+import Data.Function {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 
@@ -87,6 +88,18 @@ csv_mnd_write r_prec nm =
 
 -- | (p0=midi-note,p1=velocity,channel,param)
 type Event n = (n,n,Channel,Param)
+
+-- | mnn = midi-note-number
+event_mnn :: Event t -> t
+event_mnn (mnn,_,_,_) = mnn
+
+-- | ch = channel
+event_ch :: Event t -> Channel
+event_ch (_,_,ch,_) = ch
+
+-- | Are events equal at mnn and ch fields?
+event_eq_ol :: Eq t => Event t -> Event t -> Bool
+event_eq_ol = ((==) `on` (\(mnn,_,ch,_) -> (mnn,ch)))
 
 -- | Apply (mnn-f,vel-f,ch-f,param-f) to Event.
 event_map :: (t -> u,t -> u,Channel -> Channel,Param -> Param) -> Event t -> Event u
