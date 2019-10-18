@@ -140,3 +140,7 @@ opt_scan a k =
 -- | Scanner with default value.
 opt_scan_def :: [String] -> (String,String) -> String
 opt_scan_def a (k,v) = fromMaybe v (opt_scan a k)
+
+-- | Reading scanner with default value.
+opt_scan_read :: Read t => [String] -> (String,t) -> t
+opt_scan_read a (k,v) = maybe v read (opt_scan a k)
