@@ -13,6 +13,7 @@ module Music.Theory.Opt where
 
 import Control.Monad {- base -}
 import Data.Either {- base -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 import System.Environment {- base -}
 import System.Exit {- base -}
@@ -129,3 +130,13 @@ opt_get_arg chk usg def = do
 -- > opt_param_set_parse "a\nb=c" == [("a","True"),("b","c")]
 opt_param_set_parse :: String -> [OPT]
 opt_param_set_parse = map opt_param_parse . lines
+
+-- | Simple scanner over argument list.
+opt_scan :: [String] -> String -> Maybe String
+opt_scan a k =
+  let (o,_) = opt_set_parse a
+  in fmap snd (find ((== k) . fst) o)
+
+-- | Scanner with default value.
+opt_scan_def :: [String] -> (String,String) -> String
+opt_scan_def a (k,v) = fromMaybe v (opt_scan a k)
