@@ -30,7 +30,7 @@ powerset = filterM (const [True,False])
 --
 -- > powerset' [1,2,3] == [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
 powerset' :: Ord a => [a] -> [[a]]
-powerset' = tail . T.sort_by_two_stage length id . powerset
+powerset' = tail . T.sort_by_two_stage_on length id . powerset
 
 -- | Two element subsets.
 --

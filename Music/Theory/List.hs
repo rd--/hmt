@@ -879,6 +879,10 @@ two_stage_compare f g p q =
       EQ -> g p q
       r -> r
 
+-- | 'compare' 'on' of 'two_stage_compare'
+two_stage_compare_on :: (Ord i, Ord j) => (t -> i) -> (t -> j) -> t -> t -> Ordering
+two_stage_compare_on f g = two_stage_compare (compare `on` f) (compare `on` g)
+
 -- | Sequence of comparison functions, continue comparing until not EQ.
 --
 -- > compare (1,0) (0,1) == GT
@@ -890,6 +894,10 @@ n_stage_compare l p q =
       f:l' -> case f p q of
                 EQ -> n_stage_compare l' p q
                 r -> r
+
+-- | 'compare' 'on' of 'two_stage_compare'
+n_stage_compare_on :: Ord i => [t -> i] -> t -> t -> Ordering
+n_stage_compare_on l = n_stage_compare (map (compare `on`) l)
 
 -- | Sort sequence /a/ based on ordering of sequence /b/.
 --
@@ -904,13 +912,13 @@ sort_to e = map fst . sortOn snd . zip e
 sort_to_rev :: Ord i => [i] -> [e] -> [e]
 sort_to_rev = flip sort_to
 
--- | 'sortBy' of 'two_stage_compare'.
-sort_by_two_stage :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]
-sort_by_two_stage f g = sortBy (two_stage_compare (compare `on` f) (compare `on` g))
+-- | 'sortBy' of 'two_stage_compare_on'.
+sort_by_two_stage_on :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]
+sort_by_two_stage_on f g = sortBy (two_stage_compare_on f g)
 
--- | 'sortBy' of 'n_stage_compare'.
-sort_by_n_stage :: Ord b => [a -> b] -> [a] -> [a]
-sort_by_n_stage f = sortBy (n_stage_compare (map (compare `on`) f))
+-- | 'sortBy' of 'n_stage_compare_on'.
+sort_by_n_stage_on :: Ord b => [a -> b] -> [a] -> [a]
+sort_by_n_stage_on f = sortBy (n_stage_compare_on f)
 
 -- | Given a comparison function, merge two ascending lists.
 --

@@ -115,7 +115,7 @@ z_bip z = sort . map (z_ic z . z_mod z) . T.d_dx
 -}
 z_sc_univ :: Integral i => Z i -> [[i]]
 z_sc_univ z =
-    T.sort_by_two_stage length id $
+    T.sort_by_two_stage_on length id $
     nub $
     map (z_forte_prime z) $
     S.powerset (z_univ z)

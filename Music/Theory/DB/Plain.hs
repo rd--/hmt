@@ -47,7 +47,7 @@ db_parse (rs,fs,es) s =
     in map (record_parse (fs,es)) r
 
 db_sort :: [(Key,Int)] -> [Record] -> [Record]
-db_sort k = T.sort_by_n_stage (map record_lookup_at k)
+db_sort k = T.sort_by_n_stage_on (map record_lookup_at k)
 
 db_load_utf8 :: SEP -> FilePath -> IO [Record]
 db_load_utf8 sep = fmap (db_parse sep) . IO.read_file_utf8
