@@ -912,6 +912,14 @@ sort_to e = map fst . sortOn snd . zip e
 sort_to_rev :: Ord i => [i] -> [e] -> [e]
 sort_to_rev = flip sort_to
 
+-- | 'sortBy' of 'two_stage_compare'.
+sort_by_two_stage :: Compare_F a -> Compare_F a -> [a] -> [a]
+sort_by_two_stage f g = sortBy (two_stage_compare f g)
+
+-- | 'sortBy' of 'n_stage_compare'.
+sort_by_n_stage :: [Compare_F a] -> [a] -> [a]
+sort_by_n_stage f = sortBy (n_stage_compare f)
+
 -- | 'sortBy' of 'two_stage_compare_on'.
 sort_by_two_stage_on :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]
 sort_by_two_stage_on f g = sortBy (two_stage_compare_on f g)
