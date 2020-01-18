@@ -337,9 +337,9 @@ histogram_by = generic_histogram_by
 generic_histogram :: (Ord a,Integral i) => [a] -> [(a,i)]
 generic_histogram = generic_histogram_by (==) (Just compare)
 
--- | Type specialised 'generic_histogram'.
+-- | Type specialised 'generic_histogram'.  Elements will be in ascending order.
 --
--- > map histogram ["","hohoh"] == [[],[('h',3),('o',2)]]
+-- > map histogram ["","hohoh","yxx"] == [[],[('h',3),('o',2)],[('x',2),('y',1)]]
 histogram :: Ord a => [a] -> [(a,Int)]
 histogram = generic_histogram
 
@@ -900,9 +900,9 @@ sort_to e = map fst . sortOn snd . zip e
 
 -- | 'flip' of 'sort_to'.
 --
--- > sort_on [1,4,2,3,5] "adbce" == "abcde"
-sort_on :: Ord i => [i] -> [e] -> [e]
-sort_on = flip sort_to
+-- > sort_to_rev [1,4,2,3,5] "adbce" == "abcde"
+sort_to_rev :: Ord i => [i] -> [e] -> [e]
+sort_to_rev = flip sort_to
 
 -- | 'sortBy' of 'two_stage_compare'.
 sort_by_two_stage :: (Ord b,Ord c) => (a -> b) -> (a -> c) -> [a] -> [a]

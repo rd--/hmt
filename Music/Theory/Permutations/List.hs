@@ -8,10 +8,10 @@ import qualified Music.Theory.Permutations as P {- hmt -}
 
 -- | Generate all permutations.
 --
--- > permutations [0,3] == [[0,3],[3,0]]
--- > length (permutations [1..5]) == P.n_permutations 5
-permutations :: [a] -> [[a]]
-permutations i =
+-- > permutations_l [0,3] == [[0,3],[3,0]]
+-- > length (permutations_l [1..5]) == P.n_permutations 5
+permutations_l :: [a] -> [[a]]
+permutations_l i =
     let f p = P.apply_permutation p i
     in map f (P.permutations_n (length i))
 
