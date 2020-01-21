@@ -43,13 +43,22 @@ rational_pp r =
        then show n
        else concat [show n,"/",show d]
 
+-- | Pretty print ratio as @:@ separated integers, if /nil/ is True elide unit denominator.
+--
+-- > map (ratio_pp_opt True) [1,3/2,2] == ["1","3:2","2"]
+ratio_pp_opt :: Bool -> Rational -> String
+ratio_pp_opt nil r =
+  let f :: (Integer,Integer) -> String
+      f (n,d) = concat [show n,":",show d]
+  in case T.rational_nd r of
+       (n,1) -> if nil then show n else f (n,1)
+       x -> f x
+
 -- | Pretty print ratio as @:@ separated integers.
 --
 -- > map ratio_pp [1,3/2,2] == ["1:1","3:2","2:1"]
 ratio_pp :: Rational -> String
-ratio_pp r =
-    let (n,d) = T.rational_nd r
-    in concat [show n,":",show d]
+ratio_pp = ratio_pp_opt False
 
 -- | Show rational to /n/ decimal places.
 --

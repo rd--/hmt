@@ -177,11 +177,11 @@ fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 -- * IO
 
 -- | Given x.dot write x.typ.  Requires @dot@ be installed.
-dot_to_ftype :: String -> String -> IO ExitCode
+dot_to_ftype :: String -> FilePath -> IO ExitCode
 dot_to_ftype typ dot_fn =
   -- -O writes x.dot to x.dot.typ, use -o
   let typ_fn = replaceExtension dot_fn typ
   in rawSystem "dot" ["-T",typ,"-o" ++ typ_fn,dot_fn]
 
-dot_to_svg :: String -> IO ExitCode
+dot_to_svg :: FilePath -> IO ExitCode
 dot_to_svg = dot_to_ftype "svg"

@@ -50,6 +50,16 @@ The squares of the non-negative integers.
 a000290 :: Integral n => [n]
 a000290 = let square n = n * n in map square [0..]
 
+{- | <https://oeis.org/A000930>
+
+Narayana's cows sequence.
+
+> [1,1,1,2,3,4,6,9,13,19,28,41,60] `isPrefixOf` a000930
+-}
+a000930 :: Integral n => [n]
+a000930 = 1 : 1 : 1 : zipWith (+) a000930 (drop 2 a000930)
+
+
 {- | <https://oeis.org/A001950>
 
 Upper Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi^2), where phi = (1+sqrt(5))/2
@@ -136,6 +146,17 @@ Triangle read by rows: row n gives denominators of Farey series of order n
 -}
 a006843 :: Integral i => [i]
 a006843 = map denominator (concatMap Math.farey [1..])
+
+{- | <https://oeis.org/A007318>
+
+Pascal's triangle read by rows
+
+[[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1],[1,5,10,10,5,1]] `isPrefixOf` a007318
+-}
+a007318 :: Integral i => [[i]]
+a007318 =
+  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  in iterate f [1]
 
 {- | <http://oeis.org/A030308>
 
