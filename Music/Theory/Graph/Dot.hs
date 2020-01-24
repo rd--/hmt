@@ -150,8 +150,11 @@ g_type_to_edge_symbol ty =
 -- | Vertex position function.
 type POS_FN v = (v -> (Int,Int))
 
+g_pos_attr :: (Show n, Num n) => n -> (n,n) -> DOT_ATTR
+g_pos_attr k (c,r) = ("pos",show (c * k) ++ "," ++ show (r * k))
+
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
-g_lift_pos_fn f v = let (c,r) = f v in [("pos",show (c * 100) ++ "," ++ show (r * 100))]
+g_lift_pos_fn f v = let (c,r) = f v in [g_pos_attr 100 (c,r)]
 
 lbl_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
 lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =
