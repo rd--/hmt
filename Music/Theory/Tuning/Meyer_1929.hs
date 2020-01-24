@@ -95,13 +95,17 @@ elements = nub . sort . concat . meyer_table_rows
 degree :: Integral i => i -> i
 degree = genericLength . elements
 
--- | <http://en.wikipedia.org/wiki/Farey_sequence>
---
--- > let r = [[0,1/2,1]
--- >         ,[0,1/3,1/2,2/3,1]
--- >         ,[0,1/4,1/3,1/2,2/3,3/4,1]
--- >         ,[0,1/5,1/4,1/3,2/5,1/2,3/5,2/3,3/4,4/5,1]
--- >         ,[0,1/6,1/5,1/4,1/3,2/5,1/2,3/5,2/3,3/4,4/5,5/6,1]]
--- > in map farey_sequence [2..6] == r
+{- | <http://en.wikipedia.org/wiki/Farey_sequence>
+
+> r = [[0                                              ]
+>     ,[0                                            ,1]
+>     ,[0                    ,1/2                    ,1]
+>     ,[0            ,1/3    ,1/2    ,2/3            ,1]
+>     ,[0        ,1/4,1/3    ,1/2    ,2/3,3/4        ,1]
+>     ,[0    ,1/5,1/4,1/3,2/5,1/2,3/5,2/3,3/4,4/5    ,1]
+>     ,[0,1/6,1/5,1/4,1/3,2/5,1/2,3/5,2/3,3/4,4/5,5/6,1]]
+
+> map farey_sequence [0..6]
+-}
 farey_sequence :: Integral a => a -> [Ratio a]
 farey_sequence k = 0 : nub (sort [n%d | d <- [1..k], n <- [1..d]])

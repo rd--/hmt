@@ -59,7 +59,6 @@ Narayana's cows sequence.
 a000930 :: Integral n => [n]
 a000930 = 1 : 1 : 1 : zipWith (+) a000930 (drop 2 a000930)
 
-
 {- | <https://oeis.org/A001950>
 
 Upper Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi^2), where phi = (1+sqrt(5))/2
@@ -74,6 +73,19 @@ a001950 = zipWith (+) a000201 [1..]
 -- The 15 supersingular primes.
 a002267 :: Num n => [n]
 a002267 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 41, 47, 59, 71]
+
+{- | <https://oeis.org/A002487>
+
+Stern's diatomic series (or Stern-Brocot sequence)
+
+> [0,1,1,2,1,3,2,3,1,4,3,5,2,5,3,4,1,5,4,7,3,8,5,7,2,7,5,8,3,7,4,5] `isPrefixOf` a002487
+-}
+a002487 :: Num n => [n]
+a002487 =
+  let f (a:a') (b:b') = a + b : a : f a' b'
+      f _ _ = error "a002487?"
+      x = 1 : 1 : f (tail x) x
+  in 0 : x
 
 {- | <https://oeis.org/A003849>
 
