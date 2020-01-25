@@ -73,6 +73,7 @@ scl_ji_au =
     ,"johnston_81"
     ,"johnston_6-qt"
     ,"johnston_6-qt_row"])
+  ,("Kepler, Johannes",words "kepler1 kepler2 kepler3")
   ,("Partch, Harry"
    ,["partch_29-av"
     ,"partch_29"
