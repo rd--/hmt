@@ -160,6 +160,7 @@ Library
                    Music.Theory.Tuning.Rosenboom_1979
                    Music.Theory.Tuning.Scala
                    Music.Theory.Tuning.Scala.Interval
+                   Music.Theory.Tuning.Scala.Meta
                    Music.Theory.Tuning.Scala.Mode
                    Music.Theory.Tuning.Sethares_1994
                    Music.Theory.Tuning.Syntonic
