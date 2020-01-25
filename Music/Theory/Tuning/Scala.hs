@@ -101,13 +101,20 @@ scale_degree (_,_,n,_) = n
 scale_pitches :: Scale -> [Pitch]
 scale_pitches (_,_,_,p) = p
 
+-- | Is 'Pitch' outside of the standard octave (ie. cents 0-1200 and ratios 1-2)
+pitch_non_oct :: Pitch -> Bool
+pitch_non_oct p =
+  case p of
+    Left c -> c < 0 || c > 1200
+    Right r -> r < 1 || r > 2
+
 -- | Ensure degree and number of pitches align.
 scale_verify :: Scale -> Bool
 scale_verify (_,_,n,p) = n == length p
 
 -- | Raise error if scale doesn't verify, else 'id'.
 scale_verify_err :: Scale -> Scale
-scale_verify_err scl = if scale_verify scl then scl else error "invalid scale"
+scale_verify_err scl = if scale_verify scl then scl else error ("invalid scale: " ++ scale_name scl)
 
 -- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale -> Maybe Pitch
@@ -131,6 +138,10 @@ perfect_octave s =
 -- | Are all pitches of the same type.
 is_scale_uniform :: Scale -> Bool
 is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
+
+-- | Are the pitches in ascending sequence.
+is_scale_ascending :: Scale -> Bool
+is_scale_ascending = T.is_ascending . map pitch_cents . scale_pitches
 
 -- | Make scale pitches uniform, conforming to the most predominant pitch type.
 scale_uniform :: Epsilon -> Scale -> Scale
