@@ -3,7 +3,8 @@ module Music.Theory.Tuning.Scala.Meta where
 
 scl_ji_au :: [(String,[String])]
 scl_ji_au =
-  [("Chalmers, John"
+  [("Barlow, Clarence",words "barlow_13 barlow_17")
+   ,("Chalmers, John"
    ,["chalmers"
     ,"chalmers_17"
     ,"chalmers_19"
