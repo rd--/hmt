@@ -36,9 +36,13 @@ read_maybe = reads_to_read_precise reads
 read_def :: Read a => a -> String -> a
 read_def x s = maybe x id (read_maybe s)
 
--- | Variant of 'read_maybe' that errors on 'Nothing'.
+-- | Variant of 'read_maybe' that errors on 'Nothing', printing message.
+read_err_msg :: Read a => String -> String -> a
+read_err_msg msg s = maybe (error ("read_err: " ++ msg ++ ": " ++ s)) id (read_maybe s)
+
+-- | Default message.
 read_err :: Read a => String -> a
-read_err s = maybe (error ("read_err: " ++ s)) id (read_maybe s)
+read_err = read_err_msg "read_maybe failed"
 
 -- | Variant of 'reads' requiring exact match, no trailing white space.
 --

@@ -54,6 +54,7 @@ table_opt_pipe = (True,True,False," | ",False)
 --
 -- > let tbl = [["1","2","3","4"],["a","bc","def"],["ghij","klm","no","p"]]
 -- > putStrLn$unlines$"": table_pp (True,True,True," ",True) tbl
+-- > putStrLn$unlines$"": table_pp (False,False,True," ",False) tbl
 table_pp :: TABLE_OPT -> TABLE -> [String]
 table_pp (has_hdr,pad_left,eq_width,col_sep,print_eot) dat =
     let c = transpose (T.tbl_make_regular_nil "" dat)

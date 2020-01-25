@@ -2,7 +2,7 @@
 
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
-This module succesfully parses all scales 4809 in v.87 of the scale library.
+This module succesfully parses all scales in v.89 of the scale library.
 
 -}
 module Music.Theory.Tuning.Scala where
@@ -16,6 +16,7 @@ import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
+import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Directory as T {- hmt -}
 import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
@@ -229,17 +230,17 @@ is_comment x =
 remove_eol_comments :: String -> String
 remove_eol_comments = takeWhile (/= '!')
 
--- | Remove comments and null lines and trailing comments.
+-- | Remove comments and trailing comments (the description may be empty, keep nulls)
 --
--- > filter_comments ["!a","b","","c","d!e"] == ["b","c","d"]
+-- > filter_comments ["!a","b","","c","d!e"] == ["b","","c","d"]
 filter_comments :: [String] -> [String]
 filter_comments =
     map remove_eol_comments .
-    filter (not . T.predicate_any [is_comment,null])
+    filter (not . T.predicate_any [is_comment])
 
 -- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
 --
--- > map parse_pitch ["700.0","350.","3/2","2"] == [Left 700,Left 350,Right (3/2),Right 2]
+-- > map parse_pitch ["70.0","350.","3/2","2","2/1"] == [Left 70,Left 350,Right (3/2),Right 2,Right 2]
 parse_pitch :: String -> Pitch
 parse_pitch p =
     if '.' `elem` p
@@ -257,7 +258,10 @@ parse_pitch_ln x =
 parse_scl :: String -> String -> Scale
 parse_scl nm s =
     case filter_comments (lines (T.filter_cr s)) of
-      t:n:p -> let scl = (nm,T.delete_trailing_whitespace t,T.read_err n,map parse_pitch_ln p)
+      t:n:p -> let scl = (nm
+                         ,T.delete_trailing_whitespace t
+                         ,T.read_err_msg "degree" n
+                         ,map parse_pitch_ln p)
                in scale_verify_err scl
       _ -> error "parse"
 
@@ -266,7 +270,7 @@ parse_scl nm s =
 -- | Read the environment variable @SCALA_SCL_DIR@, which is a
 -- sequence of directories used to locate scala files on.
 --
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/data/scala/87/scl"
+-- > setEnv "SCALA_DIST_DIR" "/home/rohan/data/scala/89/scl"
 scl_get_dir :: IO [String]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
@@ -285,8 +289,8 @@ scl_derive_filename nm = do
 -- then return it, else run 'scl_derive_filename'.
 --
 -- > scl_resolve_name "young-lm_piano"
--- > scl_resolve_name "/home/rohan/data/scala/87/scl/young-lm_piano.scl"
--- > scl_resolve_name "/home/rohan/data/scala/87/scl/unknown-tuning.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/89/scl/young-lm_piano.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/89/scl/unknown-tuning.scl"
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
     let ex_f x = if x then return nm else error "scl_resolve_name: file does not exist"
@@ -306,17 +310,31 @@ scl_load nm = do
   return (parse_scl (takeBaseName nm) s)
 
 -- | 'scale_to_tuning' of 'scl_load'.
+--
+-- > scl_load_tuning 0.01 "pyra"
 scl_load_tuning :: Epsilon -> String -> IO T.Tuning
 scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 
-{- | Load all @.scl@ files at /dir/. -}
+{- | Load all @.scl@ files at /dir/, associate with file-name.
+
+> db <- scl_load_dir_fn "/home/rohan/data/scala/89/scl"
+> map (\(fn,s) -> (takeFileName fn,scale_name s)) db
+
+-}
+scl_load_dir_fn :: FilePath -> IO [(FilePath,Scale)]
+scl_load_dir_fn d = do
+  fn <- T.dir_subset [".scl"] d
+  scl <- mapM scl_load fn
+  return (zip fn scl)
+
+-- | Load all @.scl@ files at /dir/, associate with file-name.
 scl_load_dir :: FilePath -> IO [Scale]
-scl_load_dir d = T.dir_subset [".scl"] d >>= mapM scl_load
+scl_load_dir = fmap (map snd) . scl_load_dir_fn
 
 -- | Load Scala data base at 'scl_get_dir'.
 --
 -- > db <- scl_load_db
--- > length db == 4809 {- scala/87/scl/ -}
+-- > length db == 5057 {- scala/89/scl/ -}
 -- > mapM_ (putStrLn . unlines . scale_stat) (filter (not . perfect_octave) db)
 scl_load_db :: IO [Scale]
 scl_load_db = do
@@ -326,7 +344,23 @@ scl_load_db = do
 
 -- * PP
 
+-- | <http://www.huygens-fokker.org/docs/scalesdir.txt>
+scales_dir_txt_tbl :: [Scale] -> [[String]]
+scales_dir_txt_tbl =
+  let f s = [scale_name s,show (scale_degree s),scale_description s]
+  in map f
+
+-- | Format as CSV file.
+--
+-- > db <- scl_load_db
+-- > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
+scales_dir_txt_csv :: [Scale] -> String
+scales_dir_txt_csv db = T.csv_table_pp id T.def_csv_opt (Nothing,scales_dir_txt_tbl db)
+
 -- | Simple plain-text display of scale data.
+--
+-- > db <- scl_load_db
+-- > writeFile "/tmp/scl.txt" (unlines (concatMap scale_stat db))
 scale_stat :: Scale -> [String]
 scale_stat s =
     let p = scale_pitches s
