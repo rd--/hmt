@@ -22,6 +22,7 @@ import qualified Music.Theory.Either as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.IO as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math.Prime as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
@@ -427,6 +428,14 @@ load_dist_file nm = do
   fmap lines (readFile (d </> nm))
 
 -- * QUERY
+
+-- | Is scale just-intonation (ie. are all pitches ratios)
+scl_is_ji :: Scale -> Bool
+scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches
+
+-- | Calculate limit for JI scale (ie. largest prime factor)
+scl_ji_limit :: Scale -> Integer
+scl_ji_limit = maximum . map fst . concatMap T.rational_prime_factors_m . scale_ratios_req
 
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
 scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]

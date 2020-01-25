@@ -4,13 +4,11 @@
 module Music.Theory.Interval.Barlow_1987 where
 
 import Data.List {- base -}
-import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import qualified Data.Numbers.Primes as P {- primes -}
-
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math.Prime as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- | Barlow's /indigestibility/ function for prime numbers.
@@ -22,98 +20,13 @@ barlow p =
         square n = n * n
     in 2 * (square (p' - 1) / p')
 
--- | Generate list of factors of /n/ from /x/.
---
--- > factor P.primes 315 == [3,3,5,7]
--- > P.primeFactors 315 == [3,3,5,7]
-factor :: Integral a => [a] -> a -> [a]
-factor x n =
-    case x of
-      [] -> undefined
-      i:x' -> if n < i
-              then [] -- ie. prime factors of 1...
-              else if i * i > n
-                   then [n]
-                   else if rem n i == 0
-                        then i : factor x (quot n i)
-                        else factor x' n
-
--- | 'factor' /n/ from 'primes'.
---
--- > map prime_factors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
--- > map P.primeFactors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
-prime_factors :: Integral a => a -> [a]
-prime_factors = factor P.primes
-
--- | Collect number of occurences of each element of a sorted list.
---
--- > multiplicities [1,1,1,2,2,3] == [(1,3),(2,2),(3,1)]
-multiplicities :: (Eq a,Integral n) => [a] -> [(a,n)]
-multiplicities = T.generic_histogram_by (==) Nothing
-
--- | 'multiplicities' '.' 'P.primeFactors'.
---
--- > prime_factors_m 315 == [(3,2),(5,1),(7,1)]
-prime_factors_m :: Integral a => a -> [(a,a)]
-prime_factors_m = multiplicities . P.primeFactors
-
--- | Pretty printing variant of 'prime_factors_m'.
---
--- > prime_factors_m_pp 315 == "3×2 5×1 7×1"
-prime_factors_m_pp :: Integer -> String
-prime_factors_m_pp =
-  let f (x,y) = show x ++ "×" ++ show y
-  in unwords . map f . prime_factors_m
-
--- | Merging function for 'rational_prime_factors_m'.
-merge :: (Ord a,Num b,Eq b) => [(a,b)] -> [(a,b)] -> [(a,b)]
-merge p q =
-    case (p,q) of
-      (_,[]) -> p
-      ([],_) -> map (\(i,j) -> (i,-j)) q
-      ((a,b):p',(c,d):q') ->
-          if a < c
-          then (a,b) : merge p' q
-          else if a > c
-               then (c,-d) : merge p q'
-               else if b /= d
-                    then (a,b-d) : merge p' q'
-                    else merge p' q'
-
--- | Collect the prime factors in a rational number given as a
--- numerator/ denominator pair (n,m). Prime factors are listed in
--- ascending order with their positive or negative multiplicities,
--- depending on whether the prime factor occurs in the numerator or
--- the denominator (after cancelling out common factors).
---
--- > rational_prime_factors_m (16,15) == [(2,4),(3,-1),(5,-1)]
--- > rational_prime_factors_m (10,9) == [(2,1),(3,-2),(5,1)]
--- > rational_prime_factors_m (81,64) == [(2,-6),(3,4)]
--- > rational_prime_factors_m (27,16) == [(2,-4),(3,3)]
--- > rational_prime_factors_m (12,7) == [(2,2),(3,1),(7,-1)]
-rational_prime_factors_m :: Integral b => (b,b) -> [(b,b)]
-rational_prime_factors_m (n,m) =
-    let n' = prime_factors_m n
-        m' = prime_factors_m m
-    in merge n' m'
-
--- | Variant of 'rational_prime_factors_m' giving results in a table
--- up to the /n/th prime.
---
--- > rational_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
--- > rational_prime_factors_t 6 (32,9) == [5,-2,0,0,0,0]
-rational_prime_factors_t :: Integral b => Int -> (b,b) -> [b]
-rational_prime_factors_t n x =
-    let r = rational_prime_factors_m x
-    in map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
-
 -- | Compute the disharmonicity of the interval /(p,q)/ using the
 -- prime valuation function /pv/.
 --
 -- > map (disharmonicity barlow) [(9,10),(8,9)] == ([12 + 11/15,8 + 1/3] :: [Rational])
 disharmonicity :: (Integral a,Num b) => (a -> b) -> (a,a) -> b
 disharmonicity pv (p,q) =
-    let n = rational_prime_factors_m (p,q)
+    let n = T.rat_prime_factors_m (p,q)
     in sum [abs (fromIntegral j) * pv i | (i,j) <- n]
 
 -- | The reciprocal of 'disharmonicity'.
@@ -124,19 +37,11 @@ harmonicity pv = recip . disharmonicity pv
 
 -- | Variant of 'harmonicity' with 'Ratio' input.
 harmonicity_r :: (Integral a,Fractional b) => (a -> b) -> Ratio a -> b
-harmonicity_r pv = harmonicity pv . from_rational
-
--- | 'uncurry' ('%').
-to_rational :: Integral a => (a,a) -> Ratio a
-to_rational = uncurry (%)
-
--- | Make 'numerator' 'denominator' pair of /n/.
-from_rational :: Ratio t -> (t, t)
-from_rational n = (numerator n,denominator n)
+harmonicity_r pv = harmonicity pv . T.rational_nd
 
 -- | Set of 1. interval size (cents), 2. intervals as product of
 -- powers of primes, 3. frequency ratio and 4. harmonicity value.
-type Table_2_Row = (Double,[Integer],Rational,Double)
+type Table_2_Row = (Double,[Int],Rational,Double)
 
 -- | Table 2 (p.45)
 --
@@ -148,7 +53,7 @@ table_2 z =
         r = nub (sort (filter g [p % q | p <- [1..81],q <- [1..81]]))
         h = map (harmonicity_r barlow) r
         f = (> z) . snd
-        k (i,j) = (T.fratio_to_cents i,rational_prime_factors_t 6 (from_rational i),i,j)
+        k (i,j) = (T.fratio_to_cents i,T.rat_prime_factors_t 6 (T.rational_nd i),i,j)
     in map k (filter f (zip r h))
 
 -- | Pretty printer for 'Table_2_Row' values.
@@ -183,6 +88,6 @@ table_2_pp :: Table_2_Row -> String
 table_2_pp (i,j,k,l) =
     let i' = printf "%8.3f" i
         j' = unwords (map (printf "%2d") j)
-        k' = let (p,q) = from_rational k in printf "%2d:%-2d" q p
+        k' = let (p,q) = T.rational_nd k in printf "%2d:%-2d" q p
         l' = printf "%1.6f" l
     in intercalate " | " [i',j',k',l']

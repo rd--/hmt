@@ -3,6 +3,8 @@ import Data.List {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
+import qualified Sound.SC3.Server.Param as SC3 {- hsc3 -}
+
 import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 import qualified Music.Theory.Array.Text as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
@@ -18,6 +20,7 @@ import qualified Music.Theory.Tuning.Midi as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
+import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 type R = Double
 
@@ -84,7 +87,7 @@ stat_by_name lm nm = do
 rng_enum :: Enum t => (t,t) -> [t]
 rng_enum (l,r) = [l .. r]
 
-cps_tbl :: String -> T.MNN_CPS_Table -> (Int,Int) -> IO ()
+cps_tbl :: String -> T.MNN_CPS_Table -> (T.Midi,T.Midi) -> IO ()
 cps_tbl fmt tbl mnn_rng = do
   let cps_pp = T.double_pp 2
       cents_pp = T.double_pp 1
@@ -106,29 +109,29 @@ cps_tbl fmt tbl mnn_rng = do
   putStr (unlines ln)
 
 -- > cps_tbl_d12 "md" ("young-lm_piano",-74.7,-3) (60,72)
-cps_tbl_d12 :: String -> (String,T.Cents,Int) -> (Int,Int) -> IO ()
+cps_tbl_d12 :: String -> (String,T.Cents,T.Midi) -> (T.Midi,T.Midi) -> IO ()
 cps_tbl_d12 fmt (nm,c,k) mnn_rng = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
   let tbl = T.gen_cps_tuning_tbl (T.lift_tuning_f (T.d12_midi_tuning_f (t,c,k)))
   cps_tbl fmt tbl mnn_rng
 
 -- > cps_tbl_cps "md" ("cet111",27.5,9,127-9) (69,69+25)
-cps_tbl_cps :: String -> (String,R,Int,Int) -> (Int,Int) -> IO ()
+cps_tbl_cps :: String -> (String,R,T.Midi,Int) -> (T.Midi,T.Midi) -> IO ()
 cps_tbl_cps fmt (nm,f0,k,n) mnn_rng = do
   t <- T.scl_load_tuning 0.01 nm
   let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
   cps_tbl fmt tbl mnn_rng
 
-csv_mnd_retune_d12 :: (String,T.Cents,Int) -> FilePath -> FilePath -> IO ()
+csv_mnd_retune_d12 :: (String,T.Cents,T.Midi) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   t <- T.scl_load_tuning 0.01 nm
   let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
-  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,[T.Param]))
+  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,SC3.Param))
   let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
   T.csv_mndd_write_wseq 4 out_fn (map f m)
 
 -- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,-3)
-fluidsynth_tuning_d12 :: (String,Int,Int) -> (String,T.Cents,Int) -> IO ()
+fluidsynth_tuning_d12 :: (String,Int,Int) -> (String,T.Cents,T.Midi) -> IO ()
 fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
@@ -161,7 +164,7 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 -- > midi_tbl_tuning_d12 "freq" ("meanquar",0,0)
 -- > midi_tbl_tuning_d12 "fmidi" ("meanquar",0,0)
 -- > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
-midi_tbl_tuning_d12 :: String -> (String,T.Cents,Int) -> IO ()
+midi_tbl_tuning_d12 :: String -> (String,T.Cents,T.Midi) -> IO ()
 midi_tbl_tuning_d12 typ (nm,c,k) = do
   t <- T.scl_load_tuning 0.01 nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)

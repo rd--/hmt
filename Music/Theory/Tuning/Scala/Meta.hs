@@ -1,122 +1,120 @@
 -- | Scala DB meta-data.
 module Music.Theory.Tuning.Scala.Meta where
 
-scl_ji_au :: Num n => [(String,[(String,n)])]
+scl_ji_au :: [(String,[String])]
 scl_ji_au =
   [("Chalmers, John"
-   ,[("chalmers",7)
-    ,("chalmers_17",7)
-    ,("chalmers_19",7)
-    ,("chalmers_ji1",19)
-    ,("chalmers_ji2",19)
-    ,("chalmers_ji3",19)
-    ,("chalmers_ji4",19)
-    ,("corner7",7)
-    ,("corner11",11)
-    ,("corner13",13)
-    ,("corners7",7)
-    ,("corners11",11)
-    ,("corners13",13)
-    ,("finnamore_jc",19)
-    ,("hamilton_jc",19)
-    ,("major_clus",5)
-    ,("major_wing",5)
-    ,("minor_clus",5)
-    ,("minor_wing",5)
-    ,("pelog_jc",5)
-    ,("prod7d",7)
-    ,("prodq13",13)
-    ,("slen_pel_jc",7)])
+   ,["chalmers"
+    ,"chalmers_17"
+    ,"chalmers_19"
+    ,"chalmers_ji1"
+    ,"chalmers_ji2"
+    ,"chalmers_ji3"
+    ,"chalmers_ji4"
+    ,"corner7"
+    ,"corner11"
+    ,"corner13"
+    ,"corners7"
+    ,"corners11"
+    ,"corners13"
+    ,"finnamore_jc"
+    ,"hamilton_jc"
+    ,"major_clus"
+    ,"major_wing"
+    ,"minor_clus"
+    ,"minor_wing"
+    ,"pelog_jc"
+    ,"prod7d"
+    ,"prodq13"
+    ,"slen_pel_jc"])
   ,("Grady, Kraig"
-   ,[("dekany-cs",11)
-    ,("grady11",11)
-    ,("grady_14",7)
-    ,("grady_centaur",7)
-    ,("grady_centaur17",7)
-    ,("grady_centaur19",7)])
+   ,["dekany-cs"
+    ,"grady11"
+    ,"grady_14"
+    ,"grady_centaur"
+    ,"grady_centaur17"
+    ,"grady_centaur19"])
   ,("Harrison, Lou"
-   ,[("dudon_slendro_matrix",7) -- NON-UNIQ
-    ,("harrison_5",5)
-    ,("harrison_5_1",11)
-    ,("harrison_5_3",7) -- NON-STEP
-    ,("harrison_5_4",5) -- NON-STEP
-    ,("harrison_8",5) -- NON-STEP
-    ,("harrison_15",7)
-    ,("harrison_16",17)
-    ,("harrison_bill",5)
-    ,("harrison_cinna",7)
-    ,("harrison_diat",7)
-    ,("harrison_handel",7)
-    ,("harrison_kyai",47) -- NON-STEP
-    ,("harrison_mid",7)
-    ,("harrison_mid2",7)
-    ,("harrison_mix2",5)
-    ,("harrison_mix3",7) -- NON-STEP
-    ,("harrison_mix4",7)
-    ,("harrison_slye",11)
-    ,("harrison_songs",7)
-    ,("hexany10",5)
-    ,("korea_5",5)
-    ,("pelog_laras",19) -- NON-STEP
-    ,("prime_5",5)
-    ,("slendro5_1",7)
-    ,("slendro_7_1",7)
-    ,("slendro_7_2",7)
-    ,("slendro_7_3",7)
-    ,("slendro_7_4",7)]) -- ("slendro_laras",7) -- NON-OCT
+   ,["dudon_slendro_matrix" -- NON-UNIQ
+    ,"harrison_5"
+    ,"harrison_5_1"
+    ,"harrison_5_3" -- NON-STEP
+    ,"harrison_5_4" -- NON-STEP
+    ,"harrison_8" -- NON-STEP
+    ,"harrison_15"
+    ,"harrison_16"
+    ,"harrison_bill"
+    ,"harrison_cinna"
+    ,"harrison_diat"
+    ,"harrison_handel"
+    ,"harrison_kyai" -- NON-STEP
+    ,"harrison_mid"
+    ,"harrison_mid2"
+    ,"harrison_mix2"
+    ,"harrison_mix3" -- NON-STEP
+    ,"harrison_mix4"
+    ,"harrison_slye"
+    ,"harrison_songs"
+    ,"hexany10"
+    ,"korea_5"
+    ,"pelog_laras" -- NON-STEP
+    ,"prime_5"
+    ,"slendro5_1"
+    ,"slendro_7_1"
+    ,"slendro_7_2"
+    ,"slendro_7_3"
+    ,"slendro_7_4"]) -- ("slendro_laras" -- NON-OCT
   ,("Johnston, Ben"
-   ,[("johnston",11)
-    ,("johnston_21",5)
-    ,("johnston_22",7)
-    ,("johnston_25",5)
-    ,("johnston_81",5)
-    ,("johnston_6-qt",11)
-    ,("johnston_6-qt_row",11)])
+   ,["johnston"
+    ,"johnston_21"
+    ,"johnston_22"
+    ,"johnston_25"
+    ,"johnston_81"
+    ,"johnston_6-qt"
+    ,"johnston_6-qt_row"])
   ,("Partch, Harry"
-   ,[("partch_29-av",11)
-    ,("partch_29",11)
-    ,("partch_37",11)
-    ,("partch_39",11)
-    ,("partch_41",13)
-    ,("partch_43",11)
-    ,("partch-barstow",11)])
+   ,["partch_29-av"
+    ,"partch_29"
+    ,"partch_37"
+    ,"partch_39"
+    ,"partch_41"
+    ,"partch_43"
+    ,"partch-barstow"])
+  ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
-   ,[("wilson1",5)
-    ,("wilson2",7)
-    ,("wilson3",7)
-    ,("wilson5",5)
-    ,("wilson7",7)
-    ,("wilson7_2",7)
-    ,("wilson7_3",7)
-    ,("wilson7_4",7)
-    ,("wilson11",11)
-    ,("wilson_17",5)
-    ,("wilcent17",11)
-    ,("wilson_31",11)
-    ,("wilson_41",11)
-    ,("wilson_alessandro",11)
-    ,("wilson_bag",19)
-    ,("wilson_class",7)
-    ,("wilson_dia1",37)
-    ,("wilson_dia2",37)
-    ,("wilson_dia3",37)
-    ,("wilson_dia4",37)
-    ,("wilson_duo",7)
-    ,("wilson_enh",19)
-    ,("wilson_enh2",7)
-    ,("wilson_facet",7)
-    ,("wilson_hebdome1",13)
-    ,("wilson_hexflank",7)
-    ,("wilson_hypenh",11)
-    ,("wilson-rastbayyati24",11)
-    ,("wilson_l1",11)
-    ,("wilson_l2",11)
-    ,("wilson_l3",11)
-    ,("wilson_l4",7)
-    ,("wilson_l5",11)
-    ,("wilson_l6",11)])
-  ,("Young, La Monte",
-    [("young-lm_guitar",5)
-    ,("young-lm_piano",7)])
+   ,["wilson1"
+    ,"wilson2"
+    ,"wilson3"
+    ,"wilson5"
+    ,"wilson7"
+    ,"wilson7_2"
+    ,"wilson7_3"
+    ,"wilson7_4"
+    ,"wilson11"
+    ,"wilson_17"
+    ,"wilcent17"
+    ,"wilson_31"
+    ,"wilson_41"
+    ,"wilson_alessandro"
+    ,"wilson_bag"
+    ,"wilson_class"
+    ,"wilson_dia1"
+    ,"wilson_dia2"
+    ,"wilson_dia3"
+    ,"wilson_dia4"
+    ,"wilson_duo"
+    ,"wilson_enh"
+    ,"wilson_enh2"
+    ,"wilson_facet"
+    ,"wilson_hebdome1"
+    ,"wilson_hexflank"
+    ,"wilson_hypenh"
+    ,"wilson-rastbayyati24"
+    ,"wilson_l1"
+    ,"wilson_l2"
+    ,"wilson_l3"
+    ,"wilson_l4"
+    ,"wilson_l5"
+    ,"wilson_l6"])
+  ,("Young, La Monte",["young-lm_guitar","young-lm_piano"])
   ]
-
