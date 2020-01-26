@@ -21,6 +21,8 @@ real_to_float :: Real t => t -> Float
 real_to_float = realToFrac
 
 -- | Type specialised 'realToFrac'
+--
+-- > let n = sqrt (-1) in (n,real_to_double n)
 real_to_double :: Real t => t -> Double
 real_to_double = realToFrac
 

@@ -127,6 +127,13 @@ floor_f = fromInteger . floor
 round_to :: RealFrac n => n -> n -> n
 round_to a b = if a == 0 then b else floor_f ((b / a) + 0.5) * a
 
+-- | Variant of 'recip' that checks input for zero.
+--
+-- > map recip [1,1/2,0,-1]
+-- > map recip_m [1,1/2,0,-1] == [Just 1,Just 2,Nothing,Just (-1)]
+recip_m :: (Eq a, Fractional a) => a -> Maybe a
+recip_m x = if x == 0 then Nothing else Just (recip x)
+
 -- * One-indexed
 
 -- | One-indexed 'mod' function.

@@ -73,9 +73,19 @@ show_rational_decimal n = double_pp n . fromRational
 
 -- | Show /r/ as float to /k/ places.
 --
--- > map (real_pp 4) [1,1.1,1.12,1.123,1.1234]
+-- > map (real_pp 4) [1,1.1,1.12,1.123,1.1234,1/0,sqrt (-1)]
 real_pp :: Real t => Int -> t -> String
 real_pp k = realfloat_pp k . T.real_to_double
+
+-- | Variant that writes `∞` for Infinity.
+--
+-- > putStrLn $ unwords $ map (real_pp_unicode 4) [1/0,-1/0]
+real_pp_unicode :: Real t => Int -> t -> [Char]
+real_pp_unicode k r =
+  case real_pp k r of
+    "Infinity" -> "∞"
+    "-Infinity" -> "-∞"
+    s -> s
 
 -- | Prints /n/ as integral or to at most /k/ decimal places.
 --
@@ -98,6 +108,7 @@ double_pp = realfloat_pp
 -- to exponential notation very readily.
 --
 -- > [show 0.01,realfloat_pp 2 0.01] == ["1.0e-2","0.01"]
+-- > map (realfloat_pp 4) [1,1.1,1.12,1.123,1.1234,1/0,sqrt (-1)]
 realfloat_pp :: RealFloat a => Int -> a -> String
 realfloat_pp k n = showFFloat (Just k) n ""
 

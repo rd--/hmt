@@ -31,13 +31,23 @@ disharmonicity pv (p,q) =
 
 -- | The reciprocal of 'disharmonicity'.
 --
--- > map (harmonicity barlow) [(9,10),(8,9)] == ([15/191,3/25] :: [Rational])
+-- > map (harmonicity barlow) [(9,10),(8,9),(2,1)] == ([15/191,3/25,1] :: [Rational])
 harmonicity :: (Integral a,Fractional b) => (a -> b) -> (a,a) -> b
 harmonicity pv = recip . disharmonicity pv
+
+harmonicity_m :: (Eq b,Integral a,Fractional b) => (a -> b) -> (a,a) -> Maybe b
+harmonicity_m pv = T.recip_m . disharmonicity pv
 
 -- | Variant of 'harmonicity' with 'Ratio' input.
 harmonicity_r :: (Integral a,Fractional b) => (a -> b) -> Ratio a -> b
 harmonicity_r pv = harmonicity pv . T.rational_nd
+
+-- | Variant of 'harmonicity_r' with output in (0,100), infinity maps to 100.
+harmonicity_r_100 :: (RealFrac b, Integral a) => (a -> b) -> Ratio a -> Int
+harmonicity_r_100 pv x =
+  case harmonicity_m pv (T.rational_nd x) of
+    Nothing -> 100
+    Just y -> round (y * 100)
 
 -- | Set of 1. interval size (cents), 2. intervals as product of
 -- powers of primes, 3. frequency ratio and 4. harmonicity value.
@@ -46,8 +56,10 @@ type Table_2_Row = (Double,[Int],Rational,Double)
 -- | Given ratio /r/ generate 'Table_2_Row'
 mk_table_2_row :: Rational -> Table_2_Row
 mk_table_2_row r =
-  let h = harmonicity_r barlow r
-  in (T.fratio_to_cents r,T.rat_prime_factors_t 6 (T.rational_nd r),r,h)
+  (T.fratio_to_cents r
+  ,T.rat_prime_factors_t 6 (T.rational_nd r)
+  ,r
+  ,harmonicity_r barlow r)
 
 -- | Table 2 (p.45)
 --
