@@ -78,6 +78,7 @@ scl_ji_au =
    ,["kring1"
     ,"diamond7"
     ,"diamond9"
+    ,"diamond17b"
     ,"novaro15"
     ,"partch_29-av"
     ,"partch_29"
