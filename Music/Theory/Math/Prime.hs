@@ -10,8 +10,16 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 
 -- | Alias for 'P.primes'.
+--
+-- > take 12 primes_list == [2,3,5,7,11,13,17,19,23,29,31,37]
 primes_list :: Integral i => [i]
 primes_list = P.primes
+
+-- | Give index of prime.
+--
+-- map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == [0 .. 11]
+prime_k :: Integral a => a -> Int
+prime_k i = T.findIndex_err (== i) P.primes
 
 -- | Generate list of factors of /n/ from /x/.
 --
