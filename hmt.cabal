@@ -166,6 +166,7 @@ Library
                    Music.Theory.Tuning.Sethares_1994
                    Music.Theory.Tuning.Syntonic
                    Music.Theory.Tuning.Type
+                   Music.Theory.Tuning.Wilson
                    Music.Theory.Unicode
                    Music.Theory.Wyschnegradsky
                    Music.Theory.Xenakis.S4
