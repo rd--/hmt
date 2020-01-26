@@ -15,7 +15,7 @@ import qualified Music.Theory.Math as T {- hmt -}
 primes_list :: Integral i => [i]
 primes_list = P.primes
 
--- | Give index of prime.
+-- | Give zero-index of prime.
 --
 -- map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == [0 .. 11]
 prime_k :: Integral a => a -> Int
@@ -94,18 +94,20 @@ denominator (after cancelling out common factors).
 rat_prime_factors_m :: Integral i => (i,i) -> [(i,Int)]
 rat_prime_factors_m (n,d) = rat_pf_merge (prime_factors_m n) (prime_factors_m d)
 
+-- | 'Ratio' variant of 'rat_prime_factors_m'
 rational_prime_factors_m :: Integral i => Ratio i -> [(i,Int)]
 rational_prime_factors_m = rat_prime_factors_m . T.rational_nd
 
 -- | Variant of 'rational_prime_factors_m' giving results in a table
--- up to the /n/th prime.
+-- up to the /n/th prime (one-indexed).
 --
--- > rational_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
--- > rational_prime_factors_t 6 (32,9) == [5,-2,0,0,0,0]
+-- > rat_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
+-- > rat_prime_factors_t (prime_k 13 + 1) (32,9) == [5,-2,0,0,0,0]
 rat_prime_factors_t :: Integral i => Int -> (i,i) -> [Int]
 rat_prime_factors_t n x =
     let r = rat_prime_factors_m x
     in map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
 
+-- | 'Ratio' variant of 'rat_prime_factors_t'
 rational_prime_factors_t :: Integral i => Int -> Ratio i -> [Int]
 rational_prime_factors_t n = rat_prime_factors_t n . T.rational_nd
