@@ -4,52 +4,54 @@
 module Music.Theory.Meter.Barlow_1987 where
 
 import Data.List {- base -}
-import Data.Numbers.Primes {- primes -}
 --import Debug.Trace
 
-import Music.Theory.Math
+import qualified Data.Numbers.Primes as P {- primes -}
+
+import qualified Music.Theory.Math as T {- hmt -}
 
 traceShow :: a -> b -> b
 traceShow _ x = x
 
 -- | One indexed variant of 'genericIndex'.
 --
--- > map (at [11..13]) [1..3] == [11,12,13]
-at :: (Integral n) => [a] -> n -> a
-at x i = x `genericIndex` (i - 1)
+-- > map (at1 [11..13]) [1..3] == [11,12,13]
+at1 :: Integral n => [a] -> n -> a
+at1 x i = x `genericIndex` (i - 1)
 
--- | Variant of 'at' with boundary rules and specified error message.
+-- | Variant of 'at1' with boundary rules and specified error message.
 --
--- > map (at' 'x' [11..13]) [0..4] == [1,11,12,13,1]
--- > at' 'x' [0] 3 == undefined
-at' :: (Num a,Show a,Integral n,Show n,Show m) => m -> [a] -> n -> a
-at' m x i =
+-- > map (at1_bnd_err 'x' [11..13]) [0..4] == [1,11,12,13,1]
+-- > at1_bnd_err 'x' [0] 3 == undefined
+at1_bnd_err :: (Num a,Show a,Integral n,Show n,Show m) => m -> [a] -> n -> a
+at1_bnd_err m x i =
     let n = genericLength x
     in if i == 0 || i == n + 1
        then 1 -- error (show ("at':==",m,x,i))
        else if i < 0 || i > n + 1
-            then error (show ("at'",m,x,i))
+            then error (show ("at1_bnd_err",m,x,i))
             else x `genericIndex` (i - 1)
 
 -- | Variant of 'mod' with input constraints.
 --
--- > mod' (-1) 2 == 1
-mod' :: (Integral a,Show a) => a -> a -> a
-mod' a b =
+-- > mod_pos_err (-1) 2 == 1
+-- > mod_pos_err 1 (-2) == undefined
+mod_pos_err :: (Integral a,Show a) => a -> a -> a
+mod_pos_err a b =
     let r = mod a b
     in if r < 0 || r >= b
-       then error (show ("mod'",a,b,r))
+       then error (show ("mod_pos_err",a,b,r))
        else r
 
--- | Specialised variant of 'fromIntegral'.
-to_r :: Integral n => n -> R
+-- | Type-specialised variant of 'fromIntegral'.
+to_r :: Integral n => n -> Double
 to_r = fromIntegral
 
 -- | Variant on 'div' with input constraints.
-div' :: (Integral a,Show a) => String -> a -> a -> a
-div' m i j =
+div_pos_err :: (Integral a,Show a) => String -> a -> a -> a
+div_pos_err m i j =
     if i < 0 || j < 0
-    then error (show ("div'",m,i,j))
+    then error (show ("div_pos_err",m,i,j))
     else truncate (to_r i / to_r j)
 
 -- | A stratification is a tree of integral subdivisions.
@@ -76,23 +78,24 @@ lower_psi :: (Integral a,Show a) => Stratification a -> a -> a -> a
 lower_psi q z n =
     let s8 r =
             let s1 = product q
-                s2 = (n - 2) `mod'` s1
-                s3 = let f k = at' "s3" q (z + 1 - k)
+                s2 = (n - 2) `mod_pos_err` s1
+                s3 = let f k = at1_bnd_err "s3" q (z + 1 - k)
                      in product (map f [0 .. r])
-                s4 = 1 + div' "s4" s2 s3
-                c = at' "c" q (z - r)
-                s5 = s4 `mod'` c
+                s4 = 1 + div_pos_err "s4" s2 s3
+                c = at1_bnd_err "c" q (z - r)
+                s5 = s4 `mod_pos_err` c
                 s6 = upper_psi c (1 + s5)
-                s7 = let f = at' "s7" q
+                s7 = let f = at1_bnd_err "s7" q
                      in product (map f [0 .. z - r - 1])
             in traceShow ("lower_psi:s",s1,s2,s3,s4,s5,s6,s7) (s7 * s6)
     in traceShow ("lower_psi",q,z,n) (sum (map s8 [0 .. z - 1]))
 
--- | The first /n/th primes, reversed.
+-- | The first /n/ primes, reversed.
 --
 -- > reverse_primes 14 == [43,41,37,31,29,23,19,17,13,11,7,5,3,2]
+-- > length (reverse_primes 14) == 14
 reverse_primes :: Integral n => n -> [n]
-reverse_primes n = reverse (genericTake n primes)
+reverse_primes n = reverse (genericTake n P.primes)
 
 -- | Generate prime stratification for /n/.
 --
@@ -105,7 +108,7 @@ prime_stratification =
     let go x k =
             case x of
               p:x' -> if k `rem` p == 0
-                      then p : go x (div' "ps" k p)
+                      then p : go x (div_pos_err "ps" k p)
                       else go x' k
               [] -> []
     in go (reverse_primes 14)
@@ -125,8 +128,8 @@ upper_psi p n =
     else if p == 2
          then p - n
          else if n == p - 1
-              then div' "upper_psi" p 4
-              else let n' = n - div' "n'" n p
+              then div_pos_err "upper_psi" p 4
+              else let n' = n - div_pos_err "n'" n p
                        s = prime_stratification (p - 1)
                        q = lower_psi s (genericLength s) n'
                        q' = to_r q
@@ -179,7 +182,7 @@ relative_to_length x =
 -- @(0,1)@.
 --
 -- relative_indispensibilities [3,2] == [1,0,0.6,0.2,0.8,0.4]
-relative_indispensibilities :: (Integral n,Show n) => Stratification n -> [R]
+relative_indispensibilities :: (Integral n,Show n) => Stratification n -> [Double]
 relative_indispensibilities = relative_to_length . indispensibilities
 
 -- | Align two meters (given as stratifications) to least common
@@ -209,7 +212,7 @@ align_meters f s1 s2 =
 -- | Type pairing a stratification and a tempo.
 type S_MM t = ([t],t)
 
--- | Variant of 'div' that requires 'mod' be @0@.
+-- | Variant of 'div' that requires 'mod_pos_err be @0@.
 whole_div :: Integral a => a -> a -> a
 whole_div i j =
     case i `divMod` j of
@@ -262,15 +265,15 @@ upper_psi' :: (Integral a,Show a) => a -> a -> a
 upper_psi' h n =
     if h > 3
     then let omega x = if x == 0 then 0 else 1
-             h4 = div' "h4" h 4
+             h4 = div_pos_err "h4" h 4
              n' = n - 1 + omega (h - n)
              p = prime_stratification (h - 1)
              x0 = lower_psi p (genericLength p) n'
-             x1 = x0 + omega (div' "z" x0 h4)
+             x1 = x0 + omega (div_pos_err "z" x0 h4)
              x2 = omega (h - n - 1)
              x3 = x2 + h4 * (1 - x2)
          in traceShow ("upper_psi'",h,n,n',x0,x1,x2,x3) (x1 * x3)
-    else (h + n - 2) `mod'` h
+    else (h + n - 2) `mod_pos_err` h
 
 -- | The /MPS/ limit equation given on p.58.
 --
@@ -289,9 +292,9 @@ mps_limit n = sum [n ** 4 / 9
 -- > mean_square_product [(2,3),(4,5)] == (6^2 + 20^2) / 2^2
 mean_square_product :: Fractional n => [(n,n)] -> n
 mean_square_product x =
-    let f = square . uncurry (*)
+    let f = T.square . uncurry (*)
         n = fromIntegral (length x)
-    in sum (map f x) / square n
+    in sum (map f x) / T.square n
 
 -- | An incorrect attempt at the description in paragraph two of p.58
 -- of the /CMJ/ paper.
@@ -299,7 +302,7 @@ mean_square_product x =
 -- > let p ~= q = abs (p - q) < 1e-4
 -- > metrical_affinity [2,3] 1 [3,2] 1 ~= 0.0324
 -- > metrical_affinity [2,2,3] 20 [3,5] 16 ~= 0.0028
-metrical_affinity :: (Integral n,Show n) => [n] -> n -> [n] -> n -> R
+metrical_affinity :: (Integral n,Show n) => [n] -> n -> [n] -> n -> Double
 metrical_affinity s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
         i1 = relative_indispensibilities s1'
@@ -319,7 +322,7 @@ metrical_affinity s1 v1 s2 v2 =
 -- > metrical_affinity' [2,2,2] 1 [3,2,2] 1 ~= 0.45872
 --
 -- > metrical_affinity' [3,2,2] 3 [2,2,3] 2 ~= 0.10282
-metrical_affinity' :: (Integral t,Show t) => [t] -> t -> [t] -> t -> R
+metrical_affinity' :: (Integral t,Show t) => [t] -> t -> [t] -> t -> Double
 metrical_affinity' s1 v1 s2 v2 =
     let (s1',s2') = prolong_stratifications (s1,v1) (s2,v2)
         ix :: (Integer -> x) -> Integer -> x
@@ -327,20 +330,20 @@ metrical_affinity' s1 v1 s2 v2 =
                    1 -> f 1
                    2 -> f 2
                    _ -> error (show ("ix",i))
-        s = ix (at [s1,s2])
-        v = ix (at [v1,v2])
+        s = ix (at1 [s1,s2])
+        v = ix (at1 [v1,v2])
         u = ix (genericLength . s)
-        s' = ix (at [s1',s2'])
+        s' = ix (at1 [s1',s2'])
         z = ix (genericLength . s')
-        q i j = s i `at` j
+        q i j = s i `at1` j
         omega_u i = product (map (q i) [1::Int .. u i])
         omega_z _ = lcm (v 1 * omega_u 1) (v 2 * omega_u 2)
         omega_0 = lcm (product (s' 1)) (product (s' 2))
-        x0 n i = lower_psi (s' i) (z i) (1 + ((n - 1) `mod'` omega_z i))
-        x1 n = square (product (map (x0 n) [1,2]))
+        x0 n i = lower_psi (s' i) (z i) (1 + ((n - 1) `mod_pos_err` omega_z i))
+        x1 n = T.square (product (map (x0 n) [1,2]))
         x2 = sum (map x1 [1 .. omega_0])
         x3 = 18 * x2 - 2
-        x4 i = square (omega_z i - 1)
+        x4 i = T.square (omega_z i - 1)
         x5 = product (map x4 [1::Integer,2])
         x6 = 7 * omega_0 * x5
         x7 = to_r x3 / to_r x6

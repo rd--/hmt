@@ -23,9 +23,6 @@ mod12 n = n `mod` 12
 mod16 :: Integral i => i -> i
 mod16 n = n `mod` 16
 
--- | Real (alias for 'Double').
-type R = Double
-
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
 --
 -- > integral_and_fractional_parts 1.5 == (1,0.5)
