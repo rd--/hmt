@@ -28,7 +28,8 @@ scl_ji_au =
     ,"prod7d"
     ,"prodq13"
     ,"slen_pel_jc"])
-  ,("Grady, Kraig"
+   ,("Euler, Leonhard",words "euler euler_diat euler_enh euler_gm")
+   ,("Grady, Kraig"
    ,["dekany-cs"
     ,"grady11"
     ,"grady_14"
