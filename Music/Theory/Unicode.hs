@@ -27,13 +27,28 @@ non_breaking_hypen = toEnum 0x2011
 non_breaking_space :: Char
 non_breaking_space = toEnum 0x00A0
 
+-- | Unicode interpunct.
+--
+-- > middle_dot == '·'
+middle_dot :: Char
+middle_dot = toEnum 0x00B7
+
 -- * Table
 
--- | <http://unicode.org/Public/11.0.0/ucd/UnicodeData.txt>
---
--- > let fn = "/home/rohan/data/unicode.org/Public/11.0.0/ucd/UnicodeData.txt"
--- > tbl <- unicode_data_table_read fn
--- > length tbl == 32292
+type Unicode_Index = Int
+type Unicode_Name = String
+type Unicode_Range = (Unicode_Index,Unicode_Index)
+type Unicode_Point = (Unicode_Index,Unicode_Name)
+type Unicode_Table = [Unicode_Point]
+
+{- | <http://unicode.org/Public/11.0.0/ucd/UnicodeData.txt>
+
+> let fn = "/home/rohan/data/unicode.org/Public/11.0.0/ucd/UnicodeData.txt"
+> tbl <- unicode_data_table_read fn
+> length tbl == 32292
+> T.reverse_lookup_err "MIDDLE DOT" tbl == 0x00B7
+> T.lookup_err 0x22C5 tbl == "DOT OPERATOR"
+-}
 unicode_data_table_read :: FilePath -> IO Unicode_Table
 unicode_data_table_read fn = do
   s <- T.read_file_utf8 fn
@@ -41,7 +56,7 @@ unicode_data_table_read fn = do
       f x = (T.read_hex_err (x !! 0),x !! 1)
   return (map f t)
 
-unicode_table_block :: (Int,Int) -> Unicode_Table -> Unicode_Table
+unicode_table_block :: (Unicode_Index,Unicode_Index) -> Unicode_Table -> Unicode_Table
 unicode_table_block (l,r) = takeWhile ((<= r) . fst) . dropWhile ((< l) . fst)
 
 unicode_point_hs :: Unicode_Point -> String
@@ -51,11 +66,6 @@ unicode_table_hs :: Unicode_Table -> String
 unicode_table_hs = T.bracket ('[',']') . intercalate "," . map unicode_point_hs
 
 -- * Music
-
-type Unicode_Index = Int
-type Unicode_Range = (Unicode_Index,Unicode_Index)
-type Unicode_Point = (Unicode_Index,String)
-type Unicode_Table = [Unicode_Point]
 
 -- > putStrLn$ map (toEnum . fst) (concat music_tbl)
 music_tbl :: [Unicode_Table]
@@ -246,6 +256,12 @@ articulations_tbl =
 
 ix_set_to_tbl :: Unicode_Table -> [Unicode_Index] -> Unicode_Table
 ix_set_to_tbl tbl ix = zip ix (map (flip T.lookup_err tbl) ix)
+
+-- | Unicode dot-operator.
+--
+-- > dot_operator == '⋅'
+dot_operator :: Char
+dot_operator = toEnum 0x22C5
 
 -- | Math symbols outside of the math blocks.
 --

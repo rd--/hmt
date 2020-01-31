@@ -109,5 +109,7 @@ rat_prime_factors_t n x =
     in map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
 
 -- | 'Ratio' variant of 'rat_prime_factors_t'
+--
+-- rational_prime_factors_t 3 (256/243)
 rational_prime_factors_t :: Integral i => Int -> Ratio i -> [Int]
 rational_prime_factors_t n = rat_prime_factors_t n . T.rational_nd
