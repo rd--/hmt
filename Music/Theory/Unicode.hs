@@ -47,6 +47,7 @@ type Unicode_Table = [Unicode_Point]
 > tbl <- unicode_data_table_read fn
 > length tbl == 32292
 > T.reverse_lookup_err "MIDDLE DOT" tbl == 0x00B7
+> putStrLn $ unwords $ map (\(n,x) -> toEnum n : x) $ filter (\(_,x) -> "EMPTY SET" `isInfixOf` x) tbl
 > T.lookup_err 0x22C5 tbl == "DOT OPERATOR"
 -}
 unicode_data_table_read :: FilePath -> IO Unicode_Table

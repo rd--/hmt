@@ -1,6 +1,7 @@
 -- | Graph (dot) functions.
 module Music.Theory.Graph.Dot where
 
+import Control.Monad {- base -}
 import Data.Char {- base -}
 import Data.List {- base -}
 import System.Exit {- process -}
@@ -188,3 +189,6 @@ dot_to_ftype typ opt dot_fn =
 
 dot_to_svg :: [String] -> FilePath -> IO ExitCode
 dot_to_svg = dot_to_ftype "svg"
+
+dot_to_svg_ :: [String] -> FilePath -> IO ()
+dot_to_svg_ opt = void . dot_to_svg opt
