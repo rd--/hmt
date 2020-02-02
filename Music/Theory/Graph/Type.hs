@@ -189,15 +189,21 @@ e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
 e_label_err :: LBL v e -> E -> e
 e_label_err = e_label (error "e_label")
 
--- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),())])
-gr_to_lbl :: Eq t => GR t -> LBL t ()
+-- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),('a','b'))])
+gr_to_lbl :: Eq t => GR t -> LBL t (t,t)
 gr_to_lbl (v,e) =
   let n = length v
       v' = [0 .. n - 1]
       tbl = zip v' v
       get k = T.reverse_lookup_err k tbl
-      e' = map (\(p,q) -> ((get p,get q),())) e
+      e' = map (\(p,q) -> ((get p,get q),(p,q))) e
   in (zip v' v,e')
+
+lbl_delete_edge_labels :: LBL v e -> LBL v ()
+lbl_delete_edge_labels (v,e) = (v,map (\(x,_) -> (x,())) e)
+
+gr_to_lbl_ :: Eq t => GR t -> LBL t ()
+gr_to_lbl_ = lbl_delete_edge_labels . gr_to_lbl
 
 -- | Construct LBL from set of E, derives V from E.
 eset_to_lbl :: Ord t => [(t,t)] -> LBL t ()
