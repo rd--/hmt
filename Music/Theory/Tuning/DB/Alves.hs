@@ -3,10 +3,15 @@ module Music.Theory.Tuning.DB.Alves where
 
 import Music.Theory.Tuning.Type {- hmt -}
 
--- | Ratios for 'harrison_ditone'.
---
--- > let c = [0,114,204,294,408,498,612,702,816,906,996,1110]
--- > in map (round . ratio_to_cents) harrison_ditone_r == c
+{- | Ratios for 'harrison_ditone' (SCALA=pyth_12)
+
+> import Music.Theory.Tuning {- hmt -}
+> let c = [0,114,204,294,408,498,612,702,816,906,996,1110]
+> map (round . ratio_to_cents) harrison_ditone_r == c
+
+> import Music.Theory.Tuning.Scala {- hmt -}
+> scl_find_ji (harrison_ditone_r ++ [2])
+-}
 harrison_ditone_r :: [Rational]
 harrison_ditone_r =
     [1,2187/2048 {- 256/243 -}
@@ -17,8 +22,7 @@ harrison_ditone_r =
     ,27/16,16/9
     ,243/128]
 
--- | Ditone/pythagorean tuning,
--- see <http://www.billalves.com/porgitaro/ditonesettuning.html>
+-- | Ditone/pythagorean tuning, <http://www.billalves.com/porgitaro/ditonesettuning.html>
 --
 -- > tn_divisions harrison_ditone == 12
 -- > tn_cents_i harrison_ditone == [0,114,204,294,408,498,612,702,816,906,996,1110]
