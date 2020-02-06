@@ -28,15 +28,16 @@ ew_xen456_9_gen =
 
 {- | <http://anaphoria.com/xen456.pdf> P.9 {SCALA=NIL}
 
+> import qualified Music.Theory.List as T {- hmt -}
 > import qualified Music.Theory.Tuning.Scala as T {- hmt -}
-> T.scl_find_ji (ew_xen456_9 ++ [2])
+> T.scl_find_ji (==) (ew_xen456_9 ++ [2])
 -}
 ew_xen456_9 :: [R]
 ew_xen456_9 = (nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold) ew_xen456_9_gen
 
 {- | <http://anaphoria.com/Pelogflute.pdf> P.2 {SCALA=NIL}
 
-> T.scl_find_ji (ew_pf_2 ++ [2])
+> T.scl_find_ji (==) (ew_pf_2 ++ [2])
 -}
 ew_pf_2 :: Fractional n => [n]
 ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]

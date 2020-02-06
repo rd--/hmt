@@ -474,15 +474,16 @@ scl_db_query_cdiff_asc pp db c =
       db_n = filter ((== n) . scale_degree) db
   in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl,scl)) db_n)
 
--- | Is /x/ the same scale as /scl/.
-scale_eq_ji :: [Rational] -> Scale -> Bool
-scale_eq_ji x scl =
+-- | Is /x/ the same scale as /scl/ under /cmp/.
+scale_cmp_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
+scale_cmp_ji cmp x scl =
   case scale_ratios_u scl of
     Nothing -> False
-    Just r -> r == x
+    Just r -> cmp x r
 
--- | Find scale(s) that are 'scale_eq_ji' to /x/.
-scl_find_ji :: [Rational] -> IO [Scale]
-scl_find_ji x = do
+-- | Find scale(s) that are 'scale_cmp_ji' to /x/.
+--   Usual /cmp/ are (==) and 'is_subset'.
+scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> IO [Scale]
+scl_find_ji cmp x = do
   db <- scl_load_db
-  return (filter (scale_eq_ji x) db)
+  return (filter (scale_cmp_ji cmp x) db)
