@@ -41,6 +41,15 @@ a000201 =
       f _ _ = error "a000201"
   in f [1..] [1..]
 
+{- | <https://oeis.org/A000204>
+
+Lucas numbers (beginning with 1): L(n) = L(n-1) + L(n-2) with L(1) = 1, L(2) = 3
+
+[1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127] `isPrefixOf` a000204
+-}
+a000204 :: Num n => [n]
+a000204 = 1 : 3 : zipWith (+) a000204 (tail a000204)
+
 {- | <http://oeis.org/A000290>
 
 The squares of the non-negative integers.
@@ -67,6 +76,24 @@ Padovan sequence (or Padovan numbers)
 -}
 a000931 :: Num n => [n]
 a000931 = 1 : 0 : 0 : zipWith (+) a000931 (tail a000931)
+
+{- | <https://oeis.org/A001333>
+
+Numerators of continued fraction convergents to sqrt(2).
+
+[1,1,3,7,17,41,99,239,577,1393,3363,8119,19601,47321,114243,275807,665857] `isPrefixOf` a001333
+-}
+a001333 :: Num n => [n]
+a001333 = 1 : 1 : zipWith (+) a001333 (map (* 2) (tail a001333))
+
+{- | <http://oeis.org/A001687>
+
+a(n) = a(n-2) + a(n-5).
+
+[0,1,0,1,0,1,1,1,2,1,3,2,4,4,5,7,7,11,11,16,18,23,29,34,45,52,68,81,102,126,154] `isPrefixOf` a001687
+-}
+a001687 :: Num n => [n]
+a001687 = 0 : 1 : 0 : 1 : 0 : zipWith (+) a001687 (drop 3 a001687)
 
 {- | <https://oeis.org/A001950>
 
@@ -95,6 +122,21 @@ a002487 =
       f _ _ = error "a002487?"
       x = 1 : 1 : f (tail x) x
   in 0 : x
+
+-- | <http://oeis.org/A003269>
+--
+-- [0,1,1,1,1,2,3,4,5,7,10,14,19,26,36,50,69,95,131,181,250,345,476,657] `isPrefixOf` a003269
+a003269 :: Num n => [n]
+a003269 = 0 : 1 : 1 : 1 : zipWith (+) a003269 (drop 3 a003269)
+
+{- | <http://oeis.org/A003520>
+
+a(n) = a(n-1) + a(n-5); a(0) = ... = a(4) = 1.
+
+> [1,1,1,1,1,2,3,4,5,6,8,11,15,20,26,34,45,60,80,106,140,185,245,325,431] `isPrefixOf` a003520
+-}
+a003520 :: Num n => [n]
+a003520 = 1 : 1 : 1 : 1 : 1 : zipWith (+) a003520 (drop 4 a003520)
 
 {- | <https://oeis.org/A003849>
 
@@ -178,6 +220,16 @@ a007318 :: Integral i => [[i]]
 a007318 =
   let f r = zipWith (+) ([0] ++ r) (r ++ [0])
   in iterate f [1]
+
+{- |  <http://oeis.org/A017817>
+
+a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
+
+> [1,0,0,1,1,0,1,2,1,1,3,3,2,4,6,5,6,10,11,11,16,21,22,27,37,43,49,64,80,92] `isPrefixOf` a017817
+-}
+a017817 :: Num n => [n]
+a017817 = 1 : 0 : 0 : 1 : zipWith (+) a017817 (tail a017817)
+
 
 {- | <http://oeis.org/A030308>
 
