@@ -56,8 +56,17 @@ Narayana's cows sequence.
 
 > [1,1,1,2,3,4,6,9,13,19,28,41,60] `isPrefixOf` a000930
 -}
-a000930 :: Integral n => [n]
+a000930 :: Num n => [n]
 a000930 = 1 : 1 : 1 : zipWith (+) a000930 (drop 2 a000930)
+
+{- | <https://oeis.org/A000931>
+
+Padovan sequence (or Padovan numbers)
+
+> [1,0,0,1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265] `isPrefixOf` a000931
+-}
+a000931 :: Num n => [n]
+a000931 = 1 : 0 : 0 : zipWith (+) a000931 (tail a000931)
 
 {- | <https://oeis.org/A001950>
 
