@@ -30,6 +30,7 @@ scl_ji_au =
     ,"prodq13"
     ,"slen_pel_jc"])
    ,("Euler, Leonhard",words "euler euler_diat euler_enh euler_gm")
+   ,("Gann, Kyle",words "gann_arcana gann_charingcross gann_cinderella gann_custer gann_fractured gann_fugitive gann_ghost gann_love gann_new_aunts gann_revisited gann_sitting gann_solitaire gann_suntune gann_super gann_things gann_wolfe")
    ,("Grady, Kraig"
    ,["dekany-cs"
     ,"grady11"
