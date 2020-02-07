@@ -2,10 +2,10 @@
 module Music.Theory.Tuning.Wilson where
 
 import Data.List {- base -}
+import Data.Ratio {- base -}
+import Text.Printf {- base -}
 
 import qualified Music.Theory.Tuning as T {- hmt -}
-
-type R = Rational
 
 -- * ZIG-ZAG
 
@@ -108,7 +108,61 @@ mos_log r = mos_recip_seq (recip (logBase 2 r))
 mos_log_kseq :: Double -> [Int]
 mos_log_kseq = map fst . mos_log
 
+-- * STERN-BROCOT TREE
+
+
+type RAT = (Int,Int)
+
+rat_to_ratio :: RAT -> Ratio Int
+rat_to_ratio (n,d) = n % d
+
+rat_mediant :: RAT -> RAT -> RAT
+rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
+
+rat_pp :: RAT -> String
+rat_pp (n,d) = concat [show n,"/",show d]
+
+data SBT_DIV = NIL | LHS | RHS deriving (Show)
+type SBT_NODE = (SBT_DIV,RAT,RAT,RAT)
+
+sbt_step :: SBT_NODE -> [SBT_NODE]
+sbt_step (_,l,m,r) = [(LHS,l,rat_mediant l m, m),(RHS,m,rat_mediant m r,r)]
+
+-- sbt = stern-brocot tree
+sbt_root :: SBT_NODE
+sbt_root = (NIL,(0,1),(1,1),(1,0))
+
+sbt_half :: SBT_NODE
+sbt_half = (NIL,(0,1),(1,2),(1,1))
+
+sbt_from :: SBT_NODE -> [[SBT_NODE]]
+sbt_from = iterate (concatMap sbt_step) . return
+
+sbt_k_from :: Int -> SBT_NODE -> [[SBT_NODE]]
+sbt_k_from k = take k . sbt_from
+
+sbt_node_to_edge :: SBT_NODE -> String
+sbt_node_to_edge (dv,l,m,r) =
+  let edge_pp p q = printf "\"%s\" -- \"%s\"" (rat_pp p) (rat_pp q)
+  in case dv of
+       NIL -> ""
+       LHS -> edge_pp r m
+       RHS -> edge_pp l m
+
+sbt_node_elem :: SBT_NODE -> [RAT]
+sbt_node_elem (dv,l,m,r) =
+  case dv of
+    NIL -> [l,m,r]
+    _ -> [m]
+
+sbt_dot :: [SBT_NODE] -> [String]
+sbt_dot n =
+  let e = map sbt_node_to_edge n
+  in concat [["graph {","node [shape=plain]"],e,["}"]]
+
 -- * TUNING
+
+type R = Rational
 
 -- | (ratio,M3-steps)
 type M3_GEN = (R,Int)
