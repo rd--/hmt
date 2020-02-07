@@ -28,7 +28,9 @@ ew_xen456_9_gen =
 
 {- | <http://anaphoria.com/xen456.pdf> P.9 {SCALA=NIL}
 
-> import qualified Music.Theory.List as T {- hmt -}
+19-tone scale for the Clavichord-19 (1976)
+
+
 > import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 > T.scl_find_ji (==) (ew_xen456_9 ++ [2])
 -}
@@ -36,6 +38,8 @@ ew_xen456_9 :: [R]
 ew_xen456_9 = (nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold) ew_xen456_9_gen
 
 {- | <http://anaphoria.com/Pelogflute.pdf> P.2 {SCALA=NIL}
+
+9-tone Pelog cycle (1988)
 
 > T.scl_find_ji (==) (ew_pf_2 ++ [2])
 -}
