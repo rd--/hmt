@@ -5,6 +5,7 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- * ZIG-ZAG
@@ -173,14 +174,8 @@ m3_gen_unfold (r,n) = take n (iterate (* 3) r)
 (^.) :: R -> Int -> R
 (^.) = (^)
 
-ew_xen456_9_gen :: [M3_GEN]
-ew_xen456_9_gen =
-  [(1/(3^.3),4)
-  ,(1/(5*(3^.2)),3)
-  ,(1/(7*3),3)
-  ,(1/11,3)
-  ,(5/(11*3),4)
-  ,(7/11,2)]
+m3_gen_to_r :: [M3_GEN] -> [R]
+m3_gen_to_r = nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold
 
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
@@ -193,14 +188,49 @@ ew_xen456_9_gen =
 ew_pf_2 :: Fractional n => [n]
 ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
 
+-- * <http://anaphoria.com/xen3b.pdf>
+
+-- | P.3 Turkisk Baglama Scale {11-limit, SCALA=NIL}
+xen3b_3_gen :: [(R, Int)]
+xen3b_3_gen = [(1/(3^.6),12),(1/11,2),(5/3,3)]
+
+xen3b_3_r :: [R]
+xen3b_3_r = m3_gen_to_r xen3b_3_gen
+
+-- > map length xen3b_9_i == [5,7,12,19,31]
+xen3b_9_i :: [[R]]
+xen3b_9_i =
+  [[6/5,                                             10/9,                          9/8,                           6/5,                                             10/9]
+  ,[16/15,9/8,                                       10/9,                          9/8,                           16/15,9/8,                                       10/9]
+  ,[16/15,135/128,16/15,                             25/24,16/15,                   16/15,135/128,                 16/15,135/128,16/15,                             25/24,16/15]
+  ,[28/27,36/35,135/128,28/27,36/35,                 25/24,28/27,36/35,             28/27,36/35,135/128,           28/27,36/35,135/128,28/27,36/35,                 25/24,28/27,36/35]
+  ,[64/63,49/48,36/35,45/44,33/32,64/63,49/48,36/35, 45/44,55/54,64/63,49/48,36/35, 64/63,49/48,36/35,45/44,33/32, 64/63,49/48,36/35,45/44,33/32,64/63,49/48,36/35, 45/44,55/54,64/63,49/48,36/35]]
+
+-- | P.9 {SCALA 5=nil 7=ptolemy_idiat 12=nil 19=wilson2 31=wilson_31}
+xen3b_9_r :: [[R]]
+xen3b_9_r = map (T.drop_last . scanl (*) 1) xen3b_9_i
+
+-- > map length xen3b_13_i == [5,7,12,17,22]
+xen3b_13_i :: [[R]]
+xen3b_13_i =
+  [[7/6,                           8/7,                     9/8,                     7/6,                           8/7]
+  ,[28/27,9/8,                     8/7,                     9/8,                     28/27,9/8,                     8/7]
+  ,[28/27,243/224,28/27,           10/9,36/35,              28/27,243/224,           28/27,243/224,28/27,           10/9,36/35]
+  ,[28/27,36/35,135/128,28/27,     36/35,175/162,36/35,     28/27,36/35,135/128,     28/27,36/35,135/128,28/27,     36/35,175/162,36/35]
+  ,[28/27,36/35,25/24,81/80,28/27, 36/35,25/24,28/27,36/35, 28/27,36/35,25/24,81/80, 28/27,36/35,25/24,81/80,28/27, 36/35,25/24,28/27,36/35]]
+
+-- | P.13 {SCALA 5=slendro5_2 7=ptolemy_diat2 12=nil 17=nil 22=wilson7_4}
+xen3b_13_r :: [[R]]
+xen3b_13_r = map (T.drop_last . scanl (*) 1) xen3b_13_i
+
 -- * <http://anaphoria.com/xen3bappendix.pdf>
 
 {- | PP.1-2 {SCALA: 22=wilson7_4}
 
 17,31,41 lattices from XEN3B (1975)
 -}
-ew_xen3ba_g :: [(Int,[M3_GEN])]
-ew_xen3ba_g =
+ew_xen3b_apx_gen :: [(Int,[M3_GEN])]
+ew_xen3b_apx_gen =
   [(17,[(1/729,12)
        ,(5/3,3)
        ,(11,2)])
@@ -219,21 +249,35 @@ ew_xen3ba_g =
        ,(7/(3^.4),5)
        ,(7/(3^.3)*5,2)])]
 
-ew_xen3ba_r :: [(Int,[Rational])]
-ew_xen3ba_r =
+ew_xen3b_apx_r :: [(Int,[Rational])]
+ew_xen3b_apx_r =
   let f (k,g) = (k,nub (sortOn T.fold_ratio_to_octave_err (concatMap m3_gen_unfold g)))
-  in map f ew_xen3ba_g
-
+  in map f ew_xen3b_apx_gen
 
 -- * <http://anaphoria.com/xen456.pdf>
+
+ew_xen456_9_gen :: [M3_GEN]
+ew_xen456_9_gen =
+  [(1/(3^.3),4)
+  ,(1/(5*(3^.2)),3)
+  ,(1/(7*3),3)
+  ,(1/11,3)
+  ,(5/(11*3),4)
+  ,(7/11,2)]
 
 {- | P.9 {SCALA=NIL}
 
 19-tone scale for the Clavichord-19 (1976)
 
-
 > import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 > T.scl_find_ji (==) (ew_xen456_9 ++ [2])
+
+> import qualified Music.Theory.List as T {- hmt -}
+> T.scl_find_ji T.is_subset ew_xen456_9
 -}
 ew_xen456_9 :: [R]
-ew_xen456_9 = (nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold) ew_xen456_9_gen
+ew_xen456_9 = m3_gen_to_r ew_xen456_9_gen
+
+-- Local Variables:
+-- truncate-lines:t
+-- End:
