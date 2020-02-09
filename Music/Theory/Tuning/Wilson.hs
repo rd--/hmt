@@ -110,7 +110,6 @@ mos_log_kseq = map fst . mos_log
 
 -- * STERN-BROCOT TREE
 
-
 type RAT = (Int,Int)
 
 rat_to_ratio :: RAT -> Ratio Int
@@ -183,7 +182,52 @@ ew_xen456_9_gen =
   ,(5/(11*3),4)
   ,(7/11,2)]
 
-{- | <http://anaphoria.com/xen456.pdf> P.9 {SCALA=NIL}
+-- * <http://anaphoria.com/Pelogflute.pdf>
+
+{- | P.2 {SCALA=NIL}
+
+9-tone Pelog cycle (1988)
+
+> T.scl_find_ji (==) (ew_pf_2 ++ [2])
+-}
+ew_pf_2 :: Fractional n => [n]
+ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
+
+-- * <http://anaphoria.com/xen3bappendix.pdf>
+
+{- | PP.1-2 {SCALA: 22=wilson7_4}
+
+17,31,41 lattices from XEN3B (1975)
+-}
+ew_xen3ba_g :: [(Int,[M3_GEN])]
+ew_xen3ba_g =
+  [(17,[(1/729,12)
+       ,(5/3,3)
+       ,(11,2)])
+  ,(31,[(1/3,5)
+       ,(5,2),(1/(5*(3^.2)),5)
+       ,(7/(3^.4),5),(1/(7*(3^.4)),5)
+       ,(1/11,5)
+       ,((1/3)*(1/7)*5,2)
+       ,((1/(7*(3^.3))) * 5,2)])
+  ,(41,[(1/(3^.6),12)
+       ,(5/(3^.3),5),(1/(5*(3^.2)),5)
+       ,(7/(3^.4),7),(1/(7*(3^.3)),7)
+       ,(11,5)])
+  ,(22,[(1/3,5)
+       ,(5/(3^.3),5),(1/(5*(3^.2)),5)
+       ,(7/(3^.4),5)
+       ,(7/(3^.3)*5,2)])]
+
+ew_xen3ba_r :: [(Int,[Rational])]
+ew_xen3ba_r =
+  let f (k,g) = (k,nub (sortOn T.fold_ratio_to_octave_err (concatMap m3_gen_unfold g)))
+  in map f ew_xen3ba_g
+
+
+-- * <http://anaphoria.com/xen456.pdf>
+
+{- | P.9 {SCALA=NIL}
 
 19-tone scale for the Clavichord-19 (1976)
 
@@ -193,13 +237,3 @@ ew_xen456_9_gen =
 -}
 ew_xen456_9 :: [R]
 ew_xen456_9 = (nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold) ew_xen456_9_gen
-
-{- | <http://anaphoria.com/Pelogflute.pdf> P.2 {SCALA=NIL}
-
-9-tone Pelog cycle (1988)
-
-> T.scl_find_ji (==) (ew_pf_2 ++ [2])
--}
-ew_pf_2 :: Fractional n => [n]
-ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
-
