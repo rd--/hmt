@@ -177,6 +177,50 @@ m3_gen_unfold (r,n) = take n (iterate (* 3) r)
 m3_gen_to_r :: [M3_GEN] -> [R]
 m3_gen_to_r = nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold
 
+-- * <http://anaphoria.com/diamond.pdf>
+
+ew_diamond_mk :: [Integer] -> [R]
+ew_diamond_mk u = (nub . sortOn T.fold_ratio_to_octave_err) [x % y | x <- u, y <- u]
+
+-- > m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
+ew_diamond_12_gen :: [M3_GEN]
+ew_diamond_12_gen =
+  [(1/(3^.2),5),(5/(3^.2),3),(7/(3^.2),3),(11/(3^.2),3)
+  ,(1/5,3),(1/7,3),(1/11,3)
+  ,(5/7,1),(5/11,1),(7/5,1),(7/11,1),(11/5,1),(11/7,1)]
+
+{- | P.12 11-limit {SCALA=NIL}
+
+1,3,5,7,9,11 diamond
+
+> import qualified Music.Theory.Tuning.Scala as T {- hmt -}
+> T.scl_find_ji (==) (ew_diamond_12_r ++ [2])
+-}
+ew_diamond_12_r :: [R]
+ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
+
+{- | P.13 13-limit {SCALA=NIL}
+
+1,3,5,7,9,11,13,15 diamond
+
+-- > T.scl_find_ji (==) (ew_diamond_13_r ++ [2])
+-}
+ew_diamond_13_r :: [R]
+ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
+
+-- * <http://anaphoria.com/hel.pdf>
+
+{- | P.12 {SCALA=NIL}
+
+22-tone 23-limit Evangalina tuning (2001)
+
+> T.scl_find_ji (==) (ew_hel_12 ++ [2])
+-}
+ew_hel_12 :: [R]
+ew_hel_12 =
+  [1,3*3*3*5,13/3,5/(3*3),3*3,7/3,11/(3*3),5,3*3*3*3,1/3,11
+  ,3*3*5,17/3,3,3*3*3*3*5,13,5/3,3*3*3,7,11/3,3*5,23/3]
+
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
 {- | P.2 {SCALA=NIL}
@@ -269,7 +313,6 @@ ew_xen456_9_gen =
 
 19-tone scale for the Clavichord-19 (1976)
 
-> import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 > T.scl_find_ji (==) (ew_xen456_9 ++ [2])
 
 > import qualified Music.Theory.List as T {- hmt -}
