@@ -11,16 +11,14 @@ import qualified Music.Theory.Math.OEIS as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
-
-ew_scl_find_r :: [Rational] -> IO [String]
-ew_scl_find_r r = fmap (map T.scale_name) (T.scl_find_ji (==) (map T.fold_ratio_to_octave_err r ++ [2]))
+import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- * ZIG-ZAG
 
 zz_seq_1 :: (Eq n,Num n) => Int -> (n,n) -> (n,n) -> [(n,n)]
 zz_seq_1 k (p,q) (n,d) = if k == 0 then [(n,d)] else (n,d) : zz_seq_1 (k - 1) (p,q) (n+p,d+q)
 
--- > zz_next 3 [(0,1),(1,1)]
+-- > zz_next 3 [(0,1),(1,1)] == [(1,1),(1,2),(1,3),(1,4)]
 zz_next :: (Eq n, Num n) => Int -> [(n,n)] -> [(n,n)]
 zz_next k p =
   case reverse p of
@@ -40,12 +38,6 @@ zz_seq :: (Eq n, Num n) => [Int] -> [[(n, n)]]
 zz_seq k_seq = zz_recur k_seq [(0,1),(1,1)]
 
 -- * MOS
-
-t2_sort :: Ord b => (b, b) -> (b, b)
-t2_sort (i,j) = (min i j,max i j)
-
-t2_sum :: Num a => (a, a) -> a
-t2_sum (i,j) = i + j
 
 -- > gen_coprime 12 == [1,5]
 -- > gen_coprime 49 == [1..24] \\ [7,14,21]
@@ -69,20 +61,20 @@ mos_step (i,j) = if i < j then (i,j - i) else (i - j,j)
 mos_unfold :: (Ord b, Num b) => (b, b) -> [(b, b)]
 mos_unfold x =
   let y = mos_step x
-  in if t2_sum y == 3 then [x,y] else x : mos_unfold y
+  in if T.t2_sum y == 3 then [x,y] else x : mos_unfold y
 
 mos_verify :: Integral a => a -> a -> Bool
 mos_verify p g =
   let x = if g > (p `div` 2) then p `mod` g else g
   in x `elem` gen_coprime p
 
--- > mos 12 5
+-- > mos 12 5 == [(5,7),(5,2),(3,2),(1,2)]
 mos :: (Ord b, Integral b) => b -> b -> [(b, b)]
 mos p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos?"
 
--- > mos_seq 12 5
--- > mos_seq 41 17
--- > map length (mos_seq 49 27) -- 22
+-- > mos_seq 12 5 == [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
+-- > mos_seq 41 17 !! 4 == [3,3,4,3,4,3,3,4,3,4,3,4]
+-- > map length (mos_seq 49 27) == [2,3,5,7,9,11,20,29]
 mos_seq :: (Ord b, Integral b) => b -> b -> [[b]]
 mos_seq p g =
   let step_f (i,j) = concatMap (\x -> if x == i + j then [i,j] else [x])
@@ -108,7 +100,7 @@ mos_tbl_wr = putStrLn . unlines . mos_tbl_pp
 mos_recip_seq :: Double -> [(Int,Double)]
 mos_recip_seq x = let y = truncate x in (y,x) : mos_recip_seq (recip (x - fromIntegral y))
 
--- > take 9 (mos_log (5/4))
+-- > take 3 (mos_log (5/4)) == [(3,3.10628371950539),(9,9.408778735385603),(2,2.4463112031908785)]
 mos_log :: Double -> [(Int,Double)]
 mos_log r = mos_recip_seq (recip (logBase 2 r))
 
@@ -167,22 +159,35 @@ sbt_dot n =
   let e = map sbt_node_to_edge n
   in concat [["graph {","node [shape=plain]"],e,["}"]]
 
--- * TUNING
-
-type R = Rational
+-- * M3-GEN
 
 -- | (ratio,M3-steps)
-type M3_GEN = (R,Int)
+type M3_GEN = (Rational,Int)
 
 -- > map m3_gen_unfold [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
-m3_gen_unfold :: M3_GEN -> [R]
+m3_gen_unfold :: M3_GEN -> [Rational]
 m3_gen_unfold (r,n) = take n (iterate (* 3) r)
 
-(^.) :: R -> Int -> R
+(^.) :: Rational -> Int -> Rational
 (^.) = (^)
 
-m3_gen_to_r :: [M3_GEN] -> [R]
-m3_gen_to_r = nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold
+r_normalise :: [Rational] -> [Rational]
+r_normalise = nub . sortOn T.fold_ratio_to_octave_err
+
+m3_gen_to_r :: [M3_GEN] -> [Rational]
+m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
+
+-- * SCALA
+
+r_to_scale :: String -> String -> [Rational] -> T.Scale
+r_to_scale nm dsc r =
+  let r' = map T.fold_ratio_to_octave_err (tail r) ++ [2]
+  in if not (T.is_ascending r')
+     then error "r_to_scale?"
+     else (nm,dsc,length r,map Right r')
+
+ew_scl_find_r :: [Rational] -> IO [String]
+ew_scl_find_r r = fmap (map T.scale_name) (T.scl_find_ji (==) (map T.fold_ratio_to_octave_err r ++ [2]))
 
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 
@@ -194,82 +199,94 @@ ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 > ew_scl_find_r el12_7
 -}
 ew_1357_3_r :: [Rational]
-ew_1357_3_r = nub (sort (concatMap m3_gen_unfold ew_1357_3_gen))
+ew_1357_3_r = r_normalise (concatMap m3_gen_unfold ew_1357_3_gen)
+
+ew_1357_3_scl :: T.Scale
+ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" ew_1357_3_r
 
 -- * <http://anaphoria.com/earlylattices12.pdf>
 
 {- | P.7 11-limit {SCALA=NIL}
 
-> ew_scl_find_r el12_7
+> ew_scl_find_r ew_el12_7_r
 -}
-el12_7 :: [Rational]
-el12_7 = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,7*11/5]
+ew_el12_7_r :: [Rational]
+ew_el12_7_r = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,7*11/5]
+
+ew_el12_7_scl :: T.Scale
+ew_el12_7_scl = r_to_scale "ew_el12_7" "EW, earlylattices12.pdf, P.7" ew_el12_7_r
 
 {- | P.9 7-limit {SCALA=wilson_class}
 
-> ew_scl_find_r el12_9
+> ew_scl_find_r ew_el12_9_r
 -}
-el12_9 :: [Rational]
-el12_9 = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
+ew_el12_9_r :: [Rational]
+ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
+
+--ew_el12_9_scl :: T.Scale
+--ew_el12_9_scl = r_to_scale "ew_el12_9" "EW, earlylattices12.pdf, P.9" ew_el12_9_r
 
 {- | P.12 11-limit {SCALA=NIL}
 
-> ew_scl_find_r el12_12
+> ew_scl_find_r ew_el12_12_r
 -}
-el12_12 :: [Rational]
-el12_12 = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]
+ew_el12_12_r :: [Rational]
+ew_el12_12_r = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]
+
+ew_el12_12_scl :: T.Scale
+ew_el12_12_scl = r_to_scale "ew_el12_12" "EW, earlylattices12.pdf, P.12" ew_el12_12_r
 
 -- * <http://anaphoria.com/earlylattices22.pdf>
 
 {- | P.2 11-limit {SCALA=wilson_l4}
 
-> ew_scl_find_r el22_2
+> ew_scl_find_r ew_el22_2_r
 -}
-el22_2 :: [Rational]
-el22_2 =
+ew_el22_2_r :: [Rational]
+ew_el22_2_r =
   [1,7*7/3,3*7/5,5/(3*3),1/7,7/3,3/5,5,5*7/(3*3*3),1/3,7*7/(3*3)
   ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,3*3/5,7/(3*5),5*7/(3*3)]
 
 {- | P.3 11-limit {SCALA=wilson_l5}
 
-> ew_scl_find_r el22_3
+> ew_scl_find_r ew_el22_3_r
 -}
-el22_3 :: [Rational]
-el22_3 =
+ew_el22_3_r :: [Rational]
+ew_el22_3_r =
   [1,7*7/3,7*11/(3*3),3/11,1/7,7/3,3/5,5,7/11,1/3,7*7/(3*3)
   ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,11/3,7/(3*5),5*7/(3*3)]
 
 {- | P.4 11-limit {SCALA=wilson_l3}
 
-> ew_scl_find_r el22_4
+> ew_scl_find_r ew_el22_4_r
 -}
-el22_4 :: [Rational]
-el22_4 =
+ew_el22_4_r :: [Rational]
+ew_el22_4_r =
   [1,3*11,3*7/5,5*7,3*3,7/3,3/5,5,7/11,3*7,11
   ,7/5,5*7/3,3,7/(3*3),1/5,3*5*7,3*3*3,7,3*3/5,3*5,3*7/11]
 
 {- | P.5 11-limit {SCALA=wilson_l1}
 
-> ew_scl_find_r el22_5
+> ew_scl_find_r ew_el22_5_r
 -}
-el22_5 :: [Rational]
-el22_5 =
+ew_el22_5_r :: [Rational]
+ew_el22_5_r =
   [1,3*11,3*7/5,5*7,3*3,7/3,7*11,5,3*5*11,3*7,11
   ,7/5,3*7*11/5,3,3*3*11,7*11/3,3*11/5,5*11,7,3*7*11,3*5,7*11/5]
 
 {- | P.6 11-limit {SCALA=wilson_l2}
 
-> ew_scl_find_r el22_6
+> ew_scl_find_r ew_el22_6_r
 -}
-el22_6 :: [Rational]
-el22_6 =
+ew_el22_6_r :: [Rational]
+ew_el22_6_r =
   [1,7*7/3,7*11/(3*3),11/5,3*3,7/3,7*11,5,7*11/(3*5),1/3,11
   ,7*11/(3*3*3),5*7/3,3,11/7,7*11/3,5/3,7*11/(3*3*5),7,11/3,3*5,7*11/5]
 
 -- * <http://anaphoria.com/diamond.pdf>
 
-ew_diamond_mk :: [Integer] -> [R]
-ew_diamond_mk u = (nub . sortOn T.fold_ratio_to_octave_err) [x % y | x <- u, y <- u]
+ew_diamond_mk :: [Integer] -> [Rational]
+ew_diamond_mk u = r_normalise [x % y | x <- u, y <- u]
 
 -- > m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
 ew_diamond_12_gen :: [M3_GEN]
@@ -283,8 +300,11 @@ ew_diamond_12_gen =
 1,3,5,7,9,11 diamond
 
 -}
-ew_diamond_12_r :: [R]
+ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
+
+ew_diamond_12_scl :: T.Scale
+ew_diamond_12_scl = r_to_scale "ew_diamond_12" "EW, diamond.pdf, P.12" ew_diamond_12_r
 
 {- | P.13 13-limit {SCALA=novaro15}
 
@@ -292,7 +312,7 @@ ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
 > ew_scl_find_r ew_diamond_13_r
 -}
-ew_diamond_13_r :: [R]
+ew_diamond_13_r :: [Rational]
 ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
 
 -- * <http://anaphoria.com/hel.pdf>
@@ -324,18 +344,21 @@ hel_3_i =
 hel_r :: HEL -> [[Rational]]
 hel_r (p,q) =
   let i_to_r = scanl (*) 1
-  in [i_to_r p,i_to_r q,nub (sort (concat [i_to_r p,i_to_r q]))]
+  in [i_to_r p,i_to_r q,r_normalise (concat [i_to_r p,i_to_r q])]
 
 {- | P.12 {SCALA=NIL}
 
 22-tone 23-limit Evangalina tuning (2001)
 
-> ew_scl_find_r ew_hel_12
+> ew_scl_find_r ew_hel_12_r
 -}
-ew_hel_12 :: [R]
-ew_hel_12 =
+ew_hel_12_r :: [Rational]
+ew_hel_12_r =
   [1,3*3*3*5,13/3,5/(3*3),3*3,7/3,11/(3*3),5,3*3*3*3,1/3,11
   ,3*3*5,17/3,3,3*3*3*3*5,13,5/3,3*3*3,7,11/3,3*5,23/3]
+
+ew_hel_12_scl :: T.Scale
+ew_hel_12_scl = r_to_scale "ew_hel_12" "EW, hel.pdf, P.12" ew_hel_12_r
 
 -- * <http://anaphoria.com/HexanyStellatesExpansions.pdf>
 
@@ -346,7 +369,7 @@ she_div x =
   in map (reverse . sortOn length) (filter f (T.partitions x))
 
 -- > she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
-she_div_r :: [R] -> [R]
+she_div_r :: [Rational] -> [Rational]
 she_div_r =
   let f x =
         case x of
@@ -355,7 +378,7 @@ she_div_r =
   in map f . she_div
 
 -- > she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
-she_mul_r :: [R] -> [R]
+she_mul_r :: [Rational] -> [Rational]
 she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
 
 {- | she = Stellate Hexany Expansions, P.10 {SCALA=stelhex1,stelhex2,stelhex5,stelhex6}
@@ -364,7 +387,7 @@ she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
 > mapM (ew_scl_find_r . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
 > ew_scl_find_r (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) -- NIL
 -}
-she :: [R] -> [R]
+she :: [Rational] -> [Rational]
 she r = nub (sort (map T.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
 
 -- * <http://anaphoria.com/meru.pdf>
@@ -458,7 +481,7 @@ ew_mos_13_tanabe_r = [1,9/8,81/64,4/3,3/2,27/16,243/128]
 
 -- * <http://anaphoria.com/novavotreediamond.pdf> (Novaro)
 
-ew_novarotreediamond_1 :: ([[R]], [[R]])
+ew_novarotreediamond_1 :: ([[Rational]],[[Rational]])
 ew_novarotreediamond_1 =
   let rem_oct x = if last x /= 2 then error "rem_oct?" else T.drop_last x
       add_oct x = if last x >= 2 then error "add_oct?" else x ++ [2]
@@ -475,8 +498,8 @@ ew_novarotreediamond_1 =
 
 > ew_scl_find_r ew_novarotreediamond_1_r
 -}
-ew_novarotreediamond_1_r :: [R]
-ew_novarotreediamond_1_r = nub (sortOn T.fold_ratio_to_octave_err (concat (snd ew_novarotreediamond_1)))
+ew_novarotreediamond_1_r :: [Rational]
+ew_novarotreediamond_1_r = r_normalise (concat (snd ew_novarotreediamond_1))
 
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
@@ -502,14 +525,17 @@ xen1_fig4 = ((NIL,(2,5),(5,12),(3,7)),5)
 -- * <http://anaphoria.com/xen3b.pdf>
 
 -- | P.3 Turkisk Baglama Scale {11-limit, SCALA=NIL}
-xen3b_3_gen :: [(R, Int)]
-xen3b_3_gen = [(1/(3^.6),12),(1/11,2),(5/3,3)]
+ew_xen3b_3_gen :: [(Rational,Int)]
+ew_xen3b_3_gen = [(1/(3^.6),12),(1/11,2),(5/3,3)]
 
-xen3b_3_r :: [R]
-xen3b_3_r = m3_gen_to_r xen3b_3_gen
+ew_xen3b_3_r :: [Rational]
+ew_xen3b_3_r = m3_gen_to_r ew_xen3b_3_gen
+
+ew_xen3b_3_scl :: T.Scale
+ew_xen3b_3_scl = r_to_scale "ew_xen3b_3" "EW, xen3b.pdf, P.3" ew_xen3b_3_r
 
 -- > map length xen3b_9_i == [5,7,12,19,31]
-xen3b_9_i :: [[R]]
+xen3b_9_i :: [[Rational]]
 xen3b_9_i =
   [[6/5,                                             10/9,                          9/8,                           6/5,                                             10/9]
   ,[16/15,9/8,                                       10/9,                          9/8,                           16/15,9/8,                                       10/9]
@@ -521,11 +547,11 @@ xen3b_9_i =
 
 > mapM ew_scl_find_r xen3b_9_r
 -}
-xen3b_9_r :: [[R]]
+xen3b_9_r :: [[Rational]]
 xen3b_9_r = map (T.drop_last . scanl (*) 1) xen3b_9_i
 
 -- > map length xen3b_13_i == [5,7,12,17,22]
-xen3b_13_i :: [[R]]
+xen3b_13_i :: [[Rational]]
 xen3b_13_i =
   [[7/6,                           8/7,                     9/8,                     7/6,                           8/7]
   ,[28/27,9/8,                     8/7,                     9/8,                     28/27,9/8,                     8/7]
@@ -534,7 +560,7 @@ xen3b_13_i =
   ,[28/27,36/35,25/24,81/80,28/27, 36/35,25/24,28/27,36/35, 28/27,36/35,25/24,81/80, 28/27,36/35,25/24,81/80,28/27, 36/35,25/24,28/27,36/35]]
 
 -- | P.13 {SCALA 5=slendro5_2 7=ptolemy_diat2 12=nil 17=nil 22=wilson7_4}
-xen3b_13_r :: [[R]]
+xen3b_13_r :: [[Rational]]
 xen3b_13_r = map (T.drop_last . scanl (*) 1) xen3b_13_i
 
 -- * <http://anaphoria.com/xen3bappendix.pdf>
@@ -565,7 +591,7 @@ ew_xen3b_apx_gen =
 
 ew_xen3b_apx_r :: [(Int,[Rational])]
 ew_xen3b_apx_r =
-  let f (k,g) = (k,nub (sortOn T.fold_ratio_to_octave_err (concatMap m3_gen_unfold g)))
+  let f (k,g) = (k,r_normalise (concatMap m3_gen_unfold g))
   in map f ew_xen3b_apx_gen
 
 -- * <http://anaphoria.com/xen456.pdf>
@@ -583,13 +609,34 @@ ew_xen456_9_gen =
 
 19-tone scale for the Clavichord-19 (1976)
 
-> ew_scl_find_r ew_xen456_9
+> ew_scl_find_r ew_xen456_9_r
 
 > import qualified Music.Theory.List as T {- hmt -}
-> T.scl_find_ji T.is_subset ew_xen456_9 -- NIL
+> T.scl_find_ji T.is_subset ew_xen456_9_r -- NIL
 -}
-ew_xen456_9 :: [R]
-ew_xen456_9 = m3_gen_to_r ew_xen456_9_gen
+ew_xen456_9_r :: [Rational]
+ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
+
+ew_xen456_9_scl :: T.Scale
+ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
+
+-- * DB
+
+{- | Scales /not/ present in the standard scala file set.
+
+> mapM_ (T.scale_wr_dir "/home/rohan/sw/hmt/data/scl/") ew_scl_db
+> map T.scale_name ew_scl_db
+-}
+ew_scl_db :: [T.Scale]
+ew_scl_db =
+  [ew_1357_3_scl
+  ,ew_el12_7_scl
+  ,ew_el12_12_scl
+  ,ew_diamond_12_scl
+  ,ew_hel_12_scl
+  ,ew_xen3b_3_scl
+  ,ew_xen456_9_scl
+  ]
 
 -- Local Variables:
 -- truncate-lines:t

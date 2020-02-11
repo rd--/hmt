@@ -46,6 +46,9 @@ t2_concat = t2_map mconcat . unzip
 t2_sort :: Ord t => (t,t) -> (t,t)
 t2_sort (p,q) = (min p q,max p q)
 
+t2_sum :: Num n => (n,n) -> n
+t2_sum (i,j) = i + j
+
 -- * P3 (3-product)
 
 -- | Left rotation.

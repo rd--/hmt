@@ -84,6 +84,8 @@ pitch_type_predominant p =
 -- * Scale
 
 -- | A scale has a name, a description, a degree, and a sequence of pitches.
+--   The /name/ is the the file-name without the /.scl/ suffix.
+--   By convention the first comment line gives the file name (with suffix).
 type Scale = (String,String,Int,[Pitch])
 
 -- | The name of a scale.
@@ -372,7 +374,7 @@ scales_dir_txt_csv db = T.csv_table_pp id T.def_csv_opt (Nothing,scales_dir_txt_
 -- | Simple plain-text display of scale data.
 --
 -- > db <- scl_load_db
--- > writeFile "/tmp/scl.txt" (unlines (concatMap scale_stat db))
+-- > writeFile "/tmp/scl.txt" (unlines (intercalate [""] (map scale_stat db)))
 scale_stat :: Scale -> [String]
 scale_stat s =
     let p = scale_pitches s
@@ -409,6 +411,13 @@ scale_pp (nm,dsc,k,p) =
     ,dsc
     ,show k
     ,"!"] ++ map pitch_pp p
+
+scale_wr :: FilePath -> Scale -> IO ()
+scale_wr fn = writeFile fn . unlines . scale_pp
+
+-- | Write /scl/ to /dir/ with the file-name 'scale_name'.scl
+scale_wr_dir :: FilePath -> Scale -> IO ()
+scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 
 -- * DIST
 
