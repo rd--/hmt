@@ -620,9 +620,11 @@ ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
 ew_xen456_9_scl :: T.Scale
 ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
--- * <http://wilsonarchives.blogspot.com/2010/10/scale-for-rod-poole.html>
+-- * GEMS
 
-{- | 13-limit 22-tone scale {SCALA=nil}
+{- | <http://wilsonarchives.blogspot.com/2010/10/scale-for-rod-poole.html>
+
+13-limit 22-tone scale {SCALA=nil}
 
 > ew_scl_find_r ew_poole_r
 -}
@@ -633,6 +635,29 @@ ew_poole_r =
 
 ew_poole_scl :: T.Scale
 ew_poole_scl = r_to_scale "ew_poole" "EW, 2010/10/scale-for-rod-poole.html" ew_poole_r
+
+{- | <http://wilsonarchives.blogspot.com/2014/05/an-11-limit-centaur-implied-in-wilson.html>
+
+11-limit 17-tone scale {SCALA=wilcent17}
+
+> ew_scl_find_r ew_centaur17_r
+-}
+ew_centaur17_r :: [Rational]
+ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(3*3*3),5/3,7,11/3,3*5]
+
+{- | <http://wilsonarchives.blogspot.com/2018/03/an-unusual-22-tone-7-limit-tuning.html>
+
+7-limit 22-tone scale {SCALA=nil}
+
+> ew_scl_find_r ew_two_22_7_r
+-}
+ew_two_22_7_r :: [Rational]
+ew_two_22_7_r =
+  [1/1,9/35,1/15,35/1,9/1,7/3,3/5,315/1,245/3,21/1,27/5
+  ,7/5,735/1,189/1,49/1,63/5,5/3,3/7,1/9,1/35,15/1,35/9]
+
+ew_two_22_7_scl :: T.Scale
+ew_two_22_7_scl = r_to_scale "ew_two_22_7" "EW, 2018/03/an-unusual-22-tone-7-limit-tuning.html" ew_two_22_7_r
 
 -- * DB
 
@@ -651,6 +676,7 @@ ew_scl_db =
   ,ew_xen3b_3_scl
   ,ew_xen456_9_scl
   ,ew_poole_scl
+  ,ew_two_22_7_scl
   ]
 
 -- Local Variables:
