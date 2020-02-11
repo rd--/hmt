@@ -620,6 +620,17 @@ ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
 ew_xen456_9_scl :: T.Scale
 ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
+-- * <http://wilsonarchives.blogspot.com/2010/10/scale-for-rod-poole.html>
+
+{- | 13-limit 22-tone scale {SCALA=nil}
+
+> ew_scl_find_r ew_poole_r
+-}
+ew_poole_r :: [Rational]
+ew_poole_r =
+  [1,11*3,7*3/5,13/3,3*3,7/3,11/(3*3),5,7/11,1/3
+  ,11,7/5,13/(3*3),3,7/(3*3),11/(3*3*3),5/3,3*3*3,7,11/3,5*3,7*3/11]
+
 -- * DB
 
 {- | Scales /not/ present in the standard scala file set.
