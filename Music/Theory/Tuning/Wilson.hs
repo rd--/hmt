@@ -360,7 +360,7 @@ she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
 
 > she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
 > mapM (ew_scl_find_r . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
-> she [1,35/36,16/15,4/3]
+> ew_scl_find_r (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) -- NIL
 -}
 she :: [R] -> [R]
 she r = nub (sort (map T.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
