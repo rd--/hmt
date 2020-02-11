@@ -6,6 +6,7 @@ import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 
@@ -333,6 +334,36 @@ ew_hel_12 :: [R]
 ew_hel_12 =
   [1,3*3*3*5,13/3,5/(3*3),3*3,7/3,11/(3*3),5,3*3*3*3,1/3,11
   ,3*3*5,17/3,3,3*3*3*3*5,13,5/3,3*3*3,7,11/3,3*5,23/3]
+
+-- * <http://anaphoria.com/HexanyStellatesExpansions.pdf>
+
+-- > she_div "ABCD" == [["BCD","A"],["ACD","B"],["ABD","C"],["ABC","D"]]
+she_div :: Eq a => [a] -> [[[a]]]
+she_div x =
+  let f = (== [1,length x - 1]) . sort . map length
+  in map (reverse . sortOn length) (filter f (T.partitions x))
+
+-- > she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
+she_div_r :: [R] -> [R]
+she_div_r =
+  let f x =
+        case x of
+          [[a,b,c],[d]] -> (a * b * c) / d
+          _ -> error "she_div?"
+  in map f . she_div
+
+-- > she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
+she_mul_r :: [R] -> [R]
+she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
+
+{- | she = Stellate Hexany Expansions, P.10 {SCALA=stelhex1,stelhex2,stelhex5,stelhex6}
+
+> she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
+> mapM (ew_scl_find_r . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
+> she [1,35/36,16/15,4/3]
+-}
+she :: [R] -> [R]
+she r = nub (sort (map T.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
 
 -- * <http://anaphoria.com/mos.pdf>
 
