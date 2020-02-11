@@ -181,6 +181,88 @@ m3_gen_unfold (r,n) = take n (iterate (* 3) r)
 m3_gen_to_r :: [M3_GEN] -> [R]
 m3_gen_to_r = nub . sortOn T.fold_ratio_to_octave_err . concatMap m3_gen_unfold
 
+-- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
+
+ew_1357_3_gen :: [M3_GEN]
+ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
+
+{- | P.3 7-limit {SCALA=NIL}
+
+> ew_scl_find_r el12_7
+-}
+ew_1357_3_r :: [Rational]
+ew_1357_3_r = nub (sort (concatMap m3_gen_unfold ew_1357_3_gen))
+
+-- * <http://anaphoria.com/earlylattices12.pdf>
+
+{- | P.7 11-limit {SCALA=NIL}
+
+> ew_scl_find_r el12_7
+-}
+el12_7 :: [Rational]
+el12_7 = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,7*11/5]
+
+{- | P.9 7-limit {SCALA=wilson_class}
+
+> ew_scl_find_r el12_9
+-}
+el12_9 :: [Rational]
+el12_9 = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
+
+{- | P.12 11-limit {SCALA=NIL}
+
+> ew_scl_find_r el12_12
+-}
+el12_12 :: [Rational]
+el12_12 = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]
+
+-- * <http://anaphoria.com/earlylattices22.pdf>
+
+{- | P.2 11-limit {SCALA=wilson_l4}
+
+> ew_scl_find_r el22_2
+-}
+el22_2 :: [Rational]
+el22_2 =
+  [1,7*7/3,3*7/5,5/(3*3),1/7,7/3,3/5,5,5*7/(3*3*3),1/3,7*7/(3*3)
+  ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,3*3/5,7/(3*5),5*7/(3*3)]
+
+{- | P.3 11-limit {SCALA=wilson_l5}
+
+> ew_scl_find_r el22_3
+-}
+el22_3 :: [Rational]
+el22_3 =
+  [1,7*7/3,7*11/(3*3),3/11,1/7,7/3,3/5,5,7/11,1/3,7*7/(3*3)
+  ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,11/3,7/(3*5),5*7/(3*3)]
+
+{- | P.4 11-limit {SCALA=wilson_l3}
+
+> ew_scl_find_r el22_4
+-}
+el22_4 :: [Rational]
+el22_4 =
+  [1,3*11,3*7/5,5*7,3*3,7/3,3/5,5,7/11,3*7,11
+  ,7/5,5*7/3,3,7/(3*3),1/5,3*5*7,3*3*3,7,3*3/5,3*5,3*7/11]
+
+{- | P.5 11-limit {SCALA=wilson_l1}
+
+> ew_scl_find_r el22_5
+-}
+el22_5 :: [Rational]
+el22_5 =
+  [1,3*11,3*7/5,5*7,3*3,7/3,7*11,5,3*5*11,3*7,11
+  ,7/5,3*7*11/5,3,3*3*11,7*11/3,3*11/5,5*11,7,3*7*11,3*5,7*11/5]
+
+{- | P.6 11-limit {SCALA=wilson_l2}
+
+> ew_scl_find_r el22_6
+-}
+el22_6 :: [Rational]
+el22_6 =
+  [1,7*7/3,7*11/(3*3),11/5,3*3,7/3,7*11,5,7*11/(3*5),1/3,11
+  ,7*11/(3*3*3),5*7/3,3,11/7,7*11/3,5/3,7*11/(3*3*5),7,11/3,3*5,7*11/5]
+
 -- * <http://anaphoria.com/diamond.pdf>
 
 ew_diamond_mk :: [Integer] -> [R]
