@@ -7,6 +7,10 @@ import Text.Printf {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Tuning.Scala as T {- hmt -}
+
+ew_scl_find_r :: [Rational] -> IO [String]
+ew_scl_find_r r = fmap (map T.scale_name) (T.scl_find_ji (==) (map T.fold_ratio_to_octave_err r ++ [2]))
 
 -- * ZIG-ZAG
 
@@ -193,17 +197,15 @@ ew_diamond_12_gen =
 
 1,3,5,7,9,11 diamond
 
-> import qualified Music.Theory.Tuning.Scala as T {- hmt -}
-> T.scl_find_ji (==) (ew_diamond_12_r ++ [2])
 -}
 ew_diamond_12_r :: [R]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
-{- | P.13 13-limit {SCALA=NIL}
+{- | P.13 13-limit {SCALA=novaro15}
 
 1,3,5,7,9,11,13,15 diamond
 
--- > T.scl_find_ji (==) (ew_diamond_13_r ++ [2])
+> ew_scl_find_r ew_diamond_13_r
 -}
 ew_diamond_13_r :: [R]
 ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
@@ -214,12 +216,34 @@ ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
 
 22-tone 23-limit Evangalina tuning (2001)
 
-> T.scl_find_ji (==) (ew_hel_12 ++ [2])
+> ew_scl_find_r ew_hel_12
 -}
 ew_hel_12 :: [R]
 ew_hel_12 =
   [1,3*3*3*5,13/3,5/(3*3),3*3,7/3,11/(3*3),5,3*3*3*3,1/3,11
   ,3*3*5,17/3,3,3*3*3*3*5,13,5/3,3*3*3,7,11/3,3*5,23/3]
+
+-- * <http://anaphoria.com/novavotreediamond.pdf> (Novaro)
+
+ew_novarotreediamond_1 :: ([[R]], [[R]])
+ew_novarotreediamond_1 =
+  let rem_oct x = if last x /= 2 then error "rem_oct?" else T.drop_last x
+      add_oct x = if last x >= 2 then error "add_oct?" else x ++ [2]
+      r_to_i = T.d_dx_by (/) . add_oct
+      i_to_r = rem_oct . scanl (*) 1
+      r_0 = [1,5/4,4/3,3/2,5/3,7/4]
+      i_0 = r_to_i r_0
+      i = T.rotations i_0
+  in (i,map i_to_r i)
+
+{- | P.1 {SCALA=NIL}
+
+23-tone 7-limit (2004)
+
+> ew_scl_find_r ew_novarotreediamond_1_r
+-}
+ew_novarotreediamond_1_r :: [R]
+ew_novarotreediamond_1_r = nub (sortOn T.fold_ratio_to_octave_err (concat (snd ew_novarotreediamond_1)))
 
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
@@ -227,7 +251,7 @@ ew_hel_12 =
 
 9-tone Pelog cycle (1988)
 
-> T.scl_find_ji (==) (ew_pf_2 ++ [2])
+> ew_scl_find_r ew_pf_2
 -}
 ew_pf_2 :: Fractional n => [n]
 ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
@@ -250,7 +274,10 @@ xen3b_9_i =
   ,[28/27,36/35,135/128,28/27,36/35,                 25/24,28/27,36/35,             28/27,36/35,135/128,           28/27,36/35,135/128,28/27,36/35,                 25/24,28/27,36/35]
   ,[64/63,49/48,36/35,45/44,33/32,64/63,49/48,36/35, 45/44,55/54,64/63,49/48,36/35, 64/63,49/48,36/35,45/44,33/32, 64/63,49/48,36/35,45/44,33/32,64/63,49/48,36/35, 45/44,55/54,64/63,49/48,36/35]]
 
--- | P.9 {SCALA 5=nil 7=ptolemy_idiat 12=nil 19=wilson2 31=wilson_31}
+{- | P.9 {SCALA 5=nil 7=ptolemy_idiat 12=nil 19=wilson2 31=wilson_31}
+
+> mapM ew_scl_find_r xen3b_9_r
+-}
 xen3b_9_r :: [[R]]
 xen3b_9_r = map (T.drop_last . scanl (*) 1) xen3b_9_i
 
@@ -313,10 +340,10 @@ ew_xen456_9_gen =
 
 19-tone scale for the Clavichord-19 (1976)
 
-> T.scl_find_ji (==) (ew_xen456_9 ++ [2])
+> ew_scl_find_r ew_xen456_9
 
 > import qualified Music.Theory.List as T {- hmt -}
-> T.scl_find_ji T.is_subset ew_xen456_9
+> T.scl_find_ji T.is_subset ew_xen456_9 -- NIL
 -}
 ew_xen456_9 :: [R]
 ew_xen456_9 = m3_gen_to_r ew_xen456_9_gen
