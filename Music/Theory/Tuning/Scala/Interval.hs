@@ -55,11 +55,13 @@ parse_intnam l =
 
 -- * IO
 
--- | 'parse_intnam' of 'Scala.load_dist_file' of "intnam.par".
---
--- > intnam <- load_intnam
--- > fst intnam == length (snd intnam)
+{- | 'parse_intnam' of 'Scala.load_dist_file_ln' of "intnam.par".
+
+> intnam <- load_intnam
+> fst intnam == length (snd intnam)
+> lookup (129140163/128000000) (snd intnam) == Just "gravity comma"
+-}
 load_intnam :: IO INTNAM
 load_intnam = do
-  l <- Scala.load_dist_file "intnam.par"
+  l <- Scala.load_dist_file_ln "intnam.par"
   return (parse_intnam (Scala.filter_comments l))

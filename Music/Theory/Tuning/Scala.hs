@@ -428,13 +428,17 @@ dist_get_dir :: IO String
 dist_get_dir = getEnv "SCALA_DIST_DIR"
 
 -- | Load file from 'dist_get_dir'.
---
--- > s <- load_dist_file "intnam.par"
--- > length s == 516
-load_dist_file :: FilePath -> IO [String]
+load_dist_file :: FilePath -> IO String
 load_dist_file nm = do
   d <- dist_get_dir
-  fmap lines (readFile (d </> nm))
+  readFile (d </> nm)
+
+-- | 'fmap' 'lines' 'load_dist_file'
+--
+-- > s <- load_dist_file_ln "intnam.par"
+-- > length s == 516
+load_dist_file_ln :: FilePath -> IO [String]
+load_dist_file_ln = fmap lines . load_dist_file
 
 -- * QUERY
 

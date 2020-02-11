@@ -116,5 +116,5 @@ parse_modenam l =
 -- > n == 2776 && x == 15 && length m == n
 load_modenam :: IO MODENAM
 load_modenam = do
-  l <- Scala.load_dist_file "modenam.par"
+  l <- Scala.load_dist_file_ln "modenam.par"
   return (parse_modenam (Scala.filter_comments (join_long_lines l)))
