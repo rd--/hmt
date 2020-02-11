@@ -3,9 +3,11 @@ module Music.Theory.Tuning.Wilson where
 
 import Data.List {- base -}
 import Data.Ratio {- base -}
+import Safe {- safe -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math.OEIS as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
@@ -364,6 +366,89 @@ she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
 -}
 she :: [R] -> [R]
 she r = nub (sort (map T.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
+
+-- * <http://anaphoria.com/meru.pdf>
+
+-- > map (every_nth "abcdef") [1..3] == ["abcdef","ace","ad"]
+every_nth :: [t] -> Int -> [t]
+every_nth l k =
+  case l of
+    [] -> []
+    x:_ -> x : every_nth (drop k l) k
+
+meru :: Num n => [[n]]
+meru =
+  let f xs = zipWith (+) ([0] ++ xs) (xs ++ [0])
+  in iterate f [1]
+
+-- > meru_k 13
+meru_k :: Num n => Int -> [[n]]
+meru_k k = take k meru
+
+-- > map (sum . meru_1) [1 .. 13] == [1,1,2,3,5,8,13,21,34,55,89,144,233]
+meru_1 :: Num n => Int -> [n]
+meru_1 k = zipWith (\x l -> atDef 0 l x) [0..] (reverse (meru_k k))
+
+-- > take 13 meru_1_direct == [1,1,2,3,5,8,13,21,34,55,89,144,233]
+meru_1_direct :: Num n => [n]
+meru_1_direct = tail T.a000045
+
+-- | Meru 2 = META-PELOG
+--
+-- > map (sum . meru_2) [1 .. 14] == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+meru_2 :: Num n => Int -> [n]
+meru_2 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 2)
+
+-- > take 14 meru_2_direct == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+meru_2_direct :: Num n => [n]
+meru_2_direct = T.a000930
+
+-- | meru_3 = META-SLENDRO
+meru_3 :: Num n => Int -> [[n]]
+meru_3 k =
+  let f t = zipWith (\x l -> atDef 0 l x) [0,2..] t
+      t0 = reverse (meru_k k)
+      t1 = map tail t0
+  in [f t0,f t1]
+
+-- > map sum (meru_3_seq 13) == [1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265,351,465]
+meru_3_seq :: Num n => Int -> [[n]]
+meru_3_seq k = concatMap meru_3 [1 .. k]
+
+-- > take 26 meru_3_direct == [1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265,351,465]
+meru_3_direct :: Num n => [n]
+meru_3_direct = drop 3 T.a000931
+
+-- > map (sum . meru_4) [1 .. 13] == [1,1,1,1,2,3,4,5,7,10,14,19,26]
+meru_4 :: Num n => Int -> [n]
+meru_4 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 3)
+
+-- > take 31 meru_4_direct == map (sum . meru_4) [1 .. 31]
+meru_4_direct :: Num n => [n]
+meru_4_direct = tail T.a003269
+
+-- > map meru_5 [1..4]
+meru_5 :: Num n => Int -> [[n]]
+meru_5 k =
+  let f t = zipWith (\x l -> atDef 0 l x) [0,3..] t
+      t0 = reverse (meru_k k)
+  in map (\n -> f (map (drop n) t0)) [0 .. 2]
+
+-- > map sum (meru_5_seq 13)
+meru_5_seq :: Num n => Int -> [[n]]
+meru_5_seq k = concatMap meru_5 [1 .. k]
+
+-- > take 39 meru_5_direct == map sum (meru_5_seq 13)
+meru_5_direct :: Num n => [n]
+meru_5_direct = T.a017817
+
+-- > map (sum . meru_6) [1 .. 21] == [1,1,1,1,1,2,3,4,5,6,8,11,15,20,26,34,45,60,80,106,140]
+meru_6 :: Num n => Int -> [n]
+meru_6 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 4)
+
+-- > take 21 meru_6_direct == map (sum . meru_6) [1 .. 21]
+meru_6_direct :: Num n => [n]
+meru_6_direct = T.a003520
 
 -- * <http://anaphoria.com/mos.pdf>
 
