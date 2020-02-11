@@ -631,6 +631,9 @@ ew_poole_r =
   [1,11*3,7*3/5,13/3,3*3,7/3,11/(3*3),5,7/11,1/3
   ,11,7/5,13/(3*3),3,7/(3*3),11/(3*3*3),5/3,3*3*3,7,11/3,5*3,7*3/11]
 
+ew_poole_scl :: T.Scale
+ew_poole_scl = r_to_scale "ew_poole" "EW, 2010/10/scale-for-rod-poole.html" ew_poole_r
+
 -- * DB
 
 {- | Scales /not/ present in the standard scala file set.
@@ -647,6 +650,7 @@ ew_scl_db =
   ,ew_hel_12_scl
   ,ew_xen3b_3_scl
   ,ew_xen456_9_scl
+  ,ew_poole_scl
   ]
 
 -- Local Variables:
