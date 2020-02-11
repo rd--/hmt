@@ -79,7 +79,7 @@ mos p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos?"
 
 -- > mos_seq 12 5
 -- > mos_seq 41 17
--- > mos_seq 49 27 -- 22
+-- > map length (mos_seq 49 27) -- 22
 mos_seq :: (Ord b, Integral b) => b -> b -> [[b]]
 mos_seq p g =
   let step_f (i,j) = concatMap (\x -> if x == i + j then [i,j] else [x])
@@ -212,6 +212,35 @@ ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
 
 -- * <http://anaphoria.com/hel.pdf>
 
+hel_r_asc :: (Integer,Integer) -> [Rational]
+hel_r_asc (n,d) = n%d : hel_r_asc (n+1,d+1)
+
+type HEL = ([Rational],[Rational])
+
+-- | P.6
+hel_1_i :: HEL
+hel_1_i =
+  let i = take 6 (hel_r_asc (7,6))
+  in (take 5 i,take 5 (T.rotate_left 2 i))
+
+-- | P.6
+hel_2_i :: HEL
+hel_2_i =
+  let i = take 10 (hel_r_asc (9,8))
+  in (take 8 (T.rotate_left 3 (tail i))
+     ,take 7 i)
+
+-- | P.10
+hel_3_i :: HEL
+hel_3_i =
+  let i = take 16 (hel_r_asc (15,14))
+  in (take 13 (T.rotate_left 6 (take 14 i)),take 14 (tail i))
+
+hel_r :: HEL -> [[Rational]]
+hel_r (p,q) =
+  let i_to_r = scanl (*) 1
+  in [i_to_r p,i_to_r q,nub (sort (concat [i_to_r p,i_to_r q]))]
+
 {- | P.12 {SCALA=NIL}
 
 22-tone 23-limit Evangalina tuning (2001)
@@ -222,6 +251,12 @@ ew_hel_12 :: [R]
 ew_hel_12 =
   [1,3*3*3*5,13/3,5/(3*3),3*3,7/3,11/(3*3),5,3*3*3*3,1/3,11
   ,3*3*5,17/3,3,3*3*3*3*5,13,5/3,3*3*3,7,11/3,3*5,23/3]
+
+-- * <http://anaphoria.com/mos.pdf>
+
+-- | P.13, tanabe
+ew_mos_13_tanabe_r :: [Rational]
+ew_mos_13_tanabe_r = [1,9/8,81/64,4/3,3/2,27/16,243/128]
 
 -- * <http://anaphoria.com/novavotreediamond.pdf> (Novaro)
 
@@ -255,6 +290,16 @@ ew_novarotreediamond_1_r = nub (sortOn T.fold_ratio_to_octave_err (concat (snd e
 -}
 ew_pf_2 :: Fractional n => [n]
 ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
+
+-- * <http://anaphoria.com/xen1.pdf>
+
+-- | P.9, Fig. 3
+xen1_fig3 :: (SBT_NODE,Int)
+xen1_fig3 = ((NIL,(1,3),(2,5),(1,2)),5)
+
+-- | P.9, Fig. 4
+xen1_fig4 :: (SBT_NODE,Int)
+xen1_fig4 = ((NIL,(2,5),(5,12),(3,7)),5)
 
 -- * <http://anaphoria.com/xen3b.pdf>
 

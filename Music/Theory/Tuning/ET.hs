@@ -47,7 +47,7 @@ tbl_24et_f0 f0 =
 -- | 'tbl_24et_f0' @440@.
 --
 -- > length tbl_24et == 264
--- > minmax (map (round . snd) tbl_24et) == (16,32535)
+-- > T.minmax (map (round . snd) tbl_24et) == (16,32535)
 tbl_24et :: [(Pitch,Double)]
 tbl_24et = tbl_24et_f0 440
 
