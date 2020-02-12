@@ -15,6 +15,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
+import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- * Octave pitch-class (generic)
 
@@ -110,7 +111,7 @@ midi_to_octpc = midi_to_octave_pitchclass
 
 -- | (octave,pitch-class) to fractional octave.
 --   This is an odd notation, but can be useful for writing pitch data where a float is required.
---   Note this is not a linear octave, for that see 'Sound.SC3.Common.Math. oct_to_cps '.
+--   Note this is not a linear octave, for that see 'Sound.SC3.Common.Math.oct_to_cps'.
 --
 -- > map octpc_to_foct [(4,0),(4,7),(5,11)] == [4.00,4.07,5.11]
 octpc_to_foct :: (Integral i, Fractional r) => (i,i) -> r
@@ -326,7 +327,7 @@ fmidi_in_octave_below p q = let r = fmidi_in_octave_nearest p q in if r > p then
 
 -- | CPS form of binary /fmidi/ function /f/.
 lift_fmidi_binop_to_cps :: Floating f => (f -> f -> f) -> f -> f -> f
-lift_fmidi_binop_to_cps f p = fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
+lift_fmidi_binop_to_cps f p = T.fmidi_to_cps . f (cps_to_fmidi p) . cps_to_fmidi
 
 -- | CPS form of 'fmidi_in_octave_nearest'.
 --
@@ -407,29 +408,9 @@ pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
 
 -- * Frequency (CPS)
 
--- | /Midi/ note number to cycles per second, given frequency of ISO A4.
-midi_to_cps_f0 :: (Integral i,Floating f) => f -> i -> f
-midi_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . fromIntegral
-
--- | 'midi_to_cps_f0' 440.
---
--- > map (round . midi_to_cps) [59,60,69] == [247,262,440]
-midi_to_cps :: (Integral i,Floating f) => i -> f
-midi_to_cps = midi_to_cps_f0 440
-
--- | Fractional /midi/ note number to cycles per second, given frequency of ISO A4.
-fmidi_to_cps_f0 :: Floating a => a -> a -> a
-fmidi_to_cps_f0 f0 i = f0 * (2 ** ((i - 69) * (1 / 12)))
-
--- | 'fmidi_to_cps_f0' 440.
---
--- > map fmidi_to_cps [69,69.1] == [440.0,442.5488940698553]
-fmidi_to_cps :: Floating a => a -> a
-fmidi_to_cps = fmidi_to_cps_f0 440
-
 -- | 'fmidi_to_cps' of 'pitch_to_fmidi', given frequency of ISO A4.
 pitch_to_cps_f0 :: Floating n => n -> Pitch -> n
-pitch_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . pitch_to_fmidi
+pitch_to_cps_f0 f0 = T.fmidi_to_cps_f0 f0 . pitch_to_fmidi
 
 -- | 'pitch_to_cps_f0' 440.
 pitch_to_cps :: Floating n => Pitch -> n
@@ -456,7 +437,7 @@ cps_to_midi = round . cps_to_fmidi
 
 -- | 'midi_to_cps_f0' of 'octpc_to_midi', given frequency of ISO A4.
 octpc_to_cps_f0 :: (Integral i,Floating n) => n -> Octave_PitchClass i -> n
-octpc_to_cps_f0 f0 = midi_to_cps_f0 f0 . octave_pitchclass_to_midi
+octpc_to_cps_f0 f0 = T.midi_to_cps_f0 f0 . octave_pitchclass_to_midi
 
 -- | 'octpc_to_cps_f0' 440.
 --
@@ -511,7 +492,7 @@ midi_detune_normalise_positive =
 
 -- | Inverse of 'cps_to_midi_detune', given frequency of ISO @A4@.
 midi_detune_to_cps_f0 :: (Integral m,Real c) => Double -> (m,c) -> Double
-midi_detune_to_cps_f0 f0 (m,c) = fmidi_to_cps_f0 f0 (fromIntegral m + (realToFrac c / 100))
+midi_detune_to_cps_f0 f0 (m,c) = T.fmidi_to_cps_f0 f0 (fromIntegral m + (realToFrac c / 100))
 
 -- | Inverse of 'cps_to_midi_detune'.
 --

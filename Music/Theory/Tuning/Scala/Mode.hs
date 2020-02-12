@@ -113,7 +113,7 @@ parse_modenam l =
 --
 -- > mn <- load_modenam
 -- > let (n,x,m) = mn
--- > n == 2776 && x == 15 && length m == n
+-- > n == 2933 && x == 15 && length m == n -- Scala 2.42p
 load_modenam :: IO MODENAM
 load_modenam = do
   l <- Scala.load_dist_file_ln "modenam.par"

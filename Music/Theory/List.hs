@@ -1098,12 +1098,24 @@ bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)
 
 -- | Append /k/ to the right of /l/ until result has /n/ places.
+--   Truncates long input lists.
 --
 -- > map (pad_right '0' 2 . return) ['0' .. '9']
 -- > pad_right '0' 12 "1101" == "110100000000"
 -- > map (pad_right ' '3) ["S","E-L"] == ["S  ","E-L"]
+-- > pad_right '!' 3 "truncate" == "tru"
 pad_right :: a -> Int -> [a] -> [a]
 pad_right k n l = take n (l ++ repeat k)
+
+-- | Variant that errors if the input list has more than /n/ places.
+--
+-- > map (pad_right_err '!' 3) ["x","xy","xyz","xyz!"]
+pad_right_err :: t -> Int -> [t] -> [t]
+pad_right_err k n l = if length l > n then error "pad_right_err?" else pad_right k n l
+
+-- > pad_right_no_truncate '!' 3 "truncate" == "truncate"
+pad_right_no_truncate :: a -> Int -> [a] -> [a]
+pad_right_no_truncate k n l = if length l > n then l else pad_right k n l
 
 -- | Append /k/ to the left of /l/ until result has /n/ places.
 --

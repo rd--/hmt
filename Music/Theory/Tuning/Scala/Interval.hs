@@ -58,6 +58,7 @@ parse_intnam l =
 {- | 'parse_intnam' of 'Scala.load_dist_file_ln' of "intnam.par".
 
 > intnam <- load_intnam
+> fst intnam == 516 -- Scala 2.42p
 > fst intnam == length (snd intnam)
 > lookup (129140163/128000000) (snd intnam) == Just "gravity comma"
 -}

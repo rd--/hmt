@@ -332,6 +332,7 @@ scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
 > db <- scl_load_dir_fn "/home/rohan/data/scala/89/scl"
+> length db == 5050 -- v.89
 > map (\(fn,s) -> (takeFileName fn,scale_name s)) db
 
 -}
@@ -341,14 +342,13 @@ scl_load_dir_fn d = do
   scl <- mapM scl_load fn
   return (zip fn scl)
 
--- | Load all @.scl@ files at /dir/, associate with file-name.
+-- | 'snd' of 'scl_load_dir_fn'
 scl_load_dir :: FilePath -> IO [Scale]
 scl_load_dir = fmap (map snd) . scl_load_dir_fn
 
 -- | Load Scala data base at 'scl_get_dir'.
 --
 -- > db <- scl_load_db
--- > length db == 5057 {- scala/89/scl/ -}
 -- > mapM_ (putStrLn . unlines . scale_stat) (filter (not . perfect_octave) db)
 scl_load_db :: IO [Scale]
 scl_load_db = do
@@ -436,7 +436,7 @@ load_dist_file nm = do
 -- | 'fmap' 'lines' 'load_dist_file'
 --
 -- > s <- load_dist_file_ln "intnam.par"
--- > length s == 516
+-- > length s == 533 -- Scala 2.42p
 load_dist_file_ln :: FilePath -> IO [String]
 load_dist_file_ln = fmap lines . load_dist_file
 
