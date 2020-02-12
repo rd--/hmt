@@ -92,7 +92,8 @@ scl_ji_au =
     ,"partch-barstow"])
   ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
-   ,["novaro15"
+   ,["chin_7"
+    ,"novaro15"
     ,"stelhex1","stelhex2","stelhex5","stelhex6"
     ,"wilson1","wilson2","wilson3","wilson5","wilson7","wilson11"
     ,"wilson7_2","wilson7_3","wilson7_4"

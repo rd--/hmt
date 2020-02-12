@@ -475,7 +475,10 @@ meru_6_direct = T.a003520
 
 -- * <http://anaphoria.com/mos.pdf>
 
--- | P.13, tanabe
+{- | P.13, tanabe {SCALA=chin_7}
+
+> ew_scl_find_r ew_mos_13_tanabe_r
+-}
 ew_mos_13_tanabe_r :: [Rational]
 ew_mos_13_tanabe_r = [1,9/8,81/64,4/3,3/2,27/16,243/128]
 
