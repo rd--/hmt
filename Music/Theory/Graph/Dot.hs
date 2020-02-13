@@ -13,6 +13,7 @@ import qualified Data.Graph.Inductive.Graph as G {- fgl -}
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as List {- hmt -}
+import qualified Music.Theory.Show as Show {- hmt -}
 
 -- * UTIL
 
@@ -151,8 +152,9 @@ g_type_to_edge_symbol ty =
 -- | Vertex position function.
 type POS_FN v = (v -> (Int,Int))
 
-g_pos_attr :: (Show n, Num n) => n -> (n,n) -> DOT_ATTR
-g_pos_attr k (c,r) = ("pos",show (c * k) ++ "," ++ show (r * k))
+-- > g_pos_attr 100 (0.1,0.5) == ("pos","10,50")
+g_pos_attr :: (Show n, Real n) => n -> (n,n) -> DOT_ATTR
+g_pos_attr k (c,r) = let pp = Show.real_pp_trunc 2 in ("pos",pp (c * k) ++ "," ++ pp (r * k))
 
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
 g_lift_pos_fn f v = let (c,r) = f v in [g_pos_attr 100 (c,r)]
