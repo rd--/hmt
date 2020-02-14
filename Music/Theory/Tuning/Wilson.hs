@@ -182,12 +182,16 @@ m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
 r_to_scale :: String -> String -> [Rational] -> T.Scale
 r_to_scale nm dsc r =
   let r' = map T.fold_ratio_to_octave_err (tail r) ++ [2]
-  in if not (T.is_ascending r')
+  in if r !! 0 /= 1 || not (T.is_ascending r')
      then error "r_to_scale?"
      else (nm,dsc,length r,map Right r')
 
 ew_scl_find_r :: [Rational] -> IO [String]
-ew_scl_find_r r = fmap (map T.scale_name) (T.scl_find_ji (==) (map T.fold_ratio_to_octave_err r ++ [2]))
+ew_scl_find_r r =
+  let set_eq x y = sort x == sort y
+  in if head r /= 1
+     then error "ew_scl_find_r?"
+     else fmap (map T.scale_name) (T.scl_find_ji set_eq (map T.fold_ratio_to_octave_err r ++ [2]))
 
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 
@@ -196,13 +200,13 @@ ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 
 {- | P.3 7-limit {SCALA=NIL}
 
-> ew_scl_find_r el12_7
+> ew_scl_find_r (1 : ew_1357_3_r)
 -}
 ew_1357_3_r :: [Rational]
 ew_1357_3_r = r_normalise (concatMap m3_gen_unfold ew_1357_3_gen)
 
 ew_1357_3_scl :: T.Scale
-ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" ew_1357_3_r
+ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" (1 : ew_1357_3_r)
 
 -- * <http://anaphoria.com/earlylattices12.pdf>
 
@@ -510,10 +514,14 @@ ew_novarotreediamond_1_r = r_normalise (concat (snd ew_novarotreediamond_1))
 
 9-tone Pelog cycle (1988)
 
-> ew_scl_find_r ew_pf_2
+> ew_scl_find_r ew_pelogFlute_2
 -}
-ew_pf_2 :: Fractional n => [n]
-ew_pf_2 = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
+ew_Pelogflute_2_r :: Fractional n => [n]
+ew_Pelogflute_2_r = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
+
+ew_Pelogflute_2_scl :: T.Scale
+ew_Pelogflute_2_scl = r_to_scale "ew_Pelogflute_2" "EW, Pelogflute.pdf, P.2" ew_Pelogflute_2_r
+
 
 -- * <http://anaphoria.com/xen1.pdf>
 
@@ -676,6 +684,7 @@ ew_scl_db =
   ,ew_el12_12_scl
   ,ew_diamond_12_scl
   ,ew_hel_12_scl
+  ,ew_Pelogflute_2_scl
   ,ew_xen3b_3_scl
   ,ew_xen456_9_scl
   ,ew_poole_scl
