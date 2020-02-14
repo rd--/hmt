@@ -310,7 +310,7 @@ ew_diamond_12_scl = r_to_scale "ew_diamond_12" "EW, diamond.pdf, P.12" ew_diamon
 
 1,3,5,7,9,11,13,15 diamond
 
-> ew_scl_find_r ew_diamond_13_r
+> ew_scl_find_r ew_diamond_13_r -- novaro15
 -}
 ew_diamond_13_r :: [Rational]
 ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]

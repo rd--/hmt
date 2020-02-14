@@ -21,10 +21,16 @@ primes_list = P.primes
 prime_k :: Integral a => a -> Int
 prime_k i = T.findIndex_err (== i) P.primes
 
--- | Generate list of factors of /n/ from /x/.
---
--- > factor primes_list 315 == [3,3,5,7]
--- > P.primeFactors 315 == [3,3,5,7]
+{- | Generate list of factors of /n/ from /x/.
+
+> factor primes_list 315 == [3,3,5,7]
+> P.primeFactors 315 == [3,3,5,7]
+
+As a special case 1 gives the empty list.
+
+> factor primes_list 1 == []
+> P.primeFactors 1 == []
+-}
 factor :: Integral i => [i] -> i -> [i]
 factor x n =
     case x of
@@ -39,10 +45,11 @@ factor x n =
 
 -- | 'factor' of 'primes_list'.
 --
+-- > prime_factors 1 == []
 -- > map prime_factors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 -- > map P.primeFactors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 prime_factors :: Integral i => i -> [i]
-prime_factors = factor primes_list
+prime_factors n = factor primes_list n
 
 -- | Collect number of occurences of each element of a sorted list.
 --
@@ -60,6 +67,7 @@ multiplicities_pp =
 
 -- | 'multiplicities' of 'P.primeFactors'.
 --
+-- > prime_factors_m 1 == []
 -- > prime_factors_m 315 == [(3,2),(5,1),(7,1)]
 prime_factors_m :: Integral i => i -> [(i,Int)]
 prime_factors_m = multiplicities . P.primeFactors
@@ -89,6 +97,7 @@ ascending order with their positive or negative multiplicities,
 depending on whether the prime factor occurs in the numerator or the
 denominator (after cancelling out common factors).
 
+> rat_prime_factors_m (1,1) == []
 > rat_prime_factors_m (16,15) == [(2,4),(3,-1),(5,-1)]
 > rat_prime_factors_m (10,9) == [(2,1),(3,-2),(5,1)]
 > rat_prime_factors_m (81,64) == [(2,-6),(3,4)]
@@ -105,14 +114,17 @@ rational_prime_factors_m = rat_prime_factors_m . T.rational_nd
 -- | Variant of 'rational_prime_factors_m' giving results in a table
 -- up to the /n/th prime (one-indexed).
 --
+-- > rat_prime_factors_t 6 (1,1) == [0,0,0,0,0,0]
 -- > rat_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
 -- > rat_prime_factors_t (prime_k 13 + 1) (32,9) == [5,-2,0,0,0,0]
 rat_prime_factors_t :: (Integral i,Show i) => Int -> (i,i) -> [Int]
 rat_prime_factors_t n x =
   let r = rat_prime_factors_m x
-  in if maximum (map fst r) > (primes_list !! (n - 1))
-     then error (show ("rat_prime_factors_t:",n,x,r))
-     else map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
+  in if null r
+     then replicate n 0
+     else if maximum (map fst r) > (primes_list !! (n - 1))
+          then error (show ("rat_prime_factors_t:",n,x,r))
+          else map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
 
 -- | 'Ratio' variant of 'rat_prime_factors_t'
 --
