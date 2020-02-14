@@ -508,6 +508,9 @@ ew_novarotreediamond_1 =
 ew_novarotreediamond_1_r :: [Rational]
 ew_novarotreediamond_1_r = r_normalise (concat (snd ew_novarotreediamond_1))
 
+ew_novarotreediamond_1_scl :: T.Scale
+ew_novarotreediamond_1_scl = r_to_scale "ew_novarotreediamond_1" "EW, novavotreediamond.pdf, P.1" ew_novarotreediamond_1_r
+
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
 {- | P.2 {SCALA=NIL}
@@ -684,6 +687,7 @@ ew_scl_db =
   ,ew_el12_12_scl
   ,ew_diamond_12_scl
   ,ew_hel_12_scl
+  ,ew_novarotreediamond_1_scl
   ,ew_Pelogflute_2_scl
   ,ew_xen3b_3_scl
   ,ew_xen456_9_scl
