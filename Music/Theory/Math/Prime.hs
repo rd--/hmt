@@ -50,19 +50,23 @@ prime_factors = factor primes_list
 multiplicities :: Eq t => [t] -> [(t,Int)]
 multiplicities = T.generic_histogram_by (==) Nothing
 
+-- | Pretty printer for historgram (multiplicites).
+--
+-- > multiplicities_pp [(3,2),(5,1),(7,1)] == "3×2 5×1 7×1"
+multiplicities_pp :: Show t => [(t,Int)] -> String
+multiplicities_pp =
+  let f (x,y) = show x ++ "×" ++ show y
+  in unwords . map f
+
 -- | 'multiplicities' of 'P.primeFactors'.
 --
 -- > prime_factors_m 315 == [(3,2),(5,1),(7,1)]
 prime_factors_m :: Integral i => i -> [(i,Int)]
 prime_factors_m = multiplicities . P.primeFactors
 
--- | Pretty printing variant of 'prime_factors_m'.
---
--- > prime_factors_m_pp 315 == "3×2 5×1 7×1"
+-- | 'multiplicities_pp' of 'prime_factors_m'.
 prime_factors_m_pp :: (Show i,Integral i) => i -> String
-prime_factors_m_pp =
-  let f (x,y) = show x ++ "×" ++ show y
-  in unwords . map f . prime_factors_m
+prime_factors_m_pp = multiplicities_pp . prime_factors_m
 
 -- | Merge function for 'rat_prime_factors_m'
 rat_pf_merge :: Ord t => [(t,Int)] -> [(t,Int)] -> [(t,Int)]
@@ -103,13 +107,15 @@ rational_prime_factors_m = rat_prime_factors_m . T.rational_nd
 --
 -- > rat_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
 -- > rat_prime_factors_t (prime_k 13 + 1) (32,9) == [5,-2,0,0,0,0]
-rat_prime_factors_t :: Integral i => Int -> (i,i) -> [Int]
+rat_prime_factors_t :: (Integral i,Show i) => Int -> (i,i) -> [Int]
 rat_prime_factors_t n x =
-    let r = rat_prime_factors_m x
-    in map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
+  let r = rat_prime_factors_m x
+  in if maximum (map fst r) > (primes_list !! (n - 1))
+     then error (show ("rat_prime_factors_t:",n,x,r))
+     else map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
 
 -- | 'Ratio' variant of 'rat_prime_factors_t'
 --
--- rational_prime_factors_t 3 (256/243)
-rational_prime_factors_t :: Integral i => Int -> Ratio i -> [Int]
+-- > rational_prime_factors_t 3 (256/243) == [8,-5,0]
+rational_prime_factors_t :: (Integral i,Show i) => Int -> Ratio i -> [Int]
 rational_prime_factors_t n = rat_prime_factors_t n . T.rational_nd
