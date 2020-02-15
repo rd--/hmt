@@ -103,7 +103,7 @@ lmy_wtp_uniq = sortOn (T.ratio_nd_sum . fst) $ T.collate_on fst snd $ lmy_wtp_un
 
 -}
 lmy_wtp :: T.Tuning
-lmy_wtp = T.Tuning (Left lmy_wtp_r) 2
+lmy_wtp = T.Tuning (Left lmy_wtp_r) Nothing
 
 -- | Ratios for 'lmy_wtp_1964.
 lmy_wtp_1964_r :: [Rational]
@@ -123,7 +123,7 @@ lmy_wtp_1964_r =
 
 -}
 lmy_wtp_1964 :: T.Tuning
-lmy_wtp_1964 = T.Tuning (Left lmy_wtp_1964_r) 2
+lmy_wtp_1964 = T.Tuning (Left lmy_wtp_1964_r) Nothing
 
 {- | Euler diagram for 'lmy_wtp'.
 

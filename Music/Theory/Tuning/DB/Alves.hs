@@ -27,4 +27,4 @@ harrison_ditone_r =
 -- > tn_divisions harrison_ditone == 12
 -- > tn_cents_i harrison_ditone == [0,114,204,294,408,498,612,702,816,906,996,1110]
 harrison_ditone :: Tuning
-harrison_ditone = Tuning (Left harrison_ditone_r) 2
+harrison_ditone = Tuning (Left harrison_ditone_r) Nothing

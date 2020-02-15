@@ -19,7 +19,7 @@ mk_isomorphic_layout n_row n_col top_left =
 -- | A minimal isomorphic note layout.
 --
 -- > let [i,j,k] = mk_isomorphic_layout 3 5 (3,-4)
--- > in [i,take 4 j,(2,-4):take 4 k] == minimal_isomorphic_note_layout
+-- > [i,take 4 j,(2,-4):take 4 k] == minimal_isomorphic_note_layout
 minimal_isomorphic_note_layout :: [[(Int,Int)]]
 minimal_isomorphic_note_layout =
     [[(3,-4),(2,-2),(1,0),(0,2),(-1,4)]
@@ -41,21 +41,21 @@ mk_syntonic_tuning b =
       t = map (rank_two_regular_temperament 1200 b) l
   in nub (sort (map (\x -> fromIntegral (x `mod` 1200)) (concat t)))
 
--- | 'mk_syntonic_tuning' of @697@.
---
--- > divisions syntonic_697 == 17
---
--- > let c = [0,79,194,273,309,388,467,503,582,697,776,812,891,970,1006,1085,1164]
--- > in cents_i syntonic_697 == c
+{- | 'mk_syntonic_tuning' of @697@.
+
+> tn_divisions syntonic_697 == 17
+
+> let c = [0,79,194,273,309,388,467,503,582,697,776,812,891,970,1006,1085,1164]
+> tn_cents_i syntonic_697 == c
+-}
 syntonic_697 :: Tuning
-syntonic_697 = Tuning (Right (mk_syntonic_tuning 697)) 2
+syntonic_697 = Tuning (Right (mk_syntonic_tuning 697)) Nothing
 
 -- | 'mk_syntonic_tuning' of @702@.
 --
--- > divisions syntonic_702 == 17
+-- > tn_divisions syntonic_702 == 17
 --
 -- > let c = [0,24,114,204,294,318,408,498,522,612,702,792,816,906,996,1020,1110]
--- > in cents_i syntonic_702 == c
+-- > tn_cents_i syntonic_702 == c
 syntonic_702 :: Tuning
-syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) 2
-
+syntonic_702 = Tuning (Right (mk_syntonic_tuning 702)) Nothing

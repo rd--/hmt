@@ -19,4 +19,4 @@ riley_albion_r = [1/1,16/15,9/8,6/5,5/4,4/3,64/45,3/2,8/5,5/3,16/9,15/8]
 -- > scl <- scl_load "riley_albion"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i riley_albion
 riley_albion :: Tuning
-riley_albion = Tuning (Left riley_albion_r) 2
+riley_albion = Tuning (Left riley_albion_r) Nothing

@@ -86,6 +86,7 @@ pitch_type_predominant p =
 -- | A scale has a name, a description, a degree, and a sequence of pitches.
 --   The /name/ is the the file-name without the /.scl/ suffix.
 --   By convention the first comment line gives the file name (with suffix).
+--   The pitches do NOT include 1:1 or 0c and do include the octave.
 type Scale = (String,String,Int,[Pitch])
 
 -- | The name of a scale.
@@ -168,7 +169,7 @@ scale_ratios epsilon s = 1 : map (pitch_ratio epsilon) (scale_pitches s)
 -- | Require that 'Scale' be uniformly of 'Ratio's.
 scale_ratios_u :: Scale -> Maybe [Rational]
 scale_ratios_u scl =
-  let err = error "scale_ratios_u"
+  let err = error "scale_ratios_u?"
       p = scale_pitches scl
   in case uniform_pitch_type p of
        Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.from_right) p)
@@ -180,24 +181,23 @@ scale_ratios_req = fromMaybe (error "scale_ratios_req") . scale_ratios_u
 
 -- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
 -- rational, 'T.Tuning' is rational, else 'T.Tuning' is in 'T.Cents'.
--- 'Epsilon' is used to recover the 'Rational' octave if required.
-scale_to_tuning :: Epsilon -> Scale -> T.Tuning
-scale_to_tuning epsilon (_,_,_,p) =
+scale_to_tuning :: Scale -> T.Tuning
+scale_to_tuning (_,_,_,p) =
     case partitionEithers p of
       ([],r) -> let (r',o) = T.separate_last r
-                in T.Tuning (Left (1 : r')) o
+                in T.Tuning (Left (1 : r')) (if o == 2 then Nothing else Just (Left o))
       _ -> let (c,o) = T.separate_last p
                c' = 0 : map pitch_cents c
-               o' = either (T.reconstructed_ratio epsilon) id o
+               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (T.either_swap o)
            in T.Tuning (Right c') o'
 
 -- | Convert 'T.Tuning' to 'Scale'.
 --
--- > tuning_to_scale ("et12","12 tone equal temperament") (T.equal_temperament 12)
+-- > tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
 tuning_to_scale :: (String,String) -> T.Tuning -> Scale
-tuning_to_scale (nm,dsc) (T.Tuning p o) =
+tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
     let n = either length length p
-        p' = either (map Right . tail) (map Left . tail) p ++ [Right o]
+        p' = either (map Right . tail) (map Left . tail) p ++ [T.either_swap (T.tn_octave_def tn)]
     in (nm,dsc,n,p')
 
 {- | Are scales equal ('==') at degree and tuning data.
@@ -206,6 +206,8 @@ tuning_to_scale (nm,dsc) (T.Tuning p o) =
 > let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
 > let Just py = find (scale_eq ("","",length r,map Right r)) db
 > scale_name py == "pyth_12"
+
+'scale_eqv' provides an approximate equality function.
 
 > let c = map T.ratio_to_cents r
 > let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
@@ -325,9 +327,9 @@ scl_load nm = do
 
 -- | 'scale_to_tuning' of 'scl_load'.
 --
--- > scl_load_tuning 0.01 "pyra"
-scl_load_tuning :: Epsilon -> String -> IO T.Tuning
-scl_load_tuning epsilon = fmap (scale_to_tuning epsilon) . scl_load
+-- > scl_load_tuning "pyra"
+scl_load_tuning :: String -> IO T.Tuning
+scl_load_tuning = fmap scale_to_tuning . scl_load
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 

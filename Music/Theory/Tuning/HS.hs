@@ -13,8 +13,8 @@ import Music.Theory.Tuning.Type {- hmt -}
 -- | Harmonic series to /n/th partial, with indicated octave.
 --
 -- > harmonic_series 17 2
-harmonic_series :: Integer -> Rational -> Tuning
-harmonic_series n o = Tuning (Left [1 .. n%1]) o
+harmonic_series :: Integer -> Maybe Rational -> Tuning
+harmonic_series n o = Tuning (Left [1 .. n%1]) (fmap Left o)
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
@@ -69,13 +69,13 @@ harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n%1])
 harmonic_series_folded_c :: Integer -> [Cents]
 harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded_r
 
-harmonic_series_folded :: Integer -> Rational -> Tuning
-harmonic_series_folded n o = Tuning (Left (harmonic_series_folded_r n)) o
+harmonic_series_folded :: Integer -> Tuning
+harmonic_series_folded n = Tuning (Left (harmonic_series_folded_r n)) Nothing
 
 -- | @12@-tone tuning of first @21@ elements of the harmonic series.
 --
 -- > tn_cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
 -- > tn_divisions harmonic_series_folded_21 == 11
 harmonic_series_folded_21 :: Tuning
-harmonic_series_folded_21 = harmonic_series_folded 21 2
+harmonic_series_folded_21 = harmonic_series_folded 21
 

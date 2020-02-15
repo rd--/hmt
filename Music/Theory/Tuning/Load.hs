@@ -24,7 +24,7 @@ load_cps_tbl nm = do
 
 -- | Load scala scl file as 'T.Tuning'.
 load_tuning_scl :: String -> IO T.Tuning
-load_tuning_scl = fmap (T.scale_to_tuning 0.01) . T.scl_load
+load_tuning_scl = fmap T.scale_to_tuning . T.scl_load
 
 -- | cps = (tuning-name,frequency-zero,midi-note-number-of-f0)
 --   d12 = (tuning-name,cents-deviation,midi-note-offset)

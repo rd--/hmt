@@ -22,7 +22,7 @@ pythagorean_12_r =
 -- > scl <- scl_load "pyth_12"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i pythagorean_12
 pythagorean_12 :: Tuning
-pythagorean_12 = Tuning (Left pythagorean_12_r) 2
+pythagorean_12 = Tuning (Left pythagorean_12_r) Nothing
 
 -- | Ratios for 'five_limit_tuning'.
 --
@@ -45,7 +45,7 @@ five_limit_tuning_r =
 -- > scl <- scl_load "malcolm"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i five_limit_tuning
 five_limit_tuning :: Tuning
-five_limit_tuning = Tuning (Left five_limit_tuning_r) 2
+five_limit_tuning = Tuning (Left five_limit_tuning_r) Nothing
 
 -- | Ratios for 'septimal_tritone_just_intonation'.
 --
@@ -70,7 +70,7 @@ septimal_tritone_just_intonation_r =
 -- > scl <- scl_load "ji_12"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i septimal_tritone_just_intonation
 septimal_tritone_just_intonation :: Tuning
-septimal_tritone_just_intonation = Tuning (Left septimal_tritone_just_intonation_r) 2
+septimal_tritone_just_intonation = Tuning (Left septimal_tritone_just_intonation_r) Nothing
 
 -- | Ratios for 'seven_limit_just_intonation'.
 --
@@ -90,7 +90,7 @@ seven_limit_just_intonation_r =
 --
 -- > cents_i seven_limit_just_intonation == [0,112,204,316,386,498,583,702,814,884,969,1088]
 seven_limit_just_intonation :: Tuning
-seven_limit_just_intonation = Tuning (Left seven_limit_just_intonation_r) 2
+seven_limit_just_intonation = Tuning (Left seven_limit_just_intonation_r) Nothing
 
 -- | Approximate ratios for 'kirnberger_iii'.
 --
@@ -113,7 +113,7 @@ kirnberger_iii_ar =
 -- > scl <- scl_load "kirnberger"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i kirnberger_iii
 kirnberger_iii :: Tuning
-kirnberger_iii = Tuning (Right (map approximate_ratio_to_cents kirnberger_iii_ar)) 2
+kirnberger_iii = Tuning (Right (map approximate_ratio_to_cents kirnberger_iii_ar)) Nothing
 
 -- > let c = [0,94,196,298,392,502,592,698,796,894,1000,1090]
 -- > in map round vallotti_c == c
@@ -135,7 +135,7 @@ vallotti_c =
 -- > scl <- scl_load "vallotti"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i vallotti
 vallotti :: Tuning
-vallotti = Tuning (Right vallotti_c) 2
+vallotti = Tuning (Right vallotti_c) Nothing
 
 -- > let c = [0,128,139,359,454,563,637,746,841,911,1072,1183]
 -- > in map (round . ratio_to_cents) mayumi_tsuda == c
@@ -157,7 +157,7 @@ mayumi_tsuda_r =
 -- > scl <- scl_load "tsuda13"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i mayumi_tsuda
 mayumi_tsuda :: Tuning
-mayumi_tsuda = Tuning (Left mayumi_tsuda_r) 2
+mayumi_tsuda = Tuning (Left mayumi_tsuda_r) Nothing
 
 -- | Ratios for 'lou_harrison_16'.
 --
@@ -186,7 +186,7 @@ lou_harrison_16_r =
 -- > scl <- scl_load "harrison_16"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i lou_harrison_16
 lou_harrison_16 :: Tuning
-lou_harrison_16 = Tuning (Left lou_harrison_16_r) 2
+lou_harrison_16 = Tuning (Left lou_harrison_16_r) Nothing
 
 -- | Ratios for 'partch_43'.
 partch_43_r :: [Rational]
@@ -211,7 +211,7 @@ partch_43_r =
 -- > scl <- scl_load "partch_43"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i partch_43
 partch_43 :: Tuning
-partch_43 = Tuning (Left partch_43_r) 2
+partch_43 = Tuning (Left partch_43_r) Nothing
 
 -- | Ratios for 'ben_johnston_25'.
 ben_johnston_25_r :: [Rational]
@@ -228,4 +228,4 @@ ben_johnston_25_r =
 -- > scl <- scl_load "johnston_25"
 -- > cents_i (scale_tuning 0.1 scl) == cents_i ben_johnston_25
 ben_johnston_25 :: Tuning
-ben_johnston_25 = Tuning (Left ben_johnston_25_r) 2
+ben_johnston_25 = Tuning (Left ben_johnston_25_r) Nothing

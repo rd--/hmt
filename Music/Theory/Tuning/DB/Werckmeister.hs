@@ -33,7 +33,7 @@ werckmeister_iii_ar_c = map approximate_ratio_to_cents werckmeister_iii_ar
 -- > scl <- scl_load "werck3"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_iii
 werckmeister_iii :: Tuning
-werckmeister_iii = Tuning (Right werckmeister_iii_ar_c) 2
+werckmeister_iii = Tuning (Right werckmeister_iii_ar_c) Nothing
 
 -- | Approximate ratios for 'werckmeister_iv'.
 --
@@ -62,7 +62,7 @@ werckmeister_iv_c = map approximate_ratio_to_cents werckmeister_iv_ar
 -- > scl <- scl_load "werck4"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_iv
 werckmeister_iv :: Tuning
-werckmeister_iv = Tuning (Right werckmeister_iv_c) 2
+werckmeister_iv = Tuning (Right werckmeister_iv_c) Nothing
 
 -- | Approximate ratios for 'werckmeister_v'.
 --
@@ -92,7 +92,7 @@ werckmeister_v_c = map approximate_ratio_to_cents werckmeister_v_ar
 -- > scl <- scl_load "werck5"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_v
 werckmeister_v :: Tuning
-werckmeister_v = Tuning (Right werckmeister_v_c) 2
+werckmeister_v = Tuning (Right werckmeister_v_c) Nothing
 
 -- | Ratios for 'werckmeister_vi', with supposed correction of 28/25 to 49/44.
 --
@@ -115,4 +115,4 @@ werckmeister_vi_r =
 -- > scl <- scl_load "werck6"
 -- > cents_i (scale_tuning 0.01 scl) == cents_i werckmeister_vi
 werckmeister_vi :: Tuning
-werckmeister_vi = Tuning (Left werckmeister_vi_r) 2
+werckmeister_vi = Tuning (Left werckmeister_vi_r) Nothing

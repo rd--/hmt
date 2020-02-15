@@ -44,4 +44,4 @@ psaltery_o_r = nub (sort (map T.fold_ratio_to_octave_err psaltery_r))
 
 -}
 psaltery_o :: T.Tuning
-psaltery_o = T.Tuning (Left psaltery_o_r) 2
+psaltery_o = T.Tuning (Left psaltery_o_r) Nothing

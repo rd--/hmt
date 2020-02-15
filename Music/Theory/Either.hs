@@ -22,3 +22,7 @@ from_right e =
 
 from_right_err :: Either e t -> t
 from_right_err = fromMaybe (error "from_right_err") . from_right
+
+-- | Flip from right to left, ie. 'either' 'Right' 'Left'
+either_swap :: Either a b -> Either b a
+either_swap = either Right Left

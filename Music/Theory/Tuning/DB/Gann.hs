@@ -25,13 +25,13 @@ pietro_aaron_1523_c =
 -- | Pietro Aaron (1523) meantone temperament, see
 -- <http://www.kylegann.com/histune.html>
 --
--- > cents_i pietro_aaron_1523 == [0,76,193,310,386,503,580,697,773,890,1007,1083]
+-- > tn_cents_i pietro_aaron_1523 == [0,76,193,310,386,503,580,697,773,890,1007,1083]
 --
 -- > import Music.Theory.Tuning.Scala
 -- > scl <- scl_load "meanquar"
 -- > tn_cents_i (scale_to_tuning 0.01 scl) == [0,76,193,310,386,503,579,697,773,890,1007,1083]
 pietro_aaron_1523 :: Tuning
-pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) 2
+pietro_aaron_1523 = Tuning (Right pietro_aaron_1523_c) Nothing
 
 -- | Cents for 'thomas_young_1799'.
 --
@@ -49,12 +49,12 @@ thomas_young_1799_c =
 
 -- | Thomas Young (1799), Well Temperament, <http://www.kylegann.com/histune.html>.
 --
--- > cents_i thomas_young_1799 == [0,94,196,298,392,500,592,698,796,894,1000,1092]
+-- > tn_cents_i thomas_young_1799 == [0,94,196,298,392,500,592,698,796,894,1000,1092]
 --
 -- > scl <- scl_load "young2"
 -- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i thomas_young_1799
 thomas_young_1799 :: Tuning
-thomas_young_1799 = Tuning (Right thomas_young_1799_c) 2
+thomas_young_1799 = Tuning (Right thomas_young_1799_c) Nothing
 
 -- | Ratios for 'zarlino'.
 --
@@ -64,13 +64,13 @@ zarlino_1588_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3
 
 -- | Gioseffo Zarlino, 1588, see <http://www.kylegann.com/tuning.html>.
 --
--- > divisions zarlino_1588 == 16
+-- > tn_divisions zarlino_1588 == 16
 -- > tn_cents_i zarlino_1588 == [0,71,182,204,294,316,386,498,569,590,702,773,884,996,1018,1088]
 --
 -- > scl <- scl_load "zarlino2"
 -- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i zarlino_1588
 zarlino_1588 :: Tuning
-zarlino_1588 = Tuning (Left zarlino_1588_r) 2
+zarlino_1588 = Tuning (Left zarlino_1588_r) Nothing
 
 -- * 20th Century
 
@@ -93,7 +93,7 @@ ben_johnston_mtp_1977_r =
 --
 -- > tn_cents_i ben_johnston_mtp_1977 == [0,105,204,298,386,471,551,702,841,906,969,1088]
 ben_johnston_mtp_1977 :: Tuning
-ben_johnston_mtp_1977 = Tuning (Left ben_johnston_mtp_1977_r) 2
+ben_johnston_mtp_1977 = Tuning (Left ben_johnston_mtp_1977_r) Nothing
 
 -- * Gann
 
@@ -108,7 +108,7 @@ gann_arcana_xvi_r =
 -- > let r = [0,84,112,204,267,316,347,386,471,498,520,583,663,702,734,814,845,884,898,969,1018,1049,1088,1161]
 -- > tn_cents_i gann_arcana_xvi == r
 gann_arcana_xvi :: Tuning
-gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) 2
+gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) Nothing
 
 -- | Ratios for 'gann_superparticular'.
 gann_superparticular_r :: [Rational]
@@ -119,7 +119,7 @@ gann_superparticular_r =
 
 -- | Kyle Gann, _Superparticular_, see <http://www.kylegann.com/Super.html>.
 --
--- > divisions gann_superparticular == 22
+-- > tn_divisions gann_superparticular == 22
 --
 -- > let r = [0,165,182,204,231,267,316,386,435,498,551,583,617,702,782,765,814,884,933,969,996,1018]
 -- > tn_cents_i gann_superparticular == r
@@ -127,4 +127,4 @@ gann_superparticular_r =
 -- > scl <- scl_load "gann_super"
 -- > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i gann_superparticular
 gann_superparticular :: Tuning
-gann_superparticular = Tuning (Left gann_superparticular_r) 2
+gann_superparticular = Tuning (Left gann_superparticular_r) Nothing

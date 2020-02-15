@@ -32,4 +32,4 @@ ps5_jpr :: Tuning
 ps5_jpr =
     let f (m,n) = map (* m) n
         r = concat (map f (zip [1,2,4,8] ps5_jpr_r))
-    in Tuning (Left r) 16
+    in Tuning (Left r) (Just (Left 4))

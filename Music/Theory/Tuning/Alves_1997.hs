@@ -20,7 +20,7 @@ alves_slendro_r = [1,8/7,4/3,14/9,16/9]
 > tn_cents_i (scale_to_tuning 0.01 scl) == tn_cents_i alves_slendro
 -}
 alves_slendro :: Tuning
-alves_slendro = Tuning (Left alves_slendro_r) 2
+alves_slendro = Tuning (Left alves_slendro_r) Nothing
 
 -- > let c = [0,231,316,702,814]
 -- > map (round . ratio_to_cents) alves_pelog_bem_r == c
@@ -35,7 +35,7 @@ alves_pelog_bem_r = [1,8/7,6/5,3/2,8/5]
 > tn_cents_i (scale_to_tuning 0.01 scl) == [0,231,316,471,702,814,969]
 -}
 alves_pelog_bem :: Tuning
-alves_pelog_bem = Tuning (Left alves_pelog_bem_r) 2
+alves_pelog_bem = Tuning (Left alves_pelog_bem_r) Nothing
 
 -- > let c = [0,386,471,857,969]
 -- > map (round . ratio_to_cents) alves_pelog_barang_r == c
@@ -46,7 +46,7 @@ alves_pelog_barang_r = [1,5/4,21/16,105/64,7/4]
 --
 -- > tn_cents_i alves_pelog_barang == [0,386,471,857,969]
 alves_pelog_barang :: Tuning
-alves_pelog_barang = Tuning (Left alves_pelog_barang_r) 2
+alves_pelog_barang = Tuning (Left alves_pelog_barang_r) Nothing
 
 -- > let c = [0,386,471,702,969]
 -- > map (round . ratio_to_cents) alves_pelog_23467_r == c
@@ -57,4 +57,4 @@ alves_pelog_23467_r = [1,5/4,21/16,3/2,7/4]
 --
 -- > tn_cents_i alves_pelog_23467 == [0,386,471,702,969]
 alves_pelog_23467 :: Tuning
-alves_pelog_23467 = Tuning (Left alves_pelog_23467_r) 2
+alves_pelog_23467 = Tuning (Left alves_pelog_23467_r) Nothing
