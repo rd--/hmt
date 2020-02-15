@@ -610,6 +610,18 @@ ew_xen3b_apx_r =
 
 -- * <http://anaphoria.com/xen456.pdf>
 
+ew_xen456_7_gen :: [M3_GEN]
+ew_xen456_7_gen = [(25/24,4),(5/3,4),(4/3,4),(16/15,4),(32/25,3)]
+
+{- P.7 {SCALA=wilson1}
+
+19-tone "A Scale for Scott" (1976)
+
+> L.ew_find_scl_name ew_xen456_7_r -- wilson1
+-}
+ew_xen456_7_r :: [Rational]
+ew_xen456_7_r = m3_gen_to_r ew_xen456_7_gen
+
 ew_xen456_9_gen :: [M3_GEN]
 ew_xen456_9_gen =
   [(1/(3^.3),4)
