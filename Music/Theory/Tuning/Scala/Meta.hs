@@ -93,9 +93,11 @@ scl_ji_au =
   ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
    ,["chin_7"
+    ,"ckring9"
+    ,"diamond7-13"
     ,"hexany_union"
     ,"novaro15"
-    ,"stelhex1","stelhex2","stelhex5","stelhex6"
+    ,"stelhex1","stelhex2","stelhex5","stelhex6" -- stelhex3 stelhex4
     ,"wilson1","wilson2","wilson3","wilson5","wilson7","wilson11"
     ,"wilson7_2","wilson7_3","wilson7_4"
     ,"wilson_17","wilson_31","wilson_41"
