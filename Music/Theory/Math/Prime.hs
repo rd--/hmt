@@ -76,6 +76,14 @@ prime_factors_m = multiplicities . P.primeFactors
 prime_factors_m_pp :: (Show i,Integral i) => i -> String
 prime_factors_m_pp = multiplicities_pp . prime_factors_m
 
+-- | Prime factors of /n/ and /d/.
+rat_prime_factors :: Integral i => (i,i) -> ([i],[i])
+rat_prime_factors = T.bimap1 P.primeFactors
+
+-- | 'Ratio' variant of 'rat_prime_factors'
+rational_prime_factors :: Integral i => Ratio i -> ([i],[i])
+rational_prime_factors = rat_prime_factors . T.rational_nd
+
 -- | Merge function for 'rat_prime_factors_m'
 rat_pf_merge :: Ord t => [(t,Int)] -> [(t,Int)] -> [(t,Int)]
 rat_pf_merge p q =
