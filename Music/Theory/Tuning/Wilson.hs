@@ -475,6 +475,10 @@ meru_6 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 4
 meru_6_direct :: Num n => [n]
 meru_6_direct = T.a003520
 
+-- > take 26 meru_7_direct == [0,1,0,1,0,1,1,1,2,1,3,2,4,4,5,7,7,11,11,16,18,23,29,34,45,52]
+meru_7_direct :: Num n => [n]
+meru_7_direct = T.a001687
+
 -- * <http://anaphoria.com/mos.pdf>
 
 {- | P.13, tanabe {SCALA=chin_7}

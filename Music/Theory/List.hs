@@ -740,6 +740,20 @@ take_while_right p = reverse . takeWhile p . reverse
 maybe_take :: Maybe Int -> [a] -> [a]
 maybe_take n l = maybe l (flip take l) n
 
+{- | Take until /f/ is true.  This is not the same as 'not' at
+     'takeWhile' because it keeps the last element. It is an error
+     if the predicate never succeeds.
+
+> take_until (== 'd') "tender" == "tend"
+> takeWhile (not . (== 'd')) "tend" == "ten"
+> take_until (== 'd') "seven" == undefined
+-}
+take_until :: (a -> Bool) -> [a] -> [a]
+take_until f l =
+  case l of
+    [] -> error "take_until?"
+    e:l' -> if f e then [e] else e : take_until f l'
+
 -- | Apply /f/ at first element, and /g/ at all other elements.
 --
 -- > at_head negate id [1..5] == [-1,2,3,4,5]
