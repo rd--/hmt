@@ -1,6 +1,7 @@
 -- | Scala DB meta-data.
 module Music.Theory.Tuning.Scala.Meta where
 
+-- | Just-intonation (ie. all rational) scales, collected by author.
 scl_ji_au :: [(String,[String])]
 scl_ji_au =
   [("Alves, Bill",words "alves_12 alves_22 alves_pelog alves alves_slendro")
@@ -110,6 +111,7 @@ scl_ji_au =
     ,"wilson_duo"
     ,"wilson_enh","wilson_enh2"
     ,"wilson_facet"
+    -- ,"wilson_gh1","wilson_gh2","wilson_gh11","wilson_gh50" -- NON-JI
     ,"wilson_hebdome1"
     ,"wilson_hexflank"
     ,"wilson_hypenh"

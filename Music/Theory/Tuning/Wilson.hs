@@ -299,7 +299,7 @@ ew_diamond_12_gen =
   ,(1/5,3),(1/7,3),(1/11,3)
   ,(5/7,1),(5/11,1),(7/5,1),(7/11,1),(11/5,1),(11/7,1)]
 
-{- | P.7 & 12 11-limit {SCALA=partch_29}
+{- | P.7 & P.12 11-limit {SCALA=partch_29}
 
 1,3,5,7,9,11 diamond
 
@@ -308,7 +308,7 @@ ew_diamond_12_gen =
 ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
-{- | P.10 & 13 13-limit {SCALA=novaro15}
+{- | P.10 & P.13 13-limit {SCALA=novaro15}
 
 1,3,5,7,9,11,13,15 diamond
 
