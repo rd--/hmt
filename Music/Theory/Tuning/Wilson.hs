@@ -299,18 +299,16 @@ ew_diamond_12_gen =
   ,(1/5,3),(1/7,3),(1/11,3)
   ,(5/7,1),(5/11,1),(7/5,1),(7/11,1),(11/5,1),(11/7,1)]
 
-{- | P.12 11-limit {SCALA=NIL}
+{- | P.7 & 12 11-limit {SCALA=partch_29}
 
 1,3,5,7,9,11 diamond
 
+> ew_scl_find_r ew_diamond_12_r -- partch_29
 -}
 ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
-ew_diamond_12_scl :: T.Scale
-ew_diamond_12_scl = r_to_scale "ew_diamond_12" "EW, diamond.pdf, P.12" ew_diamond_12_r
-
-{- | P.13 13-limit {SCALA=novaro15}
+{- | P.10 & 13 13-limit {SCALA=novaro15}
 
 1,3,5,7,9,11,13,15 diamond
 
@@ -697,7 +695,6 @@ ew_scl_db =
   [ew_1357_3_scl
   ,ew_el12_7_scl
   ,ew_el12_12_scl
-  ,ew_diamond_12_scl
   ,ew_hel_12_scl
   ,ew_novarotreediamond_1_scl
   ,ew_Pelogflute_2_scl
