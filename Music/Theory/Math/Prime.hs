@@ -90,6 +90,17 @@ rat_prime_factors = T.bimap1 P.primeFactors
 rational_prime_factors :: Integral i => Ratio i -> ([i],[i])
 rational_prime_factors = rat_prime_factors . T.rational_nd
 
+-- | Variant that writes factors of numerator as positive and factors for denominator as negative.
+--
+-- > rat_prime_factors_sgn (3 * 5 * 7 * 11,1) == [3,5,7,11]
+-- > rat_prime_factors_sgn (3 * 5,7 * 11) == [3,5,-7,-11]
+rat_prime_factors_sgn :: Integral i => (i,i) -> [i]
+rat_prime_factors_sgn r = let (n,d) = rat_prime_factors r in n ++ map negate d
+
+-- | Rational variant.
+rational_prime_factors_sgn :: Integral i => Ratio i -> [i]
+rational_prime_factors_sgn = rat_prime_factors_sgn . T.rational_nd
+
 -- | The largest prime factor of n/d.
 rat_prime_limit :: Integral i => (i,i) -> i
 rat_prime_limit = uncurry max . T.bimap1 prime_limit
