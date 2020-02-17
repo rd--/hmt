@@ -17,9 +17,10 @@ primes_list = P.primes
 
 -- | Give zero-index of prime.
 --
--- map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == [0 .. 11]
+-- > map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == [0 .. 11]
+-- > prime_k 1 == undefined
 prime_k :: Integral a => a -> Int
-prime_k i = T.findIndex_err (== i) P.primes
+prime_k i = if i < 2 then error "prime_k?" else T.findIndex_err (== i) P.primes
 
 {- | Generate list of factors of /n/ from /x/.
 
@@ -45,7 +46,7 @@ factor x n =
 
 -- | 'factor' of 'primes_list'.
 --
--- > prime_factors 1 == []
+-- > map prime_factors [-1,0,1] == [[],[],[]]
 -- > map prime_factors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 -- > map P.primeFactors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 prime_factors :: Integral i => i -> [i]
@@ -54,8 +55,9 @@ prime_factors n = factor primes_list n
 -- | 'maximum' of 'prime_factors'
 --
 -- > map prime_limit [243,125] == [3,5]
+-- > map prime_limit [0,1] == [1,1]
 prime_limit :: Integral i => i -> i
-prime_limit = maximum . prime_factors
+prime_limit x = if x < 2 then 1 else maximum (prime_factors x)
 
 -- | Collect number of occurences of each element of a sorted list.
 --
