@@ -2,7 +2,6 @@
 module Music.Theory.Tuning where
 
 import qualified Data.Fixed as Fixed {- base -}
-import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.Function as T {- hmt -}
@@ -92,23 +91,22 @@ fold_ratio_to_octave_nonrec n =
             else error "fold_ratio_to_octave_nonrec"
 
 -- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
---   Diverges if /n/ is negative.
-fold_ratio_to_octave_unsafe :: Integral i => Ratio i -> Ratio i
-fold_ratio_to_octave_unsafe =
-    let rec_f n = if n >= 2 then rec_f (n / 2) else if n < 1 then rec_f (n * 2) else n
-    in rec_f
+--   It is an error if /n/ is less than or equal to zero.
+--
+-- > map fold_ratio_to_octave_err [2/2,2/3,3/4,4/5,4/7] == [1/1,4/3,3/2,8/5,8/7]
+fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave_err =
+  let f n =
+        if n <= 0
+        then error "fold_ratio_to_octave_err?"
+        else if n >= 2 then f (n / 2) else if n < 1 then f (n * 2) else n
+  in f
 
--- | Fold ratio until within an octave, ie. @1@ '<' /n/ '<=' @2@.
+-- | In /n/ is greater than zeor, 'fold_ratio_to_octave_err', else 'Nothing'.
 --
 -- > map fold_ratio_to_octave [0,1] == [Nothing,Just 1]
 fold_ratio_to_octave :: Integral i => Ratio i -> Maybe (Ratio i)
-fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave_unsafe n)
-
--- | Error if input is less than or equal to zero.
---
--- > map fold_ratio_to_octave_err [2/3,3/4,4/5,4/7] == [4/3,3/2,8/5,8/7]
-fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
-fold_ratio_to_octave_err = fromMaybe (error "fold_ratio_to_octave") . fold_ratio_to_octave
+fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave_err n)
 
 -- | The interval between two pitches /p/ and /q/ given as ratio
 -- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
