@@ -51,13 +51,19 @@ factor x n =
 prime_factors :: Integral i => i -> [i]
 prime_factors n = factor primes_list n
 
+-- | 'maximum' of 'prime_factors'
+--
+-- > map prime_limit [243,125] == [3,5]
+prime_limit :: Integral i => i -> i
+prime_limit = maximum . prime_factors
+
 -- | Collect number of occurences of each element of a sorted list.
 --
 -- > multiplicities [1,1,1,2,2,3] == [(1,3),(2,2),(3,1)]
 multiplicities :: Eq t => [t] -> [(t,Int)]
 multiplicities = T.generic_histogram_by (==) Nothing
 
--- | Pretty printer for historgram (multiplicites).
+-- | Pretty printer for histogram (multiplicites).
 --
 -- > multiplicities_pp [(3,2),(5,1),(7,1)] == "3×2 5×1 7×1"
 multiplicities_pp :: Show t => [(t,Int)] -> String
@@ -83,6 +89,16 @@ rat_prime_factors = T.bimap1 P.primeFactors
 -- | 'Ratio' variant of 'rat_prime_factors'
 rational_prime_factors :: Integral i => Ratio i -> ([i],[i])
 rational_prime_factors = rat_prime_factors . T.rational_nd
+
+-- | The largest prime factor of n/d.
+rat_prime_limit :: Integral i => (i,i) -> i
+rat_prime_limit = uncurry max . T.bimap1 prime_limit
+
+-- | The largest prime factor of /n/.
+--
+-- > rational_prime_limit (243/125) == 5
+rational_prime_limit :: Integral i => Ratio i -> i
+rational_prime_limit = rat_prime_limit . T.rational_nd
 
 -- | Merge function for 'rat_prime_factors_m'
 rat_pf_merge :: Ord t => [(t,Int)] -> [(t,Int)] -> [(t,Int)]

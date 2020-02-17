@@ -102,7 +102,7 @@ fold_ratio_to_octave_err =
         else if n >= 2 then f (n / 2) else if n < 1 then f (n * 2) else n
   in f
 
--- | In /n/ is greater than zeor, 'fold_ratio_to_octave_err', else 'Nothing'.
+-- | In /n/ is greater than zero, 'fold_ratio_to_octave_err', else 'Nothing'.
 --
 -- > map fold_ratio_to_octave [0,1] == [Nothing,Just 1]
 fold_ratio_to_octave :: Integral i => Ratio i -> Maybe (Ratio i)
