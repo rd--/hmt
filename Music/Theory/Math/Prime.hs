@@ -135,23 +135,33 @@ rat_prime_factors_m (n,d) = rat_pf_merge (prime_factors_m n) (prime_factors_m d)
 rational_prime_factors_m :: Integral i => Ratio i -> [(i,Int)]
 rational_prime_factors_m = rat_prime_factors_m . T.rational_nd
 
--- | Variant of 'rational_prime_factors_m' giving results in a table
--- up to the /n/th prime (one-indexed).
+-- | Variant of 'rational_prime_factors_m' giving results in a list.
 --
--- > rat_prime_factors_t 6 (1,1) == [0,0,0,0,0,0]
+-- > rat_prime_factors_l (1,1) == []
+-- > rat_prime_factors_l (2^5,9) == [5,-2]
+-- > rat_prime_factors_l (2*2*3,7) == [2,1,0,-1]
+-- > rat_prime_factors_l (3*3,11*13) == [0,2,0,0,-1,-1]
+rat_prime_factors_l :: Integral i => (i,i) -> [Int]
+rat_prime_factors_l x =
+  case rat_prime_factors_m x of
+    [] -> []
+    r -> let lm = maximum (map fst r)
+         in map (\i -> fromMaybe 0 (lookup i r)) (T.take_until (== lm) P.primes)
+
+-- | 'Ratio' variant of 'rat_prime_factors_l'
+--
+-- > rational_prime_factors_l (256/243) == [8,-5]
+rational_prime_factors_l :: Integral i => Ratio i -> [Int]
+rational_prime_factors_l = rat_prime_factors_l . T.rational_nd
+
+-- | Variant of 'rational_prime_factors_l' padding table to /k/ places.
+--   It is an error for /k/ to indicate a prime less than the limit of /x/.
+--
 -- > rat_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
--- > rat_prime_factors_t (prime_k 13 + 1) (32,9) == [5,-2,0,0,0,0]
+-- > rat_prime_factors_t 3 (9,7) == undefined
 rat_prime_factors_t :: (Integral i,Show i) => Int -> (i,i) -> [Int]
-rat_prime_factors_t n x =
-  let r = rat_prime_factors_m x
-  in if null r
-     then replicate n 0
-     else if maximum (map fst r) > (primes_list !! (n - 1))
-          then error (show ("rat_prime_factors_t:",n,x,r))
-          else map (\i -> fromMaybe 0 (lookup i r)) (take n P.primes)
+rat_prime_factors_t k = T.pad_right_err 0 k . rat_prime_factors_l
 
 -- | 'Ratio' variant of 'rat_prime_factors_t'
---
--- > rational_prime_factors_t 3 (256/243) == [8,-5,0]
 rational_prime_factors_t :: (Integral i,Show i) => Int -> Ratio i -> [Int]
 rational_prime_factors_t n = rat_prime_factors_t n . T.rational_nd
