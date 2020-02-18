@@ -238,6 +238,7 @@ farey n =
 
 -- | The length of the /n/-th order Farey sequence.
 --
+-- > map farey_length [1 .. 12] == [2,3,5,7,11,13,19,23,29,33,43,47]
 -- > map (length . farey) [1 .. 12] == map farey_length [1 .. 12]
 farey_length :: Integral i => i -> i
 farey_length n = if n == 0 then 1 else farey_length (n - 1) + totient n
@@ -257,6 +258,8 @@ stern_brocot_tree_f =
 > t !! 1 == [(0,1),(1,1),(1,0)]
 > t !! 2 == [(0,1),(1,2),(1,1),(2,1),(1,0)]
 > t !! 3 == [(0,1),(1,3),(1,2),(2,3),(1,1),(3,2),(2,1),(3,1),(1,0)]
+
+> map length (take 12 stern_brocot_tree) == [2,3,5,9,17,33,65,129,257,513,1025,2049] -- A000051
 -}
 stern_brocot_tree :: Num n => [[(n,n)]]
 stern_brocot_tree = stern_brocot_tree_f [(0,1),(1,0)]

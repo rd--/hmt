@@ -68,6 +68,15 @@ Lucas numbers (beginning with 1): L(n) = L(n-1) + L(n-2) with L(1) = 1, L(2) = 3
 a000204 :: Num n => [n]
 a000204 = 1 : 3 : zipWith (+) a000204 (tail a000204)
 
+{- | <http://oeis.org/A000225>
+
+a(n) = 2^n - 1 (Sometimes called Mersenne numbers, although that name is usually reserved for A001348)
+
+> [0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535] `isPrefixOf` a000225
+-}
+a000225 :: Num n => [n]
+a000225 = iterate ((+ 1) . (* 2)) 0
+
 {- | <http://oeis.org/A000290>
 
 The squares of the non-negative integers.
