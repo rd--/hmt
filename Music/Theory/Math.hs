@@ -89,8 +89,7 @@ sawtooth_wave n = n - floor_f n
 -- | Predicate that is true if @n/d@ can be simplified, ie. where
 -- 'gcd' of @n@ and @d@ is not @1@.
 --
--- > let r = [False,True,False]
--- > map rational_simplifies [(2,3),(4,6),(5,7)] == r
+-- > map rational_simplifies [(2,3),(4,6),(5,7)] == [False,True,False]
 rational_simplifies :: Integral a => (a,a) -> Bool
 rational_simplifies (n,d) = gcd n d /= 1
 
@@ -218,9 +217,17 @@ square n = n * n
 totient :: Integral i => i -> i
 totient n = genericLength (filter (==1) (map (gcd n) [1..n]))
 
--- | The /n/-th order Farey sequence.
---
--- > map (length . farey) [1 .. 12] == map farey_length [1 .. 12]
+{- | The /n/-th order Farey sequence.
+
+> farey 1 == [0,                                                                                    1]
+> farey 2 == [0,                                        1/2,                                        1]
+> farey 3 == [0,                        1/3,            1/2,            2/3,                        1]
+> farey 4 == [0,                1/4,    1/3,            1/2,            2/3,    3/4,                1]
+> farey 5 == [0,            1/5,1/4,    1/3,    2/5,    1/2,    3/5,    2/3,    3/4,4/5,            1]
+> farey 6 == [0,        1/6,1/5,1/4,    1/3,    2/5,    1/2,    3/5,    2/3,    3/4,4/5,5/6,        1]
+> farey 7 == [0,    1/7,1/6,1/5,1/4,2/7,1/3,    2/5,3/7,1/2,4/7,3/5,    2/3,5/7,3/4,4/5,5/6,6/7,    1]
+> farey 8 == [0,1/8,1/7,1/6,1/5,1/4,2/7,1/3,3/8,2/5,3/7,1/2,4/7,3/5,5/8,2/3,5/7,3/4,4/5,5/6,6/7,7/8,1]
+-}
 farey :: Integral i => i -> [Ratio i]
 farey n =
   let step (a,b,c,d) =
@@ -230,5 +237,41 @@ farey n =
   in 0 : unfoldr step (0,1,1,n)
 
 -- | The length of the /n/-th order Farey sequence.
+--
+-- > map (length . farey) [1 .. 12] == map farey_length [1 .. 12]
 farey_length :: Integral i => i -> i
 farey_length n = if n == 0 then 1 else farey_length (n - 1) + totient n
+
+-- | Function to generate the Stern-Brocot tree from an initial row.
+--   '%' normalises so 1/0 cannot be written as a 'Rational', hence (n,d).
+stern_brocot_tree_f :: Num n => [(n,n)] -> [[(n,n)]]
+stern_brocot_tree_f =
+   let med_f (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
+       f x = concat (transpose [x, zipWith med_f x (tail x)])
+   in iterate f
+
+{- | The Stern-Brocot tree from (0/1,1/0).
+
+> let t = stern_brocot_tree
+> t !! 0 == [(0,1),(1,0)]
+> t !! 1 == [(0,1),(1,1),(1,0)]
+> t !! 2 == [(0,1),(1,2),(1,1),(2,1),(1,0)]
+> t !! 3 == [(0,1),(1,3),(1,2),(2,3),(1,1),(3,2),(2,1),(3,1),(1,0)]
+-}
+stern_brocot_tree :: Num n => [[(n,n)]]
+stern_brocot_tree = stern_brocot_tree_f [(0,1),(1,0)]
+
+-- | Left-hand (rational) side of the the Stern-Brocot tree, ie, from (0/1,1/1).
+stern_brocot_tree_lhs :: Num n => [[(n,n)]]
+stern_brocot_tree_lhs = stern_brocot_tree_f [(0,1),(1,1)]
+
+{- | 'stern_brocot_tree_f' as 'Ratio's, for finite subsets.
+
+> let t = stern_brocot_tree_f_r [0,1]
+> t !! 1 == [0,1/2,1]
+> t !! 2 == [0,1/3,1/2,2/3,1]
+> t !! 3 == [0,1/4,1/3,2/5,1/2,3/5,2/3,3/4,1]
+> t !! 4 == [0,1/5,1/4,2/7,1/3,3/8,2/5,3/7,1/2,4/7,3/5,5/8,2/3,5/7,3/4,4/5,1]
+-}
+stern_brocot_tree_f_r :: Integral n => [Ratio n] -> [[Ratio n]]
+stern_brocot_tree_f_r = map (map (uncurry (%))) . stern_brocot_tree_f . map rational_nd

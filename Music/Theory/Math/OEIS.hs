@@ -26,6 +26,24 @@ Fibonacci numbers
 a000045 :: Num n => [n]
 a000045 = 0 : 1 : zipWith (+) a000045 (tail a000045)
 
+{- | <http://oeis.org/A000051>
+
+a(n) = 2^n + 1
+
+> [2,3,5,9,17,33,65,129,257,513,1025,2049,4097,8193,16385,32769,65537,131073] `isPrefixOf` a000051
+-}
+a000051 :: Num n => [n]
+a000051 = iterate ((subtract 1) . (* 2)) 2
+
+{- | <http://oeis.org/A000079>
+
+Powers of 2: a(n) = 2^n
+
+> [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536] `isPrefixOf` a000079
+-}
+a000079 :: Num n => [n]
+a000079 = iterate (* 2) 1
+
 {- | https://oeis.org/A000201
 
 Lower Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi), where phi = (1+sqrt(5))/2 = A001622
@@ -246,11 +264,34 @@ a030308 =
          _ -> error "A030308?"
    in iterate f [0]
 
+{- | <http://oeis.org/A049455>
+
+Triangle read by rows, numerator of fractions of a variant of the Farey series.
+
+> [0,1,0,1,1,0,1,1,2,1,0,1,1,2,1,3,2,3,1,0,1,1,2,1,3,2,3,1,4,3,5,2,5,3,4,1,0] `isPrefixOf` a049455
+> plot_p1_imp [take 200 (a049455 :: [Int])]
+> plot_p1_pt [take 10000 (a049455 :: [Int])]
+-}
+a049455 :: Integral n => [n]
+a049455 = map fst (concat Math.stern_brocot_tree_lhs)
+
+{- | <http://oeis.org/A049456>
+
+Triangle read by rows, denominator of fractions of a variant of the Farey series.
+
+[1,1,1,2,1,1,3,2,3,1,1,4,3,5,2,5,3,4,1,1,5,4,7,3,8,5,7,2,7,5,8,3,7,4,5,1,1,6,5,9] `isPrefixOf` a049456
+> plot_p1_imp [take 200 (a049456 :: [Int])]
+> plot_p1_pt [take 10000 (a049456 :: [Int])]
+-}
+a049456 :: Integral n => [n]
+a049456 = map snd (concat Math.stern_brocot_tree_lhs)
+
 {- | <http://oeis.org/A073334>
 
 The "rhythmic infinity system" of Danish composer Per Nørgård
 
 > take 24 a073334 == [3,5,8,5,8,13,8,5,8,13,21,13,8,13,8,5,8,13,21,13,21,34,21,13]
+> plot_p1_imp [take 200 (a073334 :: [Int])]
 -}
 a073334 :: Num n => [n]
 a073334 =
@@ -312,6 +353,7 @@ a126976 =
 Another variant of Per Nørgård's "infinity sequence"
 
 > take 24 a255723 == [0,-2,-1,2,-2,-4,1,0,-1,-3,0,1,2,0,-3,4,-2,-4,1,0,-4,-6,3,-2]
+> plot_p1_imp [take 400 (a255723 :: [Int])]
 -}
 a255723 :: Num n => [n]
 a255723 = 0 : concat (transpose [map (subtract 2) a255723

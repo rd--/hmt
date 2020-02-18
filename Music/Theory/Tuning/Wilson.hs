@@ -134,6 +134,7 @@ sbt_root = (NIL,(0,1),(1,1),(1,0))
 sbt_half :: SBT_NODE
 sbt_half = (NIL,(0,1),(1,2),(1,1))
 
+-- > sbt_from sbt_root
 sbt_from :: SBT_NODE -> [[SBT_NODE]]
 sbt_from = iterate (concatMap sbt_step) . return
 
