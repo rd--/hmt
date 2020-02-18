@@ -99,6 +99,8 @@ scl_ji_au =
     ,"hexany_union"
     ,"novaro15"
     ,"partch_29"
+    ,"ptolemy_diat2","ptolemy_idiat"
+    ,"slendro5_2"
     ,"stelhex1","stelhex2","stelhex5","stelhex6" -- stelhex3 stelhex4
     ,"wilson1","wilson2","wilson3","wilson5","wilson7","wilson11"
     ,"wilson7_2","wilson7_3","wilson7_4"

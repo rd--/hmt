@@ -152,7 +152,8 @@ g_type_to_edge_symbol ty =
 -- | Vertex position function.
 type POS_FN v = (v -> (Int,Int))
 
--- > g_pos_attr 100 (0.1,0.5) == ("pos","10,50")
+-- > g_pos_attr (100::Double) (0.1,0.5) == ("pos","10,50")
+-- > g_pos_attr (100::Rational) (0.3,0.35) == ("pos","30,35")
 g_pos_attr :: (Show n, Real n) => n -> (n,n) -> DOT_ATTR
 g_pos_attr k (c,r) = let pp = Show.real_pp_trunc 2 in ("pos",pp (c * k) ++ "," ++ pp (r * k))
 

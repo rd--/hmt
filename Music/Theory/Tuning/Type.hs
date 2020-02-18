@@ -5,7 +5,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.Either as T {- hmt -}
-
+import qualified Music.Theory.Math.Prime as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 
 -- * Tuning
@@ -52,6 +52,10 @@ tn_divisions = either length length . tn_ratios_or_cents
 -- | 'Maybe' exact ratios of 'Tuning', NOT including the octave.
 tn_ratios :: Tuning -> Maybe [Rational]
 tn_ratios = T.from_left . tn_ratios_or_cents
+
+-- | Limit of JI tuning.
+tn_limit :: Tuning -> Maybe Integer
+tn_limit = fmap (maximum . map T.rational_prime_limit) . tn_ratios
 
 -- | 'error'ing variant.
 tn_ratios_err :: Tuning -> [Rational]

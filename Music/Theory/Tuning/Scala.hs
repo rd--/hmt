@@ -179,27 +179,6 @@ scale_ratios_u scl =
 scale_ratios_req :: Scale -> [Rational]
 scale_ratios_req = fromMaybe (error "scale_ratios_req") . scale_ratios_u
 
--- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
--- rational, 'T.Tuning' is rational, else 'T.Tuning' is in 'T.Cents'.
-scale_to_tuning :: Scale -> T.Tuning
-scale_to_tuning (_,_,_,p) =
-    case partitionEithers p of
-      ([],r) -> let (r',o) = T.separate_last r
-                in T.Tuning (Left (1 : r')) (if o == 2 then Nothing else Just (Left o))
-      _ -> let (c,o) = T.separate_last p
-               c' = 0 : map pitch_cents c
-               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (T.either_swap o)
-           in T.Tuning (Right c') o'
-
--- | Convert 'T.Tuning' to 'Scale'.
---
--- > tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
-tuning_to_scale :: (String,String) -> T.Tuning -> Scale
-tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
-    let n = either length length p
-        p' = either (map Right . tail) (map Left . tail) p ++ [T.either_swap (T.tn_octave_def tn)]
-    in (nm,dsc,n,p')
-
 {- | Are scales equal ('==') at degree and tuning data.
 
 > db <- scl_load_db
@@ -324,12 +303,6 @@ scl_load nm = do
   fn <- scl_resolve_name nm
   s <- T.read_file_iso_8859_1 fn
   return (parse_scl (takeBaseName nm) s)
-
--- | 'scale_to_tuning' of 'scl_load'.
---
--- > scl_load_tuning "pyra"
-scl_load_tuning :: String -> IO T.Tuning
-scl_load_tuning = fmap scale_to_tuning . scl_load
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
@@ -502,3 +475,32 @@ scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> IO [Scale]
 scl_find_ji cmp x = do
   db <- scl_load_db
   return (filter (scale_cmp_ji cmp x) db)
+
+-- * Tuning
+
+-- | Translate 'Scale' to 'T.Tuning'.  If 'Scale' is uniformly
+-- rational, 'T.Tuning' is rational, else it is in 'T.Cents'.
+scale_to_tuning :: Scale -> T.Tuning
+scale_to_tuning (_,_,_,p) =
+    case partitionEithers p of
+      ([],r) -> let (r',o) = T.separate_last r
+                in T.Tuning (Left (1 : r')) (if o == 2 then Nothing else Just (Left o))
+      _ -> let (c,o) = T.separate_last p
+               c' = 0 : map pitch_cents c
+               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (T.either_swap o)
+           in T.Tuning (Right c') o'
+
+-- | Convert 'T.Tuning' to 'Scale'.
+--
+-- > tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
+tuning_to_scale :: (String,String) -> T.Tuning -> Scale
+tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
+    let n = either length length p
+        p' = either (map Right . tail) (map Left . tail) p ++ [T.either_swap (T.tn_octave_def tn)]
+    in (nm,dsc,n,p')
+
+-- | 'scale_to_tuning' of 'scl_load'.
+--
+-- > fmap T.tn_limit (scl_load_tuning "pyra") -- Just 59
+scl_load_tuning :: String -> IO T.Tuning
+scl_load_tuning = fmap scale_to_tuning . scl_load
