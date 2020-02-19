@@ -1,17 +1,173 @@
 -- | Erv Wilson, archives <http://anaphoria.com/wilson.html>
 module Music.Theory.Tuning.Wilson where
 
+import Control.Monad {- base -}
 import Data.List {- base -}
+import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
 import Text.Printf {- base -}
 
+import qualified Music.Theory.Graph.Dot as T {- hmt -}
+import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Math.OEIS as T {- hmt -}
+import qualified Music.Theory.Math.Prime as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
+
+-- * GEOM
+
+-- | (x,y) co-ordinate
+type Pt n = (n,n)
+
+pt_add :: Num n => Pt n -> Pt n -> Pt n
+pt_add (p,q) (i,j) = (p + i,q + j)
+
+pt_sum :: Num n => [Pt n] -> Pt n
+pt_sum = foldl pt_add (0,0)
+
+pt_scale :: Num n => n -> Pt n -> Pt n
+pt_scale m (x,y) = (m * x,m * y)
+
+-- > map (flip pt_scale_i (20,0)) [0,1,-1] == [(0,0),(20,0),(-20,-0)]
+pt_scale_i :: Num n => Int -> Pt n -> Pt n
+pt_scale_i m = pt_scale (fromIntegral m)
+
+-- | Normalise set of points to lie in (-1,-1) - (1,1)
+--
+-- > pt_set_normalise kg_lc_std
+pt_set_normalise :: (Fractional n,Ord n) => [Pt n] -> [Pt n]
+pt_set_normalise x = let z = maximum (map (uncurry max) x) in map (T.t2_map (* (recip z))) x
+
+-- * LATTICE CO-ORD
+
+-- | /k/-unit co-ordinates for /k/-lattice.
+type LC n = [Pt n]
+
+-- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
+--
+-- <http://anaphoria.com/wilsontreasure.html>
+ew_lc_std :: Num n => LC n
+ew_lc_std = [(20,0),(0,20),(4,3),(-3,4),(-1,2)]
+
+-- | Kraig Grady standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
+--
+-- <http://anaphoria.com/wilsontreasure.html>
+kg_lc_std :: Num n => LC n
+kg_lc_std = [(40,0),(0,40),(13,11),(-14,18),(-8,4)]
+
+-- | Erv Wilson tetradic lattice, used especially when working with hexanies or 7 limit tunings
+--
+-- <http://anaphoria.com/wilsontreasure.html>
+ew_lc_tetradic :: Num n => LC n
+ew_lc_tetradic = [(-4,-2),(6,1),(5,-2)]
+
+-- | Resolve POS against LC to Pt
+lc_pos_to_pt :: (Fractional n, Ord n) => LC n -> POS -> Pt n
+lc_pos_to_pt lc x = pt_sum (zipWith pt_scale_i x (pt_set_normalise lc))
+
+-- * LAT
+
+-- | A discrete /k/-lattice is described by a sequence of /k/-factors.
+--   LAT values are ordinarily though not necessarily primes.
+type LAT = [Integer]
+
+-- | Positions in a /k/-lattice are given as a /k/-list of steps.
+type POS = [Int]
+
+-- | White-space pretty printer for POS.
+--
+-- > pos_pp_ws [0,-2,1] == "  0 -2  1"
+pos_pp_ws :: POS -> String
+pos_pp_ws = let f x = printf "%3d" x in concatMap f
+
+-- | Given LAT [X,Y,Z..] and POS [x,y,z..], calculate the indicated ratio.
+--
+-- > lat_res [3,5] [-5,2] == (5 * 5) / (3 * 3 * 3 * 3 * 3)
+lat_res :: LAT -> POS -> Rational
+lat_res p q =
+  let f i j = case compare j 0 of
+                GT -> (i ^ T.int_to_integer j) % 1
+                EQ -> 1
+                LT -> 1 % (i ^ abs (T.int_to_integer j))
+  in product (zipWith f p q)
+
+-- * RAT (n,d)
+
+-- | Ratio given as (/n/,/d/)
+type RAT = (Integer,Integer)
+
+-- | Remove all octaves from /n/ and /d/.
+rat_rem_oct :: RAT -> RAT
+rat_rem_oct = T.bimap1 (product . filter (/= 2)) . T.rat_prime_factors
+
+-- | Lift 'RAT' function to 'Rational'.
+rat_lift_1 :: (RAT -> RAT) -> Rational -> Rational
+rat_lift_1 f = uncurry (%) . f . T.rational_nd
+
+rat_to_ratio :: RAT -> Rational
+rat_to_ratio (n,d) = n % d
+
+-- | Mediant, ie. n1+n2/d1+d2
+--
+-- > rat_mediant (0,1) (1,2) == (1,3)
+rat_mediant :: RAT -> RAT -> RAT
+rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
+
+rat_pp :: RAT -> String
+rat_pp (n,d) = concat [show n,"/",show d]
+
+-- * Rational
+
+-- | Lifted 'rat_rem_oct'.
+--
+-- > map ew_r_rem_oct [256/243,7/5,1/7] == [1/243,7/5,1/7]
+r_rem_oct :: Rational -> Rational
+r_rem_oct = rat_lift_1 rat_rem_oct
+
+-- | Assert that /n/ is in [1,2).
+r_verify_oct :: Rational -> Rational
+r_verify_oct i = if i >= 1 && i < 2 then i else error (show ("r_verify_oct?",i))
+
+-- | Find limit of set of ratios, ie. largest factor in either numerator or denominator.
+--
+-- > r_seq_limit [1] == 1
+r_seq_limit :: [Rational] -> Integer
+r_seq_limit = maximum . map T.rational_prime_limit
+
+-- * Graph
+
+-- | (maybe-lc,gr-attr,vertex-pp)
+type EW_GR_OPT = (Maybe (LC Rational),[T.DOT_META_ATTR],Rational -> String)
+
+ew_gr_opt_pos :: EW_GR_OPT -> Bool
+ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
+
+ew_gr_r_pos :: LC Rational -> Rational -> T.DOT_ATTR
+ew_gr_r_pos lc = T.g_pos_attr 160 . lc_pos_to_pt lc . Safe.tailDef [] . T.rational_prime_factors_l
+
+ew_gr_udot :: EW_GR_OPT -> T.LBL Rational () -> [String]
+ew_gr_udot (lc_m,attr,v_pp) =
+  let (e,p_f) = case lc_m of
+                  Nothing -> ("sfdp",const Nothing)
+                  Just lc -> ("neato",Just . ew_gr_r_pos lc)
+  in T.lbl_to_udot
+     ([("graph:layout",e),("node:shape","plain")] ++ attr) -- ("graph:K","0.6") ("edge:len","1.0")
+     (\v -> T.mcons (p_f v) [("label",v_pp v)]
+     ,\_ -> [])
+
+ew_gr_udot_wr :: EW_GR_OPT -> FilePath -> T.LBL Rational () -> IO ()
+ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
+
+ew_gr_udot_wr_svg :: EW_GR_OPT -> FilePath -> T.LBL Rational () -> IO ()
+ew_gr_udot_wr_svg opt fn gr = do
+  ew_gr_udot_wr opt fn gr
+  void (T.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn)
 
 -- * ZIG-ZAG
 
@@ -109,17 +265,6 @@ mos_log_kseq :: Double -> [Int]
 mos_log_kseq = map fst . mos_log
 
 -- * STERN-BROCOT TREE
-
-type RAT = (Int,Int)
-
-rat_to_ratio :: RAT -> Ratio Int
-rat_to_ratio (n,d) = n % d
-
-rat_mediant :: RAT -> RAT -> RAT
-rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
-
-rat_pp :: RAT -> String
-rat_pp (n,d) = concat [show n,"/",show d]
 
 data SBT_DIV = NIL | LHS | RHS deriving (Show)
 type SBT_NODE = (SBT_DIV,RAT,RAT,RAT)
