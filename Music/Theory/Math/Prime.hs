@@ -17,10 +17,13 @@ primes_list = P.primes
 
 -- | Give zero-index of prime.
 --
--- > map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == [0 .. 11]
--- > prime_k 1 == undefined
-prime_k :: Integral a => a -> Int
-prime_k i = if i < 2 then error "prime_k?" else T.findIndex_err (== i) P.primes
+-- > map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == map Just [0 .. 11]
+-- > map prime_k [1,4,6,8,9,10,12,14,15,16,18,20,21,22] == replicate 14 Nothing
+prime_k :: Integral a => a -> Maybe Int
+prime_k i = if P.isPrime i then Just (T.findIndex_err (== i) P.primes) else Nothing
+
+prime_k_err :: Integral a => a -> Int
+prime_k_err = fromMaybe (error "prime_k: not prime?") . prime_k
 
 {- | Generate list of factors of /n/ from /x/.
 

@@ -39,6 +39,8 @@ harmonicity_m :: (Eq b,Integral a,Fractional b) => (a -> b) -> (a,a) -> Maybe b
 harmonicity_m pv = T.recip_m . disharmonicity pv
 
 -- | Variant of 'harmonicity' with 'Ratio' input.
+--
+-- > harmonicity_r barlow 1 == 1/0
 harmonicity_r :: (Integral a,Fractional b) => (a -> b) -> Ratio a -> b
 harmonicity_r pv = harmonicity pv . T.rational_nd
 

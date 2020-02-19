@@ -8,14 +8,17 @@ import Data.Ratio {- base -}
 import Safe {- safe -}
 import Text.Printf {- base -}
 
+import qualified Music.Theory.Array.Text as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
+import qualified Music.Theory.Interval.Barlow_1987 as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Math.OEIS as T {- hmt -}
 import qualified Music.Theory.Math.Prime as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
+import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
@@ -139,6 +142,29 @@ r_verify_oct i = if i >= 1 && i < 2 then i else error (show ("r_verify_oct?",i))
 -- > r_seq_limit [1] == 1
 r_seq_limit :: [Rational] -> Integer
 r_seq_limit = maximum . map T.rational_prime_limit
+
+-- * Table
+
+-- > map (rat_fact_lm 11) [3,5,7,11] == [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+rat_fact_lm :: Integer -> Rational -> POS
+rat_fact_lm lm = tail . T.rat_prime_factors_t (fromMaybe 1 (T.prime_k lm) + 1) . T.rational_nd
+
+tbl_txt :: Integer -> [Rational] -> [[String]]
+tbl_txt lm_z rs =
+  let lm = r_seq_limit rs
+      scl = map (rat_fact_lm lm) rs
+      cs = map (T.ratio_to_cents . T.fold_ratio_to_octave_err) rs
+      hs = map (T.harmonicity_r T.barlow) rs :: [Double]
+      f (k,x,r,c,h) = [show k
+                      ,if lm <= lm_z then pos_pp_ws x else "..."
+                      ,T.ratio_pp r
+                      ,T.real_pp 2 c
+                      ,T.real_pp_unicode 2 h]
+  in map (intersperse "=" . f) (zip5 [0::Int ..] scl rs cs hs)
+
+-- > tbl_wr [1,7/6,5/4,4/3,3/2]
+tbl_wr :: [Rational] -> IO ()
+tbl_wr = putStr . unlines . T.table_pp (False,True,False," ",False) . tbl_txt 31
 
 -- * Graph
 
