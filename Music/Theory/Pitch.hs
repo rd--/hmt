@@ -96,7 +96,7 @@ midi_to_int = fromIntegral
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
--- > map octpc_to_midi [(0,0),(2,6),(4,9),(9,0)] == [12,42,69,120]
+-- > map octpc_to_midi [(0,0),(2,6),(4,9),(6,2),(9,0)] == [12,42,69,86,120]
 -- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
 octpc_to_midi :: OctPC -> Midi
 octpc_to_midi = fromIntegral . octave_pitchclass_to_midi

@@ -22,6 +22,7 @@ primes_list = P.primes
 prime_k :: Integral a => a -> Maybe Int
 prime_k i = if P.isPrime i then Just (T.findIndex_err (== i) P.primes) else Nothing
 
+-- > prime_k_err 13 == 5
 prime_k_err :: Integral a => a -> Int
 prime_k_err = fromMaybe (error "prime_k: not prime?") . prime_k
 
