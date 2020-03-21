@@ -331,6 +331,23 @@ sbt_dot n =
   let e = map sbt_node_to_edge n
   in concat [["graph {","node [shape=plain]"],e,["}"]]
 
+-- * M-GEN
+
+(^.) :: Rational -> Int -> Rational
+(^.) = (^)
+
+r_normalise :: [Rational] -> [Rational]
+r_normalise = nub . sortOn T.fold_ratio_to_octave_err
+
+-- | (ratio,multiplier,steps)
+type M_GEN = (Rational,Rational,Int)
+
+m_gen_unfold :: M_GEN -> [Rational]
+m_gen_unfold (r,m,n) = take n (iterate (* m) r)
+
+m_gen_to_r :: [M_GEN] -> [Rational]
+m_gen_to_r = r_normalise . concatMap m_gen_unfold
+
 -- * M3-GEN
 
 -- | (ratio,M3-steps)
@@ -338,13 +355,7 @@ type M3_GEN = (Rational,Int)
 
 -- > map m3_gen_unfold [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 m3_gen_unfold :: M3_GEN -> [Rational]
-m3_gen_unfold (r,n) = take n (iterate (* 3) r)
-
-(^.) :: Rational -> Int -> Rational
-(^.) = (^)
-
-r_normalise :: [Rational] -> [Rational]
-r_normalise = nub . sortOn T.fold_ratio_to_octave_err
+m3_gen_unfold (r,n) = m_gen_unfold (r,3,n)
 
 m3_gen_to_r :: [M3_GEN] -> [Rational]
 m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
