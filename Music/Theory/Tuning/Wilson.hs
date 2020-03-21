@@ -353,9 +353,12 @@ m_gen_to_r = r_normalise . concatMap m_gen_unfold
 -- | (ratio,M3-steps)
 type M3_GEN = (Rational,Int)
 
+m3_to_m :: M3_GEN -> M_GEN
+m3_to_m (r,n) = (r,3,n)
+
 -- > map m3_gen_unfold [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 m3_gen_unfold :: M3_GEN -> [Rational]
-m3_gen_unfold (r,n) = m_gen_unfold (r,3,n)
+m3_gen_unfold = m_gen_unfold . m3_to_m
 
 m3_gen_to_r :: [M3_GEN] -> [Rational]
 m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
