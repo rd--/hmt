@@ -5,7 +5,7 @@ import qualified Music.Theory.Permutations as T
 
 -- | Number of /k/ element combinations of a set of /n/ elements.
 --
--- > (nk_combinations 6 3,nk_combinations 13 3) == (20,286)
+-- > map (uncurry nk_combinations) [(4,2),(5,3),(6,3),(13,3)] == [6,10,20,286]
 nk_combinations :: Integral a => a -> a -> a
 nk_combinations n k = T.nk_permutations n k `div` T.factorial k
 

@@ -174,8 +174,11 @@ edg_to_adj_mtx_undir ((nv,_ne),e) =
 
 -- * Labels
 
--- | Labelled graph.
-type LBL v e = ([(V,v)],[(E,e)])
+-- | Labelled graph, distinct vertex and edge labels.
+type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
+
+-- | Labelled graph, V/E typed.
+type LBL v e = LBL_GR V v e
 
 v_label :: v -> LBL v e -> V -> v
 v_label def (tbl,_) v = fromMaybe def (lookup v tbl)
@@ -189,15 +192,18 @@ e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
 e_label_err :: LBL v e -> E -> e
 e_label_err = e_label (error "e_label")
 
--- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),('a','b'))])
-gr_to_lbl :: Eq t => GR t -> LBL t (t,t)
-gr_to_lbl (v,e) =
+lbl_gr_to_lbl :: Eq v => LBL_GR v v_lbl e_lbl -> LBL v_lbl e_lbl
+lbl_gr_to_lbl (v,e) =
   let n = length v
       v' = [0 .. n - 1]
-      tbl = zip v' v
+      tbl = zip v' (map fst v)
       get k = T.reverse_lookup_err k tbl
-      e' = map (\(p,q) -> ((get p,get q),(p,q))) e
-  in (zip v' v,e')
+      e' = map (\((p,q),r) -> ((get p,get q),r)) e
+  in (zip v' (map snd v),e')
+
+-- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),('a','b'))])
+gr_to_lbl :: Eq t => GR t -> LBL t (t,t)
+gr_to_lbl (v,e) = lbl_gr_to_lbl (zip v v,zip e e)
 
 lbl_delete_edge_labels :: LBL v e -> LBL v ()
 lbl_delete_edge_labels (v,e) = (v,map (\(x,_) -> (x,())) e)
