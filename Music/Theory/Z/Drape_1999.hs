@@ -6,9 +6,9 @@ import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import Music.Theory.List
-import Music.Theory.Set.List
-import Music.Theory.Tuple
+import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Set.List as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 import Music.Theory.Z
 import Music.Theory.Z.Forte_1973
 import Music.Theory.Z.SRO
@@ -35,7 +35,7 @@ cgg l =
 --
 -- > sort (cg [0,1,3]) == [[],[0],[0,1],[0,1,3],[0,3],[1],[1,3],[3]]
 cg :: [a] -> [[a]]
-cg = powerset
+cg = T.powerset
 
 -- | Powerset filtered by cardinality.
 --
@@ -66,7 +66,7 @@ cg_r n = cf [n] . cg
 -}
 chn_t0 :: Integral i => Z i -> Int -> [i] -> [[i]]
 chn_t0 z n p =
-    let f q = take_right n p == take n q
+    let f q = T.take_right n p == take n q
     in filter f (z_sro_rtmi_related z p)
 
 {- | Cyclic interval segment.
@@ -78,7 +78,7 @@ chn_t0 z n p =
 
 -}
 ciseg :: Integral i => Z i -> [i] -> [i]
-ciseg z = d_dx_by (z_sub z) . cyc
+ciseg z = T.d_dx_by (z_sub z) . cyc
 
 -- | Synonynm for 'z_complement'.
 --
@@ -114,7 +114,7 @@ d_nm x =
 -- | Diatonic implications.
 dim :: Integral i => [i] -> [(i,[i])]
 dim p =
-    let g (i,q) = is_subset p (z_tto_tn z12 i q)
+    let g (i,q) = T.is_subset p (z_tto_tn z12 i q)
         f = filter g . zip [0..11] . repeat
         d = [0,2,4,5,7,9,11]
         m = [0,2,3,5,7,9,11]
@@ -164,7 +164,7 @@ doi :: Integral i => Z i -> Int -> [i] -> [i] -> [[i]]
 doi z n p q =
     let f j = [z_tto_tn z j p,z_tto_tni z j p]
         xs = concatMap f [0 .. z_modulus z - 1]
-    in set (filter (\x -> length (x `intersect` q) == n) xs)
+    in T.set (filter (\x -> length (x `intersect` q) == n) xs)
 
 -- | Embedded segment search.
 --
@@ -174,14 +174,14 @@ doi z n p q =
 --
 -- > ess z12 [0,1,6,4,3,2,5] [2,3,10] == [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 ess :: Integral i => Z i -> [i] -> [i] -> [[i]]
-ess z p q = filter (`is_embedding` q) (z_sro_rtmi_related z p)
+ess z p q = filter (`T.is_embedding` q) (z_sro_rtmi_related z p)
 
 -- | Forte name (ie 'sc_name').
 fn :: Integral i => [i] -> String
 fn = sc_name
 
 -- | Z-12 cycles.
-frg_cyc :: Integral i => T6 [[i]]
+frg_cyc :: Integral i => T.T6 [[i]]
 frg_cyc =
     let add = z_add z12
         mul = z_mul z12
@@ -194,10 +194,10 @@ frg_cyc =
     in (c1,c2,c3,c4,c5,c6)
 
 -- | Fragmentation of cycles.
-frg :: Integral i =>  [i] -> T6 [String]
+frg :: Integral i =>  [i] -> T.T6 [String]
 frg p =
     let f = map (\n -> if n `elem` p then z16_to_char n else '-')
-    in t6_map (map f) frg_cyc
+    in T.t6_map (map f) frg_cyc
 
 -- | Header sequence for 'frg_pp'.
 frg_hdr :: [String]
@@ -218,9 +218,9 @@ IC cycle vector: <1> <22> <111> <1100> <5> <000000>
 -}
 frg_pp :: Integral i => [i] -> String
 frg_pp =
-    let f = unwords . map (\p -> bracket ('[',']') p)
+    let f = unwords . map (\p -> T.bracket ('[',']') p)
         g x y = x ++ ": " ++ y
-    in unlines . zipWith g frg_hdr . t6_to_list . t6_map f . frg
+    in unlines . zipWith g frg_hdr . T.t6_to_list . T.t6_map f . frg
 
 -- | Can the set-class q (under prime form algorithm pf) be drawn from the pcset p.
 has_sc_pf :: (Integral a) => ([a] -> [a]) -> [a] -> [a] -> Bool
@@ -238,18 +238,18 @@ has_sc :: Integral i => Z i -> [i] -> [i] -> Bool
 has_sc z = has_sc_pf (z_forte_prime z)
 
 -- | Interval-class cycle vector.
-ic_cycle_vector :: Integral i => [i] -> T6 [Int]
+ic_cycle_vector :: Integral i => [i] -> T.T6 [Int]
 ic_cycle_vector p =
-    let f str = let str' = if length str > 2 then close str else str
-                in length (filter (\(x,y) -> x /= '-' && y /= '-') (adj2 1 str'))
-    in t6_map (map f) (frg p)
+    let f str = let str' = if length str > 2 then T.close 1 str else str
+                in length (filter (\(x,y) -> x /= '-' && y /= '-') (T.adj2 1 str'))
+    in T.t6_map (map f) (frg p)
 
 -- | Pretty printer for 'ic_cycle_vector'.
 --
 -- > let r = "IC cycle vector: <1> <22> <111> <1100> <5> <000000>"
 -- > ic_cycle_vector_pp (ic_cycle_vector [0,2,4,5,7,9]) == r
-ic_cycle_vector_pp :: T6 [Int] -> String
-ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . t6_to_list . t6_map z16_seq_pp
+ic_cycle_vector_pp :: T.T6 [Int] -> String
+ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_to_list . T.t6_map z16_seq_pp
 
 -- | Interval cycle filter.
 --
@@ -284,7 +284,7 @@ ici_c (x:xs) = map (x:) (ici xs)
 
 -- | Interval segment (INT).
 iseg :: Integral i => Z i -> [i] -> [i]
-iseg z = d_dx_by (z_sub z)
+iseg z = T.d_dx_by (z_sub z)
 
 -- | Imbrications.
 --
@@ -330,7 +330,7 @@ mxs z p q = filter (q `isInfixOf`) (z_sro_rti_related z p)
 --
 -- > nrm [0,1,2,3,4,5,6,5,4,3,2,1,0] == [0,1,2,3,4,5,6]
 nrm :: (Ord a) => [a] -> [a]
-nrm = set
+nrm = T.set
 
 -- | Normalize, retain duplicate elements.
 nrm_r :: (Ord a) => [a] -> [a]
@@ -349,7 +349,7 @@ pcseg B235
 -}
 pci :: Integral i => Z i-> [Int] -> [i] -> [[i]]
 pci z i p =
-    let f q = set (map (q !!) i)
+    let f q = T.set (map (q !!) i)
     in filter (\q -> f q == f p) (z_sro_rti_related z p)
 
 {- | Relate sets (TnMI), ie 'z_tto_rel'
@@ -361,7 +361,7 @@ pci z i p =
 
 -}
 rs :: Integral t => t -> Z t -> [t] -> [t] -> [TTO t]
-rs m z p q = z_tto_rel m z (set p) (set q)
+rs m z p q = z_tto_rel m z (T.set p) (T.set q)
 
 {- | Relate segments.
 
@@ -402,7 +402,7 @@ sb z xs =
 
 -}
 scc :: Integral i => Z i -> [i] -> [i] -> [[i]]
-scc z r p = map (\\ p) (filter (is_subset p) (z_tto_ti_related z r))
+scc z r p = map (\\ p) (filter (T.is_subset p) (z_tto_ti_related z r))
 
 -- | Header fields for 'si'.
 si_hdr :: [String]
@@ -502,7 +502,7 @@ spsc z xs =
 
 -}
 sra :: Integral i => Z i -> [i] -> [[i]]
-sra z = map (z_sro_tn_to z 0) . rotations
+sra z = map (z_sro_tn_to z 0) . T.rotations
 
 {- | Serial operation.
 
@@ -550,8 +550,8 @@ sro z o = z_sro_apply z o
 -}
 tmatrix :: Integral i => Z i -> [i] -> [[i]]
 tmatrix z p =
-    let i = map (z_negate z) (d_dx_by (z_sub z) p)
-    in map (\n -> map (z_add z n) p) (dx_d 0 i)
+    let i = map (z_negate z) (T.d_dx_by (z_sub z) p)
+    in map (\n -> map (z_add z n) p) (T.dx_d 0 i)
 
 
 {- | trs = transformations search.  Search all RTnMI of /p/ for /q/.

@@ -206,6 +206,12 @@ adj_trunc n k l =
     let r = take n l
     in if length r == n then r : adj_trunc n k (drop k l) else []
 
+-- | 'adj_trunc' of 'close' by /n/-1.
+--
+-- > adj_cyclic_trunc 3 1 "adjacent" == ["adj","dja","jac","ace","cen","ent","nta","tad"]
+adj_cyclic_trunc :: Int -> Int -> [a] -> [[a]]
+adj_cyclic_trunc n k = adj_trunc n k . close (n - 1)
+
 -- | Generic form of 'adj2'.
 genericAdj2 :: (Integral n) => n -> [t] -> [(t,t)]
 genericAdj2 n l =
@@ -222,21 +228,17 @@ genericAdj2 n l =
 adj2 :: Int -> [t] -> [(t,t)]
 adj2 = genericAdj2
 
--- | Append first element to end of list.
+-- | Append first /n/-elements to end of list.
 --
--- > close [1..3] == [1,2,3,1]
-close :: [a] -> [a]
-close x =
-    case x of
-      [] -> []
-      e:_ -> x ++ [e]
+-- > close 1 [1..3] == [1,2,3,1]
+close :: Int -> [a] -> [a]
+close k x = x ++ take k x
 
--- | 'adj2' '.' 'close'.
+-- | 'adj2' '.' 'close' 1.
 --
 -- > adj2_cyclic 1 [1..3] == [(1,2),(2,3),(3,1)]
 adj2_cyclic :: Int -> [t] -> [(t,t)]
-adj2_cyclic n = adj2 n . close
-
+adj2_cyclic n = adj2 n . close 1
 
 -- | Adjacent triples.
 --
@@ -246,6 +248,12 @@ adj3 n l =
   case l of
       p:q:r:_ -> (p,q,r) : adj3 n (drop n l)
       _ -> []
+
+-- | 'adj3' '.' 'close' 2.
+--
+-- > adj3_cyclic 1 [1..4] == [(1,2,3),(2,3,4),(3,4,1),(4,1,2)]
+adj3_cyclic :: Int -> [t] -> [(t,t,t)]
+adj3_cyclic n = adj3 n . close 2
 
 -- | Interleave elements of /p/ and /q/.
 --

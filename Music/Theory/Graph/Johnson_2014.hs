@@ -154,7 +154,7 @@ adj :: [t] -> [(t,t)]
 adj = T.adj2 1
 
 adj_cyc :: [t] -> [(t,t)]
-adj_cyc = adj . T.close
+adj_cyc = T.adj2_cyclic 1
 
 p12_c5_eset :: [(Int,Int)]
 p12_c5_eset =
@@ -395,7 +395,7 @@ p172_nd_e_set :: [(Int,Int)]
 p172_nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
 
 p172_nd_e_set_alt :: [T.EDGE Int]
-p172_nd_e_set_alt = concatMap (T.e_path_to_edges . T.close) p172_cyc0
+p172_nd_e_set_alt = concatMap (T.e_path_to_edges . T.close 1) p172_cyc0
 
 p172_gr :: G.Gr () ()
 p172_gr = G.mkUGraph [0..23] p172_nd_e_set
