@@ -175,8 +175,7 @@ p12_c5_gr =
         e_l = e_add_label (i_to_ic . absdif) p12_c5_eset
     in gen_graph o (\v -> [("label",T.pc_pp v)],\e -> [("label",show e)]) e_l
 
--- > let r = [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8]
--- > sort (concat (fst p12_euler_plane)) == r
+-- > T.euler_plane_r p12_euler_plane == [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8]
 p12_euler_plane :: T.Euler_Plane Rational
 p12_euler_plane =
     let f = T.fold_ratio_to_octave_err

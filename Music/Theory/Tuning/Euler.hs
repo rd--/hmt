@@ -1,6 +1,6 @@
 -- | Euler plane diagrams as /dot/ language graphs.
 --
--- <http://rd.slavepianos.org/?t=hmt-texts&e=md/euler.md>
+-- <http://rohandrape.net/?t=hmt-texts&e=md/euler.md>
 module Music.Theory.Tuning.Euler where
 
 import Data.List {- base -}
@@ -20,7 +20,7 @@ rat_mul r = T.fold_ratio_to_octave_err . (* r)
 rat_div :: Rational -> Rational -> Rational
 rat_div p q = T.fold_ratio_to_octave_err (p / q)
 
--- | /n/ = length, /m/ equals multiplier, /r/ = initial ratio.
+-- | /n/ = length, /m/ = multiplier, /r/ = initial ratio.
 --
 -- > tun_seq 5 (3/2) 1 == [1/1,3/2,9/8,27/16,81/64]
 tun_seq :: Int -> Rational -> Rational -> [Rational]
@@ -39,7 +39,7 @@ euler_align_rat (r1,r2) (l1,l2,l3) =
     in (filter (f r1) (all_pairs l2 l1)
        ,filter (f r2) (all_pairs l3 l2))
 
--- | Pretty printer for pitch class.
+-- | Pretty printer for pitch class (UNICODE).
 --
 -- > unwords (map pc_pp [0..11]) == "C♮ C♯ D♮ E♭ E♮ F♮ F♯ G♮ A♭ A♮ B♭ B♮"
 pc_pp :: (Integral i,Show i) => i -> String
@@ -91,6 +91,10 @@ zip_sme (s,m,e) xs =
 -- | Euler diagram given as (/h/,/v/) duple,
 -- where /h/ are the horizontal sequences and /v/ are the vertical edges.
 type Euler_Plane t = ([[t]],[(t,t)])
+
+-- | Ratios at plane, sorted.
+euler_plane_r :: Ord t => Euler_Plane t -> [t]
+euler_plane_r = sort . concat . fst
 
 -- | Apply /f/ at all nodes of the plane.
 euler_plane_map :: (t -> u) -> Euler_Plane t -> Euler_Plane u
