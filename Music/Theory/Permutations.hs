@@ -29,7 +29,7 @@ n_permutations n = nk_permutations n n
 -- | Generate the permutation from /p/ to /q/, ie. the permutation
 -- that, when applied to /p/, gives /q/.
 --
--- > apply_permutation (permutation [0,1,3] [1,0,3]) [0,1,3] == [1,0,3]
+-- > apply_permutation (permutation "abc" "bac") "abc" == "bac"
 permutation :: (Eq a) => [a] -> [a] -> P.Permute
 permutation p q =
     let n = length p

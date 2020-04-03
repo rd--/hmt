@@ -62,6 +62,7 @@ scl_ji_au =
     ,"harrison_songs"
     ,"hexany10"
     ,"korea_5"
+    ,"pelog_jc" -- STRICT SONGS
     ,"pelog_laras" -- NON-STEP
     ,"prime_5"
     ,"slendro5_1"
