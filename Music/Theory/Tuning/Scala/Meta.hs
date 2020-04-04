@@ -6,7 +6,10 @@ scl_ji_au :: [(String,[String])]
 scl_ji_au =
   [("Alves, Bill",words "alves_12 alves_22 alves_pelog alves alves_slendro")
   ,("Barlow, Clarence",words "barlow_13 barlow_17")
-   ,("Chalmers, John"
+  ,("Burt, Warren",
+     concat [map (\n -> "burt" ++ show n) [1::Int .. 20]
+            ,words "burt_fibo burt_fibo23 burt_forks burt_primes"])
+  ,("Chalmers, John"
    ,["chalmers"
     ,"chalmers_17"
     ,"chalmers_19"
@@ -92,6 +95,7 @@ scl_ji_au =
     ,"partch_41"
     ,"partch_43"
     ,"partch-barstow"])
+  ,("Riley, Terry",words "riley_albion riley_rosary")
   ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
    ,["chin_7"
