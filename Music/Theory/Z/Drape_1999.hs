@@ -385,9 +385,11 @@ rsg :: Integral i => i -> Z i -> [i] -> [i] -> [SRO i]
 rsg m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
 
 -- | Subsets.
+--
+-- > cf [4] (sb z12 [sc "6-32",sc "6-8"]) == [[0,2,3,5],[0,1,3,5],[0,2,3,7],[0,2,4,7],[0,2,5,7]]
 sb :: Integral i => Z i -> [[i]] -> [[i]]
 sb z xs =
-    let f p = all id (map (\q -> has_sc z p q) xs)
+    let f p = all id (map (\q -> has_sc z q p) xs)
     in filter f scs
 
 {- | scc = set class completion

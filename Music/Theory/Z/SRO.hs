@@ -15,7 +15,7 @@ import Music.Theory.Z
 data SRO t = SRO {sro_r :: Int
                  ,sro_R :: Bool
                  ,sro_T :: t
-                 ,sro_M :: t
+                 ,sro_M :: t -- 1 5
                  ,sro_I :: Bool}
              deriving (Eq,Show)
 

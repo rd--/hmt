@@ -51,15 +51,19 @@ forte_cmp p  q  =
       _ -> let r = compare (last p) (last q)
            in if r == EQ then compare p q else r
 
--- | Forte prime form, ie. 'z_ti_cmp_prime' of 'forte_cmp'.
---
--- > z_forte_prime z12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
--- > z_forte_prime z5 [0,1,4] == [0,1,2]
---
--- > S.set (map (z_forte_prime z5) (S.powerset [0..4]))
--- > S.set (map (z_forte_prime z7) (S.powerset [0..6]))
+{- | Forte prime form, ie. 'z_ti_cmp_prime' of 'forte_cmp'.
+
+> z_forte_prime z12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
+> z_forte_prime z5 [0,1,4] == [0,1,2]
+
+> S.set (map (z_forte_prime z5) (S.powerset [0..4]))
+> S.set (map (z_forte_prime z7) (S.powerset [0..6]))
+-}
 z_forte_prime :: Integral i => Z i -> [i] -> [i]
-z_forte_prime z = z_ti_cmp_prime z forte_cmp
+z_forte_prime z x =
+  if nub x /= x || map (z_mod z) x /= x
+  then error "z_forte_prime: invalid input"
+  else z_ti_cmp_prime z forte_cmp x
 
 -- | Transpositional equivalence prime form,
 --   ie. 'z_t_cmp_prime' of 'forte_cmp'.
