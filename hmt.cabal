@@ -96,6 +96,7 @@ Library
                    Music.Theory.Math
                    Music.Theory.Math.Convert
                    Music.Theory.Math.Convert.FX
+                   Music.Theory.Math.Nichomachus
                    Music.Theory.Math.OEIS
                    Music.Theory.Math.Prime
                    Music.Theory.Maybe

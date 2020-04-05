@@ -104,6 +104,15 @@ Padovan sequence (or Padovan numbers)
 a000931 :: Num n => [n]
 a000931 = 1 : 0 : 0 : zipWith (+) a000931 (tail a000931)
 
+{- | <https://oeis.org/A001008>
+
+Numerators of harmonic numbers H(n) = Sum_{i=1..n} 1/i
+
+[1,3,11,25,137,49,363,761,7129,7381,83711,86021,1145993,1171733,1195757,2436559] `isPrefixOf` a001008
+-}
+a001008 :: Integral i => [i]
+a001008 = map numerator (scanl1 (+) (map (1 %) [1..]))
+
 {- | <https://oeis.org/A001333>
 
 Numerators of continued fraction convergents to sqrt(2).
