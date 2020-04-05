@@ -5,7 +5,18 @@ module Music.Theory.Tuning.Scala.Meta where
 scl_ji_au :: [(String,[String])]
 scl_ji_au =
   [("Alves, Bill",words "alves_12 alves_22 alves_pelog alves alves_slendro")
+  ,("Archytas"
+   ,["arch_chrom","arch_chromc2" -- "archchro" NON-JI
+    ,"arch_dor"
+    ,"arch_enh","arch_enh2","arch_enh3","arch_enhp"
+    ,"arch_enht","arch_enht2","arch_enht3","arch_enht4","arch_enht5","arch_enht6","arch_enht7"
+    ,"arch_mult"
+    ,"arch_ptol","arch_ptol2"
+    ,"arch_sept"
+    -- "archytas7" "archytas12","archytas12sync" NON-JI
+    ])
   ,("Barlow, Clarence",words "barlow_13 barlow_17")
+  ,("Boethius",words "boeth_chrom boeth_enh")
   ,("Burt, Warren",
      concat [map (\n -> "burt" ++ show n) [1::Int .. 20]
             ,words "burt_fibo burt_fibo23 burt_forks burt_primes"])
@@ -72,7 +83,7 @@ scl_ji_au =
     ,"slendro_7_1"
     ,"slendro_7_2"
     ,"slendro_7_3"
-    ,"slendro_7_4"]) -- ("slendro_laras" -- NON-OCT
+    ,"slendro_7_4"]) -- "slendro_laras" -- NON-OCT
   ,("Johnston, Ben"
    ,["johnston"
     ,"johnston_21"
@@ -95,6 +106,32 @@ scl_ji_au =
     ,"partch_41"
     ,"partch_43"
     ,"partch-barstow"])
+  ,("Ptolemy"
+   ,["ptolemy_chrom"
+    ,"ptolemy_ddiat"
+    ,"ptolemy_diat","ptolemy_diat2","ptolemy_diat3","ptolemy_diat4","ptolemy_diat5"
+    ,"ptolemy_diff"
+    ,"ptolemy_enh"
+    ,"ptolemy_exp"
+    ,"ptolemy_ext"
+    ,"ptolemy_hominv","ptolemy_hominv2"
+    ,"ptolemy_hom"
+    ,"ptolemy_iastaiol","ptolemy_iast"
+    ,"ptolemy_ichrom"
+    ,"ptolemy_idiat"
+    ,"ptolemy_imix"
+    ,"ptolemy_malak","ptolemy_malak2"
+    ,"ptolemy_mdiat","ptolemy_mdiat2","ptolemy_mdiat3"
+    ,"ptolemy_meta"
+    ,"ptolemy_mix"
+    ,"ptolemy_perm"
+    ,"ptolemy_prod"
+    ,"ptolemy"
+    ,"ptolemy_tree"])
+  ,("Pythagoras"
+   ,["pyth_7a","pyth_12","pyth_12s","pyth_17","pyth_17s","pyth_22","pyth_27","pyth_chrom"
+    -- "pyth_31" "pyth_sev" "pyth_third" NOT-JI
+    ])
   ,("Riley, Terry",words "riley_albion riley_rosary")
   ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
@@ -126,3 +163,12 @@ scl_ji_au =
     ,"wilson_l1","wilson_l2","wilson_l3","wilson_l4","wilson_l5","wilson_l6"])
   ,("Young, La Monte",["young-lm_guitar","young-lm_piano"])
   ]
+
+{-
+import Music.Theory.Tuning.Scala
+db <- scl_load_db
+nm = concatMap snd scl_ji_au
+scl = filter (\x -> scale_name x `elem` nm) db
+non_ji = filter (not . scl_is_ji) scl
+map scale_name non_ji
+-}
