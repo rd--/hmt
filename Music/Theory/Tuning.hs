@@ -80,7 +80,7 @@ ratio_to_pc n = T.mod12 . (+ n) . round . (/ 100) . ratio_to_cents
 --   It is an error for /n/ to be more than one octave outside of this range.
 --
 -- > map fold_ratio_to_octave_nonrec [2/3,3/4,4/5,4/7] == [4/3,3/2,8/5,8/7]
-fold_ratio_to_octave_nonrec :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave_nonrec :: (Ord n,Fractional n) => n -> n
 fold_ratio_to_octave_nonrec n =
   if n >= 1 && n < 2
   then n
@@ -94,7 +94,7 @@ fold_ratio_to_octave_nonrec n =
 --   It is an error if /n/ is less than or equal to zero.
 --
 -- > map fold_ratio_to_octave_err [2/2,2/3,3/4,4/5,4/7] == [1/1,4/3,3/2,8/5,8/7]
-fold_ratio_to_octave_err :: Integral i => Ratio i -> Ratio i
+fold_ratio_to_octave_err :: (Ord n,Fractional n) => n -> n
 fold_ratio_to_octave_err =
   let f n =
         if n <= 0
@@ -105,22 +105,22 @@ fold_ratio_to_octave_err =
 -- | In /n/ is greater than zero, 'fold_ratio_to_octave_err', else 'Nothing'.
 --
 -- > map fold_ratio_to_octave [0,1] == [Nothing,Just 1]
-fold_ratio_to_octave :: Integral i => Ratio i -> Maybe (Ratio i)
+fold_ratio_to_octave :: (Ord n,Fractional n) => n -> Maybe n
 fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave_err n)
 
 -- | The interval between two pitches /p/ and /q/ given as ratio
 -- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
 -- intervals consider the 'fold_ratio_to_octave' of both /p/ to /q/
 -- and /q/ to /p/ and select the minima at the /cmp_f/.
---
--- > map ratio_interval_class [2/3,3/2,3/4,4/3] == [3/2,3/2,3/2,3/2]
--- > map ratio_interval_class [7/6,12/7] == [7/6,7/6]
 ratio_interval_class_by :: (Ord t, Integral i) => (Ratio i -> t) -> Ratio i -> Ratio i
 ratio_interval_class_by cmp_f i =
     let f = fold_ratio_to_octave_err
     in T.min_by cmp_f (f i) (f (recip i))
 
 -- | 'ratio_interval_class_by' 'ratio_nd_sum'
+--
+-- > map ratio_interval_class [2/3,3/2,3/4,4/3] == [3/2,3/2,3/2,3/2]
+-- > map ratio_interval_class [7/6,12/7] == [7/6,7/6]
 ratio_interval_class :: Integral i => Ratio i -> Ratio i
 ratio_interval_class = ratio_interval_class_by T.ratio_nd_sum
 
