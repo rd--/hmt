@@ -3,15 +3,14 @@ module Music.Theory.List where
 
 import Data.Either {- base -}
 import Data.Function {- base -}
-import qualified Data.IntMap as Map {- containers -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import Data.Tree {- containers -}
-import qualified Data.Traversable as T {- base -}
 
+import qualified Data.IntMap as Map {- containers -}
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.List.Split as S {- split -}
 import qualified Data.List.Split.Internals as S {- split -}
+import qualified Data.Tree as Tree {- containers -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
@@ -1215,26 +1214,33 @@ unlist1_err = fromMaybe (error "unlist1") . unlist1
 --
 -- > let t = Node 0 [Node 1 [Node 2 [],Node 3 []],Node 4 []]
 -- > putStrLn $ drawTree (fmap show t)
--- > let u = (adopt_shape (\_ x -> x) "abcde" t)
+-- > let (_,u) = adopt_shape (\_ x -> x) "abcde" t
 -- > putStrLn $ drawTree (fmap return u)
-adopt_shape :: T.Traversable t => (a -> b -> c) -> [b] -> t a -> t c
+adopt_shape :: Traversable t => (a -> b -> c) -> [b] -> t a -> ([b],t c)
 adopt_shape jn l =
     let f (i:j) k = (j,jn k i)
         f [] _ = error "adopt_shape: rhs ends"
-    in snd . T.mapAccumL f l
+    in mapAccumL f l
 
--- | Variant of 'adopt_shape' that considers only 'Just' elements at 'Traversable'.
+-- | Two-level variant of 'adopt_shape'.
 --
--- > let {s = "a(b(cd)ef)ghi"
--- >     ;t = group_tree (begin_end_cmp_eq '(' ')') s}
--- > in adopt_shape_m (,) [1..13] t
-adopt_shape_m :: T.Traversable t => (a -> b-> c) -> [b] -> t (Maybe a) -> t (Maybe c)
+-- > adopt_shape_2 (,) [0..4] (words "a bc d") == ([4],[[('a',0)],[('b',1),('c',2)],[('d',3)]])
+adopt_shape_2 :: (Traversable t,Traversable u) => (a -> b -> c) -> [b] -> t (u a) -> ([b],t (u c))
+adopt_shape_2 jn l = mapAccumL (adopt_shape jn) l
+
+{- | Variant of 'adopt_shape' that considers only 'Just' elements at 'Traversable'.
+
+> let s = "a(b(cd)ef)ghi"
+> let t = group_tree (begin_end_cmp_eq '(' ')') s
+> adopt_shape_m (,) [1..13] t
+-}
+adopt_shape_m :: Traversable t => (a -> b-> c) -> [b] -> t (Maybe a) -> ([b],t (Maybe c))
 adopt_shape_m jn l =
     let f (i:j) k = case k of
                       Nothing -> (i:j,Nothing)
                       Just k' -> (j,Just (jn k' i))
         f [] _ = error "adopt_shape_m: rhs ends"
-    in snd . T.mapAccumL f l
+    in mapAccumL f l
 
 -- * Tree
 
@@ -1242,20 +1248,20 @@ adopt_shape_m jn l =
 closes a group, and 'EQ' continues current group, construct tree
 from list.
 
-> let {l = "a {b {c d} e f} g h i"
->     ;t = group_tree ((==) '{',(==) '}') l}
-> in catMaybes (flatten t) == l
+> let l = "a {b {c d} e f} g h i"
+> let t = group_tree ((==) '{',(==) '}') l
+> catMaybes (flatten t) == l
 
 > let {d = putStrLn . drawTree . fmap show}
 > in d (group_tree ((==) '(',(==) ')') "a(b(cd)ef)ghi")
 
 -}
-group_tree :: (a -> Bool,a -> Bool) -> [a] -> Tree (Maybe a)
+group_tree :: (a -> Bool,a -> Bool) -> [a] -> Tree.Tree (Maybe a)
 group_tree (open_f,close_f) =
-    let unit e = Node (Just e) []
-        nil = Node Nothing []
-        insert_e (Node t l) e = Node t (e:l)
-        reverse_n (Node t l) = Node t (reverse l)
+    let unit e = Tree.Node (Just e) []
+        nil = Tree.Node Nothing []
+        insert_e (Tree.Node t l) e = Tree.Node t (e:l)
+        reverse_n (Tree.Node t l) = Tree.Node t (reverse l)
         do_push (r,z) e =
             case z of
               h:z' -> (r,insert_e h (unit e) : z')
@@ -1268,7 +1274,7 @@ group_tree (open_f,close_f) =
               [] -> (r,z)
         go st x =
             case x of
-              [] -> Node Nothing (reverse (fst st))
+              [] -> Tree.Node Nothing (reverse (fst st))
               e:x' -> if open_f e
                       then go (do_push (do_open st) e) x'
                       else if close_f e
