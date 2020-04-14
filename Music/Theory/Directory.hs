@@ -34,6 +34,12 @@ dir_list_ext dir ext = do
   let fn = filter ((==) ext . takeExtension) l
   return (sort fn)
 
+-- | Post-process 'dir_list_ext' to gives file-names with /dir/ prefix.
+--
+-- > dir_list_ext_path "/home/rohan/rd/j/" ".hs"
+dir_list_ext_path :: FilePath -> String -> IO [FilePath]
+dir_list_ext_path dir ext = dir_list_ext dir ext >>= return . map ((</>) dir)
+
 -- | Find files having indicated filename.
 --   This runs the system utility /find/, so is UNIX only.
 --
@@ -51,7 +57,7 @@ dir_find_1 fn dir = do
     [x] -> return x
     _ -> error "dir_find_1?"
 
--- | Find files having case-insensitive filename extension.
+-- | Recursively find files having case-insensitive filename extension.
 --   This runs the system utility /find/, so is UNIX only.
 --
 -- > dir_find_ext ".syx" "/home/rohan/sw/hsc3-data/data/yamaha/"
