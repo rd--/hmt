@@ -9,7 +9,6 @@ import Data.Maybe {- base -}
 import qualified Data.IntMap as Map {- containers -}
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.List.Split as S {- split -}
-import qualified Data.List.Split.Internals as S {- split -}
 import qualified Data.Tree as Tree {- containers -}
 
 import qualified Control.Monad.Logic as L {- logict -}
@@ -62,12 +61,6 @@ unbracket_err = fromMaybe (error "unbracket") . unbracket
 
 -- * Split
 
--- | Variant of 'S.splitWhen' that keeps delimiters at left.
---
--- > split_when_keeping_left (== 'r') "rab rcd re rf r" == ["","rab ","rcd ","re ","rf ","r"]
-split_when_keeping_left :: (a -> Bool) -> [a] -> [[a]]
-split_when_keeping_left = S.split . S.keepDelimsL . S.whenElt
-
 -- | Relative of 'splitOn', but only makes first separation.
 --
 -- > splitOn "//" "lhs//rhs//rem" == ["lhs","rhs","rem"]
@@ -83,21 +76,25 @@ separate_at x =
                  else f (head rhs : lhs) (tail rhs)
     in f []
 
--- | 'Splitter' comparing single element.
-on_elem :: Eq a => a -> S.Splitter a
-on_elem e = S.defaultSplitter { S.delimiter = S.Delimiter [(==) e] }
+-- | Variant of 'S.splitWhen' that keeps delimiters at left.
+--
+-- > split_when_keeping_left (== 'r') "rab rcd re rf r" == ["","rab ","rcd ","re ","rf ","r"]
+split_when_keeping_left :: (a -> Bool) -> [a] -> [[a]]
+split_when_keeping_left = S.split . S.keepDelimsL . S.whenElt
 
--- | Split before the indicated element.
---
--- > split_before 'x' "axbcxdefx" == ["a","xbc","xdef","x"]
--- > split_before 'x' "xa" == ["","xa"]
---
--- > map (flip split_before "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
--- > map (flip break "abcde" . (==)) "ae_" == [("","abcde"),("abcd","e"),("abcde","")]
---
--- > split_before 'r' "rab rcd re rf r" == ["","rab ","rcd ","re ","rf ","r"]
+{- | Split before the indicated element, keeping it at the left of the sub-sequence it begins.
+     'split_when_keeping_left' of '=='
+
+> split_before 'x' "axbcxdefx" == ["a","xbc","xdef","x"]
+> split_before 'x' "xa" == ["","xa"]
+
+> map (flip split_before "abcde") "ae_" == [["","abcde"],["abcd","e"],["abcde"]]
+> map (flip break "abcde" . (==)) "ae_" == [("","abcde"),("abcd","e"),("abcde","")]
+
+> split_before 'r' "rab rcd re rf r" == ["","rab ","rcd ","re ","rf ","r"]
+-}
 split_before :: Eq a => a -> [a] -> [[a]]
-split_before = S.split . S.keepDelimsL . on_elem
+split_before x = split_when_keeping_left (== x)
 
 -- | Split before any of the indicated set of delimiters.
 --
