@@ -355,6 +355,16 @@ generic_histogram = generic_histogram_by (==) (Just compare)
 histogram :: Ord a => [a] -> [(a,Int)]
 histogram = generic_histogram
 
+-- | Given (k,#) histogram where k is enumerable generate filled histogram with 0 for empty k.
+--
+-- > histogram_fill (histogram "histogram") == zip ['a'..'t'] [1,0,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1]
+histogram_fill :: (Ord a, Enum a) => [(a,Int)] -> [(a,Int)]
+histogram_fill h =
+  let k = map fst h
+      e = [minimum k .. maximum k]
+      f x = fromMaybe 0 (lookup x h)
+  in zip e (map f e)
+
 -- | Elements that appear more than once in the input given equality predicate.
 duplicates_by :: Ord a => (a -> a -> Bool) -> [a] -> [a]
 duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f (Just compare)
