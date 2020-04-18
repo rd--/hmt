@@ -14,3 +14,9 @@ iterateM_ f st = do
 -- | 'fmap' of 'concat' of 'mapM'
 concatMapM :: Monad m => (t -> m [u]) -> [t] -> m [u]
 concatMapM f = fmap concat . mapM f
+
+-- | If i then j else k.
+m_if :: Monad m => (m Bool,m t,m t) -> m t
+m_if (i,j,k) = do
+  r <- i
+  if r then j else k

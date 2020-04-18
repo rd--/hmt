@@ -7,6 +7,8 @@ import System.Directory {- directory -}
 import System.FilePath {- filepath -}
 import System.Process {- process -}
 
+import qualified Music.Theory.Monad as T {- hmt -}
+
 -- | Scan a list of directories until a file is located, or not.
 --   This does not traverse any sub-directory structure.
 --
@@ -91,9 +93,18 @@ to_absolute_cwd x =
     then return x
     else fmap (</> x) getCurrentDirectory
 
+-- | If /i/ is an existing file then /j/ else /k/.
+if_file_exists :: (FilePath,IO t,IO t) -> IO t
+if_file_exists (i,j,k) = T.m_if (doesFileExist i,j,k)
+
 -- | 'createDirectoryIfMissing' (including parents) and then 'writeFile'
 writeFile_mkdir :: FilePath -> String -> IO ()
 writeFile_mkdir fn s = do
   let dir = takeDirectory fn
   createDirectoryIfMissing True dir
   writeFile fn s
+
+-- | 'writeFile_mkdir' only if file does not exist.
+writeFile_mkdir_x :: FilePath -> String -> IO ()
+writeFile_mkdir_x fn txt = if_file_exists (fn,writeFile_mkdir fn txt,return ())
+
