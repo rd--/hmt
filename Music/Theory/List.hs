@@ -1127,12 +1127,6 @@ minmax inp =
       [] -> error "minmax: null"
       x:xs -> let mm p (l,r) = (min p l,max p r) in foldr mm (x,x) xs
 
--- * Bimap
-
--- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
-bimap1 :: (t -> u) -> (t,t) -> (u,u)
-bimap1 f (p,q) = (f p,f q)
-
 -- | Append /k/ to the right of /l/ until result has /n/ places.
 --   Truncates long input lists.
 --

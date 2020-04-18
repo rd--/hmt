@@ -7,6 +7,7 @@ module Music.Theory.Tuning.Rosenboom_1979 where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.Function as T
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Pitch as T
 import qualified Music.Theory.Pitch.Name as T

@@ -6,6 +6,7 @@ import Data.List {- base -}
 import qualified Data.List.Split as Split {- split -}
 
 import qualified Music.Theory.Array as T {- hmt -}
+import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
 

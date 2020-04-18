@@ -77,3 +77,8 @@ infixr 8 .:, .::, .:::, .::::, .:::::
 (.:::::) :: (Functor f, Functor g, Functor h,Functor i,Functor j,Functor k) => (a -> b) -> f (g (h (i (j (k a))))) -> f (g (h (i (j (k b)))))
 (.:::::) = fmap . (.::::)
 
+-- * Bimap
+
+-- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
+bimap1 :: (t -> u) -> (t,t) -> (u,u)
+bimap1 f (p,q) = (f p,f q)

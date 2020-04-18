@@ -6,6 +6,7 @@ module Music.Theory.Tuning.Euler where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}

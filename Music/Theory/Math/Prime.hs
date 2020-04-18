@@ -6,6 +6,7 @@ import Data.Ratio {- base -}
 
 import qualified Data.Numbers.Primes as P {- primes -}
 
+import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 

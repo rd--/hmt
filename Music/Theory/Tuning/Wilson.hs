@@ -9,6 +9,7 @@ import Safe {- safe -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Array.Text as T {- hmt -}
+import qualified Music.Theory.Function as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as T {- hmt -}
