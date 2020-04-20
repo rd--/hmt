@@ -106,5 +106,5 @@ writeFile_mkdir fn s = do
 
 -- | 'writeFile_mkdir' only if file does not exist.
 writeFile_mkdir_x :: FilePath -> String -> IO ()
-writeFile_mkdir_x fn txt = if_file_exists (fn,writeFile_mkdir fn txt,return ())
+writeFile_mkdir_x fn txt = if_file_exists (fn,return (),writeFile_mkdir fn txt)
 
