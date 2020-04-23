@@ -12,7 +12,7 @@ import qualified Music.Theory.Math.Convert as T {- hmt -}
 
 -- * DIFF
 
--- | Show positive and negative values always with sign, maybe show zero, maybe pad right.
+-- | Show positive and negative values always with sign, maybe show zero, maybe right justify.
 --
 -- > map (num_diff_str_opt (True,2)) [-2,-1,0,1,2] == ["-2","-1"," 0","+1","+2"]
 num_diff_str_opt :: (Ord a, Num a, Show a) => (Bool,Int) -> a -> String

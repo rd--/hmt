@@ -355,6 +355,28 @@ generic_histogram = generic_histogram_by (==) (Just compare)
 histogram :: Ord a => [a] -> [(a,Int)]
 histogram = generic_histogram
 
+-- | Join two histograms, which must be sorted.
+--
+-- > histogram_join (zip "ab" [1,1]) (zip "bc" [1,1]) == zip "abc" [1,2,1]
+histogram_join :: Ord a => [(a,Int)] -> [(a,Int)] -> [(a,Int)]
+histogram_join p q =
+  let f (e1,n1) (e2,n2) = if e1 == e2 then Just (e1,n1 + n2) else Nothing
+  in case (p,q) of
+       (_,[]) -> p
+       ([],_) -> q
+       (p1:p',q1:q') -> case f p1 q1 of
+                          Just r -> r : histogram_join p' q'
+                          Nothing -> if p1 < q1
+                                     then p1 : histogram_join p' q
+                                     else q1 : histogram_join p q'
+
+-- | 'foldr' of 'histogram_join'.
+--
+-- > let f x = zip x (repeat 1) in histogram_merge (map f ["ab","bcd","de"]) == zip "abcde" [1,2,1,2,1]
+histogram_merge :: Ord a => [[(a,Int)]] -> [(a,Int)]
+histogram_merge = foldr histogram_join []
+
+
 -- | Given (k,#) histogram where k is enumerable generate filled histogram with 0 for empty k.
 --
 -- > histogram_fill (histogram "histogram") == zip ['a'..'t'] [1,0,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1]
