@@ -35,3 +35,7 @@ unwords_nil =
           s:x' -> concat [if r then "" else " ",s,f (null s) x']
   in f True
 
+-- | Variant of 'unlines' that does not write empty lines for NIL elements.
+unlines_nil :: [String] -> String
+unlines_nil = unlines . filter (not . null)
+
