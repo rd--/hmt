@@ -13,3 +13,25 @@ filter_cr = filter (not . (==) '\r')
 delete_trailing_whitespace :: String -> String
 delete_trailing_whitespace = reverse . dropWhile isSpace . reverse
 
+{- | Variant of 'unwords' that does not write spaces for NIL elements.
+
+> unwords_nil [] == ""
+> unwords_nil ["a"] == "a"
+> unwords_nil ["a",""] == "a"
+> unwords_nil ["a","b"] == "a b"
+> unwords_nil ["a","","b"] == "a b"
+> unwords_nil ["a","","","b"] == "a b"
+> unwords_nil ["a","b",""] == "a b"
+> unwords_nil ["a","b","",""] == "a b"
+> unwords_nil ["","a","b"] == "a b"
+> unwords_nil ["","","a","b"] == "a b"
+-}
+unwords_nil :: [String] -> String
+unwords_nil =
+  let f r x =
+        case x of
+          [] -> ""
+          "":x' -> f r x'
+          s:x' -> concat [if r then "" else " ",s,f (null s) x']
+  in f True
+

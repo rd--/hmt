@@ -471,8 +471,10 @@ replace_at ns i x =
 -- * Association lists
 
 -- | Equivalent to 'groupBy' /eq/ 'on' /f/.
+--
+-- > group_by_on (==) snd (zip [0..] "abbc") == [[(0,'a')],[(1,'b'),(2,'b')],[(3,'c')]]
 group_by_on :: (x -> x -> Bool) -> (t -> x) -> [t] -> [[t]]
-group_by_on eq f = map (map snd) . groupBy (eq `on` fst) . map (\x -> (f x,x))
+group_by_on eq f = groupBy (eq `on` f)
 
 -- | 'group_by_on' of '=='.
 --
