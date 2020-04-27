@@ -907,6 +907,12 @@ all_equal l =
 all_eq :: Eq n => [n] -> Bool
 all_eq = (== 1) . length . nub
 
+-- | 'nubBy' '==' 'on' /f/.
+--
+-- > nub_on snd (zip "ABCD" "xxyy") == [('A','x'),('C','y')]
+nub_on :: Eq b => (a -> b) -> [a] -> [a]
+nub_on f = nubBy ((==) `on` f)
+
 -- | 'group_on' of 'sortOn'.
 --
 -- > let r = [[('1','a'),('1','c')],[('2','d')],[('3','b'),('3','e')]]

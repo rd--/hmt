@@ -27,15 +27,8 @@ delete_trailing_whitespace = reverse . dropWhile isSpace . reverse
 > unwords_nil ["","","a","b"] == "a b"
 -}
 unwords_nil :: [String] -> String
-unwords_nil =
-  let f r x =
-        case x of
-          [] -> ""
-          "":x' -> f r x'
-          s:x' -> concat [if r then "" else " ",s,f (null s) x']
-  in f True
+unwords_nil = unwords . filter (not . null)
 
 -- | Variant of 'unlines' that does not write empty lines for NIL elements.
 unlines_nil :: [String] -> String
 unlines_nil = unlines . filter (not . null)
-
