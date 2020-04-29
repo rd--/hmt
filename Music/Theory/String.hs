@@ -3,6 +3,12 @@ module Music.Theory.String where
 
 import Data.Char {- base -}
 
+-- | Case-insensitive '=='.
+--
+-- > map (str_eq_ci "ci") (words "CI ci Ci cI")
+str_eq_ci :: String -> String -> Bool
+str_eq_ci x y = map toUpper x == map toUpper y
+
 -- | Remove @\r@.
 filter_cr :: String -> String
 filter_cr = filter (not . (==) '\r')
