@@ -387,6 +387,31 @@ histogram_fill h =
       f x = fromMaybe 0 (lookup x h)
   in zip e (map f e)
 
+{- | Given two histograms p & q (sorted by key) make composite
+histogram giving for all keys the counts for (p,q).
+
+> r = zip "ABCDE" (zip [4,3,2,1,0] [2,3,4,0,5])
+> histogram_composite (zip "ABCD" [4,3,2,1]) (zip "ABCE" [2,3,4,5]) == r
+-}
+histogram_composite :: Ord a => [(a,Int)] -> [(a,Int)] -> [(a,(Int,Int))]
+histogram_composite p q =
+  case (p,q) of
+    ([],_) -> map (\(k,n) -> (k,(0,n))) q
+    (_,[]) -> map (\(k,n) -> (k,(n,0))) p
+    ((k1,n1):p',(k2,n2):q') -> case compare k1 k2 of
+                                 LT -> (k1,(n1,0)) : histogram_composite p' q
+                                 EQ -> (k1,(n1,n2)) : histogram_composite p' q'
+                                 GT -> (k2,(0,n2)) : histogram_composite p q'
+
+{- | Apply '-' at count of 'histogram_composite', ie. 0 indicates
+equal number at p and q, negative indicates more elements at p than
+q and positive more elements at q than p.
+
+> histogram_diff (zip "ABCD" [4,3,2,1]) (zip "ABCE" [2,3,4,5]) == zip "ABCDE" [-2,0,2,-1,5]
+-}
+histogram_diff :: Ord a => [(a,Int)] -> [(a,Int)] -> [(a,Int)]
+histogram_diff p = map (\(k,(n,m)) -> (k,m - n)) . histogram_composite p
+
 -- | Elements that appear more than once in the input given equality predicate.
 duplicates_by :: Ord a => (a -> a -> Bool) -> [a] -> [a]
 duplicates_by f = map fst . filter (\(_,n) -> n > 1) . histogram_by f (Just compare)
@@ -1057,20 +1082,27 @@ merge_by_resolve jn cmp =
 asc_seq_left_biased_merge_by :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
 asc_seq_left_biased_merge_by = merge_by_resolve (\x _ -> x)
 
--- | First non-ascending pair of elements.
-find_non_ascending :: (a -> a -> Ordering) -> [a] -> Maybe (a,a)
-find_non_ascending cmp xs =
+-- | Find the first two adjacent elements for which /f/ is True.
+--
+-- > find_adj (>) [1,2,3,3,2,1] == Just (3,2)
+-- > find_adj (>=) [1,2,3,3,2,1] == Just (3,3)
+find_adj :: (a -> a -> Bool) -> [a] -> Maybe (a,a)
+find_adj f xs =
     case xs of
-      p:q:xs' -> if cmp p q == GT then Just (p,q) else find_non_ascending cmp (q:xs')
+      p:q:xs' -> if f p q then Just (p,q) else find_adj f (q:xs')
       _ -> Nothing
 
--- | 'isNothing' of 'find_non_ascending'.
-is_ascending_by :: (a -> a -> Ordering) -> [a] -> Bool
-is_ascending_by cmp = isNothing . find_non_ascending cmp
-
--- | 'is_ascending_by' 'compare'.
+-- | 'find_adj' of '>='
+--
+-- > filter is_ascending (words "A AA AB ABB ABC ABA") == words "A AB ABC"
 is_ascending :: Ord a => [a] -> Bool
-is_ascending = is_ascending_by compare
+is_ascending = isNothing . find_adj (>=)
+
+-- | 'find_adj' of '>'
+--
+-- > filter is_non_descending (words "A AA AB ABB ABC ABA") == ["A","AA","AB","ABB","ABC"]
+is_non_descending :: Ord a => [a] -> Bool
+is_non_descending = isNothing . find_adj (>)
 
 -- | Variant of `elem` that operates on a sorted list, halting.
 --   This is 'O.member'.
