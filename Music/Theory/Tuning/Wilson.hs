@@ -6,6 +6,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Safe {- safe -}
+import System.FilePath {- filepath -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Array.Text as T {- hmt -}
@@ -194,7 +195,7 @@ ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
 ew_gr_udot_wr_svg :: EW_GR_OPT -> FilePath -> T.LBL Rational () -> IO ()
 ew_gr_udot_wr_svg opt fn gr = do
   ew_gr_udot_wr opt fn gr
-  void (T.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn)
+  void (T.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn (replaceExtension fn "svg"))
 
 -- * ZIG-ZAG
 

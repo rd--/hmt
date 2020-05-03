@@ -5,7 +5,6 @@ import Control.Monad {- base -}
 import Data.Char {- base -}
 import Data.List {- base -}
 import System.Exit {- process -}
-import System.FilePath {- process -}
 import System.Process {- process -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
@@ -181,17 +180,10 @@ fgl_to_dot typ opt pp gr = lbl_to_dot typ opt pp (T.fgl_to_lbl gr)
 fgl_to_udot :: G.Graph gr => [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
 fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
--- * IO
+-- * DOT-PROCESS
 
--- | Given x.dot write x.typ.  Requires @dot@ be installed.
-dot_to_ftype :: String -> [String] -> FilePath -> IO ExitCode
-dot_to_ftype typ opt dot_fn =
-  -- -O writes x.dot to x.dot.typ, use -o
-  let typ_fn = replaceExtension dot_fn typ
-  in rawSystem "dot" (opt ++ ["-T",typ,"-o" ++ typ_fn,dot_fn])
+dot_to_svg :: [String] -> FilePath -> FilePath -> IO ExitCode
+dot_to_svg opt dot_fn svg_fn = rawSystem "dot" (opt ++ ["-T","svg","-o",svg_fn,dot_fn])
 
-dot_to_svg :: [String] -> FilePath -> IO ExitCode
-dot_to_svg = dot_to_ftype "svg"
-
-dot_to_svg_ :: [String] -> FilePath -> IO ()
-dot_to_svg_ opt = void . dot_to_svg opt
+dot_to_svg_ :: [String] -> FilePath -> FilePath -> IO ()
+dot_to_svg_ opt dot_fn = void . dot_to_svg opt dot_fn

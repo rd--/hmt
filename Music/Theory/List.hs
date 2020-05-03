@@ -376,7 +376,6 @@ histogram_join p q =
 histogram_merge :: Ord a => [[(a,Int)]] -> [(a,Int)]
 histogram_merge = foldr histogram_join []
 
-
 -- | Given (k,#) histogram where k is enumerable generate filled histogram with 0 for empty k.
 --
 -- > histogram_fill (histogram "histogram") == zip ['a'..'t'] [1,0,0,0,0,0,1,1,1,0,0,0,1,0,1,0,0,1,1,1]
@@ -1127,6 +1126,26 @@ elemIndex_ordered e =
                            then Nothing
                            else recur (k + 1) l'
     in recur 0
+
+-- | 'zipWith' variant that extends shorter side using given value.
+zip_with_ext :: t -> u -> (t -> u -> v) -> [t] -> [u] -> [v]
+zip_with_ext i j f p q =
+  case (p,q) of
+    ([],_) -> zipWith f (repeat i) q
+    (_,[]) -> zipWith f p (repeat j)
+    (x:p',y:q') -> f x y : zip_with_ext i j f p' q'
+
+{- | 'zip_with_ext' of ','
+
+> let f = zip_ext 'i' 'j'
+> f "" "" == []
+> f "p" "" == zip "p" "j"
+> f "" "q" == zip "i" "q"
+> f "pp" "q" == zip "pp" "qj"
+> f "p" "qq" == zip "pi" "qq"
+-}
+zip_ext :: t -> u -> [t] -> [u] -> [(t,u)]
+zip_ext i j = zip_with_ext i j (,)
 
 -- | Keep right variant of 'zipWith', where unused rhs values are returned.
 --
