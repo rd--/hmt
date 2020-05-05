@@ -148,16 +148,27 @@ g_type_to_edge_symbol ty =
       G_DIGRAPH -> " -> "
       G_UGRAPH -> " -- "
 
+node_pos_attr :: (Show n, Real n) => (n,n) -> DOT_ATTR
+node_pos_attr (x,y) = let pp = Show.real_pp_trunc 2 in ("pos",concat [pp x,",",pp y])
+
+-- | Edge POS attributes are sets of cubic bezier control points.
+edge_pos_attr :: Real t => [(t,t)] -> DOT_ATTR
+edge_pos_attr pt =
+  let r_pp = Show.real_pp_trunc 2
+      pt_pp (x,y) = concat [r_pp x,",",r_pp y]
+  in ("pos",unwords (map pt_pp pt))
+
+-- | Variant that accepts single cubic bezier data set.
+edge_pos_attr_1 :: Real t => ((t,t),(t,t),(t,t),(t,t)) -> DOT_ATTR
+edge_pos_attr_1 (p1,p2,p3,p4) = edge_pos_attr [p1,p2,p3,p4]
+
+{-
 -- | Vertex position function.
 type POS_FN v = (v -> (Int,Int))
 
--- > g_pos_attr (100::Double) (0.1,0.5) == ("pos","10,50")
--- > g_pos_attr (100::Rational) (0.3,0.35) == ("pos","30,35")
-g_pos_attr :: (Show n, Real n) => n -> (n,n) -> DOT_ATTR
-g_pos_attr k (c,r) = let pp = Show.real_pp_trunc 2 in ("pos",pp (c * k) ++ "," ++ pp (r * k))
-
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [DOT_ATTR]
-g_lift_pos_fn f v = let (c,r) = f v in [g_pos_attr 100 (c,r)]
+g_lift_pos_fn f v = let (c,r) = f v in [node_pos_attr (c * 100,r * 100)]
+-}
 
 lbl_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
 lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =

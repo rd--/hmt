@@ -177,7 +177,9 @@ ew_gr_opt_pos :: EW_GR_OPT -> Bool
 ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
 
 ew_gr_r_pos :: LC Rational -> Rational -> T.DOT_ATTR
-ew_gr_r_pos lc = T.g_pos_attr 160 . lc_pos_to_pt lc . Safe.tailDef [] . T.rational_prime_factors_l
+ew_gr_r_pos lc =
+  let f m (x,y) = (m * x,m * y)
+  in T.node_pos_attr . f 160 . lc_pos_to_pt lc . Safe.tailDef [] . T.rational_prime_factors_l
 
 ew_gr_udot :: EW_GR_OPT -> T.LBL Rational () -> [String]
 ew_gr_udot (lc_m,attr,v_pp) =
