@@ -204,6 +204,7 @@ adj n k l =
 -- | Variant of 'adj' where the last element has /n/ places but may
 -- not reach the end of the input sequence.
 --
+-- > adj_trunc 4 1 "adjacent" == ["adja","djac","jace","acen","cent"]
 -- > adj_trunc 3 2 "adjacent" == ["adj","jac","cen"]
 adj_trunc :: Int -> Int -> [a] -> [[a]]
 adj_trunc n k l =
@@ -258,6 +259,17 @@ adj3 n l =
 -- > adj3_cyclic 1 [1..4] == [(1,2,3),(2,3,4),(3,4,1),(4,1,2)]
 adj3_cyclic :: Int -> [t] -> [(t,t,t)]
 adj3_cyclic n = adj3 n . close 2
+
+{- | Adjacent quadruples.
+
+> adj4 2 [1..8] == [(1,2,3,4),(3,4,5,6),(5,6,7,8)]
+> adj4 4 [1..8] == [(1,2,3,4),(5,6,7,8)]
+-}
+adj4 :: Int -> [t] -> [(t,t,t,t)]
+adj4 n l =
+  case l of
+      p:q:r:s:_ -> (p,q,r,s) : adj4 n (drop n l)
+      _ -> []
 
 -- | Interleave elements of /p/ and /q/.
 --

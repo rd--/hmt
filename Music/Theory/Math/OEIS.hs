@@ -44,6 +44,16 @@ Powers of 2: a(n) = 2^n
 a000079 :: Num n => [n]
 a000079 = iterate (* 2) 1
 
+{- | <http://oeis.org/A000142>
+
+Factorial numbers: n! = 1*2*3*4*...*n
+(order of symmetric group S_n, number of permutations of n letters).
+
+> [1,1,2,6,24,120,720,5040,40320,362880,3628800,39916800,479001600,6227020800] `isPrefixOf` a000142
+-}
+a000142 :: (Enum n, Num n) => [n]
+a000142 = 1 : zipWith (*) [1..] a000142
+
 {- | https://oeis.org/A000201
 
 Lower Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi), where phi = (1+sqrt(5))/2 = A001622
@@ -257,7 +267,35 @@ a007318 =
   let f r = zipWith (+) ([0] ++ r) (r ++ [0])
   in iterate f [1]
 
-{- |  <http://oeis.org/A017817>
+{- | <https://oeis.org/A008277>
+
+Triangle of Stirling numbers of the second kind, S2(n,k), n >= 1, 1 <= k <= n.
+
+[1,1,1,1,3,1,1,7,6,1,1,15,25,10,1,1,31,90,65,15,1,1,63,301,350,140,21,1] `isPrefixOf` a008277
+-}
+a008277 :: (Enum n,Num n) => [n]
+a008277 = concat a008277_tbl
+
+a008277_tbl :: (Enum n,Num n) => [[n]]
+a008277_tbl = map tail $ a048993_tbl
+
+{- | <http://oeis.org/A008278>
+
+Triangle of Stirling numbers of 2nd kind, S(n,n-k+1), n >= 1, 1<=k<=n.
+
+[1,1,1,1,3,1,1,6,7,1,1,10,25,15,1,1,15,65,90,31,1,1,21,140,350,301,63,1] `isPrefixOf` a008278
+-}
+a008278 :: (Enum n,Num n) => [n]
+a008278 = concat a008278_tbl
+
+a008278_tbl :: (Enum n,Num n) => [[n]]
+a008278_tbl =
+  let f p =
+        let q = reverse (zipWith (*) [1..] (reverse p))
+        in zipWith (+) ([0] ++ q) (p ++ [0])
+  in iterate f [1]
+
+{- | <http://oeis.org/A017817>
 
 a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
 
@@ -281,6 +319,18 @@ a030308 =
          1:b -> 0 : f b
          _ -> error "A030308?"
    in iterate f [0]
+
+{- | <https://oeis.org/A048993>
+
+Triangle of Stirling numbers of 2nd kind, S(n,k), n >= 0, 0 <= k <= n.
+
+> [1,0,1,0,1,1,0,1,3,1,0,1,7,6,1,0,1,15,25,10,1,0,1,31,90,65,15,1] `isPrefixOf` a048993
+-}
+a048993 :: (Enum n,Num n) => [n]
+a048993 = concat a048993_tbl
+
+a048993_tbl :: (Enum n,Num n) => [[n]]
+a048993_tbl = iterate (\row -> [0] ++ (zipWith (+) row $ zipWith (*) [1..] $ tail row) ++ [1]) [1]
 
 {- | <http://oeis.org/A049455>
 
