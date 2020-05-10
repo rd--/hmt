@@ -26,9 +26,9 @@ ply_graph_header clr (n_v,n_e) =
    ,["end_header"]]
 
 -- | Requires graph vertices be indexed [0 .. #v - 1]
-v3_graph_to_ply :: Int -> T.LBL (Double,Double,Double) () -> [String]
+v3_graph_to_ply :: Maybe Int -> T.LBL (Double,Double,Double) () -> [String]
 v3_graph_to_ply k (v,e) =
-  let v_pp (_,(x,y,z)) = unwords (map (T.double_pp k) [x,y,z])
+  let v_pp (_,(x,y,z)) = unwords (map (maybe show T.double_pp k) [x,y,z])
       e_pp ((i,j),()) = unwords (map show [i,j])
   in concat [ply_graph_header False (length v,length e)
             ,map v_pp v
