@@ -14,16 +14,18 @@ ply_graph_header clr (n_v,n_e) =
    ,"element vertex " ++ show n_v
    ,"property float x"
    ,"property float y"
-   ,"property float z"
-   ,"element edge " ++ show n_e
-   ,"property int vertex1"
-   ,"property int vertex2"]
-   ,if clr
-     then ["property uchar red"
-          ,"property uchar green"
-          ,"property uchar blue"]
-    else []
-   ,["end_header"]]
+   ,"property float z"]
+  ,if n_e > 0
+   then ["element edge " ++ show n_e
+        ,"property int vertex1"
+        ,"property int vertex2"]
+   else []
+  ,if n_e > 0 && clr
+   then ["property uchar red"
+        ,"property uchar green"
+        ,"property uchar blue"]
+   else []
+  ,["end_header"]]
 
 -- | Requires graph vertices be indexed [0 .. #v - 1]
 v3_graph_to_ply :: Maybe Int -> T.LBL (Double,Double,Double) () -> [String]
