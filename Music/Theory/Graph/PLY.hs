@@ -49,3 +49,13 @@ v3_graph_to_ply_clr k (v,e) =
   in concat [ply_graph_header (False,True) (length v,length e)
             ,map v_pp v
             ,map e_pp e]
+
+-- | Requires graph vertices be indexed [0 .. #v - 1]
+v3_graph_to_obj :: Maybe Int -> T.LBL (Double,Double,Double) () -> [String]
+v3_graph_to_obj k (v,e) =
+  let v_pp (_,(x,y,z)) = unwords ("v" : map (maybe show T.double_pp k) [x,y,z])
+      e_pp ((i,j),()) = unwords (map show [i + 1,j + 1])
+  in concat [ply_graph_header (False,False) (length v,length e)
+            ,map v_pp v
+            ,map (\i -> "p " ++ show i) [1 .. length v]
+            ,map e_pp e]
