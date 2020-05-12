@@ -9,6 +9,15 @@ import System.Process {- process -}
 
 import qualified Music.Theory.Monad as T {- hmt -}
 
+{- | 'takeDirectory' gives different answers depending on whether there is a trailing separator.
+
+> x = ["x/y","x/y/","x","/"]
+> map parent_dir x == ["x","x",".","/"]
+> map takeDirectory x == ["x","x/y",".","/"]
+-}
+parent_dir :: FilePath -> FilePath
+parent_dir = takeDirectory . dropTrailingPathSeparator
+
 -- | Scan a list of directories until a file is located, or not.
 --   This does not traverse any sub-directory structure.
 --
