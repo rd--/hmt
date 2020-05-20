@@ -4,14 +4,14 @@ import qualified Music.Theory.Graph.OBJ as T {- hmt -}
 
 cli_obj_to_v3_graph :: FilePath -> IO ()
 cli_obj_to_v3_graph obj_fn = do
-  g <- T.obj_load_v3_graph obj_fn
+  g <- T.obj_load_v3_graph_f64 obj_fn
   putStrLn (show g)
 
 cli_v3_graph_to_obj :: Int -> FilePath -> IO ()
 cli_v3_graph_to_obj prec hs_fn = do
   txt <- readFile hs_fn
   let g = read txt
-  putStrLn (unlines (T.v3_graph_to_obj (Just prec) g))
+  putStrLn (unlines (T.v3_graph_to_obj_f64 prec g))
 
 cli_obj_help :: [String]
 cli_obj_help =

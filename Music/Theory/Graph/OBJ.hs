@@ -43,3 +43,14 @@ obj_to_v3_graph txt =
 
 obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
 obj_load_v3_graph = fmap (obj_to_v3_graph . lines) . readFile
+
+-- * F64
+
+v3_graph_to_obj_f64 :: Int -> T.LBL (Double,Double,Double) () -> [String]
+v3_graph_to_obj_f64 = v3_graph_to_obj_opt False
+
+obj_store_v3_graph_f64 :: Int -> FilePath -> (T.LBL (Double,Double,Double) ()) -> IO ()
+obj_store_v3_graph_f64 k fn = writeFile fn . unlines . v3_graph_to_obj k
+
+obj_load_v3_graph_f64 :: FilePath -> IO (T.LBL (Double,Double,Double) ())
+obj_load_v3_graph_f64 = obj_load_v3_graph
