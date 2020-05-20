@@ -15,22 +15,22 @@ import qualified Music.Theory.Show as T {- hmt -}
 OBJ file vertices are one-indexed.
 If /wr_p/ is True point entries are written.
 -}
-v3_graph_to_obj_opt :: Bool -> Maybe Int -> T.LBL (Double,Double,Double) () -> [String]
+v3_graph_to_obj_opt :: RealFloat n => Bool -> Int -> T.LBL (n,n,n) () -> [String]
 v3_graph_to_obj_opt wr_p k (v,e) =
-  let v_pp (_,(x,y,z)) = unwords ("v" : map (maybe show T.double_pp k) [x,y,z])
+  let v_pp (_,(x,y,z)) = unwords ("v" : map (T.realfloat_pp k) [x,y,z])
       e_pp ((i,j),()) = unwords ("l" : map show [i + 1,j + 1])
   in concat [map v_pp v
             ,if wr_p then map (\i -> "p " ++ show i) [1 .. length v] else []
             ,map e_pp e]
 
-v3_graph_to_obj :: Maybe Int -> T.LBL (Double, Double, Double) () -> [String]
+v3_graph_to_obj :: RealFloat n => Int -> T.LBL (n,n,n) () -> [String]
 v3_graph_to_obj = v3_graph_to_obj_opt False
 
-obj_store_v3_graph :: Maybe Int -> FilePath -> (T.LBL (Double, Double, Double) ()) -> IO ()
+obj_store_v3_graph :: RealFloat n => Int -> FilePath -> (T.LBL (n,n,n) ()) -> IO ()
 obj_store_v3_graph k fn = writeFile fn . unlines . v3_graph_to_obj k
 
 -- | Read OBJ file consisting only of /v/ and /l/ (and optionally /p/) entries.
-obj_to_v3_graph :: [String] -> T.LBL (Double,Double,Double) ()
+obj_to_v3_graph :: Read n => [String] -> T.LBL (n,n,n) ()
 obj_to_v3_graph txt =
   let l_verify (i,j) = if i < 0 || j < 0 then error "obj_to_v3_graph?" else (i,j)
       f s = case words s of
@@ -41,5 +41,5 @@ obj_to_v3_graph txt =
       (v,l) = partitionEithers (mapMaybe f txt)
   in (zip [0..] v,zip l (repeat ()))
 
-obj_load_v3_graph :: FilePath -> IO (T.LBL (Double, Double, Double) ())
+obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
 obj_load_v3_graph = fmap (obj_to_v3_graph . lines) . readFile
