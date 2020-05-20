@@ -26,6 +26,9 @@ v3_graph_to_obj_opt wr_p k (v,e) =
 v3_graph_to_obj :: Maybe Int -> T.LBL (Double, Double, Double) () -> [String]
 v3_graph_to_obj = v3_graph_to_obj_opt False
 
+obj_store_v3_graph :: Maybe Int -> FilePath -> (T.LBL (Double, Double, Double) ()) -> IO ()
+obj_store_v3_graph k fn = writeFile fn . unlines . v3_graph_to_obj k
+
 -- | Read OBJ file consisting only of /v/ and /l/ (and optionally /p/) entries.
 obj_to_v3_graph :: [String] -> T.LBL (Double,Double,Double) ()
 obj_to_v3_graph txt =
