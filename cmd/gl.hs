@@ -11,11 +11,11 @@ import qualified Music.Theory.Opt as T {- hmt -}
 -- * GEOMETRY
 
 type R = GLfloat
-type P3 = (R,R,R)
+type R3 = (R,R,R)
 
 -- * GR/OBJ
 
-type GR = T.LBL P3 ()
+type GR = T.LBL R3 ()
 
 obj_load :: FilePath -> IO GR
 obj_load = T.obj_load_v3_graph
@@ -29,6 +29,11 @@ gr_to_ln (v,e) =
       g ((i,j),_) = map f [ix i,ix j]
   in chunksOf 16 (concatMap g e) -- does sending vertices in chunks help?
 
+gr_load_set :: [FilePath] -> IO LN
+gr_load_set fn = do
+  g <- mapM (fmap gr_to_ln . obj_load) fn
+  return (concat g)
+
 -- * IOREF
 
 withIORef :: IORef a -> (a -> IO ()) -> IO ()
@@ -36,22 +41,32 @@ withIORef s f = readIORef s >>= f
 
 -- * STATE
 
-type R3 = (R,R,R)
+-- | (zoom,rotation-(x,y,z),translation-(x,y,z))
+type State = (R,R3,R3)
 
--- | R=zoom R3=rotation-(x,y,z)
-data State = State R R3
+state_0 :: State
+state_0 = (1.0,(20,30,0),(0,0,0))
+
+mod_trs_f :: R3 -> State -> State
+mod_trs_f (dx,dy,dz) (s,r,(x,y,z)) = (s,r,(x + dx,y + dy,z + dz))
+
+mod_trs :: IORef State -> R3 -> IO ()
+mod_trs s d = modifyIORef s (mod_trs_f d)
 
 mod_rot_f :: R3 -> State -> State
-mod_rot_f (dx,dy,dz) (State s (x,y,z)) = State s (x + dx,y + dy,z + dz)
+mod_rot_f (dx,dy,dz) (s,(x,y,z),t) = (s,(x + dx,y + dy,z + dz),t)
 
 mod_rot :: IORef State -> R3 -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
 
 mod_zoom_f :: R -> State -> State
-mod_zoom_f n (State s r) = State (s + n) r
+mod_zoom_f n (s,r,t) = (s + n,r,t)
 
 mod_zoom :: IORef State -> R -> IO ()
 mod_zoom s n = modifyIORef s (mod_zoom_f n)
+
+mod_init :: IORef State -> IO ()
+mod_init s = modifyIORef s (const state_0)
 
 -- * GL
 
@@ -71,11 +86,12 @@ gl_grey :: Color4 R
 gl_grey = Color4 0.5 0.5 0.5 0.5
 
 gl_render_state :: State -> IO ()
-gl_render_state (State s (x,y,z)) = do
-    rotate x (Vector3 1 0 0)
-    rotate y (Vector3 0 1 0)
-    rotate z (Vector3 0 0 1)
-    scale s s s
+gl_render_state (sc,(rx,ry,rz),(tx,ty,tz)) = do
+    translate (Vector3 tx ty tz)
+    rotate rx (Vector3 1 0 0)
+    rotate ry (Vector3 0 1 0)
+    rotate rz (Vector3 0 0 1)
+    scale sc sc sc
     color gl_grey
 
 gl_draw :: LN -> State -> IO ()
@@ -85,19 +101,18 @@ gl_draw ln s = do
   swapBuffers
 
 gl_keyboard :: IORef State -> Key -> KeyState -> Modifiers -> Position -> IO ()
-gl_keyboard s c _ _ _ =
-  case c of
-    Char 'z' -> mod_rot s ( 0, 0, 5)
-    Char 'Z'-> mod_rot s ( 0, 0,-5)
-    SpecialKey KeyUp -> mod_rot s ( 5, 0, 0)
-    SpecialKey KeyDown -> mod_rot s (-5, 0, 0)
-    SpecialKey KeyLeft -> mod_rot s ( 0, 5, 0)
-    SpecialKey KeyRight -> mod_rot s ( 0,-5, 0)
-    Char '+' -> mod_zoom s 0.01
-    Char '-' -> mod_zoom s (-0.01)
-    SpecialKey KeyPageUp -> mod_zoom s 0.05
-    SpecialKey KeyPageDown -> mod_zoom s (-0.05)
-    Char 'Q' -> exitWith ExitSuccess
+gl_keyboard s c _ m _ =
+  case (c,ctrl m == Down) of
+    (SpecialKey KeyDown,ctl) -> if ctl then mod_trs s (0,-0.1,0) else mod_rot s (-5,0,0)
+    (SpecialKey KeyUp,ctl) -> if ctl then mod_trs s (0,0.1,0) else mod_rot s (5,0,0)
+    (SpecialKey KeyLeft,ctl) -> if ctl then mod_trs s (-0.1,0,0) else mod_rot s (0,-5,0)
+    (SpecialKey KeyRight,ctl) -> if ctl then mod_trs s (0.1,0,0) else mod_rot s (0,5,0)
+    (SpecialKey KeyPageUp,ctl) -> if ctl then mod_trs s (0,0,0.1) else mod_rot s (0,0,5)
+    (SpecialKey KeyPageDown,ctl) -> if ctl then mod_trs s (0,0,-0.1) else mod_rot s (0,0,-5)
+    (Char '=',ctl) -> mod_zoom s (if ctl then 0.05 else 0.01)
+    (Char '-',ctl) -> mod_zoom s (if ctl then -0.05 else -0.01)
+    (Char 'I',_) -> mod_init s
+    (Char 'Q',_) -> exitWith ExitSuccess
     _ -> return ()
 
 gl_init :: IO ()
@@ -122,23 +137,23 @@ timer_f dly = do
   postRedisplay Nothing
   addTimerCallback dly (timer_f dly)
 
-gl_gr_obj :: (GLsizei, GLsizei) -> Timeout -> FilePath -> IO ()
+gl_gr_obj :: (GLsizei, GLsizei) -> Timeout -> [FilePath] -> IO ()
 gl_gr_obj (w,h) dly fn = do
-  ln <- fmap gr_to_ln (obj_load fn)
-  _ <- initialize fn []
+  ln <- gr_load_set fn
+  _ <- initialize "GR-OBJ" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
   initialWindowSize $= Size w h
   initialWindowPosition $= Position 0 0
   _ <- createWindow "GL"
   gl_init
-  s <- newIORef (State 1.0 (20,30,0))
+  s <- newIORef state_0
   displayCallback $= withIORef s (gl_draw ln)
   keyboardMouseCallback $= Just (gl_keyboard s)
   addTimerCallback dly (timer_f dly)
   mainLoop
 
 usg :: T.OPT_USG
-usg = ["obj-gr [opt] file-name"]
+usg = ["obj-gr [opt] file-name..."]
 
 opt :: [T.OPT_USR]
 opt =
@@ -150,6 +165,6 @@ main :: IO ()
 main = do
   (o,a) <- T.opt_get_arg True usg opt
   case a of
-    ["obj-gr",fn] -> gl_gr_obj (T.opt_read o "width",T.opt_read o "height") (T.opt_read o "delay") fn
+    "obj-gr":fn -> gl_gr_obj (T.opt_read o "width",T.opt_read o "height") (T.opt_read o "delay") fn
     _ -> T.opt_usage usg opt
 
