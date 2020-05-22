@@ -1,3 +1,8 @@
+{-
+GLU  = <https://www.khronos.org/registry/OpenGL/specs/gl/glu1.3.pdf>
+GLUT = <https://www.opengl.org/resources/libraries/glut/glut-3.spec.pdf>
+-}
+
 import Data.IORef {- base -}
 import Data.List.Split {- base -}
 import System.Exit {- base -}
@@ -128,7 +133,7 @@ gl_init = do
   clearColor $= Color4 0 0 0 0
   blend $= Enabled
   blendFunc $= (SrcAlpha,One)
-  depthFunc $= Nothing -- Just Less
+  depthFunc $= Nothing
   lighting $= Disabled
   normalize $= Enabled
 
@@ -137,12 +142,12 @@ timer_f dly = do
   postRedisplay Nothing
   addTimerCallback dly (timer_f dly)
 
-gl_gr_obj :: (GLsizei, GLsizei) -> Timeout -> [FilePath] -> IO ()
-gl_gr_obj (w,h) dly fn = do
+gl_gr_obj :: GLsizei -> Timeout -> [FilePath] -> IO ()
+gl_gr_obj sz dly fn = do
   ln <- gr_load_set fn
   _ <- initialize "GR-OBJ" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
-  initialWindowSize $= Size w h
+  initialWindowSize $= Size sz sz
   initialWindowPosition $= Position 0 0
   _ <- createWindow "GL"
   gl_init
@@ -158,13 +163,12 @@ usg = ["obj-gr [opt] file-name..."]
 opt :: [T.OPT_USR]
 opt =
   [("delay","100","int","timer delay (ms)")
-  ,("height","400","int","window height (px)")
-  ,("width","400","int","window width (px)")]
+  ,("size","400","int","window size (px)")]
 
 main :: IO ()
 main = do
   (o,a) <- T.opt_get_arg True usg opt
   case a of
-    "obj-gr":fn -> gl_gr_obj (T.opt_read o "width",T.opt_read o "height") (T.opt_read o "delay") fn
+    "obj-gr":fn -> gl_gr_obj (T.opt_read o "size") (T.opt_read o "delay") fn
     _ -> T.opt_usage usg opt
 
