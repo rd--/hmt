@@ -64,14 +64,17 @@ mod_rot_f (dx,dy,dz) (s,(x,y,z),t) = (s,(x + dx,y + dy,z + dz),t)
 mod_rot :: IORef State -> R3 -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
 
+set_rot :: IORef State -> R3 -> IO ()
+set_rot s rt = modifyIORef s (\(sc,_,tr) -> (sc,rt,tr))
+
 mod_zoom_f :: R -> State -> State
 mod_zoom_f n (s,r,t) = (s + n,r,t)
 
 mod_zoom :: IORef State -> R -> IO ()
 mod_zoom s n = modifyIORef s (mod_zoom_f n)
 
-mod_init :: IORef State -> IO ()
-mod_init s = modifyIORef s (const state_0)
+set_init :: IORef State -> IO ()
+set_init s = modifyIORef s (const state_0)
 
 -- * GL
 
@@ -105,20 +108,32 @@ gl_draw ln s = do
   preservingMatrix (gl_render_state s >> gl_render_ln ln)
   swapBuffers
 
-gl_keyboard :: IORef State -> Key -> KeyState -> Modifiers -> Position -> IO ()
-gl_keyboard s c _ m _ =
-  case (c,ctrl m == Down) of
-    (SpecialKey KeyDown,ctl) -> if ctl then mod_trs s (0,-0.1,0) else mod_rot s (-5,0,0)
-    (SpecialKey KeyUp,ctl) -> if ctl then mod_trs s (0,0.1,0) else mod_rot s (5,0,0)
-    (SpecialKey KeyLeft,ctl) -> if ctl then mod_trs s (-0.1,0,0) else mod_rot s (0,-5,0)
-    (SpecialKey KeyRight,ctl) -> if ctl then mod_trs s (0.1,0,0) else mod_rot s (0,5,0)
-    (SpecialKey KeyPageUp,ctl) -> if ctl then mod_trs s (0,0,0.1) else mod_rot s (0,0,5)
-    (SpecialKey KeyPageDown,ctl) -> if ctl then mod_trs s (0,0,-0.1) else mod_rot s (0,0,-5)
-    (Char '=',ctl) -> mod_zoom s (if ctl then 0.05 else 0.01)
-    (Char '-',ctl) -> mod_zoom s (if ctl then -0.05 else -0.01)
-    (Char 'I',_) -> mod_init s
-    (Char 'Q',_) -> exitWith ExitSuccess
+gl_keydown :: IORef State -> Key -> Modifiers -> IO ()
+gl_keydown s ky m = do
+  let a = alt m == Down
+      c = ctrl m == Down
+      r = 5
+  case ky of
+    SpecialKey KeyDown -> if c then mod_trs s (0,-0.1,0) else mod_rot s (- r,0,0)
+    SpecialKey KeyUp -> if c then mod_trs s (0,0.1,0) else mod_rot s (r,0,0)
+    SpecialKey KeyLeft -> if c then mod_trs s (-0.1,0,0) else mod_rot s (0,- r,0)
+    SpecialKey KeyRight -> if c then mod_trs s (0.1,0,0) else mod_rot s (0,r,0)
+    SpecialKey KeyPageUp -> if c then mod_trs s (0,0,0.1) else mod_rot s (0,0,r)
+    SpecialKey KeyPageDown -> if c then mod_trs s (0,0,-0.1) else mod_rot s (0,0,- r)
+    Char '=' -> mod_zoom s (if c then 0.1 else 0.01)
+    Char '-' -> mod_zoom s (if c then -0.1 else -0.01)
+    Char '1' -> set_rot s (if a then (0,0,0) else (0,180,0)) -- Y
+    Char '2' -> set_rot s (if a then (90,0,0) else (270,0,0)) -- X
+    Char '3' -> set_rot s (if a then (90,0,90) else (270,0,270)) -- X/Z
+    Char '4' -> set_rot s (if a then (0,0,90) else (0,0,270)) -- Z
+    Char '5' -> set_rot s (if a then (90,0,180) else (90,180,0)) -- Y/Z
+    Char '0' -> set_init s
+    Char 'p' -> readIORef s >>= print
+    Char 'Q' -> exitWith ExitSuccess
     _ -> return ()
+
+gl_keyboard :: IORef State -> Key -> KeyState -> Modifiers -> Position -> IO ()
+gl_keyboard s ky ks m _ = if ks == Down then gl_keydown s ky m else return ()
 
 gl_init :: IO ()
 gl_init = do
