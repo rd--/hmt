@@ -15,5 +15,5 @@ Key commands are:
   `4`=(0,0,90|270)
   `5`=(90,0|180,180|0)
 - INITIAL STATE: `0`
-- PRINT: `p`
+- ON-SCREEN-DISPLAY: `o`
 - QUIT: `Q`

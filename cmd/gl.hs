@@ -3,9 +3,11 @@ GLU  = <https://www.khronos.org/registry/OpenGL/specs/gl/glu1.3.pdf>
 GLUT = <https://www.opengl.org/resources/libraries/glut/glut-3.spec.pdf>
 -}
 
+import Control.Monad {- base -}
 import Data.IORef {- base -}
 import Data.List.Split {- base -}
 import System.Exit {- base -}
+import Text.Printf {- base -}
 
 import Graphics.UI.GLUT {- GLUT -}
 
@@ -52,29 +54,32 @@ withIORef s f = readIORef s >>= f
 
 -- * STATE
 
--- | (zoom,rotation-(x,y,z),translation-(x,y,z))
-type State = (R,R3,R3)
+-- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd)
+type State = (R,R3,R3,Bool)
 
 state_0 :: State
-state_0 = (1.0,(20,30,0),(0,0,0))
+state_0 = (1.0,(20,30,0),(0,0,0),False)
+
+mod_osd :: IORef State -> IO ()
+mod_osd s = modifyIORef s (\(z,t,r,o) -> (z,t,r,not o))
 
 mod_trs_f :: R3 -> State -> State
-mod_trs_f (dx,dy,dz) (s,r,(x,y,z)) = (s,r,(x + dx,y + dy,z + dz))
+mod_trs_f (dx,dy,dz) (s,r,(x,y,z),o) = (s,r,(x + dx,y + dy,z + dz),o)
 
 mod_trs :: IORef State -> R3 -> IO ()
 mod_trs s d = modifyIORef s (mod_trs_f d)
 
 mod_rot_f :: R3 -> State -> State
-mod_rot_f (dx,dy,dz) (s,(x,y,z),t) = (s,(x + dx,y + dy,z + dz),t)
+mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o) = (s,(x + dx,y + dy,z + dz),t,o)
 
 mod_rot :: IORef State -> R3 -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
 
 set_rot :: IORef State -> R3 -> IO ()
-set_rot s rt = modifyIORef s (\(sc,_,tr) -> (sc,rt,tr))
+set_rot s rt = modifyIORef s (\(sc,_,tr,o) -> (sc,rt,tr,o))
 
 mod_zoom_f :: R -> State -> State
-mod_zoom_f n (s,r,t) = (s + n,r,t)
+mod_zoom_f n (s,r,t,o) = (s + n,r,t,o)
 
 mod_zoom :: IORef State -> R -> IO ()
 mod_zoom s n = modifyIORef s (mod_zoom_f n)
@@ -100,7 +105,7 @@ gl_grey :: Color4 R
 gl_grey = Color4 0.5 0.5 0.5 0.5
 
 gl_render_state :: State -> IO ()
-gl_render_state (sc,(rx,ry,rz),(tx,ty,tz)) = do
+gl_render_state (sc,(rx,ry,rz),(tx,ty,tz),_) = do
     translate (Vector3 tx ty tz)
     rotate rx (Vector3 1 0 0)
     rotate ry (Vector3 0 1 0)
@@ -108,10 +113,24 @@ gl_render_state (sc,(rx,ry,rz),(tx,ty,tz)) = do
     scale sc sc sc
     color gl_grey
 
+r_to_int :: R -> Int
+r_to_int = round
+
+state_pp :: State -> String
+state_pp (sc,(rx,ry,rz),(tx,ty,tz),_) =
+  let i = r_to_int
+  in printf "%.2f (%d,%d,%d) (%.1f,%.1f,%.1f)" sc (i rx) (i ry) (i rz) tx ty tz
+
+gl_render_txt :: State -> IO ()
+gl_render_txt st = do
+  let (_,_,_,o) = st
+  when o (rasterPos (Vertex3 (- 2.5) (-2.5) 0 :: Vertex3 R) >>
+          renderString Fixed8By13 (state_pp st))
+
 gl_draw :: LN -> State -> IO ()
 gl_draw ln s = do
   clear [ColorBuffer]
-  preservingMatrix (gl_render_state s >> gl_render_ln ln)
+  preservingMatrix (gl_render_txt s >> gl_render_state s >> gl_render_ln ln)
   swapBuffers
 
 gl_keydown :: IORef State -> Key -> Modifiers -> IO ()
@@ -128,13 +147,13 @@ gl_keydown s ky m = do
     SpecialKey KeyPageDown -> if c then mod_trs s (0,0,-0.1) else mod_rot s (0,0,- r)
     Char '=' -> mod_zoom s (if c then 0.1 else 0.01)
     Char '-' -> mod_zoom s (if c then -0.1 else -0.01)
-    Char '1' -> set_rot s (if a then (0,0,0) else (0,180,0)) -- Y
-    Char '2' -> set_rot s (if a then (90,0,0) else (270,0,0)) -- X
-    Char '3' -> set_rot s (if a then (90,0,90) else (270,0,270)) -- X/Z
-    Char '4' -> set_rot s (if a then (0,0,90) else (0,0,270)) -- Z
-    Char '5' -> set_rot s (if a then (90,0,180) else (90,180,0)) -- Y/Z
+    Char '1' -> set_rot s (if not a then (0,0,0) else (0,180,0)) -- Y
+    Char '2' -> set_rot s (if not a then (90,0,0) else (270,0,0)) -- X
+    Char '3' -> set_rot s (if not a then (90,0,90) else (270,0,270)) -- X/Z
+    Char '4' -> set_rot s (if not a then (0,0,90) else (0,0,270)) -- Z
+    Char '5' -> set_rot s (if not a then (90,0,180) else (90,180,0)) -- Y/Z
     Char '0' -> set_init s
-    Char 'p' -> readIORef s >>= print
+    Char 'o' -> mod_osd s
     Char 'Q' -> exitWith ExitSuccess
     _ -> return ()
 
