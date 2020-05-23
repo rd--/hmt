@@ -22,8 +22,14 @@ type R3 = (R,R,R)
 
 type GR = T.LBL R3 ()
 
-obj_load :: FilePath -> IO GR
-obj_load = T.obj_load_v3_graph
+-- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
+obj_load :: Bool -> FilePath -> IO GR
+obj_load ch fn = do
+  (v,e) <- T.obj_load_v3_graph fn
+  case (ch,null e) of
+    (True,True) -> return (v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
+    (False,False) -> return (v,e)
+    _ -> error "obj_load?"
 
 type LN = [[Vertex3 R]]
 
@@ -34,9 +40,9 @@ gr_to_ln (v,e) =
       g ((i,j),_) = map f [ix i,ix j]
   in chunksOf 16 (concatMap g e) -- does sending vertices in chunks help?
 
-gr_load_set :: [FilePath] -> IO LN
-gr_load_set fn = do
-  g <- mapM (fmap gr_to_ln . obj_load) fn
+gr_load_set :: Bool -> [FilePath] -> IO LN
+gr_load_set ch fn = do
+  g <- mapM (fmap gr_to_ln . obj_load ch) fn
   return (concat g)
 
 -- * IOREF
@@ -157,9 +163,9 @@ timer_f dly = do
   postRedisplay Nothing
   addTimerCallback dly (timer_f dly)
 
-gl_gr_obj :: GLsizei -> Timeout -> [FilePath] -> IO ()
-gl_gr_obj sz dly fn = do
-  ln <- gr_load_set fn
+gl_gr_obj :: Bool -> GLsizei -> Timeout -> [FilePath] -> IO ()
+gl_gr_obj ch sz dly fn = do
+  ln <- gr_load_set ch fn
   _ <- initialize "GR-OBJ" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
   initialWindowSize $= Size sz sz
@@ -177,13 +183,14 @@ usg = ["obj-gr [opt] file-name..."]
 
 opt :: [T.OPT_USR]
 opt =
-  [("delay","100","int","timer delay (ms)")
+  [("chain","False","bool","OBJ is vertex sequence")
+  ,("delay","100","int","timer delay (ms)")
   ,("size","400","int","window size (px)")]
 
 main :: IO ()
 main = do
   (o,a) <- T.opt_get_arg True usg opt
   case a of
-    "obj-gr":fn -> gl_gr_obj (T.opt_read o "size") (T.opt_read o "delay") fn
+    "obj-gr":fn -> gl_gr_obj (T.opt_read o "chain") (T.opt_read o "size") (T.opt_read o "delay") fn
     _ -> T.opt_usage usg opt
 
