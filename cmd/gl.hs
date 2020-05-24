@@ -4,6 +4,7 @@ GLUT = <https://www.opengl.org/resources/libraries/glut/glut-3.spec.pdf>
 -}
 
 import Control.Monad {- base -}
+import Data.Fixed {- base -}
 import Data.IORef {- base -}
 import Data.List.Split {- base -}
 import System.Exit {- base -}
@@ -25,13 +26,14 @@ type R3 = (R,R,R)
 type GR = T.LBL R3 ()
 
 -- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
+--   If CH is true and there are edges, CH is ignored, allowing mixed sets to be loaded by setting CH.
 obj_load :: Bool -> FilePath -> IO GR
 obj_load ch fn = do
   (v,e) <- T.obj_load_v3_graph fn
   case (ch,null e) of
     (True,True) -> return (v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
-    (False,False) -> return (v,e)
-    _ -> error "obj_load?"
+    (False,True) -> error "obj_load?"
+    (_,False) -> return (v,e)
 
 type LN = [[Vertex3 R]]
 
@@ -70,7 +72,9 @@ mod_trs :: IORef State -> R3 -> IO ()
 mod_trs s d = modifyIORef s (mod_trs_f d)
 
 mod_rot_f :: R3 -> State -> State
-mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o) = (s,(x + dx,y + dy,z + dz),t,o)
+mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o) =
+  let f i j = Data.Fixed.mod' (i + j) 360
+  in (s,(f x dx,f y dy,f z dz),t,o)
 
 mod_rot :: IORef State -> R3 -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
@@ -118,7 +122,7 @@ r_to_int = round
 
 state_pp :: State -> String
 state_pp (sc,(rx,ry,rz),(tx,ty,tz),_) =
-  let i = r_to_int
+  let i n = r_to_int (if n > 180 then n - 360 else n)
   in printf "%.2f (%d,%d,%d) (%.1f,%.1f,%.1f)" sc (i rx) (i ry) (i rz) tx ty tz
 
 gl_render_txt :: State -> IO ()
