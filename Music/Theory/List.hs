@@ -1213,7 +1213,7 @@ minimumBy_or p f q = if null q then p else minimumBy f q
 
 -- | 'minimum' and 'maximum' in one pass.
 --
--- > minmax "minimumandmaximum" == ('a','x')
+-- > minmax "minmax" == ('a','x')
 minmax :: Ord t => [t] -> (t,t)
 minmax inp =
     case inp of

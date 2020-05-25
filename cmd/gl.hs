@@ -12,6 +12,8 @@ import Text.Printf {- base -}
 
 import Graphics.UI.GLUT {- GLUT -}
 
+import Data.CG.Minus.Plain {- hcg-minus -}
+
 import qualified Music.Theory.Graph.OBJ as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.Opt as T {- hmt -}
@@ -19,11 +21,10 @@ import qualified Music.Theory.Opt as T {- hmt -}
 -- * GEOMETRY
 
 type R = GLfloat
-type R3 = (R,R,R)
 
 -- * GR/OBJ
 
-type GR = T.LBL R3 ()
+type GR = T.LBL (V3 R) ()
 
 -- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
 --   If CH is true and there are edges, CH is ignored, allowing mixed sets to be loaded by setting CH.
@@ -35,19 +36,20 @@ obj_load ch fn = do
     (False,True) -> error "obj_load?"
     (_,False) -> return (v,e)
 
+gr_to_vsq :: GR -> [V3 R]
+gr_to_vsq (v,e) =
+  let ix = maybe (error "?") id . flip lookup v
+      f ((i,j),_) = [ix i,ix j]
+  in concatMap f e
+
 type LN = [[Vertex3 R]]
 
-gr_to_ln :: GR -> LN
-gr_to_ln (v,e) =
-  let ix = maybe (error "?") id . flip lookup v
+gr_load_set :: (Bool,Bool) -> [FilePath] -> IO LN
+gr_load_set (ch,nrm) fn = do
+  v <- mapM (fmap gr_to_vsq . obj_load ch) fn
+  let c = (if nrm then v3_normalise (-1,1) else id) (concat v)
       f (x,y,z) = Vertex3 x y z
-      g ((i,j),_) = map f [ix i,ix j]
-  in chunksOf 16 (concatMap g e) -- does sending vertices in chunks help?
-
-gr_load_set :: Bool -> [FilePath] -> IO LN
-gr_load_set ch fn = do
-  g <- mapM (fmap gr_to_ln . obj_load ch) fn
-  return (concat g)
+  return (chunksOf 16 (map f c))  -- does sending vertices in chunks help?
 
 -- * IOREF
 
@@ -57,7 +59,7 @@ withIORef s f = readIORef s >>= f
 -- * STATE
 
 -- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd)
-type State = (R,R3,R3,Bool)
+type State = (R,V3 R,V3 R,Bool)
 
 state_0 :: State
 state_0 = (1.0,(20,30,0),(0,0,0),False)
@@ -65,21 +67,21 @@ state_0 = (1.0,(20,30,0),(0,0,0),False)
 mod_osd :: IORef State -> IO ()
 mod_osd s = modifyIORef s (\(z,t,r,o) -> (z,t,r,not o))
 
-mod_trs_f :: R3 -> State -> State
+mod_trs_f :: V3 R -> State -> State
 mod_trs_f (dx,dy,dz) (s,r,(x,y,z),o) = (s,r,(x + dx,y + dy,z + dz),o)
 
-mod_trs :: IORef State -> R3 -> IO ()
+mod_trs :: IORef State -> V3 R -> IO ()
 mod_trs s d = modifyIORef s (mod_trs_f d)
 
-mod_rot_f :: R3 -> State -> State
+mod_rot_f :: V3 R -> State -> State
 mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o) =
   let f i j = Data.Fixed.mod' (i + j) 360
   in (s,(f x dx,f y dy,f z dz),t,o)
 
-mod_rot :: IORef State -> R3 -> IO ()
+mod_rot :: IORef State -> V3 R -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
 
-set_rot :: IORef State -> R3 -> IO ()
+set_rot :: IORef State -> V3 R -> IO ()
 set_rot s rt = modifyIORef s (\(sc,_,tr,o) -> (sc,rt,tr,o))
 
 mod_zoom_f :: R -> State -> State
@@ -186,9 +188,9 @@ timer_f dly = do
   postRedisplay Nothing
   addTimerCallback dly (timer_f dly)
 
-gl_gr_obj :: Bool -> GLsizei -> Timeout -> [FilePath] -> IO ()
-gl_gr_obj ch sz dly fn = do
-  ln <- gr_load_set ch fn
+gl_gr_obj :: (Bool,Bool) -> GLsizei -> Timeout -> [FilePath] -> IO ()
+gl_gr_obj opt sz dly fn = do
+  ln <- gr_load_set opt fn
   _ <- initialize "GR-OBJ" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
   initialWindowSize $= Size sz sz
@@ -201,19 +203,24 @@ gl_gr_obj ch sz dly fn = do
   addTimerCallback dly (timer_f dly)
   mainLoop
 
-usg :: T.OPT_USG
-usg = ["obj-gr [opt] file-name..."]
+cli_usg :: T.OPT_USG
+cli_usg = ["obj-gr [opt] file-name..."]
 
-opt :: [T.OPT_USR]
-opt =
+cli_opt :: [T.OPT_USR]
+cli_opt =
   [("chain","False","bool","OBJ is vertex sequence")
   ,("delay","100","int","timer delay (ms)")
+  ,("normalise","False","bool","normalise vertex data to (-1,1)")
   ,("size","400","int","window size (px)")]
 
 main :: IO ()
 main = do
-  (o,a) <- T.opt_get_arg True usg opt
+  (o,a) <- T.opt_get_arg True cli_usg cli_opt
   case a of
-    "obj-gr":fn -> gl_gr_obj (T.opt_read o "chain") (T.opt_read o "size") (T.opt_read o "delay") fn
-    _ -> T.opt_usage usg opt
+    "obj-gr":fn -> gl_gr_obj
+                   (T.opt_read o "chain",T.opt_read o "normalise")
+                   (T.opt_read o "size")
+                   (T.opt_read o "delay")
+                   fn
+    _ -> T.opt_usage cli_usg cli_opt
 

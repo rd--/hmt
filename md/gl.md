@@ -3,6 +3,13 @@
 `obj-gr` loads a graph (a set of vertices and a set of edges) from one
 or more `OBJ` files and displays it.
 
+If `--chain` is set input files that are vertex lists only will be
+loaded as chains (ie. lines will be drawn between each successive
+vertex).
+
+If `--normalise` is set vertex data is normalised to (-1,1) after all
+input data is loaded.
+
 Key commands are:
 
 - ROTATE: Y = `←`/`→` ; X = `↓`|`↑` ; Z = `PgUp`/`PgDn`
