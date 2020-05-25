@@ -1,6 +1,8 @@
--- | IO for graph files, graph6, sparse6 and digraph6 encodings.
---   <http://users.cecs.anu.edu.au/~bdm/nauty/>
---   <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
+{- | IO for graph files, graph6, sparse6 and digraph6 encodings.
+
+<http://users.cecs.anu.edu.au/~bdm/nauty/>
+<https://users.cecs.anu.edu.au/~bdm/data/formats.html>
+-}
 module Music.Theory.Graph.IO where
 
 import Data.List.Split {- split -}

@@ -193,8 +193,11 @@ fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
 -- * DOT-PROCESS
 
+-- | Run /dot/ to generate an /SVG/ file.
+--   /-n/ must be given to not run the layout algorithm and to use position data in the /dot/ file.
 dot_to_svg :: [String] -> FilePath -> FilePath -> IO ExitCode
 dot_to_svg opt dot_fn svg_fn = rawSystem "dot" (opt ++ ["-T","svg","-o",svg_fn,dot_fn])
 
+-- | 'void' of 'dot_to_svg'
 dot_to_svg_ :: [String] -> FilePath -> FilePath -> IO ()
 dot_to_svg_ opt dot_fn = void . dot_to_svg opt dot_fn

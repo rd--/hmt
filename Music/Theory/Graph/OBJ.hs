@@ -1,5 +1,7 @@
 {- | Graph/OBJ functions
 
+This module is strictly for writing and reading graphs where vertices are labeled (x,y,z) to OBJ files.
+
 PDF=<http://www.cs.utah.edu/~boulos/cs3505/obj_spec.pdf>
 TXT=<http://www.martinreddy.net/gfx/3d/OBJ.spec>
 -}
@@ -11,9 +13,9 @@ import Data.Maybe {- base -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 
-{- | Requires graph vertices be indexed [0 .. #v - 1]
+{- | Requires (but does not check) that graph vertices be indexed [0 .. #v - 1]
 OBJ file vertices are one-indexed.
-If /wr_p/ is True point entries are written.
+If /wr_p/ is True point (p) entries are written.
 -}
 v3_graph_to_obj_opt :: RealFloat n => Bool -> Int -> T.LBL (n,n,n) () -> [String]
 v3_graph_to_obj_opt wr_p k (v,e) =
@@ -23,13 +25,15 @@ v3_graph_to_obj_opt wr_p k (v,e) =
             ,if wr_p then map (\i -> "p " ++ show i) [1 .. length v] else []
             ,map e_pp e]
 
+-- | 'v3_graph_to_obj_opt' 'False'.
 v3_graph_to_obj :: RealFloat n => Int -> T.LBL (n,n,n) () -> [String]
 v3_graph_to_obj = v3_graph_to_obj_opt False
 
+-- | 'writeFile' of 'v3_graph_to_obj'.
 obj_store_v3_graph :: RealFloat n => Int -> FilePath -> (T.LBL (n,n,n) ()) -> IO ()
 obj_store_v3_graph k fn = writeFile fn . unlines . v3_graph_to_obj k
 
--- | Read OBJ file consisting only of /v/ and /l/ (and optionally /p/) entries.
+-- | Read OBJ file consisting only of /v/ and /l/ (and optionally /p/, which are ignored) entries.
 obj_to_v3_graph :: Read n => [String] -> T.LBL (n,n,n) ()
 obj_to_v3_graph txt =
   let l_verify (i,j) = if i < 0 || j < 0 then error "obj_to_v3_graph?" else (i,j)
@@ -41,16 +45,20 @@ obj_to_v3_graph txt =
       (v,l) = partitionEithers (mapMaybe f txt)
   in (zip [0..] v,zip l (repeat ()))
 
+-- | 'obj_to_v3_graph' of 'readFile'.
 obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
 obj_load_v3_graph = fmap (obj_to_v3_graph . lines) . readFile
 
 -- * F64
 
+-- | Type-specialised.
 v3_graph_to_obj_f64 :: Int -> T.LBL (Double,Double,Double) () -> [String]
-v3_graph_to_obj_f64 = v3_graph_to_obj_opt False
+v3_graph_to_obj_f64 = v3_graph_to_obj
 
+-- | Type-specialised.
 obj_store_v3_graph_f64 :: Int -> FilePath -> (T.LBL (Double,Double,Double) ()) -> IO ()
-obj_store_v3_graph_f64 k fn = writeFile fn . unlines . v3_graph_to_obj k
+obj_store_v3_graph_f64 = obj_store_v3_graph
 
+-- | Type-specialised.
 obj_load_v3_graph_f64 :: FilePath -> IO (T.LBL (Double,Double,Double) ())
 obj_load_v3_graph_f64 = obj_load_v3_graph
