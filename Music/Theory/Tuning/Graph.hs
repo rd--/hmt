@@ -60,7 +60,7 @@ r_is_pcset pcset = ((==) pcset) . r_pcset
 
 -- * G
 
--- | EDGE-LABEL = (V1,V2,V2-V1) where V1 < V2
+-- | Edges are (v1,v2) where v1 < v2
 type G = T.GR R
 
 edj_r :: (R, R) -> R
