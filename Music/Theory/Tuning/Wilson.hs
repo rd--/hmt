@@ -25,34 +25,34 @@ import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 
--- * GEOM
+-- * GEOM (SEE "Data.CG.Minus.Plain")
 
--- | (x,y) co-ordinate
-type Pt n = (n,n)
+type V2 n = (n,n)
+v2_map :: (t -> u) -> V2 t -> V2 u
+v2_map f (a,b) = (f a,f b)
+v2_zip :: (a -> b -> c) -> V2 a -> V2 b -> V2 c
+v2_zip f (i,j) (p,q) = (f i p,f j q)
+v2_add :: Num n => V2 n -> V2 n -> V2 n
+v2_add = v2_zip (+)
+v2_sum :: Num n => [V2 n] -> V2 n
+v2_sum = foldl v2_add (0,0)
+v2_scale :: Num n => n -> V2 n -> V2 n
+v2_scale n = v2_map (* n)
 
-pt_add :: Num n => Pt n -> Pt n -> Pt n
-pt_add (p,q) (i,j) = (p + i,q + j)
+-- * PT SET
 
-pt_sum :: Num n => [Pt n] -> Pt n
-pt_sum = foldl pt_add (0,0)
+{- | Normalise set of points to lie in (-1,-1) - (1,1), scaling symetrically about (0,0)
 
-pt_scale :: Num n => n -> Pt n -> Pt n
-pt_scale m (x,y) = (m * x,m * y)
-
--- > map (flip pt_scale_i (20,0)) [0,1,-1] == [(0,0),(20,0),(-20,-0)]
-pt_scale_i :: Num n => Int -> Pt n -> Pt n
-pt_scale_i m = pt_scale (fromIntegral m)
-
--- | Normalise set of points to lie in (-1,-1) - (1,1)
---
--- > pt_set_normalise kg_lc_std
-pt_set_normalise :: (Fractional n,Ord n) => [Pt n] -> [Pt n]
-pt_set_normalise x = let z = maximum (map (uncurry max) x) in map (T.t2_map (* (recip z))) x
+> pt_set_normalise_sym [(40,0),(0,40),(13,11),(-8,4)] == [(1,0),(0,1),(0.325,0.275),(-0.2,0.1)]
+> pt_set_normalise_sym [(-10,0),(1,10)] == [(-1,0),(0.1,1)]
+-}
+pt_set_normalise_sym :: (Fractional n,Ord n) => [V2 n] -> [V2 n]
+pt_set_normalise_sym x = let z = maximum (map (uncurry max . T.bimap1 abs) x) in map (v2_scale (recip z)) x
 
 -- * LATTICE CO-ORD
 
 -- | /k/-unit co-ordinates for /k/-lattice.
-type LC n = [Pt n]
+type LC n = [V2 n]
 
 -- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 --
@@ -72,9 +72,9 @@ kg_lc_std = [(40,0),(0,40),(13,11),(-14,18),(-8,4)]
 ew_lc_tetradic :: Num n => LC n
 ew_lc_tetradic = [(-4,-2),(6,1),(5,-2)]
 
--- | Resolve POS against LC to Pt
-lc_pos_to_pt :: (Fractional n, Ord n) => LC n -> POS -> Pt n
-lc_pos_to_pt lc x = pt_sum (zipWith pt_scale_i x (pt_set_normalise lc))
+-- | Resolve POS against LC to V2
+lc_pos_to_pt :: (Fractional n, Ord n) => LC n -> POS -> V2 n
+lc_pos_to_pt lc x = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
 
 -- * LAT
 
