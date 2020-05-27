@@ -112,6 +112,8 @@ fold_ratio_to_octave n = if n <= 0 then Nothing else Just (fold_ratio_to_octave_
 -- multipliers of a fundamental is /q/ '/' /p/.  The classes over such
 -- intervals consider the 'fold_ratio_to_octave' of both /p/ to /q/
 -- and /q/ to /p/ and select the minima at the /cmp_f/.
+--
+-- > map (ratio_interval_class_by id) [3/2,5/4] == [4/3,5/4]
 ratio_interval_class_by :: (Ord t, Integral i) => (Ratio i -> t) -> Ratio i -> Ratio i
 ratio_interval_class_by cmp_f i =
     let f = fold_ratio_to_octave_err

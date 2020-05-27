@@ -19,7 +19,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Euler as T {- hmt -}
+import qualified Music.Theory.Tuning.Graph.Euler as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 import qualified Music.Theory.Z as T {- hmt -}
 import qualified Music.Theory.Z.Forte_1973 as T {- hmt -}

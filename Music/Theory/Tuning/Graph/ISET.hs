@@ -1,5 +1,5 @@
--- | Tuning graph related functions.
-module Music.Theory.Tuning.Graph where
+-- | Tuning graph with edges determined by interval set.
+module Music.Theory.Tuning.Graph.ISET where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
@@ -7,13 +7,14 @@ import Data.Maybe {- base -}
 import qualified Data.Graph.Inductive.Graph as FGL {- fgl -}
 import qualified Data.Graph.Inductive.PatriciaTree as FGL {- fgl -}
 
-import qualified Music.Theory.Graph.Johnson_2014 as OH {- hmt -}
+import qualified Music.Theory.Graph.Dot as T {- hmt -}
+import qualified Music.Theory.Graph.FGL as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Scala as T {- hmt -}
-import qualified Music.Theory.Tuning.Euler as T {- hmt -}
+import qualified Music.Theory.Tuning.Graph.Euler as Euler {- hmt -}
+import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 -- * R
 
@@ -29,8 +30,6 @@ r_flip :: R -> R
 r_flip n = if n < 1 || n > 2 then error "r_flip" else 1 / n * 2
 
 -- | r = ratio, nrm = normalise
---
--- > map r_nrm [3/2,5/4] == [4/3,5/4]
 r_nrm :: R -> R
 r_nrm = T.ratio_interval_class_by id
 
@@ -40,7 +39,7 @@ r_nrm = T.ratio_interval_class_by id
 r_rel :: (R,R) -> R
 r_rel (p,q) = T.fold_ratio_to_octave_err (p / q)
 
--- | The interval set /i/ and it's 'rflip.
+-- | The interval set /i/ and it's 'r_flip'.
 iset_sym :: [R] -> [R]
 iset_sym l = l ++ map r_flip l
 
@@ -77,20 +76,31 @@ mk_graph iset scl_r =
      q <- scl_r,
      p < q])
 
-mk_graph_scl :: [R] -> T.Scale -> G
-mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
+gen_graph :: Ord v => [T.DOT_META_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
+gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
 
 g_to_dot :: Int -> [(String,String)] -> (R -> [(String,String)]) -> G -> [String]
 g_to_dot k attr v_attr (_,e_set) =
-  OH.gen_graph
-  (("edge:fontsize","9") : attr)
-  (\v -> ("label",T.rat_label (k,True) v) : v_attr v
-  ,\e -> [("label",T.rational_pp e)])
-  (map (\e -> (e,edj_r e)) e_set)
+  let opt =
+        [("graph:layout","neato")
+        ,("node:shape","plaintext")
+        ,("node:fontsize","10")
+        ,("node:fontname","century schoolbook")
+        ,("edge:fontsize","9")]
+  in gen_graph
+     (opt ++ attr)
+     (\v -> ("label",Euler.rat_label (k,True) v) : v_attr v
+     ,\e -> [("label",T.rational_pp e)])
+     (map (\e -> (e,edj_r e)) e_set)
+
+-- * SCALA
+
+mk_graph_scl :: [R] -> Scala.Scale -> G
+mk_graph_scl iset = mk_graph iset . rem_oct . Scala.scale_ratios_req
 
 scl_to_dot :: ([R], Int, [(String, String)], R -> [(String, String)]) -> String -> IO [String]
 scl_to_dot (iset,k,attr,v_attr) nm = do
-  sc <- T.scl_load nm
+  sc <- Scala.scl_load nm
   let gr = mk_graph_scl iset sc
   return (g_to_dot k attr v_attr gr)
 

@@ -9,7 +9,7 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Euler as T {- hmt -}
+import qualified Music.Theory.Tuning.Graph.Euler as T {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 {- | Ratios for 'lmy_wtp'. lmy = La Monte Young. wtp = Well-Tuned Piano.

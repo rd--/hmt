@@ -151,9 +151,9 @@ Library
                    Music.Theory.Tuning.DB.Werckmeister
                    Music.Theory.Tuning.EFG
                    Music.Theory.Tuning.ET
-                   Music.Theory.Tuning.Euler
                    Music.Theory.Tuning.Gann_1993
-                   Music.Theory.Tuning.Graph
+                   Music.Theory.Tuning.Graph.Euler
+                   Music.Theory.Tuning.Graph.ISET
                    Music.Theory.Tuning.HS
                    Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Meyer_1929

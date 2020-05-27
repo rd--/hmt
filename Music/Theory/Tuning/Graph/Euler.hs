@@ -1,7 +1,7 @@
 -- | Euler plane diagrams as /dot/ language graphs.
 --
 -- <http://rohandrape.net/?t=hmt-texts&e=md/euler.md>
-module Music.Theory.Tuning.Euler where
+module Music.Theory.Tuning.Graph.Euler where
 
 import Data.List {- base -}
 import Data.Ratio {- base -}
