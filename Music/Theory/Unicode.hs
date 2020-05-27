@@ -48,6 +48,30 @@ int_show_superscript = map ((superscript_digits !!) . digitToInt) . show
 subscript_digits :: [Char]
 subscript_digits = "₀₁₂₃₄₅₆₇₈₉"
 
+-- | The combining over line character.
+--
+-- > ['1',combining_overline] == "1̅"
+combining_overline :: Char
+combining_overline = toEnum 0x0305
+
+-- | Add 'combining_overline' to each 'Char'.
+--
+-- > overline "1234" == "1̅2̅3̅4̅"
+overline :: String -> String
+overline = let f x = [x,combining_overline] in concatMap f
+
+-- | The combining under line character.
+--
+-- > ['1',combining_underline] == "1̲"
+combining_underline :: Char
+combining_underline = toEnum 0x0332
+
+-- | Add 'combining_underline' to each 'Char'.
+--
+-- > underline "1234" == "1̲2̲3̲4̲"
+underline :: String -> String
+underline = let f x = [x,combining_underline] in concatMap f
+
 -- * Table
 
 type Unicode_Index = Int
