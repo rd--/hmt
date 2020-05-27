@@ -15,7 +15,7 @@ Cabal-Version:     >= 1.8
 
 Data-files:        README
                    data/csv/mnd/*.csv
-                   data/dot/*.dot
+                   data/dot/euler/*.dot
                    data/scl/*.scl
 
 Library

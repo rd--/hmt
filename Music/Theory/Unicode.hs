@@ -4,6 +4,7 @@
 -- debian=ttf-freefont.
 module Music.Theory.Unicode where
 
+import Data.Char {- base -}
 import Data.List {- base -}
 import Numeric {- base -}
 
@@ -32,6 +33,20 @@ non_breaking_space = toEnum 0x00A0
 -- > middle_dot == '·'
 middle_dot :: Char
 middle_dot = toEnum 0x00B7
+
+-- | The superscript variants of the digits 0-9
+superscript_digits :: [Char]
+superscript_digits = "⁰¹²³⁴⁵⁶⁷⁸⁹"
+
+-- | Map 'show' of 'Int' to 'superscript_digits'.
+--
+-- > unwords (map int_show_superscript [0,12,345,6789]) == "⁰ ¹² ³⁴⁵ ⁶⁷⁸⁹"
+int_show_superscript :: Int -> String
+int_show_superscript = map ((superscript_digits !!) . digitToInt) . show
+
+-- | The subscript variants of the digits 0-9
+subscript_digits :: [Char]
+subscript_digits = "₀₁₂₃₄₅₆₇₈₉"
 
 -- * Table
 
