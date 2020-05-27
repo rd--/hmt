@@ -215,5 +215,5 @@ gr_to_lbl_ = lbl_delete_edge_labels . gr_to_lbl
 eset_to_lbl :: Ord t => [(t,t)] -> LBL t ()
 eset_to_lbl e =
   let v = nub (sort (concatMap (\(i,j) -> [i,j]) e))
-      get_ix z = fromMaybe (error "lbl_recover") (elemIndex z v)
+      get_ix z = fromMaybe (error "eset_to_lbl") (elemIndex z v)
   in (zip [0..] v, map (\(i,j) -> ((get_ix i,get_ix j),())) e)

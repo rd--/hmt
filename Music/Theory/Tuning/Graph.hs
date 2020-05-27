@@ -4,33 +4,21 @@ module Music.Theory.Tuning.Graph where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Data.Graph.Inductive.Graph as G {- fgl -}
-import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
+import qualified Data.Graph.Inductive.Graph as FGL {- fgl -}
+import qualified Data.Graph.Inductive.PatriciaTree as FGL {- fgl -}
 
 import qualified Music.Theory.Graph.Johnson_2014 as OH {- hmt -}
+import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as T {- hmt -}
 import qualified Music.Theory.Tuning.Euler as T {- hmt -}
 
+-- * R
+
 -- | R = Rational
 type R = Rational
-
--- | V = Vertex (R)
-type V = R
-
--- | E = Edge (V1,V2,V2-V1) where V1 < V2
-type E = (R,R,R)
-
--- | G = Graph ([V],[E])
-type G = ([V],[E])
-
--- | List of nodes at /g/ connected to node /r/.
-g_edge_list :: G -> R -> [R]
-g_edge_list (_,e) r =
-  let f (p,q,_) = if r == p then Just q else if r == q then Just p else Nothing
-  in mapMaybe f e
 
 -- | Flip a ratio in (1,2) and multiply by 2.
 --
@@ -56,23 +44,9 @@ r_rel (p,q) = T.fold_ratio_to_octave_err (p / q)
 iset_sym :: [R] -> [R]
 iset_sym l = l ++ map r_flip l
 
--- | The graph with vertices /scl_r/ and all edges where the interval (i,j) is in /iset/.
-mk_graph :: [R] -> [R] -> G
-mk_graph iset scl_r =
-  (scl_r
-  ,[(p,q,r) |
-    p <- scl_r,
-    q <- scl_r,
-    p < q,
-    let r = r_nrm (r_rel (p,q)),
-    r `elem` iset_sym iset])
-
 -- | Require r to have a perfect octave as last element, and remove it.
 rem_oct :: [R] -> [R]
 rem_oct r = if last r /= 2 then error "rem_oct" else T.drop_last r
-
-mk_graph_scl :: [R] -> T.Scale -> G
-mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
 
 r_pcset :: [R] -> [Int]
 r_pcset = sort . map (T.ratio_to_pc 0)
@@ -84,16 +58,27 @@ r_pcset_univ = nub . r_pcset
 r_is_pcset :: [Int] -> [R] -> Bool
 r_is_pcset pcset = ((==) pcset) . r_pcset
 
-graph_to_fgl :: G -> G.Gr R R
-graph_to_fgl (v,e) =
-  let fgl_v = zip [0..] v
-      r_to_v :: R -> Int
-      r_to_v x = fromJust (T.reverse_lookup x fgl_v)
-      fgl_e = map (\(p,q,i) -> (r_to_v p,r_to_v q,i)) e
-  in G.mkGraph fgl_v fgl_e
+-- * G
 
-mk_graph_fgl :: [R] -> [R] -> G.Gr R R
-mk_graph_fgl iset r = graph_to_fgl (mk_graph iset r)
+-- | EDGE-LABEL = (V1,V2,V2-V1) where V1 < V2
+type G = T.GR R
+
+edj_r :: (R, R) -> R
+edj_r = r_nrm . r_rel
+
+-- | The graph with vertices /scl_r/ and all edges where the interval (i,j) is in /iset/.
+mk_graph :: [R] -> [R] -> G
+mk_graph iset scl_r =
+  (scl_r
+  ,filter
+    (\e -> edj_r e `elem` iset_sym iset)
+    [(p,q) |
+     p <- scl_r,
+     q <- scl_r,
+     p < q])
+
+mk_graph_scl :: [R] -> T.Scale -> G
+mk_graph_scl iset = mk_graph iset . rem_oct . T.scale_ratios_req
 
 g_to_dot :: Int -> [(String,String)] -> (R -> [(String,String)]) -> G -> [String]
 g_to_dot k attr v_attr (_,e_set) =
@@ -101,10 +86,31 @@ g_to_dot k attr v_attr (_,e_set) =
   (("edge:fontsize","9") : attr)
   (\v -> ("label",T.rat_label (k,True) v) : v_attr v
   ,\e -> [("label",T.rational_pp e)])
-  (map (\(p,q,r) -> ((p,q),r)) e_set)
+  (map (\e -> (e,edj_r e)) e_set)
 
 scl_to_dot :: ([R], Int, [(String, String)], R -> [(String, String)]) -> String -> IO [String]
 scl_to_dot (iset,k,attr,v_attr) nm = do
   sc <- T.scl_load nm
   let gr = mk_graph_scl iset sc
   return (g_to_dot k attr v_attr gr)
+
+-- * FGL
+
+graph_to_fgl :: G -> FGL.Gr R R
+graph_to_fgl (v,e) =
+  let fgl_v = zip [0..] v
+      r_to_v :: R -> Int
+      r_to_v x = fromJust (T.reverse_lookup x fgl_v)
+      fgl_e = map (\(p,q) -> (r_to_v p,r_to_v q,edj_r (p,q))) e
+  in FGL.mkGraph fgl_v fgl_e
+
+mk_graph_fgl :: [R] -> [R] -> FGL.Gr R R
+mk_graph_fgl iset = graph_to_fgl . mk_graph iset
+
+{-
+-- | List of nodes at /g/ connected to node /r/.
+g_edge_list :: G -> R -> [R]
+g_edge_list (_,e) r =
+  let f (p,q) = if r == p then Just q else if r == q then Just p else Nothing
+  in mapMaybe f e
+-}
