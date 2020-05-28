@@ -180,6 +180,10 @@ type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
 -- | Labelled graph, V/E typed.
 type LBL v e = LBL_GR V v e
 
+-- | Apply /v/ at vertex labels and /e/ at edge labels.
+lbl_bimap :: (v -> v') -> (e -> e') -> LBL v e -> LBL v' e'
+lbl_bimap v_f e_f (v,e) = (map (fmap v_f) v,map (fmap e_f) e)
+
 v_label :: v -> LBL v e -> V -> v
 v_label def (tbl,_) v = fromMaybe def (lookup v tbl)
 
