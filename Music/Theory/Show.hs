@@ -73,6 +73,7 @@ show_rational_decimal n = double_pp n . fromRational
 
 -- | Show /r/ as float to /k/ places.
 --
+-- > real_pp 4 (1/3 :: Rational) == "0.3333"
 -- > map (real_pp 4) [1,1.1,1.12,1.123,1.1234,1/0,sqrt (-1)]
 real_pp :: Real t => Int -> t -> String
 real_pp k = realfloat_pp k . T.real_to_double
@@ -89,20 +90,14 @@ real_pp_unicode k r =
 
 -- | Prints /n/ as integral or to at most /k/ decimal places.
 --
--- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234] == ["1","1.1","1.12","1.123","1.1234"]
-real_pp_trunc :: Real t => Int -> t -> String
+-- > real_pp_trunc 4 (1/3 :: Rational) == "0.3333"
+-- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234,1.00001] == ["1","1.1","1.12","1.123","1.1234","1"]
+real_pp_trunc :: (RealFrac t) => Int -> t -> String
 real_pp_trunc k n =
-  if T.real_is_whole n
-  then show (numerator (toRational n))
-  else dropWhileEnd (== '0') (real_pp k n)
-
--- | Type specialised 'realfloat_pp'.
-float_pp :: Int -> Float -> String
-float_pp = realfloat_pp
-
--- | Type specialised 'realfloat_pp'.
-double_pp :: Int -> Double -> String
-double_pp = realfloat_pp
+  let (i,f) = T.integral_and_fractional_parts n
+  in if f < 10 ^^ (- k)
+     then show i
+     else dropWhileEnd (== '0') (real_pp k n)
 
 -- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
 -- to exponential notation very readily.
@@ -111,6 +106,16 @@ double_pp = realfloat_pp
 -- > map (realfloat_pp 4) [1,1.1,1.12,1.123,1.1234,1/0,sqrt (-1)]
 realfloat_pp :: RealFloat a => Int -> a -> String
 realfloat_pp k n = showFFloat (Just k) n ""
+
+-- | Type specialised 'realfloat_pp'.
+float_pp :: Int -> Float -> String
+float_pp = realfloat_pp
+
+-- | Type specialised 'realfloat_pp'.
+--
+-- > double_pp 4 0
+double_pp :: Int -> Double -> String
+double_pp = realfloat_pp
 
 -- * BIN
 

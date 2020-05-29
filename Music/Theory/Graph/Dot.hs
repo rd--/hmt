@@ -193,10 +193,6 @@ fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
 -- * DOT-PROCESS
 
--- | Alias for 'dot_to_ext'
-dot_to_svg :: [String] -> FilePath -> FilePath -> IO ()
-dot_to_svg = dot_to_ext
-
 {- | Run /dot/ to generate a file type based on the output file extension
    (ie. .svg, .png, .jpeg, .gif)
 
@@ -206,4 +202,8 @@ dot_to_ext :: [String] -> FilePath -> FilePath -> IO ()
 dot_to_ext opt dot_fn ext_fn =
   let arg = opt ++ ["-T",tail (takeExtension ext_fn),"-o",ext_fn,dot_fn]
   in void (rawSystem "dot" arg)
+
+-- | Alias for 'dot_to_ext'
+dot_to_svg :: [String] -> FilePath -> FilePath -> IO ()
+dot_to_svg = dot_to_ext
 
