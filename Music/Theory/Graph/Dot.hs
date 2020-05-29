@@ -4,7 +4,7 @@ module Music.Theory.Graph.Dot where
 import Control.Monad {- base -}
 import Data.Char {- base -}
 import Data.List {- base -}
-import System.Exit {- process -}
+import System.FilePath {- filepath -}
 import System.Process {- process -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
@@ -193,11 +193,17 @@ fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
 -- * DOT-PROCESS
 
--- | Run /dot/ to generate an /SVG/ file.
---   /-n/ must be given to not run the layout algorithm and to use position data in the /dot/ file.
-dot_to_svg :: [String] -> FilePath -> FilePath -> IO ExitCode
-dot_to_svg opt dot_fn svg_fn = rawSystem "dot" (opt ++ ["-T","svg","-o",svg_fn,dot_fn])
+-- | Alias for 'dot_to_ext'
+dot_to_svg :: [String] -> FilePath -> FilePath -> IO ()
+dot_to_svg = dot_to_ext
 
--- | 'void' of 'dot_to_svg'
-dot_to_svg_ :: [String] -> FilePath -> FilePath -> IO ()
-dot_to_svg_ opt dot_fn = void . dot_to_svg opt dot_fn
+{- | Run /dot/ to generate a file type based on the output file extension
+   (ie. .svg, .png, .jpeg, .gif)
+
+   /-n/ must be given to not run the layout algorithm and to use position data in the /dot/ file.
+-}
+dot_to_ext :: [String] -> FilePath -> FilePath -> IO ()
+dot_to_ext opt dot_fn ext_fn =
+  let arg = opt ++ ["-T",tail (takeExtension ext_fn),"-o",ext_fn,dot_fn]
+  in void (rawSystem "dot" arg)
+
