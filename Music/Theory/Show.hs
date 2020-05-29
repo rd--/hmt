@@ -94,7 +94,7 @@ real_pp_unicode k r =
 -- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234,1.00001] == ["1","1.1","1.12","1.123","1.1234","1"]
 real_pp_trunc :: (RealFrac t) => Int -> t -> String
 real_pp_trunc k n =
-  let (i,f) = T.integral_and_fractional_parts n
+  let (i,f) = T.integer_and_fractional_parts n
   in if f < 10 ^^ (- k)
      then show i
      else dropWhileEnd (== '0') (real_pp k n)
