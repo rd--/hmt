@@ -88,16 +88,19 @@ real_pp_unicode k r =
     "-Infinity" -> "-∞"
     s -> s
 
--- | Prints /n/ as integral or to at most /k/ decimal places.
+-- | Prints /n/ as integral or to at most /k/ decimal places. Does not print -0.
 --
 -- > real_pp_trunc 4 (1/3 :: Rational) == "0.3333"
--- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234,1.00001] == ["1","1.1","1.12","1.123","1.1234","1"]
-real_pp_trunc :: (RealFrac t) => Int -> t -> String
+-- > map (real_pp_trunc 4) [1,1.1,1.12,1.123,1.1234] == ["1","1.1","1.12","1.123","1.1234"]
+-- > map (real_pp_trunc 4) [1.00009,1.00001] == ["1.0001","1"]
+-- > map (real_pp_trunc 2) [59.999,60.001,-0.00,-0.001]
+real_pp_trunc :: Real t => Int -> t -> String
 real_pp_trunc k n =
-  let (i,f) = T.integer_and_fractional_parts n
-  in if f < 10 ^^ (- k)
-     then show i
-     else dropWhileEnd (== '0') (real_pp k n)
+  case break (== '.') (real_pp k n) of
+    (i,[]) -> i
+    (i,j) -> case dropWhileEnd (== '0') j of
+               "." -> if i == "-0" then "0" else i
+               z -> i ++ z
 
 -- | Variant of 'showFFloat'.  The 'Show' instance for floats resorts
 -- to exponential notation very readily.
