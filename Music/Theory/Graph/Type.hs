@@ -42,6 +42,10 @@ e_eq_undir e0 e1 =
 e_sort :: Ord t => (t, t) -> (t, t)
 e_sort (i,j) = (min i j,max i j)
 
+-- | If (i,j) and (j,i) are both in E delete (j,i) where i < j.
+gr_mk_undir :: Ord t => GR t -> GR t
+gr_mk_undir (v,e) = (v,nub (sort (map e_sort e)))
+
 -- | List of E to G, derives V from E.
 eset_to_gr :: Ord t => [(t,t)] -> GR t
 eset_to_gr e =
@@ -184,6 +188,9 @@ type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
 
 -- | Labelled graph, V/E typed.
 type LBL v e = LBL_GR V v e
+
+lbl_degree :: LBL v e -> (Int,Int)
+lbl_degree (v,e) = (length v,length e)
 
 -- | Apply /v/ at vertex labels and /e/ at edge labels.
 lbl_bimap :: (v -> v') -> (e -> e') -> LBL v e -> LBL v' e'

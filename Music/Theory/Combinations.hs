@@ -13,6 +13,7 @@ nk_combinations n k = T.nk_permutations n k `div` T.factorial k
 --
 -- > combinations 3 [1..4] == [[1,2,3],[1,2,4],[1,3,4],[2,3,4]]
 -- > length (combinations 3 [1..5]) == nk_combinations 5 3
+-- > combinations 3 "xyzw" == ["xyz","xyw","xzw","yzw"]
 combinations :: Int -> [a] -> [[a]]
 combinations k s =
     case (k,s) of
