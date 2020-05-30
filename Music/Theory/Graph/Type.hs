@@ -1,6 +1,7 @@
 -- | Graph types.
 module Music.Theory.Graph.Type where
 
+import Data.Bifunctor {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
@@ -12,6 +13,10 @@ import qualified Music.Theory.List as T {- hmt -}
 
 -- | (vertices,edges)
 type GR t = ([t],[(t,t)])
+
+-- | 'GR' is a functor.
+gr_map :: (t -> u) -> GR t -> GR u
+gr_map f (v,e) = (map f v,map (bimap f f) e)
 
 -- | (|V|,|E|)
 gr_degree :: GR t -> (Int,Int)

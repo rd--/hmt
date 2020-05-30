@@ -73,10 +73,19 @@ a000201 =
 
 Lucas numbers (beginning with 1): L(n) = L(n-1) + L(n-2) with L(1) = 1, L(2) = 3
 
-[1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127] `isPrefixOf` a000204
+> [1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127] `isPrefixOf` a000204
 -}
 a000204 :: Num n => [n]
 a000204 = 1 : 3 : zipWith (+) a000204 (tail a000204)
+
+{- | <https://oeis.org/A000217>
+
+Triangular numbers: a(n) = binomial(n+1,2) = n(n+1)/2 = 0 + 1 + 2 + ... + n.
+
+> [0,1,3,6,10,15,21,28,36,45,55,66,78,91,105,120,136,153,171,190,210,231,253,276] `isPrefixOf` a000217
+-}
+a000217 :: (Enum n,Num n) => [n]
+a000217 = scanl1 (+) [0..]
 
 {- | <http://oeis.org/A000225>
 
@@ -95,6 +104,15 @@ The squares of the non-negative integers.
 -}
 a000290 :: Integral n => [n]
 a000290 = let square n = n * n in map square [0..]
+
+{- | <https://oeis.org/A000292>
+
+Tetrahedral (or triangular pyramidal) numbers: a(n) = C(n+2,3) = n*(n+1)*(n+2)/6.
+
+> [0,1,4,10,20,35,56,84,120,165,220,286,364,455,560,680,816,969,1140,1330,1540] `isPrefixOf` a000292
+-}
+a000292 :: (Enum n,Num n) => [n]
+a000292 = scanl1 (+) a000217
 
 {- | <https://oeis.org/A000930>
 
