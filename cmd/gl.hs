@@ -8,10 +8,12 @@ import Data.Fixed {- base -}
 import Data.IORef {- base -}
 import Data.List.Split {- base -}
 import System.Exit {- base -}
+import System.FilePath {- filepath -}
 import Text.Printf {- base -}
 
 import Graphics.UI.GLUT {- GLUT -}
 
+import qualified Data.CG.Minus.Geometry.OFF as OFF {- hcg-minus -}
 import Data.CG.Minus.Plain {- hcg-minus -}
 
 import qualified Music.Theory.Graph.OBJ as T {- hmt -}
@@ -22,7 +24,7 @@ import qualified Music.Theory.Opt as T {- hmt -}
 
 type R = GLfloat
 
--- * GR/OBJ
+-- * GR/OBJ-OFF
 
 type GR = T.LBL (V3 R) ()
 
@@ -36,6 +38,16 @@ obj_load ch fn = do
     (False,True) -> error "obj_load?"
     (_,False) -> return (v,e)
 
+off_load :: FilePath -> IO GR
+off_load = fmap OFF.off_graph . OFF.off_load_3
+
+obj_off_load :: Bool -> FilePath -> IO GR
+obj_off_load ch fn =
+  case takeExtension fn of
+    ".obj" -> obj_load ch fn
+    ".off" -> if ch then error "CH AT OFF?" else off_load fn
+    _ -> error "obj_off_load: EXT?"
+
 gr_to_vsq :: GR -> [V3 R]
 gr_to_vsq (v,e) =
   let ix = maybe (error "?") id . flip lookup v
@@ -46,7 +58,7 @@ type LN = [[Vertex3 R]]
 
 gr_load_set :: (Bool,Bool) -> [FilePath] -> IO LN
 gr_load_set (ch,nrm) fn = do
-  v <- mapM (fmap gr_to_vsq . obj_load ch) fn
+  v <- mapM (fmap gr_to_vsq . obj_off_load ch) fn
   let c = (if nrm then v3_normalise (-1,1) else id) (concat v)
       f (x,y,z) = Vertex3 x y z
   return (chunksOf 16 (map f c))  -- does sending vertices in chunks help?
@@ -191,7 +203,7 @@ timer_f dly = do
 gl_gr_obj :: (Bool,Bool) -> GLsizei -> Timeout -> [FilePath] -> IO ()
 gl_gr_obj opt sz dly fn = do
   ln <- gr_load_set opt fn
-  _ <- initialize "GR-OBJ" []
+  _ <- initialize "GR-OBJ-OFF" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
   initialWindowSize $= Size sz sz
   initialWindowPosition $= Position 0 0
