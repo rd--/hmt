@@ -1,7 +1,7 @@
 # gl
 
 `obj-gr` loads a graph (a set of vertices and a set of edges) from one
-or more `OBJ` of `OFF` files and displays it.
+or more `OBJ` or `OFF` or `4OFF` files and displays it.
 
 If `--chain` is set input OBJ files that are vertex lists only will be
 loaded as chains (ie. lines will be drawn between each successive
@@ -21,6 +21,11 @@ Key commands are:
   `3`=(90|270,0,90|270)
   `4`=(0,0,90|270)
   `5`=(90,0|180,180|0)
+- R4->R3 PROJECTION:
+  `F1`=XYZ
+  `F2`=XYW
+  `F3`=XZW
+  `F4`=YZW
 - INITIAL STATE: `0`
 - ON-SCREEN-DISPLAY: `o`
 - QUIT: `Q`

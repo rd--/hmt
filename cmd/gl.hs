@@ -15,6 +15,7 @@ import Graphics.UI.GLUT {- GLUT -}
 
 import qualified Data.CG.Minus.Geometry.OFF as OFF {- hcg-minus -}
 import Data.CG.Minus.Plain {- hcg-minus -}
+import Data.CG.Minus.Projection {- hcg-minus -}
 
 import qualified Music.Theory.Graph.OBJ as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
@@ -26,20 +27,23 @@ type R = GLfloat
 
 -- * GR/OBJ-OFF
 
-type GR = T.LBL (V3 R) ()
+type GR = T.LBL (V4 R) ()
 
 -- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
 --   If CH is true and there are edges, CH is ignored, allowing mixed sets to be loaded by setting CH.
 obj_load :: Bool -> FilePath -> IO GR
 obj_load ch fn = do
   (v,e) <- T.obj_load_v3_graph fn
+  let f (i,(x,y,z)) = (i,(x,y,z,0))
   case (ch,null e) of
-    (True,True) -> return (v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
+    (True,True) -> return (map f v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
     (False,True) -> error "obj_load?"
-    (_,False) -> return (v,e)
+    (_,False) -> return (map f v,e)
 
 off_load :: FilePath -> IO GR
-off_load = fmap OFF.off_graph . OFF.off_load_3
+off_load =
+  let f (x,y,z) = (x,y,z,0)
+  in fmap OFF.off_graph . OFF.off_load_either (f,id)
 
 obj_off_load :: Bool -> FilePath -> IO GR
 obj_off_load ch fn =
@@ -48,20 +52,19 @@ obj_off_load ch fn =
     ".off" -> if ch then error "CH AT OFF?" else off_load fn
     _ -> error "obj_off_load: EXT?"
 
-gr_to_vsq :: GR -> [V3 R]
+gr_to_vsq :: GR -> [V4 R]
 gr_to_vsq (v,e) =
   let ix = maybe (error "?") id . flip lookup v
       f ((i,j),_) = [ix i,ix j]
   in concatMap f e
 
-type LN = [[Vertex3 R]]
+type LN = [[V4 R]]
 
 gr_load_set :: (Bool,Bool) -> [FilePath] -> IO LN
 gr_load_set (ch,nrm) fn = do
   v <- mapM (fmap gr_to_vsq . obj_off_load ch) fn
-  let c = (if nrm then v3_normalise (-1,1) else id) (concat v)
-      f (x,y,z) = Vertex3 x y z
-  return (chunksOf 16 (map f c))  -- does sending vertices in chunks help?
+  let c = (if nrm then v4_normalise (-1,1) else id) (concat v)
+  return (chunksOf 16 c)  -- does sending vertices in chunks help?
 
 -- * IOREF
 
@@ -70,40 +73,46 @@ withIORef s f = readIORef s >>= f
 
 -- * STATE
 
--- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd)
-type State = (R,V3 R,V3 R,Bool)
+-- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd,prj)
+type State = (R,V3 R,V3 R,Bool,V4 R -> V3 R)
 
 state_0 :: State
-state_0 = (1.0,(20,30,0),(0,0,0),False)
+state_0 = (1.0,(20,30,0),(0,0,0),False,prj_xyz)
 
 mod_osd :: IORef State -> IO ()
-mod_osd s = modifyIORef s (\(z,t,r,o) -> (z,t,r,not o))
+mod_osd s = modifyIORef s (\(z,t,r,o,p) -> (z,t,r,not o,p))
 
 mod_trs_f :: V3 R -> State -> State
-mod_trs_f (dx,dy,dz) (s,r,(x,y,z),o) = (s,r,(x + dx,y + dy,z + dz),o)
+mod_trs_f (dx,dy,dz) (s,r,(x,y,z),o,p) = (s,r,(x + dx,y + dy,z + dz),o,p)
 
 mod_trs :: IORef State -> V3 R -> IO ()
 mod_trs s d = modifyIORef s (mod_trs_f d)
 
 mod_rot_f :: V3 R -> State -> State
-mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o) =
+mod_rot_f (dx,dy,dz) (s,(x,y,z),t,o,p) =
   let f i j = Data.Fixed.mod' (i + j) 360
-  in (s,(f x dx,f y dy,f z dz),t,o)
+  in (s,(f x dx,f y dy,f z dz),t,o,p)
 
 mod_rot :: IORef State -> V3 R -> IO ()
 mod_rot s d = modifyIORef s (mod_rot_f d)
 
 set_rot :: IORef State -> V3 R -> IO ()
-set_rot s rt = modifyIORef s (\(sc,_,tr,o) -> (sc,rt,tr,o))
+set_rot s rt = modifyIORef s (\(sc,_,tr,o,p) -> (sc,rt,tr,o,p))
 
 mod_zoom_f :: R -> State -> State
-mod_zoom_f n (s,r,t,o) = (s + n,r,t,o)
+mod_zoom_f n (s,r,t,o,p) = (s + n,r,t,o,p)
 
 mod_zoom :: IORef State -> R -> IO ()
 mod_zoom s n = modifyIORef s (mod_zoom_f n)
 
 set_init :: IORef State -> IO ()
 set_init s = modifyIORef s (const state_0)
+
+set_prj_f :: (V4 R -> V3 R) -> State -> State
+set_prj_f p (s,r,t,o,_) = (s,r,t,o,p)
+
+set_prj :: IORef State -> (V4 R -> V3 R) -> IO ()
+set_prj s p = modifyIORef s (set_prj_f p)
 
 -- * GL
 
@@ -116,14 +125,17 @@ gl_with_time m x = do
   print (m,t1 - t0)
 -}
 
-gl_render_ln :: LN -> IO ()
-gl_render_ln = mapM_ (\x -> renderPrimitive Lines (mapM_ vertex x))
+gl_render_ln :: State -> LN -> IO ()
+gl_render_ln (_,_,_,_,p) =
+  let v (x,y,z) = Vertex3 x y z
+      f i = renderPrimitive Lines (mapM_ (vertex . v . p) i)
+  in mapM_ f
 
 gl_grey :: Color4 R
 gl_grey = Color4 0.5 0.5 0.5 0.5
 
 gl_render_state :: State -> IO ()
-gl_render_state (sc,(rx,ry,rz),(tx,ty,tz),_) = do
+gl_render_state (sc,(rx,ry,rz),(tx,ty,tz),_,_) = do
     translate (Vector3 tx ty tz)
     rotate rx (Vector3 1 0 0)
     rotate ry (Vector3 0 1 0)
@@ -135,20 +147,20 @@ r_to_int :: R -> Int
 r_to_int = round
 
 state_pp :: State -> String
-state_pp (sc,(rx,ry,rz),(tx,ty,tz),_) =
+state_pp (sc,(rx,ry,rz),(tx,ty,tz),_,_) =
   let i n = r_to_int (if n > 180 then n - 360 else n)
   in printf "%.2f (%d,%d,%d) (%.1f,%.1f,%.1f)" sc (i rx) (i ry) (i rz) tx ty tz
 
 gl_render_txt :: State -> IO ()
 gl_render_txt st = do
-  let (_,_,_,o) = st
+  let (_,_,_,o,_) = st
   when o (rasterPos (Vertex3 (- 2.5) (-2.5) 0 :: Vertex3 R) >>
           renderString Fixed8By13 (state_pp st))
 
 gl_draw :: LN -> State -> IO ()
 gl_draw ln s = do
   clear [ColorBuffer]
-  preservingMatrix (gl_render_txt s >> gl_render_state s >> gl_render_ln ln)
+  preservingMatrix (gl_render_txt s >> gl_render_state s >> gl_render_ln s ln)
   swapBuffers
 
 gl_keydown :: IORef State -> Key -> Modifiers -> IO ()
@@ -163,6 +175,10 @@ gl_keydown s ky m = do
     SpecialKey KeyRight -> if c then mod_trs s (0.1,0,0) else mod_rot s (0,r,0)
     SpecialKey KeyPageUp -> if c then mod_trs s (0,0,0.1) else mod_rot s (0,0,r)
     SpecialKey KeyPageDown -> if c then mod_trs s (0,0,-0.1) else mod_rot s (0,0,- r)
+    SpecialKey KeyF1 -> set_prj s prj_xyz
+    SpecialKey KeyF2 -> set_prj s prj_xyw
+    SpecialKey KeyF3 -> set_prj s prj_xzw
+    SpecialKey KeyF4 -> set_prj s prj_yzw
     Char '=' -> mod_zoom s (if c then 0.1 else 0.01)
     Char '-' -> mod_zoom s (if c then -0.1 else -0.01)
     Char '1' -> set_rot s (if not a then (0,0,0) else (0,180,0)) -- Y
