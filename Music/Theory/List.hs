@@ -1330,6 +1330,12 @@ adopt_shape jn l =
 adopt_shape_2 :: (Traversable t,Traversable u) => (a -> b -> c) -> [b] -> t (u a) -> ([b],t (u c))
 adopt_shape_2 jn l = mapAccumL (adopt_shape jn) l
 
+-- | Two-level variant of 'zip' [1..]
+--
+-- > list_number_2 ["number","list","2"]
+list_number_2 :: [[x]] -> [[(Int,x)]]
+list_number_2 = snd . adopt_shape_2 (flip (,)) [1..]
+
 {- | Variant of 'adopt_shape' that considers only 'Just' elements at 'Traversable'.
 
 > let s = "a(b(cd)ef)ghi"

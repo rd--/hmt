@@ -109,13 +109,13 @@ dot_attr_def (ly,fn,fs,sh) =
 -- * GRAPH
 
 -- | Graph pretty-printer, (v -> [attr],e -> [attr])
-type GR_PP v e = (v -> [DOT_ATTR],e -> [DOT_ATTR])
+type GR_PP v e = ((Int,v) -> [DOT_ATTR],((Int,Int),e) -> [DOT_ATTR])
 
 gr_pp_label_m :: Maybe (v -> DOT_VALUE) -> Maybe (e -> DOT_VALUE) -> GR_PP v e
 gr_pp_label_m f_v f_e =
-  let lift m e = case m of
-                    Nothing -> []
-                    Just f -> [("label",f e)]
+  let lift m (_,x) = case m of
+                       Nothing -> []
+                       Just f -> [("label",f x)]
   in (lift f_v,lift f_e)
 
 -- | Label V & E.
@@ -173,9 +173,9 @@ g_lift_pos_fn f v = let (c,r) = f v in [node_pos_attr (c * 100,r * 100)]
 lbl_to_dot :: G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
 lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =
     let ws s = if null s then "" else " " ++ s
-        v_f (k,lbl) = concat [show k,ws (dot_attr_seq_pp (v_attr lbl)),";"]
+        v_f (k,lbl) = concat [show k,ws (dot_attr_seq_pp (v_attr (k,lbl))),";"]
         e_f ((lhs,rhs),lbl) = concat [show lhs,g_type_to_edge_symbol g_typ,show rhs
-                                     ,ws (dot_attr_seq_pp (e_attr lbl)),";"]
+                                     ,ws (dot_attr_seq_pp (e_attr ((lhs,rhs),lbl))),";"]
     in concat [[g_type_to_string g_typ," g {"]
               ,map dot_attr_set_pp (dot_attr_collate opt)
               ,map v_f v

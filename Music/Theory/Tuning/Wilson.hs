@@ -188,7 +188,7 @@ ew_gr_udot (lc_m,attr,v_pp) =
                   Just lc -> ("neato",Just . ew_gr_r_pos lc)
   in T.lbl_to_udot
      ([("graph:layout",e),("node:shape","plain")] ++ attr) -- ("graph:K","0.6") ("edge:len","1.0")
-     (\v -> T.mcons (p_f v) [("label",v_pp v)]
+     (\(_,v) -> T.mcons (p_f v) [("label",v_pp v)]
      ,\_ -> [])
 
 ew_gr_udot_wr :: EW_GR_OPT -> FilePath -> T.LBL Rational () -> IO ()

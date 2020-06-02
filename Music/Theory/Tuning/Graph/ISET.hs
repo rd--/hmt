@@ -89,8 +89,8 @@ g_to_dot k attr v_attr (_,e_set) =
         ,("edge:fontsize","9")]
   in gen_graph
      (opt ++ attr)
-     (\v -> ("label",Euler.rat_label (k,True) v) : v_attr v
-     ,\e -> [("label",T.rational_pp e)])
+     (\(_,v) -> ("label",Euler.rat_label (k,True) v) : v_attr v
+     ,\(_,e) -> [("label",T.rational_pp e)])
      (map (\e -> (e,edj_r e)) e_set)
 
 -- * SCALA

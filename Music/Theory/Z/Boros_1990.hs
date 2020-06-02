@@ -259,7 +259,7 @@ set_shape v = ("shape",if self_inv v then "doublecircle" else "circle")
 type GR = G.Gr PCSET ()
 
 gr_pp' :: (PCSET -> String) -> T.GR_PP PCSET ()
-gr_pp' f = (\v -> [set_shape v,("label",f v)],const [])
+gr_pp' f = (\(_,v) -> [set_shape v,("label",f v)],const [])
 
 gr_pp :: T.GR_PP PCSET ()
 gr_pp = gr_pp' pcset_pp
@@ -296,5 +296,5 @@ d_fig_5_g' = T.g_from_edges_l d_fig_5_e
 
 d_fig_5' :: [String]
 d_fig_5' =
-    let pp = (\_ -> [("shape","")],\e -> [("label",ath_pp e)])
+    let pp = (\_ -> [("shape","")],\(_,e) -> [("label",ath_pp e)])
     in T.fgl_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'
