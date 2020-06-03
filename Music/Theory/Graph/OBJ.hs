@@ -71,7 +71,7 @@ obj_load_v3_graph_f64 = obj_load_v3_graph
 
 -- | Rewrite a set of faces (CCW triples of (x,y,z) coordinates) as (vertices,[[v-indices]]).
 --   Indices are zero-indexed.
-obj_face_set_dat :: Ord n => [[n]] -> ([(Int,n)],[[Int]])
+obj_face_set_dat :: Ord n => [[(n,n,n)]] -> ([(Int,(n,n,n))],[[Int]])
 obj_face_set_dat t =
   let p = nub (sort (concat t))
       v = zip [0..] p
