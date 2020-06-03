@@ -8,6 +8,7 @@ TXT=<http://www.martinreddy.net/gfx/3d/OBJ.spec>
 module Music.Theory.Graph.OBJ where
 
 import Data.Either {- base -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
@@ -65,3 +66,27 @@ obj_store_v3_graph_f64 = obj_store_v3_graph
 -- | Type-specialised.
 obj_load_v3_graph_f64 :: FilePath -> IO (T.LBL (Double,Double,Double) ())
 obj_load_v3_graph_f64 = obj_load_v3_graph
+
+-- * FACES
+
+-- | Rewrite a set of faces (CCW triples of (x,y,z) coordinates) as (vertices,[[v-indices]]).
+--   Indices are zero-indexed.
+obj_face_set_dat :: Ord n => [[n]] -> ([(Int,n)],[[Int]])
+obj_face_set_dat t =
+  let p = nub (sort (concat t))
+      v = zip [0..] p
+      f = map (map (flip T.reverse_lookup_err v)) t
+  in (v,f)
+
+-- | Format a set of faces (CCW triples of (x,y,z) coordinates) as an OBJ file.
+--   OBJ files are one-indexed.
+obj_face_set_fmt :: (Show n, Ord n) => [[(n,n,n)]] -> [String]
+obj_face_set_fmt t =
+  let v_f (_,(x,y,z)) = unwords ["v",show x,show y,show z]
+      f_f = unwords . ("f" :) . map show . map (+ 1)
+      (v,f) = obj_face_set_dat t
+  in map v_f v ++ map f_f f
+
+-- | 'writeFile' of 'obj_face_set_fmt'
+obj_face_set_store :: (Show n, Ord n) => FilePath -> [[(n,n,n)]] -> IO ()
+obj_face_set_store fn = writeFile fn . unlines . obj_face_set_fmt
