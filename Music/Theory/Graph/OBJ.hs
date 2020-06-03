@@ -11,6 +11,7 @@ import Data.Either {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 
 {- | Requires (but does not check) that graph vertices be indexed [0 .. #v - 1]
@@ -33,17 +34,19 @@ v3_graph_to_obj = v3_graph_to_obj_opt False
 obj_store_v3_graph :: RealFloat n => Int -> FilePath -> (T.LBL (n,n,n) ()) -> IO ()
 obj_store_v3_graph k fn = writeFile fn . unlines . v3_graph_to_obj k
 
--- | Read OBJ file consisting only of /v/ and /l/ (and optionally /p/, which are ignored) entries.
+-- | Read OBJ file consisting only of /v/, /l/ and /f/ (and optionally /p/, which are ignored) entries.
 obj_to_v3_graph :: Read n => [String] -> T.LBL (n,n,n) ()
 obj_to_v3_graph txt =
   let l_verify (i,j) = if i < 0 || j < 0 then error "obj_to_v3_graph?" else (i,j)
+      e_read (i,j) = l_verify (read i - 1,read j - 1)
       f s = case words s of
               ["v",x,y,z] -> Just (Left (read x,read y,read z))
-              ["l",i,j] -> Just (Right (l_verify (read i - 1,read j - 1)))
+              "l":ix -> Just (Right (map e_read (T.adj2 1 ix)))
+              "f":ix -> Just (Right (map e_read (T.adj2_cyclic 1 ix)))
               ["p",_] -> Nothing
               _ -> error "obj_to_v3_graph?"
       (v,l) = partitionEithers (mapMaybe f txt)
-  in (zip [0..] v,zip l (repeat ()))
+  in (zip [0..] v,zip (concat l) (repeat ()))
 
 -- | 'obj_to_v3_graph' of 'readFile'.
 obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
