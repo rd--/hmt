@@ -74,10 +74,10 @@ withIORef s f = readIORef s >>= f
 -- * STATE
 
 -- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd,prj)
-type State = (R,V3 R,V3 R,Bool,V4 R -> V3 R)
+type State = (R,V3 R,V3 R,Bool,(String,V4 R -> V3 R))
 
 state_0 :: State
-state_0 = (1.0,(20,30,0),(0,0,0),False,prj_xyz)
+state_0 = (1.0,(20,30,0),(0,0,0),False,("XYZ",prj_xyz))
 
 mod_osd :: IORef State -> IO ()
 mod_osd s = modifyIORef s (\(z,t,r,o,p) -> (z,t,r,not o,p))
@@ -108,10 +108,10 @@ mod_zoom s n = modifyIORef s (mod_zoom_f n)
 set_init :: IORef State -> IO ()
 set_init s = modifyIORef s (const state_0)
 
-set_prj_f :: (V4 R -> V3 R) -> State -> State
+set_prj_f :: (String,V4 R -> V3 R) -> State -> State
 set_prj_f p (s,r,t,o,_) = (s,r,t,o,p)
 
-set_prj :: IORef State -> (V4 R -> V3 R) -> IO ()
+set_prj :: IORef State -> (String,V4 R -> V3 R) -> IO ()
 set_prj s p = modifyIORef s (set_prj_f p)
 
 -- * GL
@@ -126,7 +126,7 @@ gl_with_time m x = do
 -}
 
 gl_render_ln :: State -> LN -> IO ()
-gl_render_ln (_,_,_,_,p) =
+gl_render_ln (_,_,_,_,(_,p)) =
   let v (x,y,z) = Vertex3 x y z
       f i = renderPrimitive Lines (mapM_ (vertex . v . p) i)
   in mapM_ f
@@ -147,9 +147,9 @@ r_to_int :: R -> Int
 r_to_int = round
 
 state_pp :: State -> String
-state_pp (sc,(rx,ry,rz),(tx,ty,tz),_,_) =
+state_pp (sc,(rx,ry,rz),(tx,ty,tz),_,(p,_)) =
   let i n = r_to_int (if n > 180 then n - 360 else n)
-  in printf "%.2f (%d,%d,%d) (%.1f,%.1f,%.1f)" sc (i rx) (i ry) (i rz) tx ty tz
+  in printf "%.2f (%d,%d,%d) (%.1f,%.1f,%.1f) %s" sc (i rx) (i ry) (i rz) tx ty tz p
 
 gl_render_txt :: State -> IO ()
 gl_render_txt st = do
@@ -175,10 +175,10 @@ gl_keydown s ky m = do
     SpecialKey KeyRight -> if c then mod_trs s (0.1,0,0) else mod_rot s (0,r,0)
     SpecialKey KeyPageUp -> if c then mod_trs s (0,0,0.1) else mod_rot s (0,0,r)
     SpecialKey KeyPageDown -> if c then mod_trs s (0,0,-0.1) else mod_rot s (0,0,- r)
-    SpecialKey KeyF1 -> set_prj s prj_xyz
-    SpecialKey KeyF2 -> set_prj s prj_xyw
-    SpecialKey KeyF3 -> set_prj s prj_xzw
-    SpecialKey KeyF4 -> set_prj s prj_yzw
+    SpecialKey KeyF1 -> set_prj s ("XYZ",prj_xyz)
+    SpecialKey KeyF2 -> set_prj s ("XYW",prj_xyw)
+    SpecialKey KeyF3 -> set_prj s ("XZW",prj_xzw)
+    SpecialKey KeyF4 -> set_prj s ("YZW",prj_yzw)
     Char '=' -> mod_zoom s (if c then 0.1 else 0.01)
     Char '-' -> mod_zoom s (if c then -0.1 else -0.01)
     Char '1' -> set_rot s (if not a then (0,0,0) else (0,180,0)) -- Y
