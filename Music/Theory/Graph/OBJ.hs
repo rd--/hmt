@@ -1,6 +1,6 @@
 {- | Graph/OBJ functions
 
-This module is strictly for writing and reading graphs where vertices are labeled (x,y,z) to OBJ files.
+This module is primarily for reading & writing graphs where vertices are labeled (x,y,z) to OBJ files.
 
 PDF=<http://www.cs.utah.edu/~boulos/cs3505/obj_spec.pdf>
 TXT=<http://www.martinreddy.net/gfx/3d/OBJ.spec>
