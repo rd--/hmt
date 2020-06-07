@@ -70,7 +70,7 @@ obj_load_v3_graph_f64 = obj_load_v3_graph
 -- * FACES
 
 -- | Rewrite a set of faces (CCW triples of (x,y,z) coordinates) as (vertices,[[v-indices]]).
---   Indices are zero-indexed.
+--   Vertices are zero-indexed.
 obj_face_set_dat :: Ord n => [[(n,n,n)]] -> ([(Int,(n,n,n))],[[Int]])
 obj_face_set_dat t =
   let p = nub (sort (concat t))
@@ -78,14 +78,22 @@ obj_face_set_dat t =
       f = map (map (flip T.reverse_lookup_err v)) t
   in (v,f)
 
--- | Format a set of faces (CCW triples of (x,y,z) coordinates) as an OBJ file.
---   OBJ files are one-indexed.
-obj_face_set_fmt :: (Show n, Ord n) => [[(n,n,n)]] -> [String]
-obj_face_set_fmt t =
+-- | Inverse of 'obj_face_set_dat'.
+obj_face_dat_set :: ([(Int,(n,n,n))],[[Int]]) -> [[(n,n,n)]]
+obj_face_dat_set (v,f) = map (map (flip T.lookup_err v)) f
+
+obj_face_dat_fmt :: (Show n, Ord n) => ([(Int,(n,n,n))],[[Int]]) -> [String]
+obj_face_dat_fmt (v,f) =
   let v_f (_,(x,y,z)) = unwords ["v",show x,show y,show z]
       f_f = unwords . ("f" :) . map show . map (+ 1)
-      (v,f) = obj_face_set_dat t
   in map v_f v ++ map f_f f
+
+obj_face_dat_store :: (Show n, Ord n) => FilePath -> ([(Int,(n,n,n))],[[Int]]) -> IO ()
+obj_face_dat_store fn = writeFile fn . unlines . obj_face_dat_fmt
+
+-- | Format 'obj_face_set_dat' as an OBJ file. OBJ files are one-indexed.
+obj_face_set_fmt :: (Show n, Ord n) => [[(n,n,n)]] -> [String]
+obj_face_set_fmt = obj_face_dat_fmt . obj_face_set_dat
 
 -- | 'writeFile' of 'obj_face_set_fmt'
 obj_face_set_store :: (Show n, Ord n) => FilePath -> [[(n,n,n)]] -> IO ()
