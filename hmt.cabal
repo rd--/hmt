@@ -1,5 +1,5 @@
 Name:              hmt
-Version:           0.18
+Version:           0.19
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
 License:           GPL
@@ -29,7 +29,7 @@ Library
                    directory,
                    fgl,
                    filepath,
-                   hsc3 == 0.18.*,
+                   hsc3 == 0.19.*,
                    lazy-csv,
                    logict,
                    multiset-comb,
