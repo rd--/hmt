@@ -11,7 +11,7 @@ Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
 Tested-With:       GHC == 8.6.5
 Build-Type:        Simple
-Cabal-Version:     >= 1.8
+Cabal-Version:     >= 1.10
 
 Data-files:        README
                    data/csv/mnd/*.csv
@@ -42,6 +42,7 @@ Library
                    split,
                    text,
                    time
+  Default-Language:Haskell2010
   GHC-Options:     -Wall -fwarn-tabs
   Exposed-modules: Music.Theory.Array
                    Music.Theory.Array.Cell_Ref
