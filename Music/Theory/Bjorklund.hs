@@ -9,37 +9,39 @@ import Data.List.Split {- split -}
 
 import qualified Music.Theory.List as T
 
-type STEP a = ((Int,Int),([[a]],[[a]]))
+-- | Bjorklund state
+type BJORKLUND_ST a = ((Int,Int),([[a]],[[a]]))
 
-left :: STEP a -> STEP a
-left ((i,j),(xs,ys)) =
+-- | Bjorklund left process
+bjorklund_left_f :: BJORKLUND_ST a -> BJORKLUND_ST a
+bjorklund_left_f ((i,j),(xs,ys)) =
     let (xs',xs'') = splitAt j xs
     in ((j,i-j),(zipWith (++) xs' ys,xs''))
 
-right :: STEP a -> STEP a
-right ((i,j),(xs,ys)) =
+-- | Bjorklund right process
+bjorklund_right_f :: BJORKLUND_ST a -> BJORKLUND_ST a
+bjorklund_right_f ((i,j),(xs,ys)) =
     let (ys',ys'') = splitAt i ys
     in ((i,j-i),(zipWith (++) xs ys',ys''))
 
-bjorklund' :: STEP a -> STEP a
-bjorklund' (n,x) =
+-- | Bjorklund process, left & recur or right & recur or halt.
+bjorklund_f :: BJORKLUND_ST a -> BJORKLUND_ST a
+bjorklund_f (n,x) =
     let (i,j) = n
     in if min i j <= 1
        then (n,x)
-       else bjorklund' (if i > j then left (n,x) else right (n,x))
+       else bjorklund_f (if i > j then bjorklund_left_f (n,x) else bjorklund_right_f (n,x))
 
 {- | Bjorklund's algorithm to construct a binary sequence of /n/ bits
 with /k/ ones such that the /k/ ones are distributed as evenly as
 possible among the (/n/ - /k/) zeroes.
 
 > bjorklund (5,9) == [True,False,True,False,True,False,True,False,True]
-> map xdot (bjorklund (5,9)) == "x.x.x.x.x"
+> map xdot_ascii (bjorklund (5,9)) == "x.x.x.x.x"
 
-> let {es = [(2,[3,5]),(3,[4,5,8]),(4,[7,9,12,15]),(5,[6,7,8,9,11,12,13,16])
->           ,(6,[7,13]),(7,[8,9,10,12,15,16,17,18]),(8,[17,19])
->           ,(9,[14,16,22,23]),(11,[12,24]),(13,[24]),(15,[34])]
->     ;es' = concatMap (\(i,j) -> map ((,) i) j) es}
-> in mapM_ (putStrLn . euler_pp') es'
+> let es = [(2,[3,5]),(3,[4,5,8]),(4,[7,9,12,15]),(5,[6,7,8,9,11,12,13,16]),(6,[7,13]),(7,[8,9,10,12,15,16,17,18]),(8,[17,19]),(9,[14,16,22,23]),(11,[12,24]),(13,[24]),(15,[34])]
+> let es' = concatMap (\(i,j) -> map ((,) i) j) es
+> mapM_ (putStrLn . euler_pp_unicode) es'
 
 > > E(2,3) [××·] (12)
 > > E(2,5) [×·×··] (23)
@@ -85,12 +87,12 @@ bjorklund (i,j') =
     let j = j' - i
         x = replicate i [True]
         y = replicate j [False]
-        (_,(x',y')) = bjorklund' ((i,j),(x,y))
+        (_,(x',y')) = bjorklund_f ((i,j),(x,y))
     in concat x' ++ concat y'
 
 -- | 'T.rotate_right' of 'bjorklund'.
 --
--- > map xdot' (bjorklund_r 2 (5,16)) == "··×··×··×··×··×·"
+-- > map xdot_unicode (bjorklund_r 2 (5,16)) == "··×··×··×··×··×·"
 bjorklund_r :: Int -> (Int, Int) -> [Bool]
 bjorklund_r n = T.rotate_right n . bjorklund
 
@@ -102,40 +104,37 @@ euler_pp_f f e =
 
 -- | Unicode form, ie. @×·@.
 --
--- > euler_pp' (7,12) == "E(7,12) [×·××·×·××·×·] (2122122)"
-euler_pp' :: (Int, Int) -> String
-euler_pp' = euler_pp_f xdot'
+-- > euler_pp_unicode (7,12) == "E(7,12) [×·××·×·××·×·] (2122122)"
+euler_pp_unicode :: (Int, Int) -> String
+euler_pp_unicode = euler_pp_f xdot_unicode
 
 -- | ASCII form, ie. @x.@.
 --
--- > euler_pp (7,12) == "E(7,12) [x.xx.x.xx.x.] (2122122)"
-euler_pp :: (Int, Int) -> String
-euler_pp = euler_pp_f xdot
+-- > euler_pp_ascii (7,12) == "E(7,12) [x.xx.x.xx.x.] (2122122)"
+euler_pp_ascii :: (Int, Int) -> String
+euler_pp_ascii = euler_pp_f xdot_ascii
 
 -- | /xdot/ notation for pattern.
 --
--- > map xdot (bjorklund (5,9)) == "x.x.x.x.x"
-xdot :: Bool -> Char
-xdot x = if x then 'x' else '.'
+-- > map xdot_ascii (bjorklund (5,9)) == "x.x.x.x.x"
+xdot_ascii :: Bool -> Char
+xdot_ascii x = if x then 'x' else '.'
 
 -- | Unicode variant.
 --
--- > map xdot' (bjorklund (5,12)) == "×··×·×··×·×·"
--- > map xdot' (bjorklund (5,16)) == "×··×··×··×··×···"
-xdot' :: Bool -> Char
-xdot' x = if x then '×' else '·'
+-- > map xdot_unicode (bjorklund (5,12)) == "×··×·×··×·×·"
+-- > map xdot_unicode (bjorklund (5,16)) == "×··×··×··×··×···"
+xdot_unicode :: Bool -> Char
+xdot_unicode x = if x then '×' else '·'
 
 -- | The 'iseq' of a pattern is the distance between 'True' values.
 --
 -- > iseq (bjorklund (5,9)) == [2,2,2,2,1]
 iseq :: [Bool] -> [Int]
-iseq =
-    let f = split . keepDelimsL . whenElt
-    in tail . map length . f (== True)
+iseq = let f = split . keepDelimsL . whenElt in tail . map length . f (== True)
 
 -- | 'iseq' of pattern as compact string.
 --
 -- > iseq_str (bjorklund (5,9)) == "(22221)"
 iseq_str :: [Bool] -> String
-iseq_str = let f xs = "(" ++ concatMap show xs ++ ")"
-           in f . iseq
+iseq_str = let f xs = "(" ++ concatMap show xs ++ ")" in f . iseq

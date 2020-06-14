@@ -189,6 +189,7 @@ type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
 -- | Labelled graph, V/E typed.
 type LBL v e = LBL_GR V v e
 
+-- | Number of vertices and edges.
 lbl_degree :: LBL v e -> (Int,Int)
 lbl_degree (v,e) = (length v,length e)
 
@@ -196,18 +197,23 @@ lbl_degree (v,e) = (length v,length e)
 lbl_bimap :: (v -> v') -> (e -> e') -> LBL v e -> LBL v' e'
 lbl_bimap v_f e_f (v,e) = (map (fmap v_f) v,map (fmap e_f) e)
 
+-- | Lookup vertex label with default value.
 v_label :: v -> LBL v e -> V -> v
 v_label def (tbl,_) v = fromMaybe def (lookup v tbl)
 
+-- | 'v_label' with 'error' as default.
 v_label_err :: LBL v e -> V -> v
 v_label_err = v_label (error "v_label")
 
+-- | Lookup edge label with default value.
 e_label :: e -> LBL v e -> E -> e
 e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
 
+-- | 'e_label' with 'error' as default.
 e_label_err :: LBL v e -> E -> e
 e_label_err = e_label (error "e_label")
 
+-- | Convert from 'LBL_GR' to 'LBL'
 lbl_gr_to_lbl :: Eq v => LBL_GR v v_lbl e_lbl -> LBL v_lbl e_lbl
 lbl_gr_to_lbl (v,e) =
   let n = length v
@@ -217,13 +223,17 @@ lbl_gr_to_lbl (v,e) =
       e' = map (\((p,q),r) -> ((get p,get q),r)) e
   in (zip v' (map snd v),e')
 
+-- | Convert from 'GR' to 'LBL'.
+--
 -- > gr_to_lbl ("ab",[('a','b')]) == ([(0,'a'),(1,'b')],[((0,1),('a','b'))])
 gr_to_lbl :: Eq t => GR t -> LBL t (t,t)
 gr_to_lbl (v,e) = lbl_gr_to_lbl (zip v v,zip e e)
 
+-- | Delete edge labels from 'LBL', replacing with '()'
 lbl_delete_edge_labels :: LBL v e -> LBL v ()
 lbl_delete_edge_labels (v,e) = (v,map (\(x,_) -> (x,())) e)
 
+-- | 'lbl_delete_edge_labels' of 'gr_to_lbl'
 gr_to_lbl_ :: Eq t => GR t -> LBL t ()
 gr_to_lbl_ = lbl_delete_edge_labels . gr_to_lbl
 

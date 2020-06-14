@@ -12,16 +12,21 @@ import Data.List {- base -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 
+-- | LCF notation (/l/,/k/). ([3,-3],4) is the cubical graph.
 type LCF = ([Int],Int)
+
+-- | Real, alias for 'Double'
 type R = Double
 
+-- | Sequence, ie. /l/ /k/ times.
 lcf_seq :: LCF -> [Int]
 lcf_seq (l,k) = concat (replicate k l)
 
+-- | Length of 'lcf_seq', ie. |l|k
 lcf_degree :: LCF -> Int
 lcf_degree (l,k) = length l * k
 
--- | LCF to edge list.
+-- | 'LCF' to 'T.EDG' (an edge list)
 lcf_to_edg :: LCF -> T.EDG
 lcf_to_edg (l,k) =
   let v_n = length l * k

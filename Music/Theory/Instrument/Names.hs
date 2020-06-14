@@ -2,7 +2,7 @@ module Music.Theory.Instrument.Names where
 
 import Data.List.Split {- split -}
 
--- (family,abbreviations,names,transpositions)
+-- | (family,abbreviations,names,transpositions)
 instrument_db' :: [(String,String,String,String)]
 instrument_db' =
     [("br","b.tbn","bass trombone","")
@@ -106,7 +106,7 @@ instrument_db' =
     ,("ww","oca","ocarina","")
     ]
 
--- (family,[abbreviations],[names],[transpositions])
+-- | (family,[abbreviations],[names],[transpositions])
 instrument_db :: [(String,[String],[String],[String])]
 instrument_db =
     let sep = splitOn ";"

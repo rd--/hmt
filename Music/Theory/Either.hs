@@ -10,6 +10,7 @@ from_left e =
       Left x -> Just x
       _ -> Nothing
 
+-- | 'fromJust' of 'from_left'
 from_left_err :: Either t e -> t
 from_left_err = fromMaybe (error "from_left_err") . from_left
 
@@ -20,6 +21,7 @@ from_right e =
       Left _ -> Nothing
       Right r -> Just r
 
+-- | 'fromJust' of 'from_right'
 from_right_err :: Either e t -> t
 from_right_err = fromMaybe (error "from_right_err") . from_right
 

@@ -170,9 +170,11 @@ parse_cell_ref s =
                  (n,[]) -> Just (Column_Ref c,read n)
                  _ -> Nothing
 
+-- | 'isJust' of 'parse_cell_ref'.
 is_cell_ref :: String -> Bool
 is_cell_ref = isJust . parse_cell_ref
 
+-- | 'fromJust' of 'parse_cell_ref'
 parse_cell_ref_err :: String -> Cell_Ref
 parse_cell_ref_err = fromMaybe (error "parse_cell_ref") . parse_cell_ref
 
@@ -196,6 +198,7 @@ cell_index (c,r) = (column_index c,row_index r)
 index_to_cell :: (Int,Int) -> Cell_Ref
 index_to_cell (c,r) = (column_ref c,r + 1)
 
+-- | 'cell_index' of 'parse_cell_ref_err'
 parse_cell_index :: String -> (Int,Int)
 parse_cell_index = cell_index . parse_cell_ref_err
 

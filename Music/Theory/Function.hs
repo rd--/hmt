@@ -79,6 +79,6 @@ infixr 8 .:, .::, .:::, .::::, .:::::
 
 -- * Bimap
 
--- | Apply /f/ to both elements of a two-tuple, ie. 'bimap' /f/ /f/.
+-- | Apply /f/ to both elements of a two-tuple, ie. 'Data.Bifunctor.bimap' /f/ /f/.
 bimap1 :: (t -> u) -> (t,t) -> (u,u)
 bimap1 f (p,q) = (f p,f q)

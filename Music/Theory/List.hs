@@ -61,7 +61,7 @@ unbracket_err = fromMaybe (error "unbracket") . unbracket
 
 -- * Split
 
--- | Relative of 'splitOn', but only makes first separation.
+-- | Relative of 'S.splitOn', but only makes first separation.
 --
 -- > splitOn "//" "lhs//rhs//rem" == ["lhs","rhs","rem"]
 -- > separate_at "//" "lhs//rhs//rem" == Just ("lhs","rhs//rem")
@@ -730,6 +730,7 @@ find_bounds_cmp f l x =
                      then Left ((p,q),GT)
                      else if g (p,q) then Right (p,q) else find_bounds_cmp f l' x
 
+-- | Decide if value is nearer the left or right value of a range, return 'fst' or 'snd'.
 decide_nearest_f :: Ord o => Bool -> (p -> o) -> (p,p) -> ((x,x) -> x)
 decide_nearest_f bias_left f (p,q) =
   case compare (f p) (f q) of
@@ -737,7 +738,7 @@ decide_nearest_f bias_left f (p,q) =
     EQ -> if bias_left then fst else snd
     GT -> snd
 
--- | Decide if value is nearer the left or right value of a range, return 'fst' or 'snd'.
+-- | 'decide_nearest_f' with 'abs' of '-' as measure.
 --
 -- > (decide_nearest True 2 (1,3)) ("left","right") == "left"
 decide_nearest :: (Num o,Ord o) => Bool -> o -> (o,o) -> ((x,x) -> x)
@@ -759,6 +760,7 @@ find_nearest_by sel_f bias_left l x =
 find_nearest_err :: (Num n,Ord n) => Bool -> [n] -> n -> n
 find_nearest_err = find_nearest_by id
 
+-- | 'find_nearest_err' allowing 'null' input list (which returns 'Nothing')
 find_nearest :: (Num n,Ord n) => Bool -> [n] -> n -> Maybe n
 find_nearest bias_left l x = if null l then Nothing else Just (find_nearest_err bias_left l x)
 
@@ -1030,9 +1032,9 @@ sort_by_two_stage_on f g = sortBy (two_stage_compare_on f g)
 sort_by_n_stage_on :: Ord b => [a -> b] -> [a] -> [a]
 sort_by_n_stage_on f = sortBy (n_stage_compare_on f)
 
--- | Given a comparison function, merge two ascending lists.
+-- | Given a comparison function, merge two ascending lists. Alias for 'O.mergeBy'
 --
--- > mergeBy compare [1,3,5] [2,4] == [1..5]
+-- > merge_by compare [1,3,5] [2,4] == [1..5]
 merge_by :: Compare_F a -> [a] -> [a] -> [a]
 merge_by = O.mergeBy
 
@@ -1044,7 +1046,7 @@ merge_on f = merge_by (compare `on` f)
 merge_by_two_stage :: Ord b => (a -> b) -> Compare_F c -> (a -> c) -> [a] -> [a] -> [a]
 merge_by_two_stage f cmp g = O.mergeBy (two_stage_compare (compare `on` f) (cmp `on` g))
 
--- | 'mergeBy' 'compare'.
+-- | Alias for 'O.merge'
 merge :: Ord a => [a] -> [a] -> [a]
 merge = O.merge
 
@@ -1236,6 +1238,8 @@ pad_right k n l = take n (l ++ repeat k)
 pad_right_err :: t -> Int -> [t] -> [t]
 pad_right_err k n l = if length l > n then error "pad_right_err?" else pad_right k n l
 
+-- | Variant that will not truncate long inputs.
+--
 -- > pad_right_no_truncate '!' 3 "truncate" == "truncate"
 pad_right_no_truncate :: a -> Int -> [a] -> [a]
 pad_right_no_truncate k n l = if length l > n then l else pad_right k n l
@@ -1265,6 +1269,7 @@ embedding =
                   in recur n' r' (p',if x == y then q' else q)
     in recur 0 []
 
+-- | 'fromRight' of 'embedding'
 embedding_err :: Eq t => ([t],[t]) -> [Int]
 embedding_err = either (error "embedding_err") id . embedding
 
@@ -1276,6 +1281,7 @@ embedding_err = either (error "embedding_err") id . embedding
 is_embedding :: Eq t => [t] -> [t] -> Bool
 is_embedding p q = isRight (embedding (p,q))
 
+-- | 'L.MonadLogic' value to enumerate indices for all embeddings of /q/ in /p/.
 all_embeddings_m :: (Eq t,L.MonadLogic m) => [t] -> [t] -> m [Int]
 all_embeddings_m p q =
     let q_n = length q
@@ -1291,7 +1297,7 @@ all_embeddings_m p q =
                     recur p'' q'' (n + 1) (m : k)
     in recur (zip [0..] p) q 0 []
 
--- | Enumerate indices for all embeddings of /q/ in /p/.
+-- | 'L.observeAll' of 'all_embeddings_m'
 --
 -- > all_embeddings "all_embeddings" "leg" == [[1,4,12],[1,7,12],[2,4,12],[2,7,12]]
 all_embeddings :: Eq t => [t] -> [t] -> [[Int]]

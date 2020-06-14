@@ -15,6 +15,7 @@ import qualified Control.Monad.Logic as L {- logict -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
+-- | FGL graph to 'T.LBL'
 fgl_to_lbl :: G.Graph gr => gr v e -> T.LBL v e
 fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
 
@@ -43,6 +44,7 @@ ug_node_set_impl gr nl =
 
 -- * Hamiltonian
 
+-- | Node select function, ie. given a graph /g/ and a node /n/ select a set of related nodes from /g/
 type G_NODE_SEL_F v e = G.Gr v e -> G.Node -> [G.Node]
 
 -- | 'L.msum' '.' 'map' 'return'.
@@ -61,6 +63,8 @@ g_hamiltonian_path_ml sel_f gr =
                     recur (c:r) i
     in recur []
 
+-- | 'g_hamiltonian_path_ml' of 'G.neighbors' starting at first node.
+--
 -- > map (L.observeAll . ug_hamiltonian_path_ml_0) (g_partition gr)
 ug_hamiltonian_path_ml_0 :: L.MonadLogic m => G.Gr v e -> m [G.Node]
 ug_hamiltonian_path_ml_0 gr = g_hamiltonian_path_ml G.neighbors gr (G.nodes gr !! 0)
@@ -127,6 +131,7 @@ e_path_to_edges = T.adj2 1
 e_undirected_eq :: Eq t => EDGE t -> EDGE t -> Bool
 e_undirected_eq (a,b) (c,d) = (a == c && b == d) || (a == d && b == c)
 
+-- | /any/ of /f/.
 elem_by :: (p -> q -> Bool) -> p -> [q] -> Bool
 elem_by f = any . f
 

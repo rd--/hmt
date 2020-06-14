@@ -160,6 +160,7 @@ dots_grid (w,b) d =
     let f n = if n `elem` d then b else w
     in map (map f) [[1,4],[2,5],[3,6]]
 
+-- | 'lines' as rows and 'Char' as cells in HTML table.
 string_html_table :: String -> String
 string_html_table s =
     let f x = "<td>" ++ [x] ++ "</td>"

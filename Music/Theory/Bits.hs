@@ -3,9 +3,11 @@ module Music.Theory.Bits where
 
 import Data.Bits {- base -}
 
+-- | 'True' = 1, 'False' = 0
 bit_pp :: Bool -> Char
 bit_pp b = if b then '1' else '0'
 
+-- | 'map' 'bit_pp'
 bits_pp :: [Bool] -> String
 bits_pp = map bit_pp
 
