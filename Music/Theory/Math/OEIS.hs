@@ -1,6 +1,7 @@
 -- | The On-Line Encyclopedia of Integer Sequences, <http://oeis.org/>
 module Music.Theory.Math.OEIS where
 
+import Data.Bits {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
@@ -34,6 +35,15 @@ a(n) = 2^n + 1
 -}
 a000051 :: Num n => [n]
 a000051 = iterate ((subtract 1) . (* 2)) 2
+
+{- | <http://oeis.org/A000120>
+
+1's-counting sequence: number of 1's in binary expansion of n (or the binary weight of n).
+
+> [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,1,2,2,3,2,3,3] `isPrefixOf` a000120
+-}
+a000120 :: [Int]
+a000120 = let r = [0] : (map . map) (+ 1) (scanl1 (++) r) in concat r
 
 {- | <http://oeis.org/A000079>
 
@@ -213,6 +223,23 @@ a003849 =
   let fws = [1] : [0] : zipWith (++) fws (tail fws)
   in tail (concat fws)
 
+{- | <http://oeis.org/A004001>
+
+Hofstadter-Conway sequence: a(n) = a(a(n-1)) + a(n-a(n-1)) with a(1) = a(2) = 1.
+
+> [1,1,2,2,3,4,4,4,5,6,7,7,8,8,8,8,9,10,11,12,12,13,14,14,15,15,15,16,16,16,16,16] `isPrefixOf` a004001
+
+> plot_p1_ln [take 250 a004001]
+> plot_p1_ln [zipWith (-) a004001 (map (`div` 2) [1 .. 2000])]
+
+-}
+a004001 :: [Int]
+a004001 =
+  let h n x =
+        let x' = a004001 !! (x - 1) + a004001 !! (n - x - 1)
+        in x' : h (n + 1) x'
+  in 1 : 1 : h 3 1
+
 {- | <http://oeis.org/A004718>
 
 Per Nørgård's "infinity sequence"
@@ -251,6 +278,15 @@ a005811 =
   let f (x:xs) = x : f (xs ++ [x + x `mod` 2, x + 1 - x `mod` 2])
       f _ = error "A005811?"
   in 0 : f [1]
+
+{- | <http://oeis.org/A047999>
+
+Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1) = 1, a(2k) = 3*a(k), a(2k+1) = 2*a(k) + a(k+1).
+
+> [0,1,3,5,9,11,15,19,27,29,33,37,45,49,57,65,81,83,87,91,99,103,111,119,135,139] `isPrefixOf` a006046
+-}
+a006046 :: [Int]
+a006046 = map (sum . concat) (inits a047999_tbl)
 
 {- | <http://oeis.org/A006842>
 
@@ -337,6 +373,18 @@ a030308 =
          1:b -> 0 : f b
          _ -> error "A030308?"
    in iterate f [0]
+
+{- | <http://oeis.org/A047999>
+
+Sierpiński's triangle (or gasket): triangle, read by rows, formed by reading Pascal's triangle mod 2.
+
+> [1,1,1,1,0,1,1,1,1,1,1,0,0,0,1,1,1,0,0,1,1,1,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,0,0] `isPrefixOf` a047999
+-}
+a047999 :: [Int]
+a047999 = concat a047999_tbl
+
+a047999_tbl :: [[Int]]
+a047999_tbl = iterate (\r -> zipWith xor ([0] ++ r) (r ++ [0])) [1]
 
 {- | <https://oeis.org/A048993>
 
