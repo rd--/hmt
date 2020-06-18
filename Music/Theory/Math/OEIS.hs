@@ -284,6 +284,11 @@ a005811 =
 Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1) = 1, a(2k) = 3*a(k), a(2k+1) = 2*a(k) + a(k+1).
 
 > [0,1,3,5,9,11,15,19,27,29,33,37,45,49,57,65,81,83,87,91,99,103,111,119,135,139] `isPrefixOf` a006046
+
+> import Sound.SC3.Plot {- hsc3-plot -}
+> plot_p1_ln [take 250 a006046]
+> let t = log 3 / log 2
+> plot_p1_ln [zipWith (/) (map fromIntegral a006046) (map (\n -> n ** t) [0.0,1 .. 200])]
 -}
 a006046 :: [Int]
 a006046 = map (sum . concat) (inits a047999_tbl)
