@@ -2,6 +2,7 @@
 module Music.Theory.Math.OEIS where
 
 import Data.Bits {- base -}
+import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
@@ -18,11 +19,18 @@ a000010 =
   let phi n = genericLength (filter (==1) (map (gcd n) [1..n]))
   in map phi [1::Integer ..]
 
+{- | <http://oeis.org/A000012>
+
+The simplest sequence of positive numbers: the all 1's sequence.
+-}
+a000012 :: Num n => [n]
+a000012 = repeat 1
+
 {- | <http://oeis.org/A000045>
 
 Fibonacci numbers
 
-> [0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610] `isPrefixOf` a000045
+> [0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946] `isPrefixOf` a000045
 -}
 a000045 :: Num n => [n]
 a000045 = 0 : 1 : zipWith (+) a000045 (tail a000045)
@@ -44,6 +52,17 @@ Tribonacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) for n >= 3 with a(0) = a(1) 
 -}
 a000073 :: Num n => [n]
 a000073 = 0 : 0 : 1 : zipWith (+) a000073 (tail (zipWith (+) a000073 (tail a000073)))
+
+{- | <http://oeis.org/A000078>
+
+Tetranacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) + a(n-4) with a(0)=a(1)=a(2)=0, a(3)=1.
+
+> [0,0,0,1,1,2,4,8,15,29,56,108,208,401,773,1490,2872,5536,10671,20569,39648] `isPrefixOf` a000078
+-}
+a000078 :: Num n => [n]
+a000078 =
+  let f xs = let y = (sum . head . transpose . take 4 . tails) xs in y : f (y:xs)
+  in 0 : 0 : 0 : f [0, 0, 0, 1]
 
 {- | <http://oeis.org/A000120>
 
@@ -142,6 +161,26 @@ Tetrahedral (or triangular pyramidal) numbers: a(n) = C(n+2,3) = n*(n+1)*(n+2)/6
 a000292 :: (Enum n,Num n) => [n]
 a000292 = scanl1 (+) a000217
 
+{- | <https://oeis.org/A000796>
+
+Decimal expansion of Pi (or digits of Pi).
+
+> [3,1,4,1,5,9,2,6,5,3,5,8,9,7,9,3,2,3,8,4,6,2,6,4,3,3,8,3,2,7,9,5,0,2,8,8,4,1,9] `isPrefixOf` a000796
+
+> pi :: Data.Number.Fixed.Fixed Data.Number.Fixed.Prec500
+-}
+a000796 :: Integral n => [n]
+a000796 =
+  let gen _ [] = error "A000796"
+      gen z (x:xs) =
+        let lb = approx z 3
+            approx (a,b,c) n = div (a * n + b) c
+            mult (a,b,c) (d,e,f) = (a * d,a * e + b * f,c * f)
+        in if lb /= approx z 4
+           then gen (mult z x) xs
+        else lb : gen (mult (10,-10 * lb,1) z) (x:xs)
+  in map fromInteger (gen (1,0,1) [(n,a*d,d) | (n,d,a) <- map (\k -> (k,2 * k + 1,2)) [1..]])
+
 {- | <https://oeis.org/A000930>
 
 Narayana's cows sequence.
@@ -153,7 +192,7 @@ a000930 = 1 : 1 : 1 : zipWith (+) a000930 (drop 2 a000930)
 
 {- | <https://oeis.org/A000931>
 
-Padovan sequence (or Padovan numbers)
+Padovan sequence (or Padovan numbers): a(n) = a(n-2) + a(n-3) with a(0) = 1, a(1) = a(2) = 0.
 
 > [1,0,0,1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265] `isPrefixOf` a000931
 -}
@@ -169,6 +208,26 @@ Numerators of harmonic numbers H(n) = Sum_{i=1..n} 1/i
 a001008 :: Integral i => [i]
 a001008 = map numerator (scanl1 (+) (map (1 %) [1..]))
 
+{- | <http://oeis.org/A001113>
+
+Decimal expansion of e.
+
+> [2,7,1,8,2,8,1,8,2,8,4,5,9,0,4,5,2,3,5,3,6,0,2,8,7,4,7,1,3,5,2,6,6,2,4,9,7,7,5] `isPrefixOf` a001113
+
+> exp 1 :: Data.Number.Fixed.Fixed Data.Number.Fixed.Prec500
+-}
+a001113 :: Integral n => [n]
+a001113 =
+  let gen _ [] = error "A001113?"
+      gen z (x:xs) =
+        let lb = approx z 1
+            approx (a,b,c) n = div (a * n + b) c
+            mult (a,b,c) (d,e,f) = (a * d,a * e + b * f,c * f)
+        in if lb /= approx z 2
+           then gen (mult z x) xs
+           else lb : gen (mult (10,-10 * lb,1) z) (x:xs)
+  in gen (1,0,1) [(n,a * d,d) | (n,d,a) <- map (\k -> (1,k,1)) [1..]]
+
 {- | <https://oeis.org/A001333>
 
 Numerators of continued fraction convergents to sqrt(2).
@@ -178,7 +237,21 @@ Numerators of continued fraction convergents to sqrt(2).
 a001333 :: Num n => [n]
 a001333 = 1 : 1 : zipWith (+) a001333 (map (* 2) (tail a001333))
 
-{- | A001644
+{- | <http://oeis.org/A001622>
+
+Decimal expansion of golden ratio phi (or tau) = (1 + sqrt(5))/2.
+
+> [1,6,1,8,0,3,3,9,8,8,7,4,9,8,9,4,8,4,8,2,0,4,5,8,6,8,3,4,3,6,5,6,3,8,1,1,7,7,2] `isPrefixOf` a001622
+
+> a001622_k :: Data.Number.Fixed.Fixed Data.Number.Fixed.Prec500
+-}
+a001622 :: Num n => [n]
+a001622 = map (fromIntegral . digitToInt) "161803398874989484820458683436563811772030917980576286213544862270526046281890244970720720418939113748475408807538689175212663386222353693179318006076672635443338908659593958290563832266131992829026788067520876689250171169620703222104321626954862629631361443814975870122034080588795445474924618569536486444924104432077134494704956584678850987433944221254487706647809158846074998871240076521705751797883416625624940758906970400028121042762177111777805315317141011704666599146697987317613560067087480711" ++ error "A001622"
+
+a001622_k :: Floating n => n
+a001622_k = (1 + sqrt 5) / 2
+
+{- |  <http://oeis.org/A001644>
 
 a(n) = a(n-1) + a(n-2) + a(n-3), a(0)=3, a(1)=1, a(2)=3.
 
@@ -306,7 +379,7 @@ a005811 =
       f _ = error "A005811?"
   in 0 : f [1]
 
-{- | <http://oeis.org/A047999>
+{- | <http://oeis.org/A006046>
 
 Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1) = 1, a(2k) = 3*a(k), a(2k+1) = 2*a(k) + a(k+1).
 
@@ -451,6 +524,21 @@ Triangle read by rows, denominator of fractions of a variant of the Farey series
 -}
 a049456 :: Integral n => [n]
 a049456 = map snd (concat Math.stern_brocot_tree_lhs)
+
+{- | <http://oeis.org/A058265>
+
+Decimal expansion of the tribonacci constant t, the real root of x^3 - x^2 - x - 1.
+
+> [1,8,3,9,2,8,6,7,5,5,2,1,4,1,6,1,1,3,2,5,5,1,8,5,2,5,6,4,6,5,3,2,8,6,6,0,0,4,2] `isPrefixOf` a058265
+
+> a058265_k :: Data.Number.Fixed.Fixed Data.Number.Fixed.Prec500
+-}
+a058265 :: Num n => [n]
+a058265 = map (fromIntegral . digitToInt) "183928675521416113255185256465328660042417874609759224677875863940420322208196642573843541942830701414197982685924097416417845074650743694383154582049951379624965553964461366612154027797267811894104121160922328215595607181671218236598665227337853781569698925211739579141322872106187898408525495693114534913498534595761750359652213238142472727224173581877000697905510254904496571074252654772281100659893755563630933305282623575385197199429914530082546639774729005870059744813919316728258488396263329709" ++ error "A058265"
+
+-- | A058265 as 'Floating' calculation, see "Data.Number.Fixed".
+a058265_k :: Floating n => n
+a058265_k = (1/3) * (1 + (19 + 3 * sqrt 33) ** (1/3) + (19 - 3 * sqrt 33)  ** (1/3))
 
 {- | <http://oeis.org/A073334>
 

@@ -209,10 +209,10 @@ lbl_merge (v1,e1) (v2,e2) =
 lbl_merge_seq :: [LBL v e] -> LBL v e
 lbl_merge_seq = foldl1 lbl_merge
 
--- | Re-write graph so vertex indices are (0 .. n-1) and vertex labels are unique and sorted.
+-- | Re-write graph so vertex indices are (0 .. n-1) and vertex labels are unique.
 lbl_canonical :: (Eq v,Ord v) => LBL v e -> LBL v e
 lbl_canonical (v1,e1) =
-  let v2 = zip [0..] (nub (sort (map snd v1)))
+  let v2 = zip [0..] (nub (map snd v1))
       reix i = T.reverse_lookup_err (T.lookup_err i v1) v2
       e2 = map (\((i,j),k) -> ((reix i,reix j),k)) e1
   in (v2,e2)
