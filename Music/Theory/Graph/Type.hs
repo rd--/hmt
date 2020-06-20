@@ -197,6 +197,37 @@ lbl_degree (v,e) = (length v,length e)
 lbl_bimap :: (v -> v') -> (e -> e') -> LBL v e -> LBL v' e'
 lbl_bimap v_f e_f (v,e) = (map (fmap v_f) v,map (fmap e_f) e)
 
+-- | Merge two 'LBL' graphs, do not share vertices, vertex indices at /g1/ are stable.
+lbl_merge :: LBL v e -> LBL v e -> LBL v e
+lbl_merge (v1,e1) (v2,e2) =
+  let m = maximum (map fst v1) + 1
+      v3 = map (\(i,j) -> (i + m,j)) v2
+      e3 = map (\((i,j),k) -> ((i + m,j + m),k)) e2
+  in (v1 ++ v3,e1 ++ e3)
+
+-- | 'foldl1' of 'lbl_merge'
+lbl_merge_seq :: [LBL v e] -> LBL v e
+lbl_merge_seq = foldl1 lbl_merge
+
+-- | Re-write graph so vertex indices are (0 .. n-1) and vertex labels are unique and sorted.
+lbl_canonical :: (Eq v,Ord v) => LBL v e -> LBL v e
+lbl_canonical (v1,e1) =
+  let v2 = zip [0..] (nub (sort (map snd v1)))
+      reix i = T.reverse_lookup_err (T.lookup_err i v1) v2
+      e2 = map (\((i,j),k) -> ((reix i,reix j),k)) e1
+  in (v2,e2)
+
+-- | Re-write edges so that vertex indices are ascending.
+lbl_undir :: LBL v e -> LBL v e
+lbl_undir (v,e) = (v,map (\((i,j),k) -> ((min i j,max i j),k)) e)
+
+-- | 'LBL' path graph.
+lbl_path_graph :: [x] -> LBL x ()
+lbl_path_graph v =
+  let n = length v - 1
+  in (zip [0 .. n] v
+     ,zip (zip [0 .. n - 1] [1 .. n]) (repeat ()))
+
 -- | Lookup vertex label with default value.
 v_label :: v -> LBL v e -> V -> v
 v_label def (tbl,_) v = fromMaybe def (lookup v tbl)

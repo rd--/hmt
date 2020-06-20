@@ -36,6 +36,15 @@ a(n) = 2^n + 1
 a000051 :: Num n => [n]
 a000051 = iterate ((subtract 1) . (* 2)) 2
 
+{- | <http://oeis.org/A000073>
+
+Tribonacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) for n >= 3 with a(0) = a(1) = 0 and a(2) = 1.
+
+> [0,0,1,1,2,4,7,13,24,44,81,149,274,504,927,1705,3136,5768,10609,19513,35890] `isPrefixOf` a000073
+-}
+a000073 :: Num n => [n]
+a000073 = 0 : 0 : 1 : zipWith (+) a000073 (tail (zipWith (+) a000073 (tail a000073)))
+
 {- | <http://oeis.org/A000120>
 
 1's-counting sequence: number of 1's in binary expansion of n (or the binary weight of n).
@@ -87,6 +96,15 @@ Lucas numbers (beginning with 1): L(n) = L(n-1) + L(n-2) with L(1) = 1, L(2) = 3
 -}
 a000204 :: Num n => [n]
 a000204 = 1 : 3 : zipWith (+) a000204 (tail a000204)
+
+{- | A000213
+
+Tribonacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) with a(0)=a(1)=a(2)=1.
+
+[1,1,1,3,5,9,17,31,57,105,193,355,653,1201,2209,4063,7473,13745,25281,46499]  `isPrefixOf` a000213
+-}
+a000213 :: Num n => [n]
+a000213 = 1 : 1 : 1 : zipWith (+) a000213 (tail (zipWith (+) a000213 (tail a000213)))
 
 {- | <https://oeis.org/A000217>
 
@@ -159,6 +177,15 @@ Numerators of continued fraction convergents to sqrt(2).
 -}
 a001333 :: Num n => [n]
 a001333 = 1 : 1 : zipWith (+) a001333 (map (* 2) (tail a001333))
+
+{- | A001644
+
+a(n) = a(n-1) + a(n-2) + a(n-3), a(0)=3, a(1)=1, a(2)=3.
+
+[3,1,3,7,11,21,39,71,131,241,443,815,1499,2757,5071,9327,17155,31553,58035,106743] `isPrefixOf` a001644
+-}
+a001644 :: Num n => [n]
+a001644 = 3 : 1 : 3 : zipWith3 (((+) .) . (+)) a001644 (tail a001644) (drop 2 a001644)
 
 {- | <http://oeis.org/A001687>
 
