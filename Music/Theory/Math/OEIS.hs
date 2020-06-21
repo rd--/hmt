@@ -355,6 +355,33 @@ Per Nørgård's "infinity sequence"
 a004718 :: Num n => [n]
 a004718 = 0 : concat (transpose [map (+ 1) a004718, map negate (tail a004718)])
 
+{- | <http://oeis.org/A005185>
+
+Hofstadter Q-sequence: a(1) = a(2) = 1; a(n) = a(n-a(n-1)) + a(n-a(n-2)) for n > 2.
+
+> [1,1,2,3,3,4,5,5,6,6,6,8,8,8,10,9,10,11,11,12,12,12,12,16,14,14,16,16,16,16,20] `isPrefixOf` a005185
+-}
+a005185 :: [Int]
+a005185 =
+  let ix n = a005185 !! (n - 1)
+      zadd = zipWith (+)
+      zsub = zipWith (-)
+  in 1 : 1 : zadd (map ix (zsub [3..] a005185)) (map ix (zsub [3..] (tail a005185)))
+
+{- | <https://oeis.org/A005448>
+
+Centered triangular numbers: a(n) = 3n(n-1)/2 + 1.
+
+> [1,4,10,19,31,46,64,85,109,136,166,199,235,274,316,361,409,460,514,571,631,694] `isPrefixOf` a005448
+
+> map a005448_n [1 .. 1000] `isPrefixOf` a005448
+-}
+a005448 :: Integral n => [n]
+a005448 = 1 : zipWith (+) a005448 [3,6 ..]
+
+a005448_n :: Integral n => n -> n
+a005448_n n = 3 * n * (n - 1) `div` 2 + 1
+
 {- | <http://oeis.org/A005728>
 
 Number of fractions in Farey series of order n.
@@ -379,6 +406,20 @@ a005811 =
       f _ = error "A005811?"
   in 0 : f [1]
 
+{- | <https://oeis.org/A006003>
+
+a(n) = n*(n^2 + 1)/2.
+
+> [0,1,5,15,34,65,111,175,260,369,505,671,870,1105,1379,1695,2056,2465,2925,3439] `isPrefixOf` a006003
+
+> map a006003_n [0 .. 1000] `isPrefixOf` a006003
+-}
+a006003 :: Integral n => [n]
+a006003 = scanl (+) 0 a005448
+
+a006003_n :: Integral n => n -> n
+a006003_n n = n * (n ^ (2::Int) + 1) `div` 2
+
 {- | <http://oeis.org/A006046>
 
 Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1) = 1, a(2k) = 3*a(k), a(2k+1) = 2*a(k) + a(k+1).
@@ -392,6 +433,15 @@ Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1)
 -}
 a006046 :: [Int]
 a006046 = map (sum . concat) (inits a047999_tbl)
+
+{- | A006052
+
+Number of magic squares of order n composed of the numbers from 1 to n^2, counted up to rotations and reflections.
+
+> [1,0,1,880,275305224] == a006052
+-}
+a006052 :: Integral n => [n]
+a006052 = [1,0,1,880,275305224]
 
 {- | <http://oeis.org/A006842>
 
@@ -479,6 +529,13 @@ a030308 =
          _ -> error "A030308?"
    in iterate f [0]
 
+{- | <http://oeis.org/A033812>
+
+The Loh-Shu 3 X 3 magic square, lexicographically largest variant when read by columns.
+-}
+a033812 :: Num n => [n]
+a033812 = [8, 1, 6, 3, 5, 7, 4, 9, 2]
+
 {- | <http://oeis.org/A047999>
 
 Sierpiński's triangle (or gasket): triangle, read by rows, formed by reading Pascal's triangle mod 2.
@@ -540,6 +597,49 @@ a058265 = map (fromIntegral . digitToInt) "1839286755214161132551852564653286600
 a058265_k :: Floating n => n
 a058265_k = (1/3) * (1 + (19 + 3 * sqrt 33) ** (1/3) + (19 - 3 * sqrt 33)  ** (1/3))
 
+{- | <http://oeis.org/A060588>
+
+If the final two digits of n written in base 3 are the same then this digit, otherwise mod 3-sum of these two digits.
+
+> [0,2,1,2,1,0,1,0,2,0,2,1,2,1,0,1,0,2,0,2,1,2,1,0,1,0,2,0,2,1,2,1,0,1,0,2,0,2,1] `isPrefixOf` a060588a
+-}
+a060588a :: Integral n => [n]
+a060588a = map a060588a_n [0..]
+
+a060588a_n :: Integral n => n -> n
+a060588a_n n = (-n - floor (fromIntegral n / (3::Double))) `mod` 3
+
+{- | <http://oeis.org/A061654>
+
+a(n) = (3*16^n + 2)/5
+
+> [1,10,154,2458,39322,629146,10066330,161061274,2576980378,41231686042] `isPrefixOf` a061654
+-}
+a061654 :: Integral n => [n]
+a061654 = map a061654_n [0 ..]
+
+a061654_n :: Integral n => n -> n
+a061654_n n = (3 * 16^n + 2) `div` 5
+
+{- | <http://oeis.org/A071996>
+
+a(1) = 0, a(2) = 1, a(n) = a(floor(n/3)) + a(n - floor(n/3)).
+
+> [0,1,1,1,1,2,2,3,3,3,4,4,4,4,4,5,5,6,6,6,6,6,7,8,8,9,9,9,9,9,9,9,10,11,12,12,12] `isPrefixOf` a071996
+
+> plot_p1_ln [take 50 a000201 :: [Int]]
+> plot_p1_imp [map length (take 250 (group a071996))]
+-}
+a071996 :: Integral n => [n]
+a071996 =
+  let f n =
+        case n of
+          0 -> error "A071996"
+          1 -> 0
+          2 -> 1
+          _ -> let m = floor (fromIntegral n / (3::Double)) in f m + f (n - m)
+  in map f [1::Int ..]
+
 {- | <http://oeis.org/A073334>
 
 The "rhythmic infinity system" of Danish composer Per Nørgård
@@ -552,9 +652,24 @@ a073334 =
   let f n = a000045 !! ((a005811 !! n) + 4)
   in 3 : map f [1..]
 
--- | <http://oeis.org/A080992>
---
--- Entries in Durer's magic square.
+{- | <https://oeis.org/A080843>
+
+Tribonacci word: limit S(infinity), where S(0) = 0, S(1) = 0,1, S(2) = 0,1,0,2 and for n >= 0, S(n+3) = S(n+2) S(n+1) S(n).
+
+> [0,1,0,2,0,1,0,0,1,0,2,0,1,0,1,0,2,0,1,0,0,1,0,2,0,1,0,2,0,1,0,0,1,0,2,0,1,0,1] `isPrefixOf` a080843
+-}
+a080843 :: Integral n => [n]
+a080843 =
+  let rw n = case n of {0 -> [0,1];1 -> [0,2];2 -> [0];_ -> error "A080843"}
+      unf = let f n l = case l of {[] -> error "A080843";x:xs -> drop n x ++ f (length x) xs} in f 0
+  in unf (iterate (concatMap rw) [0])
+
+{- | <http://oeis.org/A080992>
+
+Entries in Durer's magic square.
+
+> [16,3,2,13,5,10,11,8,9,6,7,12,4,15,14,1] == a080992
+-}
 a080992 :: Num n => [n]
 a080992 =
   [16,03,02,13
@@ -571,28 +686,105 @@ Positions of zeros in Per Nørgård's infinity sequence (A004718).
 a083866 :: (Enum n,Num n) => [n]
 a083866 = map snd (filter ((== (0::Int)) . fst) (zip a004718 [0..]))
 
--- | <http://oeis.org/A126709>
---
--- Loh-Shu magic square, attributed to the legendary Fu Xi (Fuh-Hi).
+{- | <http://oeis.org/A125519>
+
+A 4 x 4 permutation-free magic square.
+-}
+a125519 :: Num n => [n]
+a125519 = [831,326,267,574,584,257,316,841,158,683,742,415,425,732,673,168]
+
+{- | <http://oeis.org/A126275>
+
+Moment of inertia of all magic squares of order n.
+
+> [5,60,340,1300,3885,9800,21840,44280,83325,147620,248820,402220,627445,949200] `isPrefixOf` a126275
+-}
+a126275 :: Integral n => [n]
+a126275 = map a126275_n [2..]
+
+a126275_n :: Integral n => n -> n
+a126275_n n = (n ^ (2::Int) * (n ^ (4::Int) - 1)) `div` 12
+
+{- | <http://oeis.org/A126276>
+
+Moment of inertia of all magic cubes of order n.
+
+> [18,504,5200,31500,136710,471968,1378944,3547800,8258250,17728920,35603568] `isPrefixOf` a126276
+-}
+a126276 :: Integral n => [n]
+a126276 = map a126276_n [2..]
+
+a126276_n :: Integral n => n -> n
+a126276_n n = (n ^ (3::Int) * (n ^ (3::Int) + 1) * (n ^ (2::Int) - 1)) `div` 12
+
+{- | <http://oeis.org/A126651>
+
+A 7 x 7 magic square.
+-}
+a126651 :: Num n => [n]
+a126651 =
+  [71,  1, 51, 32, 50,  2, 80
+  ,21, 41, 61, 56, 26, 13, 69
+  ,31, 81, 11, 20, 62, 65, 17
+  ,34, 40, 60, 43, 28, 64, 18
+  ,48, 42, 22, 54, 39, 75,  7
+  ,33, 53, 15, 68, 16, 44, 58
+  ,49, 29, 67, 14, 66, 24, 38]
+
+{- | <http://oeis.org/A126652>
+
+A 3 X 3 magic square with magic sum 75: the Loh-Shu square A033812 multiplied by 5.
+
+> a126652 == map (* 5) a033812
+-}
+a126652 :: Num n => [n]
+a126652 = [40, 5, 30, 15, 25, 35, 20, 45, 10]
+
+{- | <http://oeis.org/A126653>
+
+A 3 X 3 magic square with magic sum 45: the Loh-Shu square A033812 multiplied by 3.
+
+> a126653 == map (* 3) a033812
+-}
+a126653 :: Num n => [n]
+a126653 = [24, 3, 18, 9, 15, 21, 12, 27, 6]
+
+{- | <http://oeis.org/A126654>
+
+A 3 x 3 magic square.
+-}
+a126654 :: Num n => [n]
+a126654 = [32, 4, 24, 12, 20, 28, 16, 36, 8]
+
+{- | <http://oeis.org/A126709>
+
+The Loh-Shu 3 x 3 magic square, variant 2.
+
+Loh-Shu magic square, attributed to the legendary Fu Xi (Fuh-Hi).
+-}
 a126709 :: Num n => [n]
 a126709 =
   [4,9,2
   ,3,5,7
   ,8,1,6]
 
--- | <http://oeis.org/A126710>
---
--- Jaina inscription of the twelfth or thirteenth century, Khajuraho, India.
+{- | <http://oeis.org/A126710>
+
+Jaina inscription of the twelfth or thirteenth century, Khajuraho, India.
+-}
 a126710 :: Num n => [n]
 a126710 =
-  [07,12,01,14
-  ,02,13,08,11
-  ,16,03,10,05
-  ,09,06,15,04]
+  [ 7,12, 1,14
+  , 2,13, 8,11
+  ,16, 3,10, 5
+  , 9, 6,15, 4]
 
--- | <http://oeis.org/A126976>
---
--- Agrippa (Magic Square of the Sun)
+{- | <http://oeis.org/A126976>
+
+A 6 x 6 magic square read by rows.
+
+Agrippa (Magic Square of the Sun)
+-}
 a126976 :: Num n => [n]
 a126976 =
   [06,32,03,34,35,01
@@ -636,3 +828,26 @@ a256185 :: Num n => [n]
 a256185 = 0 : concat (transpose [map (subtract 3) a256185
                                 ,map (-2 -) a256185
                                 ,map negate (tail a256185)])
+
+{- | <http://oeis.org/A270876>
+
+Number of magic tori of order n composed of the numbers from 1 to n^2.
+
+> [1,0,1,255,251449712] == a270876
+-}
+a270876 :: Integral n => [n]
+a270876 = [1,0,1,255,251449712]
+
+{- | <http://oeis.org/A320872>
+
+For all possible 3 X 3 magic squares made of primes, in order of increasing magic sum, list the lexicographically smallest representative of each equivalence class (modulo symmetries of the square), as a row of the 9 elements (3 rows of 3 elements each).
+-}
+a320872 :: Num n => [n]
+a320872 =
+  [17, 89,  71,  113,  59,  5, 47, 29, 101
+  ,41, 89,  83,  113,  71, 29, 59, 53, 101
+  ,37, 79,  103, 139,  73,  7, 43, 67, 109
+  ,29, 131, 107, 167,  89, 11, 71, 47, 149
+  ,43, 127, 139, 199, 103,  7, 67, 79, 163
+  ,37, 151, 139, 211, 109,  7, 79, 67, 181
+  ,43, 181, 157, 241, 127, 13, 97, 73, 211]
