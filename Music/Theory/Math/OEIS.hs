@@ -794,6 +794,19 @@ a126976 =
   ,25,29,10,09,26,12
   ,36,05,33,04,02,31]
 
+{- | <https://oeis.org/A245553>
+
+A Rauzy fractal sequence: trajectory of 1 under morphism 1 -> 2,3; 2 -> 3; 3 -> 1.
+
+> [1,2,3,2,3,3,1,2,3,3,1,3,1,1,2,3,2,3,3,1,3,1,1,2,3,3,1,1,2,3,1,2,3,2,3,3,1,2,3] `isPrefixOf` a245553
+-}
+a245553 :: Integral n => [n]
+a245553 =
+  let rw n = case n of {1 -> [2,3];2 -> [3];3 -> [1];_ -> error "A245553"}
+      jn x = x ++ concatMap rw x
+      unf = let f n l = case l of {[] -> error "A245553";x:xs -> drop n x ++ f (length x) xs} in f 0
+  in unf (iterate jn [1])
+
 {- | <http://oeis.org/A255723>
 
 Another variant of Per Nørgård's "infinity sequence"
