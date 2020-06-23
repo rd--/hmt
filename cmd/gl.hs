@@ -63,7 +63,7 @@ type LN = [[V4 R]]
 gr_load_set :: (Bool,Bool) -> [FilePath] -> IO LN
 gr_load_set (ch,nrm) fn = do
   v <- mapM (fmap gr_to_vsq . obj_off_load ch) fn
-  let c = (if nrm then v4_normalise (-1,1) else id) (concat v)
+  let c = (if nrm then v4_linlin_set (-1,1) else id) (concat v)
   return (chunksOf 16 c)  -- does sending vertices in chunks help?
 
 -- * IOREF

@@ -35,6 +35,10 @@ v3_graph_to_obj = v3_graph_to_obj_opt False
 obj_store_v3_graph :: RealFloat n => Int -> FilePath -> (T.LBL (n,n,n) ()) -> IO ()
 obj_store_v3_graph k fn = writeFile fn . unlines . v3_graph_to_obj k
 
+-- | Empty lines are allowed and ignored, comments are #-prefixed.
+obj_is_nil_line :: String -> Bool
+obj_is_nil_line s = null s || head s == '#'
+
 -- | Read OBJ file consisting only of /v/, /l/ and /f/ (and optionally /p/, which are ignored) entries.
 obj_to_v3_graph :: Read n => [String] -> T.LBL (n,n,n) ()
 obj_to_v3_graph txt =
@@ -51,7 +55,7 @@ obj_to_v3_graph txt =
 
 -- | 'obj_to_v3_graph' of 'readFile'.
 obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
-obj_load_v3_graph = fmap (obj_to_v3_graph . lines) . readFile
+obj_load_v3_graph = fmap (obj_to_v3_graph . filter (not . obj_is_nil_line) . lines) . readFile
 
 -- * F64
 
