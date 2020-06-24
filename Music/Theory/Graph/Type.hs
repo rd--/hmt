@@ -189,6 +189,9 @@ type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
 -- | Labelled graph, V/E typed.
 type LBL v e = LBL_GR V v e
 
+-- | 'LBL' with () edge labels.
+type LBL_ v = LBL v ()
+
 -- | Number of vertices and edges.
 lbl_degree :: LBL v e -> (Int,Int)
 lbl_degree (v,e) = (length v,length e)
@@ -222,11 +225,19 @@ lbl_undir :: LBL v e -> LBL v e
 lbl_undir (v,e) = (v,map (\((i,j),k) -> ((min i j,max i j),k)) e)
 
 -- | 'LBL' path graph.
-lbl_path_graph :: [x] -> LBL x ()
+lbl_path_graph :: [x] -> LBL_ x
 lbl_path_graph v =
   let n = length v - 1
   in (zip [0 .. n] v
      ,zip (zip [0 .. n - 1] [1 .. n]) (repeat ()))
+
+-- | 'LBL' complete graph (undirected, no self-edges)
+lbl_complete_graph :: [x] -> LBL_ x
+lbl_complete_graph v =
+  let n = length v - 1
+      u = [0 .. n]
+  in (zip u v
+     ,zip [(i,j) | i <- u, j <- u, i < j] (repeat ()))
 
 -- | Lookup vertex label with default value.
 v_label :: v -> LBL v e -> V -> v
@@ -261,15 +272,15 @@ gr_to_lbl :: Eq t => GR t -> LBL t (t,t)
 gr_to_lbl (v,e) = lbl_gr_to_lbl (zip v v,zip e e)
 
 -- | Delete edge labels from 'LBL', replacing with '()'
-lbl_delete_edge_labels :: LBL v e -> LBL v ()
+lbl_delete_edge_labels :: LBL v e -> LBL_ v
 lbl_delete_edge_labels (v,e) = (v,map (\(x,_) -> (x,())) e)
 
 -- | 'lbl_delete_edge_labels' of 'gr_to_lbl'
-gr_to_lbl_ :: Eq t => GR t -> LBL t ()
+gr_to_lbl_ :: Eq t => GR t -> LBL_ t
 gr_to_lbl_ = lbl_delete_edge_labels . gr_to_lbl
 
 -- | Construct LBL from set of E, derives V from E.
-eset_to_lbl :: Ord t => [(t,t)] -> LBL t ()
+eset_to_lbl :: Ord t => [(t,t)] -> LBL_ t
 eset_to_lbl e =
   let v = nub (sort (concatMap (\(i,j) -> [i,j]) e))
       get_ix z = fromMaybe (error "eset_to_lbl") (elemIndex z v)
