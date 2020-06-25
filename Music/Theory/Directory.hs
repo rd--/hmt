@@ -85,13 +85,18 @@ dir_find_ext_rel ext dir =
 
 -- | Subset of files in /dir/ with an extension in /ext/.
 --   Extensions include the leading dot and are case-sensitive.
+--   Results are relative to /dir/.
+dir_subset_rel :: [String] -> FilePath -> IO [FilePath]
+dir_subset_rel ext dir = do
+  let f nm = takeExtension nm `elem` ext
+  c <- getDirectoryContents dir
+  return (sort (filter f c))
+
+-- | Variant where results have dir/ prefix.
 --
 -- > dir_subset [".hs"] "/home/rohan/sw/hmt/cmd"
 dir_subset :: [String] -> FilePath -> IO [FilePath]
-dir_subset ext dir = do
-  let f nm = takeExtension nm `elem` ext
-  c <- getDirectoryContents dir
-  return (map (dir </>) (sort (filter f c)))
+dir_subset ext dir = fmap (map (dir </>)) (dir_subset_rel ext dir)
 
 -- | If path is not absolute, prepend current working directory.
 --
