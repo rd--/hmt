@@ -1,4 +1,4 @@
-{- | Graph/OBJ functions
+{- | Graph-OBJ functions
 
 This module is primarily for reading & writing graphs where vertices are labeled (x,y,z) to OBJ files.
 
@@ -10,6 +10,8 @@ module Music.Theory.Graph.OBJ where
 import Data.Either {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+
+import qualified System.IO.Strict as Strict {- strict -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
@@ -53,23 +55,13 @@ obj_to_v3_graph txt =
       (v,l) = partitionEithers (mapMaybe f txt)
   in (zip [0..] v,zip (concat l) (repeat ()))
 
+-- | 'filter' of 'not' 'obj_is_nil_line' of 'lines' of 'Strict.readFile'
+obj_load_txt :: FilePath -> IO [String]
+obj_load_txt = fmap (filter (not . obj_is_nil_line) . lines) . Strict.readFile
+
 -- | 'obj_to_v3_graph' of 'readFile'.
 obj_load_v3_graph :: Read n => FilePath -> IO (T.LBL (n,n,n) ())
-obj_load_v3_graph = fmap (obj_to_v3_graph . filter (not . obj_is_nil_line) . lines) . readFile
-
--- * F64
-
--- | Type-specialised.
-v3_graph_to_obj_f64 :: Int -> T.LBL (Double,Double,Double) () -> [String]
-v3_graph_to_obj_f64 = v3_graph_to_obj
-
--- | Type-specialised.
-obj_store_v3_graph_f64 :: Int -> FilePath -> (T.LBL (Double,Double,Double) ()) -> IO ()
-obj_store_v3_graph_f64 = obj_store_v3_graph
-
--- | Type-specialised.
-obj_load_v3_graph_f64 :: FilePath -> IO (T.LBL (Double,Double,Double) ())
-obj_load_v3_graph_f64 = obj_load_v3_graph
+obj_load_v3_graph = fmap obj_to_v3_graph . obj_load_txt
 
 -- * FACES
 
@@ -102,3 +94,32 @@ obj_face_set_fmt = obj_face_dat_fmt . obj_face_set_dat
 -- | 'writeFile' of 'obj_face_set_fmt'
 obj_face_set_store :: (Show n, Ord n) => FilePath -> [[(n,n,n)]] -> IO ()
 obj_face_set_store fn = writeFile fn . unlines . obj_face_set_fmt
+
+obj_face_set_parse :: Read n => [String] -> ([(n,n,n)],[[Int]])
+obj_face_set_parse txt =
+  let f s = case words s of
+              ["v",x,y,z] -> Left (read x,read y,read z)
+              "f":ix -> Right (map read ix)
+              _ -> error "obj_face_set_parse?"
+  in partitionEithers (map f txt)
+
+obj_face_set_load :: Read n => FilePath -> IO ([(n,n,n)],[[Int]])
+obj_face_set_load = fmap obj_face_set_parse . obj_load_txt
+
+-- * F64
+
+-- | Type-specialised.
+v3_graph_to_obj_f64 :: Int -> T.LBL (Double,Double,Double) () -> [String]
+v3_graph_to_obj_f64 = v3_graph_to_obj
+
+-- | Type-specialised.
+obj_store_v3_graph_f64 :: Int -> FilePath -> (T.LBL (Double,Double,Double) ()) -> IO ()
+obj_store_v3_graph_f64 = obj_store_v3_graph
+
+-- | Type-specialised.
+obj_load_v3_graph_f64 :: FilePath -> IO (T.LBL (Double,Double,Double) ())
+obj_load_v3_graph_f64 = obj_load_v3_graph
+
+-- | Type-specialised.
+obj_face_set_load_f64 :: FilePath -> IO ([(Double,Double,Double)],[[Int]])
+obj_face_set_load_f64 = obj_face_set_load
