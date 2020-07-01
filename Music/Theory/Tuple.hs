@@ -8,6 +8,9 @@ module Music.Theory.Tuple where
 
 -- * P2 (2-product)
 
+-- | Swap elements of P2
+--
+-- > p2_swap (1,2) == (2,1)
 p2_swap :: (s,t) -> (t,s)
 p2_swap (i,j) = (j,i)
 

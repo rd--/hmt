@@ -11,20 +11,29 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Permutations as T {- hmt -}
+import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- | A change either swaps all adjacent bells, or holds a subset of bells.
 data Change = Swap_All | Hold [Int] deriving (Eq,Show)
 
--- | A method is a sequence of changes, if symmetrical only have the
+-- | A method is a sequence of changes, if symmetrical only half the
 -- changes are given and the lead end.
 data Method = Method [Change] (Maybe Change) deriving (Eq,Show)
 
--- | Compete list of 'Change's at 'Method', writing out symmetries.
+-- | Maximum hold value at 'Method'
+method_limit :: Method -> Int
+method_limit (Method p q) =
+  let f c = case c of
+              Swap_All -> 0
+              Hold i -> maximum i
+  in maximum (map f (T.mcons q p))
+
+-- | Complete list of 'Change's at 'Method', writing out symmetries.
 method_changes :: Method -> [Change]
 method_changes (Method p q) =
     case q of
       Nothing -> p
-      Just q' -> p ++ tail (reverse p) ++ [q']
+      Just le -> p ++ tail (reverse p) ++ [le]
 
 -- | Parse a change notation.
 --
@@ -39,42 +48,35 @@ parse_change s = if is_swap_all s then Swap_All else Hold (to_abbrev s)
 split_changes :: String -> [String]
 split_changes = filter (/= ".") . split (dropInitBlank (oneOf "-x."))
 
--- | Parse 'Method' from the sequence of changes with possible lead end.
+-- | Place notation, sequence of changes with possible lead end.
+type Place = (String,Maybe String)
+
+-- | Parse 'Method' given 'PLACE' notation.
 --
 -- > parse_method ("-38-14-1258-36-14-58-16-78",Just "12")
-parse_method :: (String,Maybe String) -> Method
+parse_method :: Place -> Method
 parse_method (p,q) =
     let c = map parse_change (split_changes p)
         le = fmap parse_change q
     in Method c le
 
+-- | - or x?
+--
 -- > map is_swap_all ["-","x","38"] == [True,True,False]
 is_swap_all :: String -> Bool
-is_swap_all s =
-    case s of
-      [c] -> c `elem` "-x"
-      _ -> False
-
--- | Swap elemets of two-tuple (pair).
---
--- > swap_pair (1,2) == (2,1)
-swap_pair :: (s,t) -> (t,s)
-swap_pair (p,q) = (q,p)
+is_swap_all = flip elem ["-","x"]
 
 -- | Flatten list of pairs.
 --
 -- > flatten_pairs [(1,2),(3,4)] == [1..4]
 flatten_pairs :: [(a,a)] -> [a]
-flatten_pairs l =
-    case l of
-      [] -> []
-      (p,q):l' -> p : q : flatten_pairs l'
+flatten_pairs = concatMap T.t2_to_list
 
 -- | Swap all adjacent pairs at list.
 --
 -- > swap_all [1 .. 8] == [2,1,4,3,6,5,8,7]
 swap_all :: [a] -> [a]
-swap_all = flatten_pairs . map swap_pair . T.adj2 2
+swap_all = flatten_pairs . map T.p2_swap . T.adj2 2
 
 numeric_spelling_tbl :: [(Char,Int)]
 numeric_spelling_tbl = zip "1234567890ETABCD" [1 .. 16]
@@ -88,9 +90,9 @@ to_abbrev = map (fromMaybe (error "to_abbrev") . flip lookup numeric_spelling_tb
 -- | Given a 'Hold' notation, generate permutation cycles.
 --
 -- > let r = [Right (1,2),Left 3,Right (4,5),Right (6,7),Left 8]
--- > in gen_swaps 8 [3,8] == r
+-- > gen_swaps 8 [3,8] == r
 --
--- > let r = [Left 1,Left 2,Right (3,4),Right (5,6),Right (7,8)]
+-- > r = [Left 1,Left 2,Right (3,4),Right (5,6),Right (7,8)]
 -- > gen_swaps 8 [1,2] == r
 gen_swaps :: (Num t, Ord t) => t -> [t] -> [Either t (t,t)]
 gen_swaps k =
@@ -124,7 +126,7 @@ swaps_to_cycles = map (either return pair_to_list)
 -- | One-indexed permutation cycles to zero-indexed.
 --
 -- > let r = [[0],[1],[2,3],[4,5],[6,7]]
--- > in to_zero_indexed [[1],[2],[3,4],[5,6],[7,8]] == r
+-- > to_zero_indexed [[1],[2],[3,4],[5,6],[7,8]] == r
 to_zero_indexed :: Enum t => [[t]] -> [[t]]
 to_zero_indexed = map (map pred)
 
@@ -150,7 +152,7 @@ apply_change k p l =
 -- > let r = ([1,2,4,5,3]
 -- >         ,[[1,2,3,4,5],[2,1,3,4,5],[2,3,1,4,5],[3,2,4,1,5],[3,4,2,5,1]
 -- >          ,[4,3,2,5,1],[4,2,3,1,5],[2,4,1,3,5],[2,1,4,3,5],[1,2,4,3,5]])
--- > in apply_method cambridgeshire_slow_course_doubles [1..5] == r
+-- > apply_method cambridgeshire_slow_course_doubles [1..5] == r
 apply_method :: Method -> [a] -> ([a],[[a]])
 apply_method m l =
     let k = length l
@@ -171,60 +173,69 @@ closed_method m l =
     in rec l []
 
 -- | 'concat' of 'closed_method' with initial sequence appended.
-closed_method' :: Eq a => Method -> [a] -> [[a]]
-closed_method' m l = concat (closed_method m l) ++ [l]
+closed_method_lp :: Eq a => Method -> [a] -> [[a]]
+closed_method_lp m l = concat (closed_method m l) ++ [l]
+
+-- | 'closed_method' of 'parse_method'
+closed_place :: Eq t => Place -> [t] -> [[[t]]]
+closed_place pl l = closed_method (parse_method pl) l
 
 -- * Methods
 
--- | <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Slow_Course_Doubles>
+-- | <https://rsw.me.uk/blueline/methods/view/Cambridgeshire_Place_Doubles>
 --
--- > length (closed_method cambridgeshire_slow_course_doubles [1..5]) == 3
+-- > length (closed_place cambridgeshire_place_doubles_pl [1..5]) == 3
+cambridgeshire_place_doubles_pl :: Place
+cambridgeshire_place_doubles_pl = ("345.145.5.1.345",Just "123")
+
+-- | 'parse_method' of 'cambridgeshire_place_doubles_pl'
 cambridgeshire_slow_course_doubles :: Method
-cambridgeshire_slow_course_doubles =
-    let a = ("345.145.5.1.345",Just "123")
-    in parse_method a
+cambridgeshire_slow_course_doubles = parse_method cambridgeshire_place_doubles_pl
 
--- | Double Cambridge Cyclic Bob Minor.
+-- | <https://rsw.me.uk/blueline/methods/view/Double_Cambridge_Cyclic_Bob_Minor>
 --
--- <https://rsw.me.uk/blueline/methods/view/Double_Cambridge_Cyclic_Bob_Minor>
---
--- > length (closed_method double_cambridge_cyclic_bob_minor [1..6]) == 5
+-- > length (closed_place double_cambridge_cyclic_bob_minor_pl [1..6]) == 5
+double_cambridge_cyclic_bob_minor_pl :: Place
+double_cambridge_cyclic_bob_minor_pl = ("-14-16-56-36-16-12",Nothing)
+
+-- | 'parse_method' of 'double_cambridge_cyclic_bob_minor_pl'
 double_cambridge_cyclic_bob_minor :: Method
-double_cambridge_cyclic_bob_minor =
-    let a = ("-14-16-56-36-16-12",Nothing)
-    in parse_method a
+double_cambridge_cyclic_bob_minor = parse_method (double_cambridge_cyclic_bob_minor_pl)
 
--- | Hammersmith Bob Triples
+-- | <https://rsw.me.uk/blueline/methods/view/Hammersmith_Bob_Triples>
 --
--- <https://rsw.me.uk/blueline/methods/view/Hammersmith_Bob_Triples>
---
--- > length (closed_method hammersmith_bob_triples [1..7]) == 6
+-- > length (closed_place hammersmith_bob_triples_pl [1..7]) == 6
+hammersmith_bob_triples_pl :: Place
+hammersmith_bob_triples_pl = ("7.1.5.123.7.345.7",Just "127")
+
 hammersmith_bob_triples :: Method
-hammersmith_bob_triples =
-    let a = ("7.1.5.123.7.345.7",Just "127")
-    in parse_method a
+hammersmith_bob_triples = parse_method hammersmith_bob_triples_pl
 
 -- | <https://rsw.me.uk/blueline/methods/view/Cambridge_Surprise_Major>
 --
--- > length (closed_method cambridge_surprise_major [1..8]) == 7
+-- > length (closed_place cambridge_surprise_major_pl [1..8]) == 7
+cambridge_surprise_major_pl :: Place
+cambridge_surprise_major_pl = ("-38-14-1258-36-14-58-16-78",Just "12")
+
 cambridge_surprise_major :: Method
-cambridge_surprise_major =
-    let a = ("-38-14-1258-36-14-58-16-78",Just "12")
-    in parse_method a
+cambridge_surprise_major = parse_method cambridge_surprise_major_pl
 
 -- | <https://rsw.me.uk/blueline/methods/view/Smithsonian_Surprise_Royal>
 --
--- > let m = closed_method smithsonian_surprise_royal [1..10]
--- > (length m,nub (map length m),sum (map length m)) == (9,[40],360)
+-- > let c = closed_place smithsonian_surprise_royal_pl [1..10]
+-- > (length c,nub (map length c),sum (map length c)) == (9,[40],360)
+smithsonian_surprise_royal_pl :: Place
+smithsonian_surprise_royal_pl = ("-30-14-50-16-3470-18-1456-50-16-70",Just "12")
+
 smithsonian_surprise_royal :: Method
-smithsonian_surprise_royal =
-    let a = ("-30-14-50-16-3470-18-1456-50-16-70",Just "12")
-    in parse_method a
+smithsonian_surprise_royal = parse_method smithsonian_surprise_royal_pl
 
 -- | <https://rsw.me.uk/blueline/methods/view/Ecumenical_Surprise_Maximus>
 --
--- > let m = closed_method ecumenical_surprise_maximus [1..12]
--- > (length m,nub (map length m),sum (map length m)) == (11,[48],528)
+-- > c = closed_place ecumenical_surprise_maximus_pl [1..12]
+-- > (length c,nub (map length c),sum (map length c)) == (11,[48],528)
+ecumenical_surprise_maximus_pl :: Place
+ecumenical_surprise_maximus_pl = ("x3Tx14x5Tx16x7Tx1238x149Tx50x16x7Tx18.90.ET",Just "12")
+
 ecumenical_surprise_maximus :: Method
-ecumenical_surprise_maximus =
-  parse_method ("x3Tx14x5Tx16x7Tx1238x149Tx50x16x7Tx18.90.ET",Just "12")
+ecumenical_surprise_maximus = parse_method ecumenical_surprise_maximus_pl
