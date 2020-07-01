@@ -79,7 +79,7 @@ swap_all :: [a] -> [a]
 swap_all = flatten_pairs . map T.p2_swap . T.adj2 2
 
 numeric_spelling_tbl :: [(Char,Int)]
-numeric_spelling_tbl = zip "1234567890ETABCDFGHJ" [1 .. 20]
+numeric_spelling_tbl = zip "1234567890ETABCDFGHJKL" [1 .. 22]
 
 -- | Parse abbreviated 'Hold' notation, characters are NOT hexadecimal.
 --
