@@ -39,7 +39,7 @@ method_changes (Method p q) =
 --
 -- > map parse_change ["-","x","38"] == [Swap_All,Swap_All,Hold [3,8]]
 parse_change :: String -> Change
-parse_change s = if is_swap_all s then Swap_All else Hold (to_abbrev s)
+parse_change s = if is_swap_all s then Swap_All else Hold (map nchar_to_int s)
 
 -- | Separate changes.
 --
@@ -81,11 +81,17 @@ swap_all = flatten_pairs . map T.p2_swap . T.adj2 2
 numeric_spelling_tbl :: [(Char,Int)]
 numeric_spelling_tbl = zip "1234567890ETABCD" [1 .. 16]
 
--- | Parse abbreviated 'Hold' notation, characters are hexedecimal.
+-- | Parse abbreviated 'Hold' notation, characters are NOT hexadecimal.
 --
--- > to_abbrev "380ETA" == [3,8,10,11,12,13]
-to_abbrev :: String -> [Int]
-to_abbrev = map (fromMaybe (error "to_abbrev") . flip lookup numeric_spelling_tbl)
+-- > map nchar_to_int "380ETA" == [3,8,10,11,12,13]
+nchar_to_int :: Char -> Int
+nchar_to_int = fromMaybe (error "nchar_to_int") . flip lookup numeric_spelling_tbl
+
+-- | Inverse of 'nchar_to_int'.
+--
+-- > map int_to_nchar [3,8,10,11,12,13] == "380ETA"
+int_to_nchar :: Int -> Char
+int_to_nchar = flip T.reverse_lookup_err numeric_spelling_tbl
 
 -- | Given a 'Hold' notation, generate permutation cycles.
 --
