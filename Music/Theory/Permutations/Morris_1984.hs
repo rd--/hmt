@@ -52,13 +52,21 @@ split_changes = filter (/= ".") . split (dropInitBlank (oneOf "-x."))
 type Place = (String,Maybe String)
 
 -- | Parse 'Method' given 'PLACE' notation.
---
--- > parse_method ("-38-14-1258-36-14-58-16-78",Just "12")
 parse_method :: Place -> Method
 parse_method (p,q) =
     let c = map parse_change (split_changes p)
         le = fmap parse_change q
     in Method c le
+
+-- | Parse string into 'Place'.
+--
+-- > parse_method (parse_place "-38-14-1258-36-14-58-16-78,12")
+parse_place :: String -> Place
+parse_place txt =
+  case splitOn "," txt of
+    [p] -> (p,Nothing)
+    [p,q] -> (p,Just q)
+    _ -> error "parse_place?"
 
 -- | - or x?
 --
