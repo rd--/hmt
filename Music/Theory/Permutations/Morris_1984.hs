@@ -18,7 +18,7 @@ data Change = Swap_All | Hold [Int] deriving (Eq,Show)
 
 -- | A method is a sequence of changes, if symmetrical only half the
 -- changes are given and the lead end.
-data Method = Method [Change] (Maybe Change) deriving (Eq,Show)
+data Method = Method [Change] (Maybe [Change]) deriving (Eq,Show)
 
 -- | Maximum hold value at 'Method'
 method_limit :: Method -> Int
@@ -26,14 +26,14 @@ method_limit (Method p q) =
   let f c = case c of
               Swap_All -> 0
               Hold i -> maximum i
-  in maximum (map f (T.mcons q p))
+  in maximum (map f (p ++ maybe [] id q))
 
 -- | Complete list of 'Change's at 'Method', writing out symmetries.
 method_changes :: Method -> [Change]
 method_changes (Method p q) =
     case q of
       Nothing -> p
-      Just le -> p ++ tail (reverse p) ++ [le]
+      Just le -> p ++ tail (reverse p) ++ le
 
 -- | Parse a change notation.
 --
@@ -54,9 +54,8 @@ type Place = (String,Maybe String)
 -- | Parse 'Method' given 'PLACE' notation.
 parse_method :: Place -> Method
 parse_method (p,q) =
-    let c = map parse_change (split_changes p)
-        le = fmap parse_change q
-    in Method c le
+    let f = map parse_change . split_changes
+    in Method (f p) (fmap f q)
 
 -- | Parse string into 'Place'.
 --
