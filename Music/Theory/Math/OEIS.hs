@@ -64,6 +64,15 @@ a000078 =
   let f xs = let y = (sum . head . transpose . take 4 . tails) xs in y : f (y:xs)
   in 0 : 0 : 0 : f [0, 0, 0, 1]
 
+{- | <http://oeis.org/A000108>
+
+Catalan numbers: C(n) = binomial(2n,n)/(n+1) = (2n)!/(n!(n+1)!).
+
+> [1,1,2,5,14,42,132,429,1430,4862,16796,58786,208012,742900,2674440,9694845] `isPrefixOf` a000108
+-}
+a000108 :: Num n => [n]
+a000108 = map last (iterate (scanl1 (+) . (++ [0])) [1])
+
 {- | <http://oeis.org/A000120>
 
 1's-counting sequence: number of 1's in binary expansion of n (or the binary weight of n).
@@ -160,6 +169,18 @@ Tetrahedral (or triangular pyramidal) numbers: a(n) = C(n+2,3) = n*(n+1)*(n+2)/6
 -}
 a000292 :: (Enum n,Num n) => [n]
 a000292 = scanl1 (+) a000217
+
+{- | <http://oeis.org/A000670>
+
+Fubini numbers: number of preferential arrangements of n labeled elements; or number of weak orders on n labeled elements; or number of ordered partitions of [n].
+
+> [1,1,3,13,75,541,4683,47293,545835,7087261,102247563,1622632573,28091567595] `isPrefixOf` a000670
+-}
+a000670 :: Integral n => [n]
+a000670 =
+  let f xs (bs:bss) = let y = sum (zipWith (*) xs bs) in y : f (y : xs) bss
+      f _ _ = error "a000670d"
+  in 1 : f [1] (map tail (tail a007318_tbl))
 
 {- | <https://oeis.org/A000796>
 
@@ -469,10 +490,13 @@ a006843 = map denominator (concatMap Math.farey [1..])
 
 Pascal's triangle read by rows
 
-[[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1],[1,5,10,10,5,1]] `isPrefixOf` a007318
+[[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1],[1,5,10,10,5,1]] `isPrefixOf` a007318_tbl
 -}
-a007318 :: Integral i => [[i]]
-a007318 =
+a007318 :: Integral i => [i]
+a007318 = concat a007318_tbl
+
+a007318_tbl :: Integral i => [[i]]
+a007318_tbl =
   let f r = zipWith (+) ([0] ++ r) (r ++ [0])
   in iterate f [1]
 

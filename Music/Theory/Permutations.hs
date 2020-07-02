@@ -9,8 +9,8 @@ import qualified Music.Theory.List as L {- hmt -}
 -- | Factorial function.
 --
 -- > (factorial 13,maxBound::Int)
-factorial :: (Ord a, Num a) => a -> a
-factorial n = if n <= 1 then 1 else n * factorial (n - 1)
+factorial :: Integral n => n -> n
+factorial n = product [1..n]
 
 -- | Number of /k/ element permutations of a set of /n/ elements.
 --

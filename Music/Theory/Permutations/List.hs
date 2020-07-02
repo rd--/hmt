@@ -21,19 +21,16 @@ permutations_l i =
 multiset_permutations :: (Ord a) => [a] -> [[a]]
 multiset_permutations = C.permutations . C.fromList
 
-factorial :: (Enum a, Num a) => a -> a
-factorial n = product [1..n]
-
 -- | Calculate number of permutations of a multiset.
 --
--- > let r = factorial 11 `div` product (map factorial [1,4,4,2])
--- > in multiset_permutations_n "MISSISSIPPI" == r
+-- > let r = P.factorial 11 `div` product (map P.factorial [1,4,4,2])
+-- > multiset_permutations_n "MISSISSIPPI" == r
 --
 -- > multiset_permutations_n "MISSISSIPPI" == 34650
 -- > length (multiset_permutations "MISSISSIPPI") == 34650
 multiset_permutations_n :: Ord a => [a] -> Int
 multiset_permutations_n x =
     let occ = map length . group . sort
-        n = factorial (length x)
-        d = product $ map factorial $ occ x
+        n = P.factorial (length x)
+        d = product $ map P.factorial $ occ x
     in n `div` d
