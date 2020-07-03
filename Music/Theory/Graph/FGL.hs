@@ -15,6 +15,10 @@ import qualified Control.Monad.Logic as L {- logict -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
+-- | 'T.LBL' to FGL graph
+lbl_to_fgl :: G.Graph gr => T.LBL v e -> gr v e
+lbl_to_fgl (v,e) = let f ((i,j),k) = (i,j,k) in G.mkGraph v (map f e)
+
 -- | FGL graph to 'T.LBL'
 fgl_to_lbl :: G.Graph gr => gr v e -> T.LBL v e
 fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
