@@ -14,7 +14,7 @@ factorial n = product [1..n]
 
 -- | Number of /k/ element permutations of a set of /n/ elements.
 --
--- > let f = nk_permutations in (f 4 3,f 13 3,f 12 12) == (24,1716,479001600)
+-- > let f = nk_permutations in (f 3 2,f 3 3,f 4 3,f 4 4,f 13 3,f 12 12) == (6,6,24,24,1716,479001600)
 nk_permutations :: Integral a => a -> a -> a
 nk_permutations n k = factorial n  `div` factorial (n - k)
 

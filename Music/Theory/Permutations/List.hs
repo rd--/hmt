@@ -15,6 +15,15 @@ permutations_l i =
     let f p = P.apply_permutation p i
     in map f (P.permutations_n (length i))
 
+-- | /k/-element permutations of a set of /n/-elements.
+--
+-- > permutations_nk_l 3 2 "abc" == ["ab","ac","ba","bc","ca","cb"]
+permutations_nk_l :: Eq e => Int -> Int -> [e] -> [[e]]
+permutations_nk_l n k e =
+  if length e /= n
+  then error "permutations_nk_l"
+  else nub (map (take k) (permutations_l e))
+
 -- | Generate all distinct permutations of a multi-set.
 --
 -- > multiset_permutations [0,1,1] == [[0,1,1],[1,1,0],[1,0,1]]
