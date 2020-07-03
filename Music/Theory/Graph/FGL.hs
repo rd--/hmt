@@ -19,6 +19,10 @@ import qualified Music.Theory.List as T {- hmt -}
 lbl_to_fgl :: G.Graph gr => T.LBL v e -> gr v e
 lbl_to_fgl (v,e) = let f ((i,j),k) = (i,j,k) in G.mkGraph v (map f e)
 
+-- | Type-specialised.
+lbl_to_fgl_gr :: T.LBL v e -> G.Gr v e
+lbl_to_fgl_gr = lbl_to_fgl
+
 -- | FGL graph to 'T.LBL'
 fgl_to_lbl :: G.Graph gr => gr v e -> T.LBL v e
 fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
@@ -146,3 +150,25 @@ e_is_path e sq =
     case sq of
       p:q:sq' -> elem_by e_undirected_eq (p,q) e && e_is_path e (q:sq')
       _ -> True
+
+-- * ANALYSIS
+
+-- | <https://github.com/ivan-m/Graphalyze/blob/master/Data/Graph/Analysis/Algorithms/Common.hs>
+--   GRAPHALYZE has PANDOC as a dependency...
+pathTree             :: (G.DynGraph g) => G.Decomp g a b -> [[G.Node]]
+pathTree (Nothing,_) = []
+pathTree (Just ct,g)
+    | G.isEmpty g = []
+    | null sucs = [[n]]
+    | otherwise = (:) [n] . map (n:) . concatMap (subPathTree g') $ sucs
+    where
+      n = G.node' ct
+      sucs = G.suc' ct
+      ct' = makeLeaf ct
+      g' = ct' G.& g
+      subPathTree gr n' = pathTree $ G.match n' gr
+
+-- | Remove all outgoing edges
+makeLeaf           :: G.Context a b -> G.Context a b
+makeLeaf (p,n,a,_) = (p', n, a, [])
+    where p' = filter (\(_,n') -> n' /= n) p
