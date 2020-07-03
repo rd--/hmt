@@ -64,6 +64,15 @@ a000078 =
   let f xs = let y = (sum . head . transpose . take 4 . tails) xs in y : f (y:xs)
   in 0 : 0 : 0 : f [0, 0, 0, 1]
 
+{- | A000085
+
+Number of self-inverse permutations on n letters, also known as involutions; number of standard Young tableaux with n cells.
+
+> [1,1,2,4,10,26,76,232,764,2620,9496,35696,140152,568504,2390480,10349536] `isPrefixOf` a000085
+-}
+a000085 :: Integral n => [n]
+a000085 = 1 : 1 : zipWith (+) (zipWith (*) [1..] a000085) (tail a000085)
+
 {- | <http://oeis.org/A000108>
 
 Catalan numbers: C(n) = binomial(2n,n)/(n+1) = (2n)!/(n!(n+1)!).

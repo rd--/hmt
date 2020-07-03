@@ -97,6 +97,12 @@ gr_to_graph gr =
   let ((v,e),tbl) = gr_unlabel gr
   in (G.buildG (0,length v - 1) e,tbl)
 
+-- | Complete k-graph (un-directed).
+--
+-- > g_complete_graph 3 == ([0,1,2],[(0,1),(0,2),(1,2)])
+g_complete_graph :: Int -> G
+g_complete_graph k = let v = [0 .. k - 1] in (v,[(i,j) | i <- v,j <- v,i < j])
+
 -- * EDG = edge list (zero-indexed)
 
 -- | ((|V|,|E|),[E])
