@@ -25,6 +25,7 @@ Library
                    bytestring,
                    colour,
                    containers,
+                   data-memocombinators,
                    data-ordlist,
                    directory,
                    fgl,

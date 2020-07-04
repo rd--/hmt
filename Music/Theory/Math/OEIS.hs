@@ -6,6 +6,8 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
+import qualified Data.MemoCombinators as Memo {- data-memocombinators -}
+
 import qualified Music.Theory.Math as Math {- hmt -}
 
 {- | <http://oeis.org/A000010>
@@ -25,6 +27,19 @@ The simplest sequence of positive numbers: the all 1's sequence.
 -}
 a000012 :: Num n => [n]
 a000012 = repeat 1
+
+{- | <http://oeis.org/A000041>
+
+a(n) is the number of partitions of n (the partition numbers).
+
+[1,1,2,3,5,7,11,15,22,30,42,56,77,101,135,176,231,297,385,490,627,792,1002,1255] `isPrefixOf` a000041
+-}
+a000041 :: Num n => [n]
+a000041 =
+  let p_m = Memo.memo2 Memo.integral Memo.integral p
+      p _ 0 = 1
+      p k m = if m < k then 0 else p_m k (m - k) + p_m (k + 1) m
+  in map (p_m 1) [0..]
 
 {- | <http://oeis.org/A000045>
 
@@ -64,7 +79,7 @@ a000078 =
   let f xs = let y = (sum . head . transpose . take 4 . tails) xs in y : f (y:xs)
   in 0 : 0 : 0 : f [0, 0, 0, 1]
 
-{- | A000085
+{- | <http://oeis.org/A000085>
 
 Number of self-inverse permutations on n letters, also known as involutions; number of standard Young tableaux with n cells.
 
@@ -134,7 +149,7 @@ Lucas numbers (beginning with 1): L(n) = L(n-1) + L(n-2) with L(1) = 1, L(2) = 3
 a000204 :: Num n => [n]
 a000204 = 1 : 3 : zipWith (+) a000204 (tail a000204)
 
-{- | A000213
+{- | <http://oeis.org/A000213>
 
 Tribonacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) with a(0)=a(1)=a(2)=1.
 
@@ -178,6 +193,26 @@ Tetrahedral (or triangular pyramidal) numbers: a(n) = C(n+2,3) = n*(n+1)*(n+2)/6
 -}
 a000292 :: (Enum n,Num n) => [n]
 a000292 = scanl1 (+) a000217
+
+{- | <http://oeis.org/A000578>
+
+The cubes: a(n) = n^3.
+
+> [0,1,8,27,64,125,216,343,512,729,1000,1331,1728,2197,2744,3375,4096,4913,5832] `isPrefixOf` a000578
+-}
+a000578 :: Num n => [n]
+a000578 =
+  0 : 1 : 8 :
+  zipWith (+) (map (+ 6) a000578) (map (* 3) (tail (zipWith (-) (tail a000578) a000578)))
+
+{- | <http://oeis.org/A000583>
+
+Fourth powers: a(n) = n^4.
+
+> [0,1,16,81,256,625,1296,2401,4096,6561,10000,14641,20736,28561,38416,50625] `isPrefixOf` a000583
+-}
+a000583 :: Integral n => [n]
+a000583 = scanl (+) 0 a005917
 
 {- | <http://oeis.org/A000670>
 
@@ -258,6 +293,19 @@ a001113 =
            else lb : gen (mult (10,-10 * lb,1) z) (x:xs)
   in gen (1,0,1) [(n,a * d,d) | (n,d,a) <- map (\k -> (1,k,1)) [1..]]
 
+{- | <https://oeis.org/A001156>
+
+Number of partitions of n into squares.
+
+> [1,1,1,1,2,2,2,2,3,4,4,4,5,6,6,6,8,9,10,10,12,13,14,14,16,19,20,21,23,26,27,28] `isPrefixOf` a001156
+-}
+a001156 :: Num n => [n]
+a001156 =
+  let p _ 0 = 1
+      p ks'@(k:ks) m = if m < k then 0 else p ks' (m - k) + p ks m
+      p _ _ = error "A001156"
+  in map (p (tail a000290)) [0..]
+
 {- | <https://oeis.org/A001333>
 
 Numerators of continued fraction convergents to sqrt(2).
@@ -326,6 +374,19 @@ a002487 =
       f _ _ = error "a002487?"
       x = 1 : 1 : f (tail x) x
   in 0 : x
+
+{- | <http://oeis.org/A003108>
+
+Number of partitions of n into cubes.
+
+> [1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,4,4,4,5,5,5,5,5,6,6,6,7,7,7,7] `isPrefixOf` a003108
+-}
+a003108 :: Num n => [n]
+a003108 =
+  let p _ 0 = 1
+      p ks'@(k:ks) m = if m < k then 0 else p ks' (m - k) + p ks m
+      p _ _ = error "A003108"
+  in map (p (tail a000578)) [0..]
 
 -- | <http://oeis.org/A003269>
 --
@@ -436,6 +497,17 @@ a005811 =
       f _ = error "A005811?"
   in 0 : f [1]
 
+{- | <http://oeis.org/A005917>
+
+Rhombic dodecahedral numbers: a(n) = n^4 - (n - 1)^4.
+
+> [1,15,65,175,369,671,1105,1695,2465,3439,4641,6095,7825,9855,12209,14911,17985] `isPrefixOf` a005917
+-}
+a005917 :: Integral n => [n]
+a005917 =
+  let f x ws = let (us,vs) = splitAt x ws in us : f (x + 2) vs
+  in map sum (f 1 [1, 3 ..])
+
 {- | <https://oeis.org/A006003>
 
 a(n) = n*(n^2 + 1)/2.
@@ -464,7 +536,7 @@ Total number of odd entries in first n rows of Pascal's triangle: a(0) = 0, a(1)
 a006046 :: [Int]
 a006046 = map (sum . concat) (inits a047999_tbl)
 
-{- | A006052
+{- | <http://oeis.org/A006052>
 
 Number of magic squares of order n composed of the numbers from 1 to n^2, counted up to rotations and reflections.
 
@@ -568,6 +640,19 @@ The Loh-Shu 3 X 3 magic square, lexicographically largest variant when read by c
 -}
 a033812 :: Num n => [n]
 a033812 = [8, 1, 6, 3, 5, 7, 4, 9, 2]
+
+{- | <http://oeis.org/A046042>
+
+Number of partitions of n into fourth powers.
+
+> [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3] `isPrefixOf` a046042
+-}
+a046042 :: Num n => [n]
+a046042 =
+  let p _ 0 = 1
+      p ks'@(k:ks) m = if m < k then 0 else p ks' (m - k) + p ks m
+      p _ _ = error "A046042"
+  in map (p (tail a000583)) [1..]
 
 {- | <http://oeis.org/A047999>
 
