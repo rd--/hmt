@@ -28,9 +28,9 @@ powerset = filterM (const [True,False])
 
 -- | Variant where result is sorted and the empty set is not given.
 --
--- > powerset' [1,2,3] == [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
-powerset' :: Ord a => [a] -> [[a]]
-powerset' = tail . T.sort_by_two_stage_on length id . powerset
+-- > powerset_sorted [1,2,3] == [[1],[2],[3],[1,2],[1,3],[2,3],[1,2,3]]
+powerset_sorted :: Ord a => [a] -> [[a]]
+powerset_sorted = tail . T.sort_by_two_stage_on length id . powerset
 
 -- | Two element subsets.
 --
@@ -41,12 +41,14 @@ pairs s =
       [] -> []
       x:s' -> [(x,y) | y <- s'] ++ pairs s'
 
--- | Three element subsets.
---
--- > triples [1..4] == [(1,2,3),(1,2,4),(1,3,4),(2,3,4)]
---
--- > let f n = genericLength (triples [1..n]) == nk_combinations n 3
--- > in all f [1..15]
+{- | Three element subsets.
+
+> triples [1..4] == [(1,2,3),(1,2,4),(1,3,4),(2,3,4)]
+
+> import Music.Theory.Combinations
+> let f n = genericLength (triples [1..n]) == nk_combinations n 3
+> all f [1..15]
+-}
 triples :: [a] -> [(a,a,a)]
 triples s =
     case s of
@@ -62,23 +64,18 @@ expand_set n xs =
     then [xs]
     else nub (concatMap (expand_set n) [sort (y : xs) | y <- xs])
 
--- | All distinct multiset partitions, see 'M.partitions'.
---
--- > partitions "aab" == [["aab"],["a","ab"],["b","aa"],["b","a","a"]]
---
--- > partitions "abc" == [["abc"]
--- >                     ,["bc","a"],["b","ac"],["c","ab"]
--- >                     ,["c","b","a"]]
+{- | All distinct multiset partitions, see 'M.partitions'.
+
+> partitions "aab" == [["aab"],["a","ab"],["b","aa"],["b","a","a"]]
+> partitions "abc" == [["abc"],["bc","a"],["b","ac"],["c","ab"],["c","b","a"]]
+-}
 partitions :: Eq a => [a] -> [[[a]]]
 partitions = map (map M.toList . M.toList) . M.partitions . M.fromListEq
 
 {- | Cartesian product of two sets.
 
-> let r = [('a',1),('a',2),('b',1),('b',2),('c',1),('c',2)]
-> in cartesian_product "abc" [1,2] == r
-
+> cartesian_product "abc" [1,2] == [('a',1),('a',2),('b',1),('b',2),('c',1),('c',2)]
 > cartesian_product "abc" "" == []
-
 -}
 cartesian_product :: [a] -> [b] -> [(a,b)]
 cartesian_product p q = [(i,j) | i <- p, j <- q]
