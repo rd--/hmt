@@ -28,6 +28,23 @@ The simplest sequence of positive numbers: the all 1's sequence.
 a000012 :: Num n => [n]
 a000012 = repeat 1
 
+{- | <http://oeis.org/A000040>
+
+The prime numbers.
+
+> [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103] `isPrefixOf` a000040
+-}
+a000040 :: Integral n => [n]
+a000040 =
+  let base = [2, 3, 5, 7, 11, 13, 17]
+      larger = p0 : filter prime more
+      prime n = all ((> 0) . mod n) (takeWhile (\x -> x*x <= n) larger)
+      _ : p0 : more = roll (makeWheels base)
+      roll (n,rs) = [n * k + r | k <- [0..], r <- rs]
+      makeWheels = foldl nextSize (1,[1])
+      nextSize (size,bs) p = (size * p,[r | k <- [0..p-1], b <- bs, let r = size*k+b, mod r p > 0])
+  in base ++ larger
+
 {- | <http://oeis.org/A000041>
 
 a(n) is the number of partitions of n (the partition numbers).
@@ -640,6 +657,17 @@ The Loh-Shu 3 X 3 magic square, lexicographically largest variant when read by c
 -}
 a033812 :: Num n => [n]
 a033812 = [8, 1, 6, 3, 5, 7, 4, 9, 2]
+
+{- | <http://oeis.org/A034968>
+
+Minimal number of factorials that add to n.
+
+> [0,1,1,2,2,3,1,2,2,3,3,4,2,3,3,4,4,5,3,4,4,5,5,6,1,2,2,3,3,4,2,3,3,4,4,5,3,4,4] `isPrefixOf` a034968
+-}
+a034968 :: Integral n => [n]
+a034968 =
+  let f i s n = if n == 0 then s else f (i + 1) (s + (rem n i)) (quot n i)
+  in map (f 2 0) [0 ..]
 
 {- | <http://oeis.org/A046042>
 

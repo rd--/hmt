@@ -43,14 +43,14 @@ permutation p q =
 apply_permutation :: P.Permute -> [a] -> [a]
 apply_permutation f p = map (p !!) (P.elems f)
 
--- | Composition of 'apply_permutation' and 'from_cycles'.
+-- | Composition of 'apply_permutation' and 'from_cycles_zero_indexed'.
 --
--- > apply_permutation_c [[0,3],[1,2]] [1..4] == [4,3,2,1]
--- > apply_permutation_c [[0,2],[1],[3,4]] [1..5] == [3,2,1,5,4]
--- > apply_permutation_c [[0,1,4],[2,3]] [1..5] == [2,5,4,3,1]
--- > apply_permutation_c [[0,1,3],[2,4]] [1..5] == [2,4,5,1,3]
-apply_permutation_c :: [[Int]] -> [a] -> [a]
-apply_permutation_c = apply_permutation . from_cycles
+-- > apply_permutation_c_zero_indexed [[0,3],[1,2]] [1..4] == [4,3,2,1]
+-- > apply_permutation_c_zero_indexed [[0,2],[1],[3,4]] [1..5] == [3,2,1,5,4]
+-- > apply_permutation_c_zero_indexed [[0,1,4],[2,3]] [1..5] == [2,5,4,3,1]
+-- > apply_permutation_c_zero_indexed [[0,1,3],[2,4]] [1..5] == [2,4,5,1,3]
+apply_permutation_c_zero_indexed :: [[Int]] -> [a] -> [a]
+apply_permutation_c_zero_indexed = apply_permutation . from_cycles_zero_indexed
 
 -- | True if the inverse of /p/ is /p/.
 --
@@ -61,11 +61,13 @@ apply_permutation_c = apply_permutation . from_cycles
 non_invertible :: P.Permute -> Bool
 non_invertible p = p == P.inverse p
 
--- | Generate a permutation from the cycles /c/.
+-- | Generate a permutation from the cycles /c/ (zero-indexed)
 --
--- > apply_permutation (from_cycles [[0,1,2,3]]) [1..4] == [2,3,4,1]
-from_cycles :: [[Int]] -> P.Permute
-from_cycles c = P.cyclesPermute (sum (map length c)) c
+-- > apply_permutation (from_cycles_zero_indexed [[0,1,2,3]]) [1..4] == [2,3,4,1]
+from_cycles_zero_indexed :: [[Int]] -> P.Permute
+from_cycles_zero_indexed c = P.cyclesPermute (maximum (concat c) + 1) c
+
+from_cycles_one_indexed = from_cycles_zero_indexed . map (map (subtract 1))
 
 -- | Generate all permutations of size /n/.
 --
@@ -77,12 +79,13 @@ permutations_n n =
               in maybe [p] (\np -> p : f np) r
     in f (P.permute n)
 
--- | Composition of /q/ then /p/.
---
--- > let p = from_cycles [[0,2],[1],[3,4]]
--- > let q = from_cycles [[0,1,4],[2,3]]
--- > let r = p `compose` q
--- > apply_permutation r [1,2,3,4,5] == [2,4,5,1,3]
+{- | Composition of /q/ then /p/.
+
+> let p = from_cycles_zero_indexed [[0,2],[1],[3,4]]
+> let q = from_cycles_zero_indexed [[0,1,4],[2,3]]
+> let r = p `compose` q
+> apply_permutation r [1,2,3,4,5] == [2,4,5,1,3]
+-}
 compose :: P.Permute -> P.Permute -> P.Permute
 compose p q =
     let n = P.size q
@@ -90,6 +93,17 @@ compose p q =
         j = apply_permutation p i
         k = apply_permutation q j
     in permutation i k
+
+-- | One-indexed 'P.cycles'
+cycles_one_indexed :: P.Permute -> [[Int]]
+cycles_one_indexed = map (map (+ 1)) . P.cycles
+
+{- | 'flip' of 'compose'
+
+> cycles_one_indexed (from_cycles_one_indexed [[1,5],[2,3,6],[4]] `permutation_mul` from_cycles_one_indexed [[1,6,4],[2],[3,5]])
+-}
+permutation_mul :: P.Permute -> P.Permute -> P.Permute
+permutation_mul p q = compose q p
 
 -- | Two line notation of /p/.
 --

@@ -103,6 +103,7 @@ obj_face_set_parse txt =
               _ -> error "obj_face_set_parse?"
   in partitionEithers (map f txt)
 
+-- | 'obj_face_set_parse' of 'obj_load_txt'
 obj_face_set_load :: Read n => FilePath -> IO ([(n,n,n)],[[Int]])
 obj_face_set_load = fmap obj_face_set_parse . obj_load_txt
 

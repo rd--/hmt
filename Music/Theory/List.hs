@@ -631,9 +631,15 @@ difference p q = filter (`notElem` q) p
 
 -- | Is /p/ a subset of /q/, ie. is 'intersect' of /p/ and /q/ '==' /p/.
 --
--- > is_subset [1,2] [1,2,3] == True
+-- > map (is_subset [1,2]) [[1],[1,2],[1,2,3]] == [False,True,True]
 is_subset :: Eq a => [a] -> [a] -> Bool
 is_subset p q = p `intersect` q == p
+
+-- | Is /p/ a proper subset of /q/, 'is_subset' and 'not' equal.
+--
+-- > map (is_proper_subset [1,2]) [[1],[1,2],[1,2,3]] == [False,False,True]
+is_proper_subset :: Eq a => [a] -> [a] -> Bool
+is_proper_subset p q = is_subset p q && p /= p `union` q
 
 -- | Is /p/ a superset of /q/, ie. 'flip' 'is_subset'.
 --

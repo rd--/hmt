@@ -39,7 +39,7 @@ cli_v3_graph_to_ply :: Int -> FilePath -> IO ()
 cli_v3_graph_to_ply prec hs_fn = do
   txt <- readFile hs_fn
   let g = read txt
-  putStrLn (unlines (T.v3_graph_to_ply (Just prec) g))
+  putStrLn (unlines (T.v3_graph_to_ply_clr prec g))
 
 cli_ply_help :: [String]
 cli_ply_help =
