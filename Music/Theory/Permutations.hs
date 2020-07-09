@@ -67,6 +67,7 @@ non_invertible p = p == P.inverse p
 from_cycles_zero_indexed :: [[Int]] -> P.Permute
 from_cycles_zero_indexed c = P.cyclesPermute (maximum (concat c) + 1) c
 
+from_cycles_one_indexed :: [[Int]] -> P.Permute
 from_cycles_one_indexed = from_cycles_zero_indexed . map (map (subtract 1))
 
 -- | Generate all permutations of size /n/.

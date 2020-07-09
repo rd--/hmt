@@ -149,7 +149,7 @@ to_zero_indexed = map (map pred)
 swap_abbrev :: Int -> [Int] -> [a] -> [a]
 swap_abbrev k a =
     let c = to_zero_indexed (swaps_to_cycles (gen_swaps k a))
-        p = T.from_cycles c
+        p = T.from_cycles_zero_indexed c
     in T.apply_permutation p
 
 -- | Apply a 'Change'.
