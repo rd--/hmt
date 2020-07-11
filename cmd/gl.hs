@@ -13,11 +13,13 @@ import Text.Printf {- base -}
 
 import Graphics.UI.GLUT {- GLUT -}
 
+import qualified Data.IntMap.Strict as Map {- containers -}
+
 import qualified Data.CG.Minus.Geometry.OFF as OFF {- hcg-minus -}
 import Data.CG.Minus.Plain {- hcg-minus -}
-import Data.CG.Minus.Projection {- hcg-minus -}
 
-import qualified Music.Theory.Graph.OBJ as T {- hmt -}
+import qualified Sound.SC3.Data.Geometry.OBJ as OBJ {- hsc3-data -}
+
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.Opt as T {- hmt -}
 
@@ -29,12 +31,15 @@ type R = GLfloat
 
 type GR = T.LBL (V4 R) ()
 
+f64_to_r :: Double -> R
+f64_to_r = realToFrac
+
 -- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
 --   If CH is true and there are edges, CH is ignored, allowing mixed sets to be loaded by setting CH.
 obj_load :: Bool -> FilePath -> IO GR
 obj_load ch fn = do
-  (v,e) <- T.obj_load_v3_graph fn
-  let f (i,(x,y,z)) = (i,(x,y,z,0))
+  (v,e) <- OBJ.obj_load_lbl_ fn
+  let f (i,(x,y,z)) = (i,(f64_to_r x,f64_to_r y,f64_to_r z,0))
   case (ch,null e) of
     (True,True) -> return (map f v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
     (False,True) -> error "obj_load?"
@@ -54,7 +59,8 @@ obj_off_load ch fn =
 
 gr_to_vsq :: GR -> [V4 R]
 gr_to_vsq (v,e) =
-  let ix = maybe (error "?") id . flip lookup v
+  let m = Map.fromAscList v
+      ix = maybe (error "?") id . flip Map.lookup m
       f ((i,j),_) = [ix i,ix j]
   in concatMap f e
 
@@ -77,7 +83,7 @@ withIORef s f = readIORef s >>= f
 type State = (R,V3 R,V3 R,Bool,(String,V4 R -> V3 R))
 
 state_0 :: State
-state_0 = (1.0,(20,30,0),(0,0,0),False,("XYZ",prj_xyz))
+state_0 = (1.0,(20,30,0),(0,0,0),False,("XYZ",v4_xyz))
 
 mod_osd :: IORef State -> IO ()
 mod_osd s = modifyIORef s (\(z,t,r,o,p) -> (z,t,r,not o,p))
@@ -175,10 +181,10 @@ gl_keydown s ky m = do
     SpecialKey KeyRight -> if c then mod_trs s (0.1,0,0) else mod_rot s (0,r,0)
     SpecialKey KeyPageUp -> if c then mod_trs s (0,0,0.1) else mod_rot s (0,0,r)
     SpecialKey KeyPageDown -> if c then mod_trs s (0,0,-0.1) else mod_rot s (0,0,- r)
-    SpecialKey KeyF1 -> set_prj s ("XYZ",prj_xyz)
-    SpecialKey KeyF2 -> set_prj s ("XYW",prj_xyw)
-    SpecialKey KeyF3 -> set_prj s ("XZW",prj_xzw)
-    SpecialKey KeyF4 -> set_prj s ("YZW",prj_yzw)
+    SpecialKey KeyF1 -> set_prj s ("XYZ",v4_xyz)
+    SpecialKey KeyF2 -> set_prj s ("XYW",v4_xyw)
+    SpecialKey KeyF3 -> set_prj s ("XZW",v4_xzw)
+    SpecialKey KeyF4 -> set_prj s ("YZW",v4_yzw)
     Char '=' -> mod_zoom s (if c then 0.1 else 0.01)
     Char '-' -> mod_zoom s (if c then -0.1 else -0.01)
     Char '1' -> set_rot s (if not a then (0,0,0) else (0,180,0)) -- Y
