@@ -28,11 +28,14 @@ ncol_load = fmap (map ncol_parse . lines) . readFile
 ncol_load_int :: FilePath -> IO (NCOL Int)
 ncol_load_int = ncol_load
 
+-- > ncol_ent_format 4 ((0,1),Nothing) == "0 1"
+-- > ncol_ent_format 4 ((0,1),Just 2.0) == "0 1 2.0000"
+ncol_ent_format :: Show t => Int -> NCOL_ENT t -> String
+ncol_ent_format k ((i,j),w) = unwords (map show [i,j]) ++ maybe "" ((' ':) . T.double_pp k) w
+
 -- | Store 'NCOL' of 'Int' to .ncol file
 ncol_store :: Show t => Int -> FilePath -> NCOL t -> IO ()
-ncol_store k fn dat = do
-  let f ((i,j),w) = unwords (map show [i,j] ++ [maybe "" (T.double_pp k) w])
-  writeFile fn (unlines (map f dat))
+ncol_store k fn dat = writeFile fn (unlines (map (ncol_ent_format k) dat))
 
 -- | Type-specialised.
 ncol_store_int :: Int -> FilePath -> NCOL Int -> IO ()
