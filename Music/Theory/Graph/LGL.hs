@@ -4,6 +4,8 @@
 -}
 module Music.Theory.Graph.LGL where
 
+import qualified Music.Theory.Show as T {- hmt -}
+
 -- | (edge,weight)
 type NCOL_ENT t = ((t,t),Maybe Double)
 
@@ -27,15 +29,15 @@ ncol_load_int :: FilePath -> IO (NCOL Int)
 ncol_load_int = ncol_load
 
 -- | Store 'NCOL' of 'Int' to .ncol file
-ncol_store :: Show t => FilePath -> NCOL t -> IO ()
-ncol_store fn dat = do
-  let f ((i,j),w) = unwords (map show [i,j]) ++ maybe "" show w
+ncol_store :: Show t => Int -> FilePath -> NCOL t -> IO ()
+ncol_store k fn dat = do
+  let f ((i,j),w) = unwords (map show [i,j] ++ [maybe "" (T.double_pp k) w])
   writeFile fn (unlines (map f dat))
 
 -- | Type-specialised.
-ncol_store_int :: FilePath -> NCOL Int -> IO ()
-ncol_store_int = ncol_store
+ncol_store_int :: Int -> FilePath -> NCOL Int -> IO ()
+ncol_store_int k = ncol_store k
 
 -- | Store edge set to .ncol file
 ncol_store_eset :: Show t => FilePath -> [(t,t)] -> IO ()
-ncol_store_eset fn dat = ncol_store fn (map (\e -> (e,Nothing)) dat)
+ncol_store_eset fn dat = ncol_store 0 fn (map (\e -> (e,Nothing)) dat)
