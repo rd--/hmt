@@ -86,6 +86,7 @@ Library
                    Music.Theory.Graph.IO
                    Music.Theory.Graph.Johnson_2014
                    Music.Theory.Graph.LCF
+                   Music.Theory.Graph.LGL
                    Music.Theory.Graph.Type
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
