@@ -5,7 +5,7 @@ import Data.Bifunctor {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Data.Graph as G {- containers -}
+import qualified Data.Graph as Graph {- containers -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
@@ -67,41 +67,53 @@ type E = (V,V)
 -- | (vertices,edges)
 type G = GR V
 
--- | 'G.Graph' to 'G'.
-graph_to_g :: G.Graph -> G
-graph_to_g gr = (G.vertices gr,G.edges gr)
+-- | 'Graph.Graph' to 'G'.
+graph_to_g :: Graph.Graph -> G
+graph_to_g gr = (Graph.vertices gr,Graph.edges gr)
 
--- | 'G' to 'G.Graph'
+-- | 'G' to 'Graph.Graph'
 --
 -- > g = ([0,1,2],[(0,1),(0,2),(1,2)])
 -- > g == gr_sort (graph_to_g (g_to_graph g))
-g_to_graph :: G -> G.Graph
-g_to_graph (v,e) = G.buildG (minimum v,maximum v) e
+g_to_graph :: G -> Graph.Graph
+g_to_graph (v,e) = Graph.buildG (minimum v,maximum v) e
 
 -- | Unlabel graph, make table.
+--
+-- > gr_unlabel ("xyz",[('x','y'),('x','z')]) == (([0,1,2],[(0,1),(0,2)]),[(0,'x'),(1,'y'),(2,'z')])
 gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
-gr_unlabel (v,e) =
-  let n = length v
-      v' = [0 .. n - 1]
-      tbl = zip v' v
+gr_unlabel (v1,e1) =
+  let n = length v1
+      v2 = [0 .. n - 1]
+      tbl = zip v2 v1
       get k = T.reverse_lookup_err k tbl
-      e' = map (\(p,q) -> (get p,get q)) e
-  in ((v',e'),tbl)
+      e2 = map (\(p,q) -> (get p,get q)) e1
+  in ((v2,e2),tbl)
+
+-- | 'fst' of 'gr_unlabel'
+gr_to_g :: Eq t => GR t -> G
+gr_to_g = fst . gr_unlabel
 
 -- | 'g_to_graph' of 'gr_unlabel'.
 --
 -- > gr = ("abc",[('a','b'),('a','c'),('b','c')])
 -- > (g,tbl) = gr_to_graph gr
-gr_to_graph :: Eq t => GR t -> (G.Graph,[(V,t)])
+gr_to_graph :: Eq t => GR t -> (Graph.Graph,[(V,t)])
 gr_to_graph gr =
   let ((v,e),tbl) = gr_unlabel gr
-  in (G.buildG (0,length v - 1) e,tbl)
+  in (Graph.buildG (0,length v - 1) e,tbl)
+
+-- | Complete k-graph (un-directed) given list of vertices
+--
+-- > gr_complete_graph "xyz" == ("xyz",[('x','y'),('x','z'),('y','z')])
+gr_complete_graph :: Ord t => [t] -> GR t
+gr_complete_graph v = let e = [(i,j) | i <- v,j <- v,i < j] in (v,e)
 
 -- | Complete k-graph (un-directed).
 --
 -- > g_complete_graph 3 == ([0,1,2],[(0,1),(0,2),(1,2)])
 g_complete_graph :: Int -> G
-g_complete_graph k = let v = [0 .. k - 1] in (v,[(i,j) | i <- v,j <- v,i < j])
+g_complete_graph k = gr_complete_graph [0 .. k - 1]
 
 -- * EDG = edge list (zero-indexed)
 
@@ -131,6 +143,7 @@ edg_parse ln =
 -- | Adjacency list [(left-hand-side,[right-hand-side])]
 type ADJ t = [(t,[t])]
 
+-- | 'ADJ' to edge set.
 adj_to_eset :: Ord t => ADJ t -> [(t,t)]
 adj_to_eset = concatMap (\(i,j) -> zip (repeat i) j)
 
@@ -292,3 +305,7 @@ eset_to_lbl e =
   let v = nub (sort (concatMap (\(i,j) -> [i,j]) e))
       get_ix z = fromMaybe (error "eset_to_lbl") (elemIndex z v)
   in (zip [0..] v, map (\(i,j) -> ((get_ix i,get_ix j),())) e)
+
+-- | Unlabel 'LBL' graph.
+lbl_to_g :: LBL v e -> G
+lbl_to_g (v,e) = (map fst v,map fst e)
