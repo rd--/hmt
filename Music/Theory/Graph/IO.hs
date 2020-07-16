@@ -53,11 +53,11 @@ g6_dsc_load_gr = fmap (map (\(dsc,e) -> (dsc,T.edg_to_g e))) . g6_dsc_load_edg
 {- | Generate the text format read by nauty-amtog.
 
 > e = ((4,3),[(0,3),(1,3),(2,3)])
-> m = T.edg_to_adj_mtx_undir e
+> m = T.edg_to_adj_mtx_undir (0,1) e
 > putStrLn (adj_mtx_to_am m)
 
 -}
-adj_mtx_to_am :: T.ADJ_MTX -> String
+adj_mtx_to_am :: T.ADJ_MTX Int -> String
 adj_mtx_to_am (nv,mtx) =
   unlines ["n=" ++ show nv
           ,"m"
@@ -66,7 +66,7 @@ adj_mtx_to_am (nv,mtx) =
 -- | Call nauty-amtog to transform a sequence of ADJ_MTX to G6.
 --
 -- > adj_mtx_to_g6 [m,m]
-adj_mtx_to_g6 :: [T.ADJ_MTX] -> IO [String]
+adj_mtx_to_g6 :: [T.ADJ_MTX Int] -> IO [String]
 adj_mtx_to_g6 adj = do
   r <- readProcess "nauty-amtog" ["-q"] (unlines (map adj_mtx_to_am adj))
   return (lines r)

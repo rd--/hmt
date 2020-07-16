@@ -120,7 +120,11 @@ g_complete_graph k = gr_complete_graph [0 .. k - 1]
 -- | ((|V|,|E|),[E])
 type EDG = ((Int,Int), [E])
 
--- | Requires V is (0 .. |v| - 1).
+-- | Requires (but does not check) that V is (0 .. |v| - 1).
+g_to_edg :: G -> EDG
+g_to_edg (v,e) = ((length v,length e),e)
+
+-- | Requires (but does not check) that V is (0 .. |v| - 1).
 edg_to_g :: EDG -> G
 edg_to_g ((nv,ne),e) =
   let v = [0 .. nv - 1]
@@ -182,24 +186,30 @@ gr_to_adj_undir =
   in gr_to_adj sel_f
 
 -- | Adjacency matrix, (|v|,mtx)
-type ADJ_MTX = (Int,[[Int]])
+type ADJ_MTX t = (Int,[[t]])
 
 {- | EDG to ADJ_MTX for un-directed graph.
 
 > e = ((4,3),[(0,3),(1,3),(2,3)])
-> edg_to_adj_mtx_undir e == [[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,0]]
+> edg_to_adj_mtx_undir (0,1) e == (4,[[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,0]])
 
 > e = ((4,4),[(0,1),(0,3),(1,2),(2,3)])
-> edg_to_adj_mtx_undir e == [[0,1,0,1],[1,0,1,0],[0,1,0,1],[1,0,1,0]]
+> edg_to_adj_mtx_undir (0,1) e == (4,[[0,1,0,1],[1,0,1,0],[0,1,0,1],[1,0,1,0]])
 
 -}
-edg_to_adj_mtx_undir :: EDG -> ADJ_MTX
-edg_to_adj_mtx_undir ((nv,_ne),e) =
+edg_to_adj_mtx_undir :: (t,t) -> EDG -> ADJ_MTX t
+edg_to_adj_mtx_undir (false,true) ((nv,_ne),e) =
   let v = [0 .. nv - 1]
       f i j = case find (e_eq_undir (i,j)) e of
-                Nothing -> 0
-                _ -> 1
+                Nothing -> false
+                _ -> true
   in (nv,map (\i -> map (f i) v) v)
+
+-- | Lookup 'ADJ_MTX' to find connected vertices.
+adj_mtx_con :: Eq t => (t,t) -> ADJ_MTX t -> Int -> [Int]
+adj_mtx_con (false,true) (_,mx) e =
+  let f i j = if i == true then Just j else if i == false then Nothing else error "adj_mtx_con?"
+  in catMaybes (zipWith f (mx !! e) [0..])
 
 -- * Labels
 
