@@ -128,22 +128,23 @@ edg_parse ln =
 
 -- * Adjacencies
 
--- | Adjacency list
+-- | Adjacency list [(left-hand-side,[right-hand-side])]
 type ADJ t = [(t,[t])]
 
--- | ADJ to G.
-adj_to_gr :: Ord t => ADJ t -> GR t
-adj_to_gr adj =
-  let e = concatMap (\(i,j) -> zip (repeat i) j) adj
-  in eset_to_gr e
+adj_to_eset :: Ord t => ADJ t -> [(t,t)]
+adj_to_eset = concatMap (\(i,j) -> zip (repeat i) j)
 
--- | G to ADJ.
+-- | 'ADJ' to 'GR'
+adj_to_gr :: Ord t => ADJ t -> GR t
+adj_to_gr = eset_to_gr . adj_to_eset
+
+-- | 'GR' to 'ADJ' (selection-function)
 gr_to_adj :: Ord t => (t -> (t,t) -> Maybe t) -> GR t -> ADJ t
 gr_to_adj sel_f (v,e) =
   let f k = (k,sort (mapMaybe (sel_f k) e))
   in filter (\(_,a) -> a /= []) (map f v)
 
--- | Directed graph to ADJ.
+-- | 'GR' to 'ADJ' (directed)
 --
 -- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
 -- > r = [(0,[1,3]),(2,[1]),(3,[0])]
@@ -153,7 +154,7 @@ gr_to_adj_dir =
   let sel_f k (i,j) = if i == k then Just j else Nothing
   in gr_to_adj sel_f
 
--- | Un-directed graph to ADJ.
+-- | 'GR' to 'ADJ' (un-directed)
 --
 -- > g = ([0,1,2,3],[(0,1),(2,1),(0,3),(3,0)])
 -- > gr_to_adj_undir g == [(0,[1,3,3]),(1,[2])]
