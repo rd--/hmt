@@ -1,9 +1,9 @@
-{- | IO for graph files, graph6, sparse6 and digraph6 encodings.
+{- | graph6 graph encoding
 
 <http://users.cecs.anu.edu.au/~bdm/nauty/>
 <https://users.cecs.anu.edu.au/~bdm/data/formats.html>
 -}
-module Music.Theory.Graph.IO where
+module Music.Theory.Graph.G6 where
 
 import Data.List.Split {- split -}
 import System.Process {- process -}

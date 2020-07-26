@@ -246,6 +246,9 @@ t6_to_list (p,q,r,s,t,u) = [p,q,r,s,t,u]
 t6_map :: (p -> q) -> T6 p -> T6 q
 t6_map f (p,q,r,s,t,u) = (f p,f q,f r,f s,f t,f u)
 
+t6_sum :: Num t => T6 t -> t
+t6_sum (a,b,c,d,e,f) = a + b + c + d + e + f
+
 -- * T7 (7-tuple, regular)
 
 type T7 a = (a,a,a,a,a,a,a)

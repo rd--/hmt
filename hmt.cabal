@@ -83,7 +83,7 @@ Library
                    Music.Theory.Graph.Deacon_1934
                    Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
-                   Music.Theory.Graph.IO
+                   Music.Theory.Graph.G6
                    Music.Theory.Graph.Johnson_2014
                    Music.Theory.Graph.LCF
                    Music.Theory.Graph.LGL
