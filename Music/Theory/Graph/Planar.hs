@@ -89,7 +89,7 @@ plc_face_set :: PLC -> [[(Int,Int)]]
 plc_face_set p =
   let f r e =
         case e of
-          [] -> r
+          [] -> reverse r
           e0:eN -> if any (e0 `elem`) r
                    then f r eN
                    else f (plc_face_from p e0 : r) eN
