@@ -58,14 +58,17 @@ gr_sort (v,e) = (sort v,sort e)
 
 -- * Int graph
 
--- | Vertex
-type V = Int
+-- | 'GR' of 'Int'
+type G = GR Int
 
--- | Edge
-type E = (V,V)
-
--- | (vertices,edges)
-type G = GR V
+-- | Simple text representation of 'G'.  Requires (and checks) that vertices are (0 .. |v|-1).
+g_to_text :: G -> String
+g_to_text (v,e) =
+  let k = length v
+      f (i,j) = unwords (map show [i,j])
+  in if v /= [0 .. k - 1]
+     then error "g_to_text?"
+     else unlines (show k : map f e)
 
 -- | 'Graph.Graph' to 'G'.
 graph_to_g :: Graph.Graph -> G
@@ -81,7 +84,7 @@ g_to_graph (v,e) = Graph.buildG (minimum v,maximum v) e
 -- | Unlabel graph, make table.
 --
 -- > gr_unlabel ("xyz",[('x','y'),('x','z')]) == (([0,1,2],[(0,1),(0,2)]),[(0,'x'),(1,'y'),(2,'z')])
-gr_unlabel :: Eq t => GR t -> (G,[(V,t)])
+gr_unlabel :: Eq t => GR t -> (G,[(Int,t)])
 gr_unlabel (v1,e1) =
   let n = length v1
       v2 = [0 .. n - 1]
@@ -98,7 +101,7 @@ gr_to_g = fst . gr_unlabel
 --
 -- > gr = ("abc",[('a','b'),('a','c'),('b','c')])
 -- > (g,tbl) = gr_to_graph gr
-gr_to_graph :: Eq t => GR t -> (Graph.Graph,[(V,t)])
+gr_to_graph :: Eq t => GR t -> (Graph.Graph,[(Int,t)])
 gr_to_graph gr =
   let ((v,e),tbl) = gr_unlabel gr
   in (Graph.buildG (0,length v - 1) e,tbl)
@@ -118,13 +121,13 @@ g_complete_graph k = gr_complete_graph [0 .. k - 1]
 -- * EDG = edge list (zero-indexed)
 
 -- | ((|V|,|E|),[E])
-type EDG = ((Int,Int), [E])
+type EDG = ((Int,Int), [(Int,Int)])
 
--- | Requires (but does not check) that V is (0 .. |v| - 1).
+-- | Requires (but does not check) that vertices are (0 .. |v| - 1).
 g_to_edg :: G -> EDG
 g_to_edg (v,e) = ((length v,length e),e)
 
--- | Requires (but does not check) that V is (0 .. |v| - 1).
+-- | Requires (but does not check) that vertices are (0 .. |v| - 1).
 edg_to_g :: EDG -> G
 edg_to_g ((nv,ne),e) =
   let v = [0 .. nv - 1]
@@ -216,8 +219,8 @@ adj_mtx_con (false,true) (_,mx) e =
 -- | Labelled graph, distinct vertex and edge labels.
 type LBL_GR v v_lbl e_lbl = ([(v,v_lbl)],[((v,v),e_lbl)])
 
--- | Labelled graph, V/E typed.
-type LBL v e = LBL_GR V v e
+-- | 'LBL_GR' of 'Int'
+type LBL v e = LBL_GR Int v e
 
 -- | 'LBL' with () edge labels.
 type LBL_ v = LBL v ()
@@ -270,19 +273,19 @@ lbl_complete_graph v =
      ,zip [(i,j) | i <- u, j <- u, i < j] (repeat ()))
 
 -- | Lookup vertex label with default value.
-v_label :: v -> LBL v e -> V -> v
+v_label :: v -> LBL v e -> Int -> v
 v_label def (tbl,_) v = fromMaybe def (lookup v tbl)
 
 -- | 'v_label' with 'error' as default.
-v_label_err :: LBL v e -> V -> v
+v_label_err :: LBL v e -> Int -> v
 v_label_err = v_label (error "v_label")
 
 -- | Lookup edge label with default value.
-e_label :: e -> LBL v e -> E -> e
+e_label :: e -> LBL v e -> (Int,Int) -> e
 e_label def (_,tbl) e = fromMaybe def (lookup e tbl)
 
 -- | 'e_label' with 'error' as default.
-e_label_err :: LBL v e -> E -> e
+e_label_err :: LBL v e -> (Int,Int) -> e
 e_label_err = e_label (error "e_label")
 
 -- | Convert from 'LBL_GR' to 'LBL'
