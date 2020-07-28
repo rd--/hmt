@@ -58,10 +58,48 @@ plc_load fn = do
     then return (plc_segment (plc_data b))
     else error "plc_load?"
 
--- | Translate 'PLC' into 'T.G'
+-- | All edges (one-indexed) at PLC
+plc_edge_set :: PLC -> [(Int,Int)]
+plc_edge_set (k,n) =
+  let v = [1 .. k]
+      f (i,j) = map (\x -> (i,x)) j
+  in concatMap f (zip v n)
+
+
+-- | Element in /x/ after /i/, the element after the last is the first.
+--
+-- > map (plc_next_elem "abcd") "abcd" == "bcda"
+plc_next_elem :: Eq t => [t] -> t -> t
+plc_next_elem x i =
+  case dropWhile (/= i) x of
+    [] -> error "plc_next_elem?"
+    [_] -> head x
+    _:j:_ -> j
+
+-- | The next edge in PLC following /e/.
+plc_next_edge :: PLC -> (Int,Int) -> (Int,Int)
+plc_next_edge (_,e) (i,j) = let k = plc_next_elem (e !! (j - 1)) i in (j,k)
+
+-- | The face of PLC starting at /e/ (one-indexed edges).
+plc_face_from :: PLC -> (Int,Int) -> [(Int,Int)]
+plc_face_from p e = e : takeWhile (/= e) (tail (iterate (plc_next_edge p) e))
+
+-- | The set of all faces at PLC (one-indexed edges).
+plc_face_set :: PLC -> [[(Int,Int)]]
+plc_face_set p =
+  let f r e =
+        case e of
+          [] -> r
+          e0:eN -> if any (e0 `elem`) r
+                   then f r eN
+                   else f (plc_face_from p e0 : r) eN
+  in f [] (plc_edge_set p)
+
+-- | Translate 'PLC' into un-directed 'T.G'.  PLC is one-indexed, G is zero-indexed.
 plc_to_g :: PLC -> T.G
-plc_to_g (k,n) =
-  let v = [0 .. k - 1]
-      f (i,j) = map (\x -> (i,x - 1)) j
+plc_to_g p =
+  let (k,_) = p
+      v = [0 .. k - 1]
+      f (i,j) = (i - 1,j - 1)
       g (i,j) = i <= j
-  in (v,filter g (concatMap f (zip v n)))
+  in (v,filter g (map f (plc_edge_set p)))
