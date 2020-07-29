@@ -1,9 +1,11 @@
 -- | <https://users.cecs.anu.edu.au/~bdm/plantri/plantri-guide.txt>
 module Music.Theory.Graph.Planar where
 
-import Data.List.Split {- split -}
+import System.FilePath {- filepath -}
+import Text.Printf {- base -}
 
 import qualified Data.ByteString as B {- bytestring -}
+import qualified Data.List.Split as S {- split -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 
@@ -35,10 +37,13 @@ plc_scanner =
 -- | (n-vertices,clockwise-edge-sequences)
 type PLC = (Int,[[Int]])
 
+plc_n_vertices :: PLC -> Int
+plc_n_vertices (k,_) = k
+
 -- | Group PLC data into PLC structure.
 plc_group :: Int -> [Int] -> PLC
 plc_group k i =
-  let c = endBy [0] i
+  let c = S.endBy [0] i
   in if length c == k then (k,c) else error "plc_group?"
 
 -- | Segment input data into sequence of PLC.
@@ -103,3 +108,15 @@ plc_to_g p =
       f (i,j) = (i - 1,j - 1)
       g (i,j) = i <= j
   in (v,filter g (map f (plc_edge_set p)))
+
+plc_stat :: FilePath -> IO (Int, [(Int, Int, Int)])
+plc_stat plc_fn = do
+  p_seq <- plc_load plc_fn
+  let f p = (plc_n_vertices p,length (plc_edge_set p) `div` 2,length (plc_face_set p))
+  return (length p_seq,map f p_seq)
+
+plc_stat_txt :: FilePath -> (Int, [(Int, Int, Int)]) -> [String]
+plc_stat_txt fn (k,g) =
+  let hdr = printf "%s G=%d" (takeBaseName fn) k
+      gr (v,e,f) = printf " V=%d E=%d F=%d" v e f
+  in hdr : map gr g
