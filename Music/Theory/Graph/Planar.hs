@@ -118,5 +118,5 @@ plc_stat plc_fn = do
 plc_stat_txt :: FilePath -> (Int, [(Int, Int, Int)]) -> [String]
 plc_stat_txt fn (k,g) =
   let hdr = printf "%s G=%d" (takeBaseName fn) k
-      gr (v,e,f) = printf " V=%d E=%d F=%d" v e f
-  in hdr : map gr g
+      gr (ix,(v,e,f)) = printf " %d: V=%d E=%d F=%d" ix v e f
+  in hdr : map gr (zip [1::Int ..] g)
