@@ -132,6 +132,10 @@ g6_planarg =
       str_to_b = B.pack . map (fromIntegral . fromEnum)
   in fmap str_to_b . readProcess "nauty-planar" ["-q"] . unlines
 
+-- | Run "nauty-planar" to translate named G6 file to named PL file.
+g6_to_pl_wr :: FilePath -> FilePath -> IO ()
+g6_to_pl_wr g6_fn pl_fn = callProcess "nauty-planar" ["-q",g6_fn,pl_fn]
+
 -- | 'plc_parse' of 'g6_planarg' of 'G6.g_to_g6'
 g_to_plc :: [T.G] -> IO [PLC]
 g_to_plc g = G6.g_to_g6 g >>= g6_planarg >>= return . plc_parse

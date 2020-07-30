@@ -74,6 +74,10 @@ adj_mtx_to_g6 adj = do
 g_to_g6 :: [T.G] -> IO [String]
 g_to_g6 = adj_mtx_to_g6 . map (T.g_to_adj_mtx_undir (0,1))
 
+-- | 'writeFile' of 'g_to_g6'
+g_store_g6 :: FilePath -> [T.G] -> IO ()
+g_store_g6 fn gr = g_to_g6 gr >>= writeFile fn . unlines
+
 -- | Call nauty-labelg to canonise a set of graphs.
 g6_labelg :: [String] -> IO [String]
 g6_labelg = fmap lines . readProcess "nauty-labelg" ["-q"] . unlines
