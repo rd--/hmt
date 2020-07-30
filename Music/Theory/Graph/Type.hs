@@ -208,6 +208,10 @@ edg_to_adj_mtx_undir (false,true) ((nv,_ne),e) =
                 _ -> true
   in (nv,map (\i -> map (f i) v) v)
 
+-- | 'edg_to_adj_mtx_undir' of 'g_to_edg'
+g_to_adj_mtx_undir :: (t,t) -> G -> ADJ_MTX t
+g_to_adj_mtx_undir o = edg_to_adj_mtx_undir o . g_to_edg
+
 -- | Lookup 'ADJ_MTX' to find connected vertices.
 adj_mtx_con :: Eq t => (t,t) -> ADJ_MTX t -> Int -> [Int]
 adj_mtx_con (false,true) (_,mx) e =

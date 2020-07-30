@@ -2,11 +2,13 @@
 module Music.Theory.Graph.Planar where
 
 import System.FilePath {- filepath -}
+import System.Process {- process -}
 import Text.Printf {- base -}
 
 import qualified Data.ByteString as B {- bytestring -}
 import qualified Data.List.Split as S {- split -}
 
+import qualified Music.Theory.Graph.G6 as G6 {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 
 -- | The 15-character header text indicating a PLANAR-CODE file.
@@ -55,13 +57,15 @@ plc_segment i =
              (r,[]) -> [plc_group k r]
              (r,l) -> plc_group k r : plc_segment l
 
+plc_parse :: B.ByteString -> [PLC]
+plc_parse b =
+  if plc_header b == plc_header_txt
+  then plc_segment (plc_data b)
+  else error "plc_load?"
+
 -- | Load sequence of PLC from binary PLANAR-CODE file.
 plc_load :: FilePath -> IO [PLC]
-plc_load fn = do
-  b <- B.readFile fn
-  if plc_header b == plc_header_txt
-    then return (plc_segment (plc_data b))
-    else error "plc_load?"
+plc_load = fmap plc_parse . B.readFile
 
 -- | All edges (one-indexed) at PLC
 plc_edge_set :: PLC -> [(Int,Int)]
@@ -69,7 +73,6 @@ plc_edge_set (k,n) =
   let v = [1 .. k]
       f (i,j) = map (\x -> (i,x)) j
   in concatMap f (zip v n)
-
 
 -- | Element in /x/ after /i/, the element after the last is the first.
 --
@@ -120,3 +123,15 @@ plc_stat_txt fn (k,g) =
   let hdr = printf "%s G=%d" (takeBaseName fn) k
       gr (ix,(v,e,f)) = printf " %d: V=%d E=%d F=%d" ix v e f
   in hdr : map gr (zip [1::Int ..] g)
+
+-- | Call nauty-labelg to convert (if possible) a set of G6 graphs to PLANAR-CODE.
+g6_planarg :: [String] -> IO B.ByteString
+g6_planarg =
+  -- else see process-extras:readProcessWithExitCode
+  let str_to_b :: String -> B.ByteString
+      str_to_b = B.pack . map (fromIntegral . fromEnum)
+  in fmap str_to_b . readProcess "nauty-planar" ["-q"] . unlines
+
+-- | 'plc_parse' of 'g6_planarg' of 'G6.g_to_g6'
+g_to_plc :: [T.G] -> IO [PLC]
+g_to_plc g = G6.g_to_g6 g >>= g6_planarg >>= return . plc_parse
