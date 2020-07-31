@@ -124,18 +124,18 @@ plc_stat_txt fn (k,g) =
       gr (ix,(v,e,f)) = printf " %d: V=%d E=%d F=%d" ix v e f
   in hdr : map gr (zip [1::Int ..] g)
 
--- | Call nauty-labelg to convert (if possible) a set of G6 graphs to PLANAR-CODE.
+-- | Run "nauty-planarg" to convert (if possible) a set of G6 graphs to PLANAR-CODE.
 g6_planarg :: [String] -> IO B.ByteString
 g6_planarg =
   -- else see process-extras:readProcessWithExitCode
   let str_to_b :: String -> B.ByteString
       str_to_b = B.pack . map (fromIntegral . fromEnum)
-  in fmap str_to_b . readProcess "nauty-planar" ["-q"] . unlines
-
--- | Run "nauty-planar" to translate named G6 file to named PL file.
-g6_to_pl_wr :: FilePath -> FilePath -> IO ()
-g6_to_pl_wr g6_fn pl_fn = callProcess "nauty-planar" ["-q",g6_fn,pl_fn]
+  in fmap str_to_b . readProcess "nauty-planarg" ["-q"] . unlines
 
 -- | 'plc_parse' of 'g6_planarg' of 'G6.g_to_g6'
 g_to_plc :: [T.G] -> IO [PLC]
 g_to_plc g = G6.g_to_g6 g >>= g6_planarg >>= return . plc_parse
+
+-- | Run "nauty-planarg" to translate named G6 file to named PL file.
+g6_to_pl_wr :: FilePath -> FilePath -> IO ()
+g6_to_pl_wr g6_fn pl_fn = callProcess "nauty-planarg" ["-q","-p",g6_fn,pl_fn]

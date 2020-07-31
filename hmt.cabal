@@ -80,6 +80,7 @@ Library
                    Music.Theory.Enum
                    Music.Theory.Function
                    Music.Theory.Gamelan
+                   Music.Theory.Graph.Bliss
                    Music.Theory.Graph.Deacon_1934
                    Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
