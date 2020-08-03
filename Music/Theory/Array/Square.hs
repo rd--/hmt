@@ -12,6 +12,24 @@ import qualified Music.Theory.Math.OEIS as T {- hmt -}
 -- | Square as list of lists.
 type SQ t = [[t]]
 
+sq_map :: (t -> t) -> SQ t -> SQ t
+sq_map f = map (map f)
+
+sq_scale :: Num t => t -> SQ t -> SQ t
+sq_scale n = sq_map (* n)
+
+sq_zip :: (t -> t -> t) -> SQ t -> SQ t -> SQ t
+sq_zip f = zipWith (zipWith f)
+
+sq_mul :: Num t => SQ t -> SQ t -> SQ t
+sq_mul = sq_zip (*)
+
+sq_add :: Num t => SQ t -> SQ t -> SQ t
+sq_add = sq_zip (+)
+
+sq_sum :: Num t => [SQ t] -> SQ t
+sq_sum = foldl1 sq_add
+
 -- | Predicate to determine if 'SQ' is actually square.
 sq_is_square :: SQ t -> Bool
 sq_is_square sq = nub (map length sq) == [length sq]
