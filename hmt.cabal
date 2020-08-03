@@ -52,6 +52,7 @@ Library
                    Music.Theory.Array.CSV.Midi.MND
                    Music.Theory.Array.CSV.Midi.SKINI
                    Music.Theory.Array.Direction
+                   Music.Theory.Array.Square
                    Music.Theory.Array.Text
                    Music.Theory.Bits
                    Music.Theory.Bjorklund
