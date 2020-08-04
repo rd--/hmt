@@ -118,6 +118,14 @@ sq_is_normal sq =
   let n = genericLength sq
   in sort (concat sq) == [1 .. n * n]
 
+-- | Sums of (rows, columns, left-right-diagonals, right-left-diagonals)
+sq_sums :: Num n => SQ n -> ([n],[n],[n],[n])
+sq_sums sq =
+  (map sum sq
+  ,map sum (sq_transpose sq)
+  ,map sum (sq_diagonals_ul_lr sq)
+  ,map sum (sq_diagonals_ll_ur sq))
+
 -- * PP
 
 sq_opt :: T.TABLE_OPT
