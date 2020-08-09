@@ -28,6 +28,15 @@ The simplest sequence of positive numbers: the all 1's sequence.
 a000012 :: Num n => [n]
 a000012 = repeat 1
 
+{- | <http://oeis.org/A000032>
+
+Lucas numbers beginning at 2: L(n) = L(n-1) + L(n-2), L(0) = 2, L(1) = 1. (Formerly M0155)
+
+> [2,1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127] `isPrefixOf` a000032
+-}
+a000032 :: Num n => [n]
+a000032 = 2 : 1 : zipWith (+) a000032 (tail a000032)
+
 {- | <http://oeis.org/A000040>
 
 The prime numbers.
@@ -219,6 +228,15 @@ Tetrahedral (or triangular pyramidal) numbers: a(n) = C(n+2,3) = n*(n+1)*(n+2)/6
 -}
 a000292 :: (Enum n,Num n) => [n]
 a000292 = scanl1 (+) a000217
+
+{- | <http://oeis.org/A000384>
+
+Hexagonal numbers: a(n) = n*(2*n-1). (Formerly M4108 N1705)
+
+> [0,1,6,15,28,45,66,91,120,153,190,231,276,325,378,435,496,561,630,703,780,861] `isPrefixOf` a000384
+-}
+a000384 :: Integral n => [n]
+a000384 = scanl (+) 0 a016813
 
 {- | <http://oeis.org/A000578>
 
@@ -647,6 +665,15 @@ a010049 =
       c _ _ = error "A010049"
   in uncurry c (splitAt 1 a000045)
 
+{- | <http://oeis.org/A016813>
+
+a(n) = 4*n + 1.
+
+> [1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93,97,101] `isPrefixOf` a016813
+-}
+a016813 :: Integral n => [n]
+a016813 = [1, 5 ..]
+
 {- | <http://oeis.org/A017817>
 
 a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
@@ -655,6 +682,15 @@ a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
 -}
 a017817 :: Num n => [n]
 a017817 = 1 : 0 : 0 : 1 : zipWith (+) a017817 (tail a017817)
+
+{- | <http://oeis.org/A020695>
+
+Pisot sequence E(2,3).
+
+> [2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711] `isPrefixOf` a020695
+-}
+a020695 :: Num n => [n]
+a020695 = drop 3 a000045
 
 {- | <http://oeis.org/A022095>
 
