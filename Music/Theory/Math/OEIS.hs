@@ -193,6 +193,15 @@ a(n) = 2^n - 1 (Sometimes called Mersenne numbers, although that name is usually
 a000225 :: Num n => [n]
 a000225 = iterate ((+ 1) . (* 2)) 0
 
+{- | <http://oeis.org/000285>
+
+a(0) = 1, a(1) = 4, and a(n) = a(n-1) + a(n-2) for n >= 2. (Formerly M3246 N1309)
+
+> [1,4,5,9,14,23,37,60,97,157,254,411,665,1076,1741,2817,4558,7375,11933,19308] `isPrefixOf` a000285
+-}
+a000285 :: Num n => [n]
+a000285 = 1 : 4 : zipWith (+) a000285 (tail a000285)
+
 {- | <http://oeis.org/A000290>
 
 The squares of the non-negative integers.
@@ -646,6 +655,24 @@ a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
 -}
 a017817 :: Num n => [n]
 a017817 = 1 : 0 : 0 : 1 : zipWith (+) a017817 (tail a017817)
+
+{- | <http://oeis.org/A022095>
+
+Fibonacci sequence beginning 1, 5.
+
+> [1,5,6,11,17,28,45,73,118,191,309,500,809,1309,2118,3427,5545,8972,14517,23489] `isPrefixOf` a022095
+-}
+a022095 :: Num n => [n]
+a022095 = 1 : 5 : zipWith (+) a022095 (tail a022095)
+
+{- | <http://oeis.org/A022096>
+
+Fibonacci sequence beginning 1, 6.
+
+> [1,6,7,13,20,33,53,86,139,225,364,589,953,1542,2495,4037,6532,10569,17101,27670] `isPrefixOf` a022096
+-}
+a022096 :: Num n => [n]
+a022096 = 1 : 6 : zipWith (+) a022096 (tail a022096)
 
 {- | <http://oeis.org/A027934>
 
