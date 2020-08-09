@@ -658,6 +658,21 @@ a027934 =
   let f x y z = 3 * x - y - 2 * z
   in 0 : 1 : 2 : zipWith3 f (drop 2 a027934) (tail a027934) a027934
 
+{- | <http://oeis.org/A029635>
+
+The (1,2)-Pascal triangle (or Lucas triangle) read by rows.
+
+> [2,1,2,1,3,2,1,4,5,2,1,5,9,7,2,1,6,14,16,9,2,1,7,20,30,25,11,2,1,8,27,50,55,36] `isPrefixOf` a029635
+> take 7 a029635_tbl == [[2],[1,2],[1,3,2],[1,4,5,2],[1,5,9,7,2],[1,6,14,16,9,2],[1,7,20,30,25,11,2]]
+-}
+a029635 :: Num i => [i]
+a029635 = concat a029635_tbl
+
+a029635_tbl :: Num i => [[i]]
+a029635_tbl =
+  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  in [2] : iterate f [1,2]
+
 {- | <http://oeis.org/A030308>
 
 Triangle T(n,k): Write n in base 2, reverse order of digits, to get the n-th row
@@ -749,6 +764,19 @@ Triangle read by rows, denominator of fractions of a variant of the Farey series
 -}
 a049456 :: Integral n => [n]
 a049456 = map snd (concat Math.stern_brocot_tree_lhs)
+
+{- | <http://oeis.org/A053121>
+
+Catalan triangle (with 0's) read by rows.
+
+> [1,0,1,1,0,1,0,2,0,1,2,0,3,0,1,0,5,0,4,0,1,5,0,9,0,5,0,1,0,14,0,14,0,6,0,1,14,0] `isPrefixOf` a053121
+> take 7 a053121_tbl == [[1],[0,1],[1,0,1],[0,2,0,1],[2,0,3,0,1],[0,5,0,4,0,1],[5,0,9,0,5,0,1]]
+-}
+a053121 :: Num n => [n]
+a053121 = concat a053121_tbl
+
+a053121_tbl :: Num n => [[n]]
+a053121_tbl = iterate (\row -> zipWith (+) ([0] ++ row) (tail row ++ [0, 0])) [1]
 
 {- | <http://oeis.org/A058265>
 
@@ -853,6 +881,51 @@ Positions of zeros in Per Nørgård's infinity sequence (A004718).
 -}
 a083866 :: (Enum n,Num n) => [n]
 a083866 = map snd (filter ((== (0::Int)) . fst) (zip a004718 [0..]))
+
+{- | <http://oeis.org/A095660>
+
+Pascal (1,3) triangle.
+
+> [3,1,3,1,4,3,1,5,7,3,1,6,12,10,3,1,7,18,22,13,3,1,8,25,40,35,16,3,1,9,33,65,75] `isPrefixOf` a095660
+> take 6 a095660_tbl == [[3],[1,3],[1,4,3],[1,5,7,3],[1,6,12,10,3],[1,7,18,22,13,3]]
+-}
+a095660 :: Num i => [i]
+a095660 = concat a095660_tbl
+
+a095660_tbl :: Num i => [[i]]
+a095660_tbl =
+  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  in [3] : iterate f [1,3]
+
+{- | <http://oeis.org/A095666>
+
+Pascal (1,4) triangle.
+
+> [4,1,4,1,5,4,1,6,9,4,1,7,15,13,4,1,8,22,28,17,4,1,9,30,50,45,21,4,1,10,39,80,95] `isPrefixOf` a095666
+> take 6 a095666_tbl == [[4],[1,4],[1,5,4],[1,6,9,4],[1,7,15,13,4],[1,8,22,28,17,4]]
+-}
+a095666 :: Num i => [i]
+a095666 = concat a095666_tbl
+
+a095666_tbl :: Num i => [[i]]
+a095666_tbl =
+  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  in [4] : iterate f [1,4]
+
+{- | <http://oeis.org/A096940>
+
+Pascal (1,5) triangle.
+
+> [5,1,5,1,6,5,1,7,11,5,1,8,18,16,5,1,9,26,34,21,5,1,10,35,60,55,26,5,1,11,45,95] `isPrefixOf` a096940
+> take 6 a096940_tbl == [[5],[1,5],[1,6,5],[1,7,11,5],[1,8,18,16,5],[1,9,26,34,21,5]]
+-}
+a096940 :: Num i => [i]
+a096940 = concat a096940_tbl
+
+a096940_tbl :: Num i => [[i]]
+a096940_tbl =
+  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  in [5] : iterate f [1,5]
 
 {- | <http://oeis.org/A105809>
 
