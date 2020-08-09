@@ -185,6 +185,10 @@ lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =
 lbl_to_udot :: [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
 lbl_to_udot o pp = lbl_to_dot G_UGRAPH o pp
 
+-- | 'writeFile' of 'lbl_to_udot'
+lbl_to_udot_wr :: FilePath -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> IO ()
+lbl_to_udot_wr fn o pp  = writeFile fn . unlines . lbl_to_udot o pp
+
 fgl_to_dot :: G.Graph gr => G_TYPE -> [DOT_META_ATTR] -> GR_PP v e -> gr v e -> [String]
 fgl_to_dot typ opt pp gr = lbl_to_dot typ opt pp (T.fgl_to_lbl gr)
 

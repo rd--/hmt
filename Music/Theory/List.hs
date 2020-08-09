@@ -1147,6 +1147,10 @@ elemIndex_ordered e =
                            else recur (k + 1) l'
     in recur 0
 
+-- | 'zipWith' variant equivalent to 'mapMaybe' (ie. 'catMaybes' of 'zipWith')
+zip_with_maybe :: (a -> b -> Maybe c) -> [a] -> [b] -> [c]
+zip_with_maybe f lhs = catMaybes . zipWith f lhs
+
 -- | 'zipWith' variant that extends shorter side using given value.
 zip_with_ext :: t -> u -> (t -> u -> v) -> [t] -> [u] -> [v]
 zip_with_ext i j f p q =

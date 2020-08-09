@@ -9,7 +9,31 @@ import qualified Data.Graph as Graph {- containers -}
 
 import qualified Music.Theory.List as T {- hmt -}
 
--- * Type parameterised graph
+-- * Vertices
+
+v_is_normal :: [Int] -> Maybe Int
+v_is_normal v = let k = length v in if v == [0 .. k - 1] then Just k else Nothing
+
+v_is_normal_err :: [Int] -> Int
+v_is_normal_err = fromMaybe (error "v_is_normal?") . v_is_normal
+
+-- * Edge
+
+-- | Un-directed edge equality.
+--
+-- > e_eq_undir (0,1) (1,0) == True
+e_eq_undir :: Eq t => (t,t) -> (t,t) -> Bool
+e_eq_undir e0 e1 =
+  let swap (i,j) = (j,i)
+  in e0 == e1 || e0 == swap e1
+
+-- | Sort edge.
+--
+-- > map e_sort [(0,1),(1,0)] == [(0,1),(0,1)]
+e_sort :: Ord t => (t, t) -> (t, t)
+e_sort (i,j) = (min i j,max i j)
+
+-- * (vertices,edges) graph
 
 -- | (vertices,edges)
 type GR t = ([t],[(t,t)])
@@ -28,20 +52,6 @@ gr_relabel tbl (v,e) =
   let get z = T.lookup_err z tbl
   in (map get v,map (\(p,q) -> (get p,get q)) e)
 
--- | Un-directed edge equality.
---
--- > e_eq_undir (0,1) (1,0) == True
-e_eq_undir :: Eq t => (t,t) -> (t,t) -> Bool
-e_eq_undir e0 e1 =
-  let swap (i,j) = (j,i)
-  in e0 == e1 || e0 == swap e1
-
--- | Sort edge.
---
--- > map e_sort [(0,1),(1,0)] == [(0,1),(0,1)]
-e_sort :: Ord t => (t, t) -> (t, t)
-e_sort (i,j) = (min i j,max i j)
-
 -- | If (i,j) and (j,i) are both in E delete (j,i) where i < j.
 gr_mk_undir :: Ord t => GR t -> GR t
 gr_mk_undir (v,e) = (v,nub (sort (map e_sort e)))
@@ -56,19 +66,24 @@ eset_to_gr e =
 gr_sort :: Ord t => GR t -> GR t
 gr_sort (v,e) = (sort v,sort e)
 
+-- | Complete k-graph (un-directed) given list of vertices
+--
+-- > gr_complete_graph "xyz" == ("xyz",[('x','y'),('x','z'),('y','z')])
+gr_complete_graph :: Ord t => [t] -> GR t
+gr_complete_graph v = let e = [(i,j) | i <- v,j <- v,i < j] in (v,e)
+
 -- * Int graph
 
 -- | 'GR' of 'Int'
 type G = GR Int
 
 -- | Simple text representation of 'G'.  Requires (and checks) that vertices are (0 .. |v|-1).
+--   The first line is the number of vertices, following lines are edges.
 g_to_text :: G -> String
 g_to_text (v,e) =
-  let k = length v
+  let k = v_is_normal_err v
       f (i,j) = unwords (map show [i,j])
-  in if v /= [0 .. k - 1]
-     then error "g_to_text?"
-     else unlines (show k : map f e)
+  in unlines (show k : map f e)
 
 -- | 'Graph.Graph' to 'G'.
 graph_to_g :: Graph.Graph -> G
@@ -106,12 +121,6 @@ gr_to_graph gr =
   let ((v,e),tbl) = gr_unlabel gr
   in (Graph.buildG (0,length v - 1) e,tbl)
 
--- | Complete k-graph (un-directed) given list of vertices
---
--- > gr_complete_graph "xyz" == ("xyz",[('x','y'),('x','z'),('y','z')])
-gr_complete_graph :: Ord t => [t] -> GR t
-gr_complete_graph v = let e = [(i,j) | i <- v,j <- v,i < j] in (v,e)
-
 -- | Complete k-graph (un-directed).
 --
 -- > g_complete_graph 3 == ([0,1,2],[(0,1),(0,2),(1,2)])
@@ -123,11 +132,11 @@ g_complete_graph k = gr_complete_graph [0 .. k - 1]
 -- | ((|V|,|E|),[E])
 type EDG = ((Int,Int), [(Int,Int)])
 
--- | Requires (but does not check) that vertices are (0 .. |v| - 1).
+-- | Requires (and checks) that vertices are (0 .. |v| - 1).
 g_to_edg :: G -> EDG
-g_to_edg (v,e) = ((length v,length e),e)
+g_to_edg (v,e) = ((v_is_normal_err v,length e),e)
 
--- | Requires (but does not check) that vertices are (0 .. |v| - 1).
+-- | Requires (but does not check) that vertices of 'EDG' are all in (0,|v| - 1).
 edg_to_g :: EDG -> G
 edg_to_g ((nv,ne),e) =
   let v = [0 .. nv - 1]

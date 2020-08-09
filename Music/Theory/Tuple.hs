@@ -37,21 +37,35 @@ t2_zipWith f (p,q) (p',q') = (f p p',f q q')
 t2_infix :: (a -> a -> b) -> T2 a -> b
 t2_infix f (i,j) = i `f` j
 
--- | Infix 'mappend'.
+-- | 't2_infix' 'mappend'.
 --
 -- > t2_join ([1,2],[3,4]) == [1,2,3,4]
 t2_join :: Monoid m => T2 m -> m
 t2_join = t2_infix mappend
 
-t2_concat :: [T2 [a]] -> T2 [a]
+-- | 't2_map' 'mconcat' of 'unzip'
+--
+-- > t2_concat [("ab","cd"),("ef","gh")] == ("abef","cdgh")
+t2_concat :: Monoid m => [T2 m] -> T2 m
 t2_concat = t2_map mconcat . unzip
 
+-- | 'sort'
+--
+-- > t2_sort (2,1) == (1,2)
 t2_sort :: Ord t => (t,t) -> (t,t)
 t2_sort (p,q) = (min p q,max p q)
 
--- | T2 variant of 'sum'
+-- | 'sum'
 t2_sum :: Num n => (n,n) -> n
 t2_sum (i,j) = i + j
+
+-- | 'mapM'
+t2_mapM :: Monad m => (t -> m u) -> (t,t) -> m (u,u)
+t2_mapM f (i,j) = f i >>= \p -> f j >>= \q -> return (p,q)
+
+-- | 'mapM_'
+t2_mapM_ :: Monad m => (t -> m u) -> (t,t) -> m ()
+t2_mapM_ f (i,j) = f i >> f j >> return ()
 
 -- * P3 (3-product)
 

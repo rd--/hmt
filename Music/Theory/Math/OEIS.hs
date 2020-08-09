@@ -966,6 +966,15 @@ a126976 =
   ,25,29,10,09,26,12
   ,36,05,33,04,02,31]
 
+{- | <https://oeis.org/A212804>
+
+Expansion of (1 - x)/(1 - x - x^2).
+
+[1,0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946] `isPrefixOf` a212804
+-}
+a212804 :: Integral n => [n]
+a212804 = 1 : a000045
+
 {- | <https://oeis.org/A245553>
 
 A Rauzy fractal sequence: trajectory of 1 under morphism 1 -> 2,3; 2 -> 3; 3 -> 1.
