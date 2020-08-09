@@ -300,7 +300,7 @@ Decimal expansion of e.
 -}
 a001113 :: Integral n => [n]
 a001113 =
-  let gen _ [] = error "A001113?"
+  let gen _ [] = error "A001113"
       gen z (x:xs) =
         let lb = approx z 1
             approx (a,b,c) n = div (a * n + b) c
@@ -388,7 +388,7 @@ Stern's diatomic series (or Stern-Brocot sequence)
 a002487 :: Num n => [n]
 a002487 =
   let f (a:a') (b:b') = a + b : a : f a' b'
-      f _ _ = error "a002487?"
+      f _ _ = error "a002487"
       x = 1 : 1 : f (tail x) x
   in 0 : x
 
@@ -511,7 +511,7 @@ Number of runs in binary expansion of n (n>0); number of 1's in Gray code for n
 a005811 :: Integral n => [n]
 a005811 =
   let f (x:xs) = x : f (xs ++ [x + x `mod` 2, x + 1 - x `mod` 2])
-      f _ = error "A005811?"
+      f _ = error "A005811"
   in 0 : f [1]
 
 {- | <http://oeis.org/A005917>
@@ -626,6 +626,18 @@ a008278_tbl =
         in zipWith (+) ([0] ++ q) (p ++ [0])
   in iterate f [1]
 
+{- | <http://oeis.org/A010049>
+
+Second-order Fibonacci numbers.
+
+> [0,1,1,3,5,10,18,33,59,105,185,324,564,977,1685,2895,4957,8462,14406,24465,41455] `isInfixOf` a010049
+-}
+a010049 :: Num n => [n]
+a010049 =
+  let c us (v:vs) = sum (zipWith (*) us (1 : reverse us)) : c (v:us) vs
+      c _ _ = error "A010049"
+  in uncurry c (splitAt 1 a000045)
+
 {- | <http://oeis.org/A017817>
 
 a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
@@ -635,6 +647,16 @@ a(n) = a(n-3) + a(n-4), with a(0)=1, a(1)=a(2)=0, a(3)=1
 a017817 :: Num n => [n]
 a017817 = 1 : 0 : 0 : 1 : zipWith (+) a017817 (tail a017817)
 
+{- | <http://oeis.org/A027934>
+
+a(0)=0, a(1)=1, a(2)=2; for n > 2, a(n) = 3*a(n-1) - a(n-2) - 2*a(n-3).
+
+> [0,1,2,5,11,24,51,107,222,457,935,1904,3863,7815,15774,31781,63939,128488] `isPrefixOf` a027934
+-}
+a027934 :: Num n => [n]
+a027934 =
+  let f x y z = 3 * x - y - 2 * z
+  in 0 : 1 : 2 : zipWith3 f (drop 2 a027934) (tail a027934) a027934
 
 {- | <http://oeis.org/A030308>
 
@@ -648,7 +670,7 @@ a030308 =
          [] -> [1]
          0:b -> 1 : b
          1:b -> 0 : f b
-         _ -> error "A030308?"
+         _ -> error "A030308"
    in iterate f [0]
 
 {- | <http://oeis.org/A033812>
@@ -831,6 +853,21 @@ Positions of zeros in Per Nørgård's infinity sequence (A004718).
 -}
 a083866 :: (Enum n,Num n) => [n]
 a083866 = map snd (filter ((== (0::Int)) . fst) (zip a004718 [0..]))
+
+{- | <http://oeis.org/A105809>
+
+A Fibonacci-Pascal matrix.
+
+> [1,1,1,2,2,1,3,4,3,1,5,7,7,4,1,8,12,14,11,5,1,13,20,26,25,16,6,1,21,33,46,51,41] `isPrefixOf` a105809
+-}
+a105809 :: Num n => [n]
+a105809 = concat a105809_tbl
+
+a105809_tbl :: Num n => [[n]]
+a105809_tbl =
+  let f (u:_, vs) = (vs, zipWith (+) ([u] ++ vs) (vs ++ [0]))
+      f _ = error "A105809"
+  in map fst (iterate f ([1], [1, 1]))
 
 {- | <https://oeis.org/A124472>
 
