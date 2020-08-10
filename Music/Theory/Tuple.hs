@@ -8,6 +8,12 @@ module Music.Theory.Tuple where
 
 -- * P2 (2-product)
 
+p2_from_list :: (t -> t1,t -> t2) -> [t] -> (t1,t2)
+p2_from_list (f1,f2) l =
+  case l of
+    [c1,c2] -> (f1 c1,f2 c2)
+    _ -> error "p2_from_list"
+
 -- | Swap elements of P2
 --
 -- > p2_swap (1,2) == (2,1)
@@ -191,7 +197,6 @@ p5_from_list (f1,f2,f3,f4,f5) l =
   case l of
     [c1,c2,c3,c4,c5] -> (f1 c1,f2 c2,f3 c3,f4 c4,f5 c5)
     _ -> error "p5_from_list"
-
 
 p5_to_list :: (t1 -> t, t2 -> t, t3 -> t, t4 -> t, t5 -> t) -> (t1, t2, t3, t4, t5) -> [t]
 p5_to_list (f1,f2,f3,f4,f5) (c1,c2,c3,c4,c5) = [f1 c1,f2 c2,f3 c3,f4 c4,f5 c5]

@@ -210,6 +210,13 @@ csv_write_irregular_def f fn tbl = csv_write_irregular f def_csv_opt fn (Nothing
 
 -- * Tuples
 
+type P2_Parser t1 t2 = (String -> t1,String -> t2)
+
+csv_table_read_p2 :: P2_Parser t1 t2 -> CSV_Opt -> FilePath -> IO (Maybe (String,String),[(t1,t2)])
+csv_table_read_p2 f opt fn = do
+  (hdr,dat) <- csv_table_read opt id fn
+  return (fmap T.t2_from_list hdr,map (T.p2_from_list f) dat)
+
 type P5_Parser t1 t2 t3 t4 t5 = (String -> t1,String -> t2,String -> t3,String -> t4,String -> t5)
 type P5_Writer t1 t2 t3 t4 t5 = (t1 -> String,t2 -> String,t3 -> String,t4 -> String,t5 -> String)
 
