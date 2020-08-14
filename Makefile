@@ -1,6 +1,13 @@
 all:
 	echo "hmt"
 
+mk-cmd:
+	(cd cmd ; make all install)
+
+clean:
+	rm -Rf dist
+	(cd cmd; make clean)
+
 push-rd:
 	darcs push -a rd@rohandrape.net:sw/hmt
 
@@ -9,11 +16,6 @@ pull-rd:
 
 remote-update:
 	ssh rd@rohandrape.net "(cd sw/hmt; make)"
-
-clean:
-	cabal clean
-	rm -Rf dist
-	(cd cmd; make clean)
 
 mk-svg:
 	(cd data/dot/tj/oh; sh mk.sh)
