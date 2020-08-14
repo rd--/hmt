@@ -1,6 +1,8 @@
 -- | Enumeration functions.
 module Music.Theory.Enum where
 
+import Data.List {- base -}
+
 -- | Generic variant of 'fromEnum' (p.263).
 genericFromEnum :: (Integral i,Enum e) => e -> i
 genericFromEnum = fromIntegral . fromEnum
@@ -36,3 +38,17 @@ enum_from_to_reverse p q =
 -- > (enum_univ :: [Data.Word.Word8]) == [0 .. 255]
 enum_univ :: (Bounded t,Enum t) => [t]
 enum_univ = [minBound .. maxBound]
+
+-- | List of 'Enum' values not in sorted input list.
+--
+-- > enum_list_gaps "abdh" == "cefg"
+enum_list_gaps :: (Enum t,Eq t) => [t] -> [t]
+enum_list_gaps l =
+  let e0 = head l
+      eN = last l
+      f x = x `notElem` l
+  in filter f [e0 .. eN]
+
+-- | 'enum_list_gaps' of 'sort'
+enum_set_gaps :: (Enum t,Eq t,Ord t) => [t] -> [t]
+enum_set_gaps = enum_list_gaps . sort
