@@ -6,7 +6,8 @@ import qualified Data.Vector {- vector -}
 import qualified PLY {- ply-loader -}
 import qualified PLY.Types {- ply-loader -}
 
-import qualified Music.Theory.Graph.PLY as T {- hmt -}
+import qualified Sound.SC3.Data.Geometry.PLY as PLY {- hsc3-data -}
+
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 
 ply_load_v3_e2 :: FilePath -> IO ([(Double,Double,Double)],[(Int,Int)])
@@ -39,7 +40,7 @@ cli_v3_graph_to_ply :: Int -> FilePath -> IO ()
 cli_v3_graph_to_ply prec hs_fn = do
   txt <- readFile hs_fn
   let g = read txt
-  putStrLn (unlines (T.v3_graph_to_ply_clr prec g))
+  putStrLn (unlines (PLY.v3_graph_to_ply_clr prec g))
 
 cli_ply_help :: [String]
 cli_ply_help =
