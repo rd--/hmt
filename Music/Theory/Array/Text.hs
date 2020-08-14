@@ -43,6 +43,10 @@ Options are:
 -}
 type TABLE_OPT = (Bool,Bool,Bool,String,Bool)
 
+-- | Options for @plain@ layout.
+table_opt_plain :: TABLE_OPT
+table_opt_plain = (False,True,False," ",False)
+
 -- | Options for @simple@ layout.
 table_opt_simple :: TABLE_OPT
 table_opt_simple = (True,True,False," ",True)

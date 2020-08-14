@@ -55,6 +55,9 @@ type FDAY = Double
 -- | Fractional hour, ie. 1.50 is one and a half hours, ie. 1 hour and 30 minutes.
 type FHOUR = Double
 
+-- | Fractional minute, ie. 1.50 is one and a half minutes, ie. 1 minute and 30 seconds, cf. 'FMINSEC'
+type FMIN = Double
+
 -- | Fractional seconds.
 type FSEC = Double
 
@@ -137,6 +140,14 @@ parse_iso8601_date_time s =
 -}
 format_iso8601_date_time :: T.FormatTime t => Bool -> t -> String
 format_iso8601_date_time ext = format_time_str (if ext then "%FT%H:%M:%S" else "%Y%m%dT%H%M%S")
+
+-- * FMIN
+
+-- | 'fsec_to_minsec' . '*' 60
+--
+-- > fmin_to_minsec 6.48 == (6,29)
+fmin_to_minsec :: FMIN -> MINSEC
+fmin_to_minsec = fsec_to_minsec . (*) 60
 
 -- * FSEC
 

@@ -260,9 +260,11 @@ octpc_to_pitch sp (o,pc) =
 midi_to_pitch :: (Integral i,Integral k) => Spelling k -> i -> Pitch
 midi_to_pitch sp = octpc_to_pitch sp . midi_to_octave_pitchclass
 
--- | Fractional midi note number to 'Pitch'.
---
--- > fmidi_to_pitch T.pc_spell_ks 69.25 == Nothing
+{- | Fractional midi note number to 'Pitch'.
+
+> p = Pitch T.B T.ThreeQuarterToneFlat 4
+> map (fmidi_to_pitch T.pc_spell_ks) [69.25,69.5] == [Nothing,Just p]
+-}
 fmidi_to_pitch :: RealFrac n => Spelling PitchClass -> n -> Maybe Pitch
 fmidi_to_pitch sp m =
     let m' = T.real_round_int m
