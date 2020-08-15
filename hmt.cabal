@@ -35,7 +35,6 @@ Library
                    logict,
                    multiset-comb,
                    parsec,
-                   permutation,
                    primes,
                    process,
                    random,

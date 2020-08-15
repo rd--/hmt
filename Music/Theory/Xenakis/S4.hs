@@ -6,8 +6,6 @@ module Music.Theory.Xenakis.S4 where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Data.Permute as P {- permutation -}
-
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Permutations as T
 
@@ -145,12 +143,12 @@ complementary p q =
 
 -- | Relation between to 'Half_Seq' values as a
 -- /(complementary,permutation)/ pair.
-type Rel = (Bool,P.Permute)
+type Rel = (Bool,T.Permutation)
 
 -- | Determine 'Rel' of 'Half_Seq's.
 --
--- > relate [1,4,2,3] [1,3,4,2] == (False,P.listPermute 4 [0,3,1,2])
--- > relate [1,4,2,3] [8,5,6,7] == (True,P.listPermute 4 [1,0,2,3])
+-- > relate [1,4,2,3] [1,3,4,2] == (False,[0,3,1,2])
+-- > relate [1,4,2,3] [8,5,6,7] == (True,[1,0,2,3])
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
     if complementary p q
@@ -159,7 +157,7 @@ relate p q =
 
 -- | 'Rel' from 'Label' /p/ to /q/.
 --
--- > relate_l L L2 == (False,P.listPermute 4 [0,3,1,2])
+-- > relate_l L L2 == (False,[0,3,1,2])
 relate_l :: Label -> Label -> Rel
 relate_l p q = relate (half_seq_of p) (half_seq_of q)
 
@@ -169,14 +167,13 @@ relations p = zipWith relate p (tail p)
 
 -- | 'relate' adjacent 'Label's.
 --
--- > relations_l [L2,L,A] == [(False,P.listPermute 4 [0,2,3,1])
--- >                         ,(False,P.listPermute 4 [2,0,1,3])]
+-- > relations_l [L2,L,A] == [(False,[0,2,3,1]),(False,[2,0,1,3])]
 relations_l :: [Label] -> [Rel]
 relations_l p = zipWith relate_l p (tail p)
 
 -- | Apply 'Rel' to 'Half_Seq'.
 --
--- > apply_relation (False,P.listPermute 4 [0,3,1,2]) [1,4,2,3] == [1,3,4,2]
+-- > apply_relation (False,[0,3,1,2]) [1,4,2,3] == [1,3,4,2]
 apply_relation :: Rel -> Half_Seq -> Half_Seq
 apply_relation (c,p) i =
     let j = T.apply_permutation p i
