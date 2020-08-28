@@ -1,6 +1,7 @@
 -- | Directory functions.
 module Music.Theory.Directory where
 
+import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import System.Directory {- directory -}
@@ -36,7 +37,7 @@ path_scan_err p x =
     let err = error (concat ["path_scan: ",show p,": ",x])
     in fmap (fromMaybe err) (path_scan p x)
 
--- | Get list of files at dir with ext, ie. ls dir/*.ext
+-- | Get sorted list of files at /dir/ with /ext/, ie. ls dir/*.ext
 --
 -- > dir_list_ext "/home/rohan/rd/j/" ".hs"
 dir_list_ext :: FilePath -> String -> IO [FilePath]
@@ -97,6 +98,16 @@ dir_subset_rel ext dir = do
 -- > dir_subset [".hs"] "/home/rohan/sw/hmt/cmd"
 dir_subset :: [String] -> FilePath -> IO [FilePath]
 dir_subset ext dir = fmap (map (dir </>)) (dir_subset_rel ext dir)
+
+-- | Subdirectories (relative) of /dir/.
+dir_subdirs_rel :: FilePath -> IO [FilePath]
+dir_subdirs_rel dir =
+  let sel fn = doesDirectoryExist (dir </> fn)
+  in listDirectory dir >>= filterM sel
+
+-- | Subdirectories of /dir/.
+dir_subdirs :: FilePath -> IO [FilePath]
+dir_subdirs dir = fmap (map (dir </>)) (dir_subdirs_rel dir)
 
 -- | If path is not absolute, prepend current working directory.
 --

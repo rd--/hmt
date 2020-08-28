@@ -129,7 +129,7 @@ parse_iso8601_date_time s =
   case length s of
     15 -> parse_time_str "%Y%m%dT%H%M%S" s -- basic
     19 -> parse_time_str "%FT%H:%M:%S" s -- extended
-    _ -> error "parse_iso8601_date_time?"
+    _ -> error ("parse_iso8601_date_time: " ++ s)
 
 {- | Format date in @YYYY-MM-DD@ and time in @HH:MM:SS@ forms.
 
