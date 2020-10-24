@@ -94,6 +94,8 @@ element s n =
       Intersection s0 s1 -> element s0 n && element s1 n
       Complement s' -> not (element s' n)
 
+-- | 'I' not in set.
+--
 -- > take 9 (i_complement [1,3..]) == [0,2..16]
 i_complement :: [I] -> [I]
 i_complement =
@@ -105,13 +107,14 @@ i_complement =
                           GT -> error "i_complement"
     in f 0
 
--- | Construct the sequence defined by a 'Sieve'.  Note that building
--- a sieve that contains an intersection clause that has no elements
--- gives @_|_@.
---
--- > let {d = [0,2,4,5,7,9,11]
--- >     ;r = d ++ map (+ 12) d}
--- > in take 14 (build (union (map (l 12) d))) == r
+{- | Construct the sequence defined by a 'Sieve'.  Note that building
+     a sieve that contains an intersection clause that has no elements
+     gives @_|_@.
+
+> let d = [0,2,4,5,7,9,11]
+> let r = d ++ map (+ 12) d
+> take 14 (build (union (map (l 12) d))) == r
+-}
 build :: Sieve -> [I]
 build s =
     let u_f = map head . L.group
@@ -140,20 +143,20 @@ build s =
 
 > buildn 10 (3⋄2 ∩ 4⋄7 ∪ 6⋄9 ∩ 15⋄18) == [3,11,23,33,35,47,59,63,71,83]
 
-> let {s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
->     ;s' = 24⋄23 ∪ 30⋄3 ∪ 104⋄70}
-> in buildn 16 s == buildn 16 s'
+> let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
+> let s' = 24⋄23 ∪ 30⋄3 ∪ 104⋄70
+> buildn 16 s == buildn 16 s'
 
 > buildn 10 (24⋄23 ∪ 30⋄3 ∪ 104⋄70) == [3,23,33,47,63,70,71,93,95,119]
 
 > let r = [2,3,4,5,8,9,10,11,14,17,19,20,23,24,26,29,31]
-> in buildn 17 (5⋄4 ∪ 3⋄2 ∪ 7⋄3) == r
+> buildn 17 (5⋄4 ∪ 3⋄2 ∪ 7⋄3) == r
 
 > let r = [0,1,3,6,9,10,11,12,15,16,17,18,21,24,26,27,30]
-> in buildn 17 (5⋄1 ∪ 3⋄0 ∪ 7⋄3) == r
+> buildn 17 (5⋄1 ∪ 3⋄0 ∪ 7⋄3) == r
 
 > let r = [0,2,3,4,6,7,9,11,12,15,17,18,21,22,24,25,27,30,32]
-> in buildn 19 (5⋄2 ∪ 3⋄0 ∪ 7⋄4) == r
+> buildn 19 (5⋄2 ∪ 3⋄0 ∪ 7⋄4) == r
 
 Agon et. al. p.155
 
@@ -167,33 +170,47 @@ Agon et. al. p.155
 
 > differentiate [0,1,2,6,9,13,14,19,22,24,26,27,32] == [1,1,4,3,4,1,5,3,2,2,1,5]
 
-> import Music.Theory.Pitch
+> import Music.Theory.Pitch {- hmt -}
 
-> let {n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
->     ;r = "C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E"}
-> in unwords (map (pitch_class_pp . pc24et_to_pitch . (`mod` 24)) n) == r
+> let n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
+> let r = "C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E"
+> unwords (map (pitch_class_pp . pc24et_to_pitch . (`mod` 24)) n) == r
 
 Jonchaies
 
 > let s = map (17⋄) [0,1,4,5,7,11,12,16]
-> in differentiate (buildn 25 (union s))
+> let r = [1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1]
+> differentiate (buildn 25 (union s)) == r
+> let a2 = octpc_to_midi (2,9)
+> let m = scanl (+) a2 r
+> import Music.Theory.Pitch.Spelling.Table {- hmt -}
+> let p = "A2 A#2 C#3 D3 E3 G#3 A3 C#4 D4 D#4 F#4 G4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D6 F#6 G6 B6 C7"
+> unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
 
 Nekuïa
 
-> let s = [24⋄0,14⋄2,22⋄3,31⋄4,28⋄7,29⋄9,19⋄10,25⋄13,24⋄14,26⋄17,23⋄21
->         ,24⋄10,30⋄9,35⋄17,29⋄24,32⋄25,30⋄29,26⋄21,30⋄17,31⋄16]
-> in differentiate (buildn 24 (union s))
+> let s = [24⋄0,14⋄2,22⋄3,31⋄4,28⋄7,29⋄9,19⋄10,25⋄13,24⋄14,26⋄17,23⋄21,24⋄10,30⋄9,35⋄17,29⋄24,32⋄25,30⋄29,26⋄21,30⋄17,31⋄16]
+> let r = [2,1,1,3,2,1,3,1,2,1,4,3,1,4,1,4,1,3,1,4,1,3,1,4,1,4,1,1,3,1,3,1,2,3,1,4,1,4,4,1]
+> differentiate (buildn 41 (union s)) == r
+> let a0 = octpc_to_midi (0,9)
+> let m = scanl (+) a0 r
+> import Music.Theory.Pitch.Spelling.Table {- hmt -}
+> let p = "A0 B0 C1 C#1 E1 F#1 G1 A#1 B1 C#2 D2 F#2 A2 A#2 D3 D#3 G3 G#3 B3 C4 E4 F4 G#4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D#6 E6 F#6 A6 A#6 D7 D#7 G7 B7 C8"
+> unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
+
+> let s = [8⋄0∩3⋄0,2⋄0∩7⋄2,2⋄1∩11⋄3,31⋄4,4⋄3∩7⋄0,29⋄9,19⋄10,25⋄13,8⋄6∩3⋄2,2⋄1∩13⋄4,23⋄21,8⋄2∩3⋄1,2⋄1∩3⋄0∩5⋄4,5⋄2∩7⋄3,29⋄24,32⋄25,2⋄1∩3⋄2∩5⋄4,2⋄1∩13⋄8,2⋄1∩3⋄2∩5⋄2,31⋄16]
+> differentiate (buildn 41 (union s)) == r
 
 Major scale:
 
 > let s = (c(3⋄2) ∩ 4⋄0) ∪ (c(3⋄1) ∩ 4⋄1) ∪ (3⋄2 ∩ 4⋄2) ∪ (c(3⋄0) ∩ 4⋄3)
-> in buildn 7 s == [0,2,4,5,7,9,11]
+> buildn 7 s == [0,2,4,5,7,9,11]
 
 Nomos Alpha:
 
-let {s = (c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9) ∩ 11⋄2) ∪ (c (11⋄4 ∪ 11⋄8) ∩ 13⋄9) ∪ (13⋄0 ∪ 13⋄1 ∪ 13⋄6)
-    ;r = [0,1,2,6,9,13,14,19,22,24,26,27,32,35,39,40,45,52,53,58,61,65,66,71,78,79,84,87,90,91,92,97]}
-in buildn 32 s == r
+let s = (c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9) ∩ 11⋄2) ∪ (c (11⋄4 ∪ 11⋄8) ∩ 13⋄9) ∪ (13⋄0 ∪ 13⋄1 ∪ 13⋄6)
+let r = [0,1,2,6,9,13,14,19,22,24,26,27,32,35,39,40,45,52,53,58,61,65,66,71,78,79,84,87,90,91,92,97]
+buildn 32 s == r
 
 /Psappha/ (Flint):
 
@@ -275,20 +292,21 @@ reduce_intersection (m1,i1) (m2,i2) =
        then Nothing
        else Just (m3,i3)
 
--- | Reduce the number of nodes at a 'Sieve'.
---
--- > reduce (L (3,2) ∪ Empty) == L (3,2)
--- > reduce (L (3,2) ∩ Empty) == L (3,2)
--- > reduce (L (3,2) ∩ L (4,7)) == L (12,11)
--- > reduce (L (6,9) ∩ L (15,18)) == L (30,3)
---
--- > let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
--- > in reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
---
--- > putStrLn $ sieve_pp (reduce s)
---
--- > let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
--- > in reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
+{- | Reduce the number of nodes at a 'Sieve'.
+
+> reduce (L (3,2) ∪ Empty) == L (3,2)
+> reduce (L (3,2) ∩ Empty) == L (3,2)
+> reduce (L (3,2) ∩ L (4,7)) == L (12,11)
+> reduce (L (6,9) ∩ L (15,18)) == L (30,3)
+
+> let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
+> reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
+
+> putStrLn $ sieve_pp (reduce s)
+
+> let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
+> reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
+-}
 reduce :: Sieve -> Sieve
 reduce s =
     let f g s1 s2 =

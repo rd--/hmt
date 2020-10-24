@@ -11,7 +11,7 @@
   Centre National de la Recherche Scientifique, 1992. /GRTC 458/
   (<http://www.lpl.univ-aix.fr/~belbernard/music/2algorithms.pdf>)
 
-For details see <http://rd.slavepianos.org/t/hmt-texts>.
+For details see <http://rohandrape.net/?t=hmt-texts>.
 -}
 
 module Music.Theory.Time.Bel1990.R where

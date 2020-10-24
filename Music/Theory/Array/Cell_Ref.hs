@@ -1,14 +1,14 @@
 -- | Cell references & indexing.
 module Music.Theory.Array.Cell_Ref where
 
-import qualified Data.Array as A {- array -}
 import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.Maybe {- base -}
 import Data.String {- base -}
 
--- | @A@ indexed case-insensitive column references.  The column
--- following @Z@ is @AA@.
+import qualified Data.Array as A {- array -}
+
+-- | @A@ indexed case-insensitive column references.  The column following @Z@ is @AA@.
 data Column_Ref = Column_Ref {column_ref_string :: String}
 
 instance IsString Column_Ref where fromString = Column_Ref
@@ -69,8 +69,8 @@ column_index (Column_Ref c) =
         i = reverse (map letter_index c)
     in sum (zipWith (*) m (zipWith (+) [0..] i))
 
--- | Column reference to interior index within specified range.  Type
--- specialised 'Data.Ix.index'.
+-- | Column reference to interior index within specified range.
+--   Type specialised 'Data.Ix.index'.
 --
 -- > map (Data.Ix.index ('A','Z')) ['A','C','Z'] == [0,2,25]
 -- > map (interior_column_index ("A","Z")) ["A","C","Z"] == [0,2,25]
@@ -89,7 +89,7 @@ interior_column_index (l,r) c =
 -- | Inverse of 'column_index'.
 --
 -- > let c = ["A","Z","AA","AZ","BA","BZ","CA"]
--- > in map column_ref [0,25,26,51,52,77,78] == c
+-- > map column_ref [0,25,26,51,52,77,78] == c
 --
 -- > column_ref (0+25+1+25+1+25+1) == "CA"
 column_ref :: Int -> Column_Ref
@@ -187,7 +187,7 @@ cell_ref_pp (Column_Ref c,r) = c ++ show r
 -- | Translate cell reference to @0@-indexed pair.
 --
 -- > cell_index ("CC",348) == (80,347)
--- > Data.Ix.index (("AA",1),("ZZ",999)) ("CC",348) == 54293
+-- > Data.Ix.index ((Column_Ref "AA",1),(Column_Ref "ZZ",999)) (Column_Ref "CC",348) == 54293
 cell_index :: Cell_Ref -> (Int,Int)
 cell_index (c,r) = (column_index c,row_index r)
 
@@ -207,12 +207,12 @@ parse_cell_index = cell_index . parse_cell_ref_err
 -- > cell_range (("AA",1),("AC",1)) == [("AA",1),("AB",1),("AC",1)]
 --
 -- > let r = [("AA",1),("AA",2),("AB",1),("AB",2),("AC",1),("AC",2)]
--- > in cell_range (("AA",1),("AC",2)) == r
+-- > cell_range (("AA",1),("AC",2)) == r
 --
 -- > Data.Ix.range (('A',1),('C',1)) == [('A',1),('B',1),('C',1)]
 --
 -- > let r = [('A',1),('A',2),('B',1),('B',2),('C',1),('C',2)]
--- > in Data.Ix.range (('A',1),('C',2)) == r
+-- > Data.Ix.range (('A',1),('C',2)) == r
 cell_range :: Cell_Range -> [Cell_Ref]
 cell_range ((c1,r1),(c2,r2)) =
     [(c,r) |
@@ -221,11 +221,10 @@ cell_range ((c1,r1),(c2,r2)) =
 
 -- | Variant of 'cell_range' in row-order.
 --
--- > let r = [(AA,1),(AB,1),(AC,1),(AA,2),(AB,2),(AC,2)]
--- > in cell_range_row_order (("AA",1),("AC",2)) == r
+-- > let r = [("AA",1),("AB",1),("AC",1),("AA",2),("AB",2),("AC",2)]
+-- > cell_range_row_order (("AA",1),("AC",2)) == r
 cell_range_row_order ::  Cell_Range -> [Cell_Ref]
 cell_range_row_order ((c1,r1),(c2,r2)) =
     [(c,r) |
      r <- row_range (r1,r2)
     ,c <- column_range (c1,c2)]
-

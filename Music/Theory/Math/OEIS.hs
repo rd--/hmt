@@ -105,6 +105,15 @@ a000078 =
   let f xs = let y = (sum . head . transpose . take 4 . tails) xs in y : f (y:xs)
   in 0 : 0 : 0 : f [0, 0, 0, 1]
 
+{- | <http://oeis.org/A000079>
+
+Powers of 2: a(n) = 2^n. (Formerly M1129 N0432)
+
+> [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536] `isPrefixOf` a000079
+-}
+a000079 :: Num n => [n]
+a000079 = iterate (* 2) 1
+
 {- | <http://oeis.org/A000085>
 
 Number of self-inverse permutations on n letters, also known as involutions; number of standard Young tableaux with n cells.
@@ -131,15 +140,6 @@ a000108 = map last (iterate (scanl1 (+) . (++ [0])) [1])
 -}
 a000120 :: [Int]
 a000120 = let r = [0] : (map . map) (+ 1) (scanl1 (++) r) in concat r
-
-{- | <http://oeis.org/A000079>
-
-Powers of 2: a(n) = 2^n
-
-> [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536] `isPrefixOf` a000079
--}
-a000079 :: Num n => [n]
-a000079 = iterate (* 2) 1
 
 {- | <http://oeis.org/A000142>
 
@@ -336,6 +336,15 @@ a001113 =
            then gen (mult z x) xs
            else lb : gen (mult (10,-10 * lb,1) z) (x:xs)
   in gen (1,0,1) [(n,a * d,d) | (n,d,a) <- map (\k -> (1,k,1)) [1..]]
+
+{- | <https://oeis.org/A001147>
+
+Double factorial of odd numbers: a(n) = (2*n-1)!! = 1*3*5*...*(2*n-1). (Formerly M3002 N1217)
+
+> [1,1,3,15,105,945,10395,135135,2027025,34459425,654729075,13749310575] `isPrefixOf` a001147
+-}
+a001147 :: Integral t => [t]
+a001147 = 1 : zipWith (*) [1, 3 ..] a001147
 
 {- | <https://oeis.org/A001156>
 

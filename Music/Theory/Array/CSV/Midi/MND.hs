@@ -1,7 +1,10 @@
--- | Functions for reading midi note data (MND) from CSV files.
--- This is /not/ a generic text midi notation.
--- The defined commands are @on@ and @off@, but others may be present.
--- Non-integral note number and key velocity data are allowed.
+{- | Functions for reading midi note data (MND) from CSV files.
+
+This is /not/ a generic text midi notation.
+The required columns are documented at `MND` and `MNDD`.
+The defined commands are @on@ and @off@, but others may be present.
+Non-integral note number and key velocity data are allowed.
+-}
 module Music.Theory.Array.CSV.Midi.MND where
 
 import Data.Function {- base -}
@@ -26,17 +29,20 @@ data_value_pp k r =
 -- | Channel values are 4-bit (0-15).
 type Channel = Word8
 
--- | The required header field.
+-- | The required header (column names) field.
 csv_mnd_hdr :: [String]
 csv_mnd_hdr = ["time","on/off","note","velocity","channel","param"]
 
--- | Midi note data, the type parameters are to allow for fractional note & velocity values.
--- The command is a string, @on@ and @off@ are standard, other commands may be present.
---
--- > unwords csv_mnd_hdr == "time on/off note velocity channel param"
---
--- > all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
--- > csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
+{- | Midi note data, the type parameters are to allow for fractional note & velocity values.
+
+The command is a string, @on@ and @off@ are standard, other commands may be present.
+note and velocity data is (0-127), channel is (0-15), param are ;-separated key:string=value:float.
+
+> unwords csv_mnd_hdr == "time on/off note velocity channel param"
+
+> all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
+> csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
+-}
 type MND t n = (t,String,n,n,Channel,Param)
 
 csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MND t m]
