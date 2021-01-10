@@ -504,6 +504,10 @@ replace_at ns i x =
     let f j y = if i == j then x else y
     in zipWith f [0..] ns
 
+-- | 'error' of 'stripPrefix'
+strip_prefix_err :: Eq t => [t] -> [t] -> [t]
+strip_prefix_err pfx = maybe (error "strip_prefix") id . stripPrefix pfx
+
 -- * Association lists
 
 -- | Equivalent to 'groupBy' /eq/ 'on' /f/.

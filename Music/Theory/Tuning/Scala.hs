@@ -2,7 +2,7 @@
 
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
-This module succesfully parses all scales in v.89 of the scale library.
+This module succesfully parses all scales in v.90 of the scale library.
 
 -}
 module Music.Theory.Tuning.Scala where
@@ -265,7 +265,7 @@ parse_scl nm s =
 -- | Read the environment variable @SCALA_SCL_DIR@, which is a
 -- sequence of directories used to locate scala files on.
 --
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/data/scala/89/scl"
+-- > setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/90/scl"
 scl_get_dir :: IO [String]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
@@ -284,8 +284,8 @@ scl_derive_filename nm = do
 -- then return it, else run 'scl_derive_filename'.
 --
 -- > scl_resolve_name "young-lm_piano"
--- > scl_resolve_name "/home/rohan/data/scala/89/scl/young-lm_piano.scl"
--- > scl_resolve_name "/home/rohan/data/scala/89/scl/unknown-tuning.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/90/scl/young-lm_piano.scl"
+-- > scl_resolve_name "/home/rohan/data/scala/90/scl/unknown-tuning.scl"
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
     let ex_f x = if x then return nm else error "scl_resolve_name: file does not exist"
@@ -306,8 +306,8 @@ scl_load nm = do
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
-> db <- scl_load_dir_fn "/home/rohan/data/scala/89/scl"
-> length db == 5050 -- v.89
+> db <- scl_load_dir_fn "/home/rohan/data/scala/90/scl"
+> length db == 5104 -- v.90
 > map (\(fn,s) -> (takeFileName fn,scale_name s)) db
 
 -}
@@ -398,7 +398,7 @@ scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 
 -- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
 --
--- > fmap (== "/home/rohan/opt/build/scala-22-pc64-linux") dist_get_dir
+-- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22-pc64-linux"
 dist_get_dir :: IO String
 dist_get_dir = getEnv "SCALA_DIST_DIR"
 
