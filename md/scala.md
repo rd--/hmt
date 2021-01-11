@@ -1,12 +1,14 @@
+# hmt-scala
+
 [cps-tbl](#cps-tbl),
-[env](#env),
 [db stat](#db-stat), [db summarise](#db-summarise),
-[search scale](#search-scale), [search mode](#search-mode),
-[midi-table](#midi-table),
+[env](#env),
 [fluidsynth](#fluidsynth),
 [intnam lookup](#intnam-lookup), [intnam search](#intnam-search)
+[midi-table](#midi-table),
+[search scale](#search-scale), [search mode](#search-mode)
 
-# cps-tbl <a id="cps-tbl"></a>
+## cps-tbl <a id="cps-tbl"></a>
 
 Simple `CPS` table for tuning, indicating ET12 A=440 as reference.
 Table format can be `csv` or `md`.
@@ -62,31 +64,20 @@ MNN     CPS ET12 CENTS-/+ REF CPS REF ET12 CENTS-/+
 --- ------- ---- -------- ------- -------- --------
 ~~~~
 
-# env <a id="env"></a>
-
-Print environment variable names, and values if set.
-
-~~~~
-$ hmt-scala env
-SCALA_SCL_DIR = /home/rohan/data/scala/84/scl
-SCALA_DIST_DIR = /home/rohan/opt/build/scala-22-pc64-linux
-$
-~~~~
-
-# db stat <a id="db-stat"></a>
+## db stat <a id="db-stat"></a>
 
 ~~~~
 $ hmt-scala db stat
-# entries        : 4590
-# perfect-octave : 3937
-# scale-uniform  : 2761
+# entries        : 5121
+# perfect-octave : 4352
+# scale-uniform  : 3005
 $
 ~~~~
 
-# db summarise <a id="db-summarise"></a>
+## db summarise <a id="db-summarise"></a>
 
 ~~~~
-$ hmt-scala db-summarise 12 68 | grep convex | grep 7-limit
+$ hmt-scala db summarise 12 68 | grep convex | grep 7-limit
 diaconv1029  : convex closure of 7-limit diamond with respect to 1029/1024
 diaconv225   : convex closure of 7-limit diamond with respect to 225/224
 diaconv2401  : convex closure of 7-limit diamond with respect to 2401/2400
@@ -99,58 +90,77 @@ diamond7_225 : 7-limit diamond marvel (225/224) 5-limit convex closure
 $
 ~~~~
 
-# search scale <a id="search-scale"></a>
+## env <a id="env"></a>
+
+Print environment variable names, and values if set.
 
 ~~~~
-$ hmt-scala search scale ci 75 la monte young
-name        : young-lm_guitar
-description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.o
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
-ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
-
-name        : young-lm_piano
-description : LaMonte Young's Well-Tuned Piano
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,177,204,240,471,444,675,702,738,969,942,1173,1200]
-ratios      : 1,567/512,9/8,147/128,21/16,1323/1024,189/128,3/2,49/32,7/4,4
-
-name        : young-lm_piano_1964
-description : LaMonte Young's Well-Tuned Piano (1964)
-degree      : 12
-type        : Pitch_Ratio
-perfect-oct : True
-cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
-ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4,31/16
+$ hmt-scala env
+SCALA_SCL_DIR = /home/rohan/data/scala/90/scl
+SCALA_DIST_DIR = /home/rohan/opt/build/scala-22-pc64-linux
 $
 ~~~~
 
-# search mode <a id="search-mode"></a>
+## fluidsynth <a id="fluidsynth"></a>
+
+Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
+Columns are: bank, program, midi-note-number, non-negative-cents (0 = C-1)
 
 ~~~~
-$ hmt-scala search mode ci nil xenakis
-mode-start-degree : 0
-mode-intervals    : 5,19,6,12,5,19,6
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Chromatic
-
-mode-start-degree : 0
-mode-intervals    : 7,16,7,12,7,16,7
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
-
-mode-start-degree : 0
-mode-intervals    : 12,11,7,12,12,11,7
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
+$ hmt-scala fluidsynth d12 young-lm_piano -74.7 -3 "La Monte Young, The Well Tuned Piano" 0 0
+tuning "La Monte Young, The Well Tuned Piano" 0 0
+tune 0 0 0 0.00
+tune 0 0 1 0.00
+tune 0 0 2 198.04
+tune 0 0 3 225.30
+tune 0 0 4 401.95
+tune 0 0 5 429.21
+tune 0 0 6 464.91
+tune 0 0 7 696.08
+tune 0 0 8 668.82
+tune 0 0 9 899.99
+tune 0 0 10 927.26
+tune 0 0 11 962.95
+...
 $
 ~~~~
 
-# midi-table <a id="midi-table"></a>
+## intnam lookup <a id="intnam-lookup"></a>
+
+Lookup name of interval given by ratio, print also the cents value of the interval.
+
+~~~~
+$ hmt-scala intnam lookup 7/4 7/6 9/8 13/8 21/16 35/32 16/9
+7:4 = harmonic seventh = 969
+7:6 = septimal minor third = 267
+9:8 = major whole tone = 204
+13:8 = tridecimal neutral sixth = 841
+21:16 = narrow fourth = 471
+35:32 = septimal neutral second = 155
+16:9 = Pythagorean minor seventh = 996
+$ hmt-scala intnam lookup 256/243 264/256 288/264 294/288 324/294 4/3
+256:243 = limma, Pythagorean minor second = 90
+33:32 = undecimal comma, al-Farabi's 1/4-tone = 53
+12:11 = 3/4-tone, undecimal neutral second = 151
+49:48 = slendro diesis, septimal 1/6-tone = 36
+54:49 = Zalzal's mujannab = 168
+4:3 = perfect fourth = 498
+$
+~~~~
+
+## intnam search <a id="intnam-search"></a>
+
+Lookup intervals with names that, case insenstively, include the indicated text.
+
+~~~~
+$ hmt-scala intnam search didymus
+81:80 = syntonic comma, Didymus comma = 22
+$ hmt-scala intnam search comma | wc -l
+94
+$
+~~~~
+
+## midi-table <a id="midi-table"></a>
 
 Table with 128 entries mapping midi-note-number to either fractional-midi, frequency or MTS values.
 
@@ -208,59 +218,53 @@ $ hmt-scala midi-table fmidi d12 meanquar 0 0
 $
 ~~~~
 
-# fluidsynth <a id="fluidsynth"></a>
-
-Generate tuning commands for the [fluidsynth](http://www.fluidsynth.org/) synthesiser.
-Columns are: bank, program, midi-note-number, non-negative-cents (0 = C-1)
+## search scale <a id="search-scale"></a>
 
 ~~~~
-$ hmt-scala fluidsynth d12 young-lm_piano -74.7 -3 "La Monte Young, The Well Tuned Piano" 0 0
-tuning "La Monte Young, The Well Tuned Piano" 0 0
-tune 0 0 0 0.00
-tune 0 0 1 0.00
-tune 0 0 2 198.04
-tune 0 0 3 225.30
-tune 0 0 4 401.95
-tune 0 0 5 429.21
-tune 0 0 6 464.91
-tune 0 0 7 696.08
-tune 0 0 8 668.82
-tune 0 0 9 899.99
-tune 0 0 10 927.26
-tune 0 0 11 962.95
-...
+$ hmt-scala search scale ci 75 la monte young
+name        : young-lm_guitar
+description : LaMonte Young, tuning of For Guitar '58. 1/1 March '92, inv.o
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,112,182,316,386,498,590,702,814,884,1018,1088,1200]
+ratios      : 1,16/15,10/9,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8,2
+
+name        : young-lm_piano
+description : LaMonte Young's Well-Tuned Piano
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,177,204,240,471,444,675,702,738,969,942,1173,1200]
+ratios      : 1,567/512,9/8,147/128,21/16,1323/1024,189/128,3/2,49/32,7/4,4
+
+name        : young-lm_piano_1964
+description : LaMonte Young's Well-Tuned Piano (1964)
+degree      : 12
+type        : Pitch_Ratio
+perfect-oct : True
+cents-i     : [0,149,204,240,471,647,675,702,738,969,1145,1173,1200]
+ratios      : 1,279/256,9/8,147/128,21/16,93/64,189/128,3/2,49/32,7/4,31/16
 $
 ~~~~
 
-# intnam lookup <a id="intnam-lookup"></a>
-
-Lookup name of interval given by ratio, print also the cents value of the interval.
+## search mode <a id="search-mode"></a>
 
 ~~~~
-$ hmt-scala intnam lookup 7/4 7/6 9/8 13/8 21/16 35/32 16/9
-7:4 = harmonic seventh = 969
-7:6 = septimal minor third = 267
-9:8 = major whole tone = 204
-13:8 = tridecimal neutral sixth = 841
-21:16 = narrow fourth = 471
-35:32 = septimal neutral second = 155
-16:9 = Pythagorean minor seventh = 996
-$ hmt-scala intnam lookup 256/243 264/256 288/264 294/288 324/294 4/3
-256:243 = limma, Pythagorean minor second = 90
-33:32 = undecimal comma, al-Farabi's 1/4-tone = 53
-12:11 = 3/4-tone, undecimal neutral second = 151
-49:48 = slendro diesis, septimal 1/6-tone = 36
-54:49 = Zalzal's mujannab = 168
-4:3 = perfect fourth = 498
-$
-~~~~
+$ hmt-scala search mode ci nil xenakis
+mode-start-degree : 0
+mode-intervals    : 5,19,6,12,5,19,6
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Chromatic
 
-# intnam search <a id="intnam-search"></a>
+mode-start-degree : 0
+mode-intervals    : 7,16,7,12,7,16,7
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
 
-Lookup intervals with names that, case insenstively, include the indicated text.
-
-~~~~
-$ hmt-scala intnam search didymus
-81:80 = syntonic comma, Didymus comma = 22
+mode-start-degree : 0
+mode-intervals    : 12,11,7,12,12,11,7
+mode-degree       : 72
+mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
 $
 ~~~~
