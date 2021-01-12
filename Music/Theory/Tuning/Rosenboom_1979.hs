@@ -36,7 +36,7 @@ dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1,2,4] dr_tuning_
 -- | Actual scale, in CPS.
 --
 -- > let r = [52,69,76,83,92,104,119,138,156,166,185,208,234,260,277,286,311,332,363]
--- > in map round dr_scale == r
+-- > map round dr_scale == r
 dr_scale :: [Double]
 dr_scale =
     let f0 = T.octpc_to_cps (1::Int,8)
@@ -47,30 +47,6 @@ dr_scale =
 -- > map (\(f,p,_,_,_) -> (T.pitch_to_midi p,f)) dr_scale_tbl_12et
 dr_scale_tbl_12et :: [T.HS_R T.Pitch]
 dr_scale_tbl_12et = map T.nearest_12et_tone dr_scale
-
-{-
-
-51.9 A♭1 51.9 0.0 0.0
-69.2 C♯2 69.3 -0.1 -2.0
-75.5 D2 73.4 2.1 48.7
-83.1 E2 82.4 0.7 13.7
-92.3 F♯2 92.5 -0.2 -3.9
-103.8 A♭2 103.8 0.0 0.0
-118.7 B♭2 116.5 2.1 31.2
-138.4 C♯3 138.6 -0.2 -2.0
-155.7 E♭3 155.6 0.2 2.0
-166.1 E3 164.8 1.3 13.7
-184.6 F♯3 185.0 -0.4 -3.9
-207.7 A♭3 207.7 0.0 0.0
-233.6 B♭3 233.1 0.5 3.9
-259.6 C4 261.6 -2.1 -13.7
-276.9 C♯4 277.2 -0.3 -2.0
-285.5 D4 293.7 -8.1 -48.7
-311.5 E♭4 311.1 0.4 2.0
-332.2 E4 329.6 2.6 13.7
-363.4 F♯4 370.0 -6.6 -31.2
-
--}
 
 -- > Scala.scale_verify dr_scale_scala
 -- > putStrLn $ unlines $ Scala.scale_pp dr_scale_scala
@@ -87,30 +63,6 @@ dr_scale_scala =
 -- > putStrLn (unlines (map (unwords . T.hs_r_pitch_pp 1)  dr_scale_tbl_24et))
 dr_scale_tbl_24et :: [T.HS_R T.Pitch]
 dr_scale_tbl_24et = map T.nearest_24et_tone dr_scale
-
-{-
-
-51.9 A♭1 51.9 0.0 0.0
-69.2 C♯2 69.3 -0.1 -2.0
-75.5 D𝄲2 75.6 -0.1 -1.3
-83.1 E2 82.4 0.7 13.7
-92.3 F♯2 92.5 -0.2 -3.9
-103.8 A♭2 103.8 0.0 0.0
-118.7 B𝄳2 120.0 -1.3 -18.8
-138.4 C♯3 138.6 -0.2 -2.0
-155.7 E♭3 155.6 0.2 2.0
-166.1 E3 164.8 1.3 13.7
-184.6 F♯3 185.0 -0.4 -3.9
-207.7 A♭3 207.7 0.0 0.0
-233.6 B♭3 233.1 0.5 3.9
-259.6 C4 261.6 -2.1 -13.7
-276.9 C♯4 277.2 -0.3 -2.0
-285.5 D𝄳4 285.3 0.2 1.3
-311.5 E♭4 311.1 0.4 2.0
-332.2 E4 329.6 2.6 13.7
-363.4 F𝄲4 359.5 3.9 18.8
-
--}
 
 dr_chords :: [[T.Pitch]]
 dr_chords =
@@ -161,8 +113,8 @@ dr_ratio_seq =
     ,[(8,1),(1,10)]
     ]
 
--- > import Data.Function
--- > import Data.List
+-- > import Data.Function {- base -}
+-- > import Data.List {- base -}
 -- > reverse (sortBy (compare `on` snd) dr_ratio_seq_hist)
 dr_ratio_seq_hist :: (Ord n,Num n) => [((n,n),Int)]
 dr_ratio_seq_hist = T.histogram (concat dr_ratio_seq)
