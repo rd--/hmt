@@ -3,6 +3,7 @@ module Music.Theory.Tuning.Scala.Interval where
 
 import Data.Char {- base -}
 import Data.List {- base -}
+import Data.Maybe {- base -}
 
 import qualified Music.Theory.Read as Read {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
@@ -20,10 +21,27 @@ type INTNAM = (Int,[INTERVAL])
 > intnam_search_ratio db (2/3) == Nothing
 > intnam_search_ratio db (4/3) == Just (4/3,"perfect fourth")
 > intnam_search_ratio db (31/16) == Just (31/16,"=31st harmonic")
-> map (intnam_search_ratio db) [3/2,4/3,7/4,7/6,9/7,12/7,14/9]
+> intnam_search_ratio db (64/49) == Just (64 % 49,"=2 septatones or septatonic major third")
+> map (intnam_search_ratio db) [3/2,4/3,7/4,7/6,9/7,9/8,12/7,14/9]
+> import Data.Maybe {- base -}
+> mapMaybe (intnam_search_ratio db) [567/512,147/128,21/16,1323/1024,189/128,49/32,441/256,63/32]
 -}
 intnam_search_ratio :: INTNAM -> Rational -> Maybe INTERVAL
 intnam_search_ratio (_,i) x = find ((== x) . fst) i
+
+{- | Lookup approximate ratio in 'INTNAM' given espilon.
+
+> r = [Just (3/2,"perfect fifth"),Just (64/49,"=2 septatones or septatonic major third")]
+> map (intnam_search_fratio 0.0001 db) [1.5,1.3061] == r
+-}
+intnam_search_fratio :: (Fractional n,Ord n) => n -> INTNAM -> n -> Maybe INTERVAL
+intnam_search_fratio epsilon (_,i) x =
+  let near p q = abs (p - q) < epsilon
+  in find ((near x) . fromRational . fst) i
+
+-- | Lookup name of interval, or error.
+intnam_search_ratio_name_err :: INTNAM -> Rational -> String
+intnam_search_ratio_name_err db = snd . fromJust . intnam_search_ratio db
 
 -- | Lookup interval name in 'INTNAM', ci = case-insensitive.
 --

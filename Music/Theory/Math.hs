@@ -149,7 +149,7 @@ oi_divMod n m = let (i,j) = (n - 1) `divMod` m in (i,j + 1)
 
 -- * I = integral
 
--- | Integral square root function.
+-- | Integral square root (sqrt) function.
 --
 -- > map i_square_root [0,1,4,9,16,25,36,49,64,81,100] == [0 .. 10]
 -- > map i_square_root [4 .. 16] == [2,2,2,2,2,3,3,3,3,3,3,3,4]
