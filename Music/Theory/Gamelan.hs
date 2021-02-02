@@ -196,14 +196,14 @@ tone_equivalent p q =
 
 tone_24et_pitch :: Tone t -> Maybe T.Pitch
 tone_24et_pitch =
-    let f i = let (_,pt,_,_,_) = T.nearest_24et_tone i in pt
+    let f i = let (_,pt,_,_,_) = T.nearest_24et_tone_k0 (69,440) i in pt
     in fmap f . tone_frequency
 
 tone_24et_pitch' :: Tone t -> T.Pitch
 tone_24et_pitch' = fromJust_err "tone_24et_pitch" . tone_24et_pitch
 
 tone_24et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
-tone_24et_pitch_detune = fmap T.nearest_pitch_detune_24et . tone_frequency
+tone_24et_pitch_detune = fmap (T.nearest_pitch_detune_24et_k0 (69,440)) . tone_frequency
 
 tone_24et_pitch_detune' :: Tone t -> T.Pitch_Detune
 tone_24et_pitch_detune' = fromJust_err "tone_24et_pitch_detune" . tone_24et_pitch_detune
@@ -217,14 +217,14 @@ tone_24et_fmidi = near_rat . T.pitch_to_fmidi . tone_24et_pitch'
 
 tone_12et_pitch :: Tone t -> Maybe T.Pitch
 tone_12et_pitch =
-    let f i = let (_,pt,_,_,_) = T.nearest_12et_tone i in pt
+    let f i = let (_,pt,_,_,_) = T.nearest_12et_tone_k0 (69,440) i in pt
     in fmap f . tone_frequency
 
 tone_12et_pitch' :: Tone t -> T.Pitch
 tone_12et_pitch' = fromJust_err "tone_12et_pitch" . tone_12et_pitch
 
 tone_12et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
-tone_12et_pitch_detune = fmap T.nearest_pitch_detune_12et . tone_frequency
+tone_12et_pitch_detune = fmap (T.nearest_pitch_detune_12et_k0 (69,440)) . tone_frequency
 
 tone_12et_pitch_detune' :: Tone t -> T.Pitch_Detune
 tone_12et_pitch_detune' = fromJust_err "tone_12et_pitch_detune" . tone_12et_pitch_detune

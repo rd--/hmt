@@ -46,7 +46,7 @@ dr_scale =
 -- > putStrLn (unlines (map (unwords . T.hs_r_pitch_pp 1)  dr_scale_tbl_12et))
 -- > map (\(f,p,_,_,_) -> (T.pitch_to_midi p,f)) dr_scale_tbl_12et
 dr_scale_tbl_12et :: [T.HS_R T.Pitch]
-dr_scale_tbl_12et = map T.nearest_12et_tone dr_scale
+dr_scale_tbl_12et = map (T.nearest_12et_tone_k0 (69,440)) dr_scale
 
 -- > Scala.scale_verify dr_scale_scala
 -- > putStrLn $ unlines $ Scala.scale_pp dr_scale_scala
@@ -62,7 +62,7 @@ dr_scale_scala =
 
 -- > putStrLn (unlines (map (unwords . T.hs_r_pitch_pp 1)  dr_scale_tbl_24et))
 dr_scale_tbl_24et :: [T.HS_R T.Pitch]
-dr_scale_tbl_24et = map T.nearest_24et_tone dr_scale
+dr_scale_tbl_24et = map (T.nearest_24et_tone_k0 (69,440)) dr_scale
 
 dr_chords :: [[T.Pitch]]
 dr_chords =
