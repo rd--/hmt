@@ -31,8 +31,8 @@ tbl_12et_f0 zero =
 
 -- | 'tbl_12et_k0' @(69,440)@.
 --
--- > length tbl_12et == 132
--- > minmax (map (round . snd) tbl_12et) == (16,31609)
+-- > length tbl_12et == 192
+-- > T.minmax (map (round . snd) tbl_12et) (1,31609)
 tbl_12et :: [(Pitch,Double)]
 tbl_12et = tbl_12et_f0 (69,440)
 
@@ -42,21 +42,21 @@ tbl_24et_f0 f0 =
     let f x = let p = fmidi_to_pitch_err pc_spell_ks x
                   p' = pitch_rewrite_threequarter_alteration p
               in (p',fmidi_to_cps_f0 f0 x)
-    in map f [12,12.5 .. 143.5]
+        k0 = -36
+    in map f [k0,k0 + 0.5 .. 143.5]
 
 -- | 'tbl_24et_f0' @440@.
 --
--- > length tbl_24et == 264
--- > T.minmax (map (round . snd) tbl_24et) == (16,32535)
+-- > length tbl_24et == 360
+-- > T.minmax (map (round . snd) tbl_24et) == (1,32535)
 tbl_24et :: [(Pitch,Double)]
 tbl_24et = tbl_24et_f0 440
 
 -- | Given an @ET@ table (or like) find bounds of frequency.
 --
--- import qualified Music.Theory.Tuple as T
---
+-- > import qualified Music.Theory.Tuple as T
 -- > let r = Just (T.t2_map octpc_to_pitch_cps ((3,11),(4,0)))
--- > in bounds_et_table tbl_12et 256 == r
+-- > bounds_et_table tbl_12et 256 == r
 bounds_et_table :: Ord s => [(t,s)] -> s -> Maybe ((t,s),(t,s))
 bounds_et_table = T.find_bounds True (compare . snd)
 
