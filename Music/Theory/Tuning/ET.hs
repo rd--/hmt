@@ -12,29 +12,29 @@ import Music.Theory.Pitch.Note {- hmt -}
 import Music.Theory.Pitch.Spelling.Table {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 
--- | 'octpc_to_pitch' and 'octpc_to_cps'.
-octpc_to_pitch_cps_f0 :: (Floating n) => n -> OctPC -> (Pitch,n)
-octpc_to_pitch_cps_f0 f0 x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps_f0 f0 x)
+-- | 'octpc_to_pitch' and 'octpc_to_cps_k0'.
+octpc_to_pitch_cps_k0 :: (Floating n) => (n,n) -> OctPC -> (Pitch,n)
+octpc_to_pitch_cps_k0 zero x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps_k0 zero x)
 
--- | 'octpc_to_pitch' and 'octpc_to_cps'.
+-- | 'octpc_to_pitch_cps_k0' of (69,440)
 octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
-octpc_to_pitch_cps = octpc_to_pitch_cps_f0 440
+octpc_to_pitch_cps = octpc_to_pitch_cps_k0 (69,440)
 
 -- | 12-tone equal temperament table equating 'Pitch' and frequency
 -- over range of human hearing, where @A4@ has given frequency.
 --
--- > tbl_12et_f0 415
-tbl_12et_f0 :: Double -> [(Pitch,Double)]
-tbl_12et_f0 f0 =
-    let z = [(o,pc) | o <- [0..10], pc <- [0..11]]
-    in map (octpc_to_pitch_cps_f0 f0) z
+-- > tbl_12et_k0 (69,440)
+tbl_12et_f0 :: (Double,Double) -> [(Pitch,Double)]
+tbl_12et_f0 zero =
+    let z = [(o,pc) | o <- [-5 .. 10], pc <- [0 .. 11]]
+    in map (octpc_to_pitch_cps_k0 zero) z
 
--- | 'tbl_12et_f0' @440@hz.
+-- | 'tbl_12et_k0' @(69,440)@.
 --
 -- > length tbl_12et == 132
 -- > minmax (map (round . snd) tbl_12et) == (16,31609)
 tbl_12et :: [(Pitch,Double)]
-tbl_12et = tbl_12et_f0 440
+tbl_12et = tbl_12et_f0 (69,440)
 
 -- | 24-tone equal temperament variant of 'tbl_12et_f0'.
 tbl_24et_f0 :: Double -> [(Pitch,Double)]

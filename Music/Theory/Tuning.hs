@@ -11,25 +11,33 @@ import qualified Music.Theory.Ord as T {- hmt -}
 
 -- * Math/Floating
 
--- | Fractional /midi/ note number to cycles per second, given frequency of ISO A4.
-fmidi_to_cps_f0 :: Floating a => a -> a -> a
-fmidi_to_cps_f0 f0 i = f0 * (2 ** ((i - 69) * (1 / 12)))
+-- | Fractional /midi/ note number to cycles per second, given (k0,f0) pair.
+--
+-- > fmidi_to_cps_k0 (60,256) 69 == 430.5389646099018
+fmidi_to_cps_k0 :: Floating a => (a,a) -> a -> a
+fmidi_to_cps_k0 (k0,f0) i = f0 * (2 ** ((i - k0) * (1 / 12)))
 
--- | 'fmidi_to_cps_f0' 440.
+-- | 'fmidi_to_cps_k0' with k0 of 69.
+--
+-- > fmidi_to_cps_f0 440 60 == 261.6255653005986
+fmidi_to_cps_f0 :: Floating a => a -> a -> a
+fmidi_to_cps_f0 f0 = fmidi_to_cps_k0 (69,f0)
+
+-- | 'fmidi_to_cps_k0' (69,440)
 --
 -- > map fmidi_to_cps [69,69.1] == [440.0,442.5488940698553]
 fmidi_to_cps :: Floating a => a -> a
-fmidi_to_cps = fmidi_to_cps_f0 440
+fmidi_to_cps = fmidi_to_cps_k0 (69,440)
 
 -- | /Midi/ note number to cycles per second, given frequency of ISO A4.
-midi_to_cps_f0 :: (Integral i,Floating f) => f -> i -> f
-midi_to_cps_f0 f0 = fmidi_to_cps_f0 f0 . fromIntegral
+midi_to_cps_k0 :: (Integral i,Floating f) => (f,f) -> i -> f
+midi_to_cps_k0 o = fmidi_to_cps_k0 o . fromIntegral
 
--- | 'midi_to_cps_f0' 440.
+-- | 'midi_to_cps_k0' (69,440).
 --
 -- > map (round . midi_to_cps) [59,60,69] == [247,262,440]
 midi_to_cps :: (Integral i,Floating f) => i -> f
-midi_to_cps = midi_to_cps_f0 440
+midi_to_cps = midi_to_cps_k0 (69,440)
 
 -- | Convert from interval in cents to frequency ratio.
 --

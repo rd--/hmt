@@ -410,25 +410,29 @@ pitch_edit_octave f (Pitch n a o) = Pitch n a (f o)
 
 -- * Frequency (CPS)
 
+-- | 'fmidi_to_cps' of 'pitch_to_fmidi', given (k0,f0).
+pitch_to_cps_k0 :: Floating n => (n,n) -> Pitch -> n
+pitch_to_cps_k0 o = T.fmidi_to_cps_k0 o . pitch_to_fmidi
+
 -- | 'fmidi_to_cps' of 'pitch_to_fmidi', given frequency of ISO A4.
 pitch_to_cps_f0 :: Floating n => n -> Pitch -> n
-pitch_to_cps_f0 f0 = T.fmidi_to_cps_f0 f0 . pitch_to_fmidi
+pitch_to_cps_f0 f0 = pitch_to_cps_k0 (69,f0)
 
--- | 'pitch_to_cps_f0' 440.
+-- | 'pitch_to_cps_k0' (60,440).
 pitch_to_cps :: Floating n => Pitch -> n
-pitch_to_cps = pitch_to_cps_f0 440
+pitch_to_cps = pitch_to_cps_k0 (69,440)
 
 -- | Frequency (cps = cycles per second) to fractional /midi/ note
 -- number, given frequency of ISO A4 (mnn = 69).
-cps_to_fmidi_f0 :: Floating a => a -> a -> a
-cps_to_fmidi_f0 f0 a = (logBase 2 (a * (1 / f0)) * 12) + 69
+cps_to_fmidi_k0 :: Floating a => (a,a) -> a -> a
+cps_to_fmidi_k0 (k0,f0) a = (logBase 2 (a * (1 / f0)) * 12) + k0
 
--- | 'cps_to_fmidi_f0' @440@.
+-- | 'cps_to_fmidi_k0' @(69,440)@.
 --
 -- > cps_to_fmidi 440 == 69
 -- > cps_to_fmidi (fmidi_to_cps 60.25) == 60.25
 cps_to_fmidi :: Floating a => a -> a
-cps_to_fmidi = cps_to_fmidi_f0 440
+cps_to_fmidi = cps_to_fmidi_k0 (69,440)
 
 -- | Frequency (cycles per second) to /midi/ note number,
 -- ie. 'round' of 'cps_to_fmidi'.
@@ -437,15 +441,15 @@ cps_to_fmidi = cps_to_fmidi_f0 440
 cps_to_midi :: (Integral i,Floating f,RealFrac f) => f -> i
 cps_to_midi = round . cps_to_fmidi
 
--- | 'midi_to_cps_f0' of 'octpc_to_midi', given frequency of ISO A4.
-octpc_to_cps_f0 :: (Integral i,Floating n) => n -> Octave_PitchClass i -> n
-octpc_to_cps_f0 f0 = T.midi_to_cps_f0 f0 . octave_pitchclass_to_midi
+-- | 'midi_to_cps_f0' of 'octpc_to_midi', given (k0,f0)
+octpc_to_cps_k0 :: (Integral i,Floating n) => (n,n) -> Octave_PitchClass i -> n
+octpc_to_cps_k0 o = T.midi_to_cps_k0 o . octave_pitchclass_to_midi
 
--- | 'octpc_to_cps_f0' 440.
+-- | 'octpc_to_cps_k0' (69,440).
 --
 -- > octpc_to_cps (4,9) == 440
 octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
-octpc_to_cps = octpc_to_cps_f0 440
+octpc_to_cps = octpc_to_cps_k0 (69,440)
 
 -- | 'midi_to_octpc' of 'cps_to_midi'.
 cps_to_octpc :: (Floating f,RealFrac f,Integral i) => f -> Octave_PitchClass i
