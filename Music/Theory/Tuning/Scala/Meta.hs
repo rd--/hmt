@@ -55,6 +55,7 @@ scl_ji_au =
     ,"grady_centaur"
     ,"grady_centaur17"
     ,"grady_centaur19"])
+  ,("Hahn, Paul",words "duohex hahn_7 hahn9 hahnmaxr indian-hahn") -- hahn_g mean14a
   ,("Harrison, Lou"
    ,["dudon_slendro_matrix" -- NON-UNIQ
     ,"harrison_5"
@@ -136,6 +137,7 @@ scl_ji_au =
     -- "pyth_31" "pyth_sev" "pyth_third" NOT-JI
     ])
   ,("Riley, Terry",words "riley_albion riley_rosary")
+  ,("Smith, Gene Ward",["smithgw_15highschool1","smithgw_15highschool2","smithgw_18","smithgw_19highschool1","smithgw_19highschool2","smithgw_21","smithgw_22highschool","smithgw_58","smithgw_9","smithgw_ball","smithgw_ball2","smithgw_circu","smithgw_decab","smithgw_decac","smithgw_decad","smithgw_diff13","smithgw_dwarf6_7","smithgw_ennon13","smithgw_ennon15","smithgw_ennon28","smithgw_ennon43","smithgw_euclid3","smithgw_glamma","smithgw_glumma","smithgw_gm","smithgw_hahn12","smithgw_hahn15","smithgw_hahn16","smithgw_hahn19","smithgw_hahn22","smithgw_indianred","smithgw_majraj1","smithgw_majraj2","smithgw_majraj3","smithgw_majsyn1","smithgw_majsyn2","smithgw_majsyn3","smithgw_meandin","smithgw_meanred","smithgw_mir22","smithgw_monzoblock37","smithgw_orw18r","smithgw_pel1","smithgw_pel3","smithgw_pris","smithgw_prisa","smithgw_ragasyn1","smithgw_ratwell","smithgw_rectoo","smithgw_red72_11geo","smithgw_red72_11pro","smithgw_sc19","smithgw_scj22a","smithgw_scj22b","smithgw_scj22c","smithgw_smalldi11","smithgw_smalldi19a","smithgw_smalldi19b","smithgw_smalldi19c","smithgw_star","smithgw_star2","smithgw_syndia2","smithgw_syndia3","smithgw_syndia4","smithgw_syndia6","smithgw_well1","smithgw_wiz28","smithgw_wiz34","smithgw_wiz38"])
   ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
    ,["chin_7"
