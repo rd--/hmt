@@ -80,7 +80,7 @@ stat_all lm = do
 -- > stat_by_name Nothing "young-lm_piano"
 stat_by_name :: Maybe Int -> FilePath -> IO ()
 stat_by_name lm nm = do
-  sc <- T.scl_load nm :: IO T.Scale
+  sc <- T.scl_load nm
   putStrLn (unlines (map (cut lm) (T.scale_stat sc)))
 
 -- > rng_enum (60,72) == [60 .. 72]
@@ -94,7 +94,7 @@ cps_tbl fmt tbl mnn_rng = do
       gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
       t_pp (i,p,cps) =
           let ref = T.midi_to_cps i
-              (_,nr,nr_cps,_,_) = T.nearest_12et_tone cps
+              (_,nr,nr_cps,_,_) = T.nearest_12et_tone_k0 (69,440) cps
           in [show i
              ,cps_pp cps,T.pitch_pp_iso nr,cents_pp (T.cps_difference_cents nr_cps cps)
              ,cps_pp ref,T.pitch_pp_iso p,cents_pp (T.cps_difference_cents ref cps)]
@@ -196,6 +196,82 @@ intnam_search txt = do
   let f (r,nm) = concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
   mapM_ (putStrLn . f) (T.intnam_search_description_ci db txt)
 
+-- * INTERVALS
+
+-- | Given interval function (ie. '-' or '/') and scale generate interval half-matrix.
+interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
+interval_half_matrix interval_f =
+  let tails' = filter (not . (< 2) . length) . tails
+      f l = case l of
+              [] -> []
+              i : l' -> map (\j -> j `interval_f` i) l'
+  in map f . tails'
+
+interval_half_matrix_tbl :: (t -> String) -> (t -> t -> t) -> [t] -> [[String]]
+interval_half_matrix_tbl show_f interval_f scl =
+    let f n l = replicate n "" ++ map show_f l
+    in zipWith f [1..] (interval_half_matrix interval_f scl)
+
+intervals_half_matrix :: (T.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
+intervals_half_matrix scl_f interval_f show_f nm = do
+  scl <- T.scl_load nm
+  let txt = interval_half_matrix_tbl show_f interval_f (scl_f scl)
+      pp = T.table_pp T.table_opt_plain
+  putStrLn (unlines (pp txt))
+
+-- > mapM_ (intervals_half_matrix_cents 0) (words "pyth_12 kepler1")
+intervals_half_matrix_cents :: Int -> String -> IO ()
+intervals_half_matrix_cents k = intervals_half_matrix T.scale_cents (-) (T.real_pp k)
+
+-- > mapM_ (intervals_half_matrix_ratios) (words "pyth_12 kepler1")
+intervals_half_matrix_ratios :: String -> IO ()
+intervals_half_matrix_ratios = intervals_half_matrix T.scale_ratios_req (/) T.ratio_pp
+
+interval_matrix_ratio :: [Rational] -> [[Rational]]
+interval_matrix_ratio x = let f i = map (\j -> if j < i then j * 2 / i else j / i) x in map f x
+
+interval_matrix_cents :: [T.Cents] -> [[T.Cents]]
+interval_matrix_cents x = let f i = map (\j -> if j < i then j + 1200 - i else j - i) x in map f x
+
+intervals_matrix :: (T.Scale -> [t]) -> ([t] -> [[t]]) -> (t -> String) -> String -> IO ()
+intervals_matrix scl_f tbl_f pp_f nm = do
+  scl <- T.scl_load nm
+  let txt = map (map pp_f) (tbl_f (scl_f scl))
+      pp = T.table_pp T.table_opt_plain
+  putStrLn (unlines (pp txt))
+
+-- > mapM_ (intervals_matrix_cents 0) (words "pyth_12 kepler1")
+intervals_matrix_cents :: Int -> String -> IO ()
+intervals_matrix_cents k = intervals_matrix T.scale_cents interval_matrix_cents (T.real_pp k)
+
+-- > mapM_ intervals_matrix_ratios (words "pyth_12 kepler1")
+intervals_matrix_ratios :: String -> IO ()
+intervals_matrix_ratios = intervals_matrix T.scale_ratios_req interval_matrix_ratio T.ratio_pp
+
+-- | Type specialised 'round'
+round_int :: RealFrac t => t -> Int
+round_int = round
+
+interval_hist_ratios :: (Fractional t,Ord t) => [t] -> [(t,Int)]
+interval_hist_ratios x = T.histogram [(if p < q then p * 2 else p) / q | p <- x, q <- x, p /= q]
+
+-- > mapM_ intervals_list_ratios (words "pyth_12 kepler1")
+intervals_list_ratios :: String -> IO ()
+intervals_list_ratios scl_nm = do
+  nam_db <- T.load_intnam
+  scl <- T.scl_load scl_nm
+  let _:rat = T.scale_ratios_req scl
+      hst = interval_hist_ratios rat
+      ln (r,n) = let nm = maybe "" snd (T.intnam_search_ratio nam_db r)
+                     c = T.ratio_to_cents r
+                     i = round_int (c / 100)
+                 in [show i,show n,T.ratio_pp r,T.real_pp 1 c,nm]
+      tbl = map ln hst
+      pp = T.table_pp T.table_opt_plain
+  putStrLn (unlines (pp tbl))
+
+-- * MAIN
+
 help :: [String]
 help =
     ["cps-tbl md|csv cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
@@ -205,6 +281,7 @@ help =
     ,"db summarise nm-lm|nil dsc-lm|nil"
     ,"env"
     ,"fluidsynth d12 scl-name:string cents:real mnn:int fs-name:string fs-bank:int fs-prog:int"
+    ,"intervals {half-matrix|list|matrix} {cents|ratios} scale-name:string"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
     ,"midi-table fmidi|freq|mts d12 name:string cents:real mnn:int"
@@ -222,33 +299,27 @@ main = do
   a <- getArgs
   let usage = putStrLn (unlines help)
   case a of
-    ["cps-tbl",fmt,"cps",nm,f0,k,n,l,r] ->
-        cps_tbl_cps fmt (nm,read f0,read k,read n) (read l,read r)
-    ["cps-tbl",fmt,"d12",nm,c,k,l,r] ->
-        cps_tbl_d12 fmt (nm,read c,read k) (read l,read r)
-    ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] ->
-        csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
-    ["db","stat"] ->
-        db_stat
-    ["db","summarise",nm_lim,dsc_lim] ->
-        db_summarise (nil_or_read nm_lim) (nil_or_read dsc_lim)
-    ["env"] ->
-        env
+    ["cps-tbl",fmt,"cps",nm,f0,k,n,l,r] -> cps_tbl_cps fmt (nm,read f0,read k,read n) (read l,read r)
+    ["cps-tbl",fmt,"d12",nm,c,k,l,r] -> cps_tbl_d12 fmt (nm,read c,read k) (read l,read r)
+    ["csv-mnd-retune","d12",nm,c,k,in_fn,out_fn] -> csv_mnd_retune_d12 (nm,read c,read k) in_fn out_fn
+    ["db","stat"] -> db_stat
+    ["db","summarise",nm_lim,dsc_lim] -> db_summarise (nil_or_read nm_lim) (nil_or_read dsc_lim)
+    ["env"] -> env
     ["fluidsynth","d12",scl_nm,c,k,fs_nm,fs_bank,fs_prog] ->
         fluidsynth_tuning_d12 (fs_nm,read fs_bank,read fs_prog) (scl_nm,read c,read k)
-    "intnam":"lookup":r_sq ->
-        intnam_lookup (map T.read_ratio_with_div_err r_sq)
-    ["intnam","search",txt] ->
-        intnam_search txt
-    ["midi-table",typ,"d12",scl_nm,c,k] ->
-        midi_tbl_tuning_d12 typ (scl_nm,read c,read k)
+    ["intervals","half-matrix",'c':_,k,nm] -> intervals_half_matrix_cents (read k) nm
+    ["intervals","half-matrix",'r':_,nm] -> intervals_half_matrix_ratios nm
+    ["intervals","list",'r':_,nm] -> intervals_list_ratios nm
+    ["intervals","matrix",'c':_,k,nm] -> intervals_matrix_cents (read k) nm
+    ["intervals","matrix",'r':_,nm] -> intervals_matrix_ratios nm
+    "intnam":"lookup":r_sq -> intnam_lookup (map T.read_ratio_with_div_err r_sq)
+    ["intnam","search",txt] -> intnam_search txt
+    ["midi-table",typ,"d12",scl_nm,c,k] -> midi_tbl_tuning_d12 typ (scl_nm,read c,read k)
     "search":ty:ci:lm:txt ->
         case ty of
           "scale" -> search_scale (ci == "ci",nil_or_read lm) txt
           "mode" -> search_mode (ci == "ci",nil_or_read lm) txt
           _ -> usage
-    ["stat","all",lm] ->
-        stat_all (nil_or_read lm)
-    ["stat","scale",lm,nm] ->
-        stat_by_name (nil_or_read lm) nm
+    ["stat","all",lm] -> stat_all (nil_or_read lm)
+    ["stat","scale",lm,nm] -> stat_by_name (nil_or_read lm) nm
     _ -> usage
