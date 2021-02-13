@@ -80,10 +80,18 @@ tun_end :: [String]
 tun_end =
   [tun_sec "Scale End"]
 
+-- | Synonym for a list of strings.
 type TUN = [String]
 
-tun_from_cents :: (String,String) -> (Double, [Double]) -> TUN
-tun_from_cents (nm,k) (f0,c) =
+-- | Version 1 has just the /Tuning/ and /Exact Tuning/.
+tun_from_cents_version_one :: (Double, [Double]) -> TUN
+tun_from_cents_version_one (f0,c) =
+  concat [tun_tuning (map round c)
+         ,tun_exact_tuning f0 c]
+
+-- | Version 2 files have, in addition, /Begin/, /Info/, /Functional Tuning/ and /End/ sections.
+tun_from_cents_version_two :: (String,String) -> (Double, [Double]) -> TUN
+tun_from_cents_version_two (nm,k) (f0,c) =
   concat [tun_begin
          ,tun_info (nm,k)
          ,tun_tuning (map round c)
@@ -91,7 +99,8 @@ tun_from_cents (nm,k) (f0,c) =
          ,tun_functional_tuning f0 c
          ,tun_end]
 
--- > t = tun_from_cents ("equal-temperament-12","et12") (tun_f0_default,[0,100 .. 12700])
+-- > t = tun_from_cents_version_one (tun_f0_default,[0,100 .. 12700])
+-- > t = tun_from_cents_version_two ("equal-temperament-12","et12") (tun_f0_default,[0,100 .. 12700])
 -- > tun_store "/home/rohan/et12.tun" t
 tun_store :: FilePath -> TUN -> IO ()
 tun_store fn = writeFile fn . unlines
