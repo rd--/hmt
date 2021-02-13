@@ -147,6 +147,7 @@ Library
                    Music.Theory.Tuple
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
+                   Music.Theory.Tuning.Anamark
                    Music.Theory.Tuning.DB
                    Music.Theory.Tuning.DB.Alves
                    Music.Theory.Tuning.DB.Gann
