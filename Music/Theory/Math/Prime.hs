@@ -17,13 +17,15 @@ import qualified Music.Theory.Math as T {- hmt -}
 primes_list :: Integral i => [i]
 primes_list = P.primes
 
--- | Give zero-index of prime.
+-- | Give zero-index of prime, or Nothing if value is not prime.
 --
 -- > map prime_k [2,3,5,7,11,13,17,19,23,29,31,37] == map Just [0 .. 11]
 -- > map prime_k [1,4,6,8,9,10,12,14,15,16,18,20,21,22] == replicate 14 Nothing
 prime_k :: Integral a => a -> Maybe Int
-prime_k i = if P.isPrime i then Just (T.findIndex_err (== i) P.primes) else Nothing
+prime_k i = if P.isPrime i then Just (T.findIndex_err (== i) primes_list) else Nothing
 
+-- | 'maybe' 'error' of 'prime_k'
+--
 -- > prime_k_err 13 == 5
 prime_k_err :: Integral a => a -> Int
 prime_k_err = fromMaybe (error "prime_k: not prime?") . prime_k
@@ -41,7 +43,7 @@ As a special case 1 gives the empty list.
 factor :: Integral i => [i] -> i -> [i]
 factor x n =
     case x of
-      [] -> undefined
+      [] -> error "factor: null primes_list input"
       i:x' -> if n < i
               then [] -- ie. prime factors of 1...
               else if i * i > n
@@ -149,6 +151,7 @@ denominator (after cancelling out common factors).
 > rat_prime_factors_m (81,64) == [(2,-6),(3,4)]
 > rat_prime_factors_m (27,16) == [(2,-4),(3,3)]
 > rat_prime_factors_m (12,7) == [(2,2),(3,1),(7,-1)]
+> rat_prime_factors_m (5,31) == [(5,1),(31,-1)]
 -}
 rat_prime_factors_m :: Integral i => (i,i) -> [(i,Int)]
 rat_prime_factors_m (n,d) = rat_pf_merge (prime_factors_m n) (prime_factors_m d)
@@ -157,7 +160,7 @@ rat_prime_factors_m (n,d) = rat_pf_merge (prime_factors_m n) (prime_factors_m d)
 rational_prime_factors_m :: Integral i => Ratio i -> [(i,Int)]
 rational_prime_factors_m = rat_prime_factors_m . T.rational_nd
 
--- | Variant of 'rational_prime_factors_m' giving results in a list.
+-- | Variant of 'rat_prime_factors_m' giving results in a list.
 --
 -- > rat_prime_factors_l (1,1) == []
 -- > rat_prime_factors_l (2^5,9) == [5,-2]
@@ -168,11 +171,11 @@ rat_prime_factors_l x =
   case rat_prime_factors_m x of
     [] -> []
     r -> let lm = maximum (map fst r)
-         in map (\i -> fromMaybe 0 (lookup i r)) (T.take_until (== lm) P.primes)
+         in map (\i -> fromMaybe 0 (lookup i r)) (T.take_until (== lm) primes_list)
 
 -- | 'Ratio' variant of 'rat_prime_factors_l'
 --
--- > rational_prime_factors_l (256/243) == [8,-5]
+-- > map rational_prime_factors_l [1/31,256/243] == [[0,0,0,0,0,0,0,0,0,0,-1],[8,-5]]
 rational_prime_factors_l :: Integral i => Ratio i -> [Int]
 rational_prime_factors_l = rat_prime_factors_l . T.rational_nd
 
@@ -187,3 +190,24 @@ rat_prime_factors_t k = T.pad_right_err 0 k . rat_prime_factors_l
 -- | 'Ratio' variant of 'rat_prime_factors_t'
 rational_prime_factors_t :: (Integral i,Show i) => Int -> Ratio i -> [Int]
 rational_prime_factors_t n = rat_prime_factors_t n . T.rational_nd
+
+-- | Condense factors list to include only indicated places.
+--   It is an error if a deleted factor has a non-zero entry in the table.
+--
+-- > rat_prime_factors_l (12,7) == [2,1,0,-1]
+-- > rat_prime_factors_c [2,3,5,7] (12,7) == [2,1,0,-1]
+-- > rat_prime_factors_c [2,3,7] (12,7) == [2,1,-1]
+rat_prime_factors_c :: (Integral i,Show i) => [i] -> (i,i) -> [Int]
+rat_prime_factors_c fc r =
+  let t = rat_prime_factors_l r
+      k = map prime_k_err fc
+      f (ix,e) = if ix `notElem` k
+                 then (if e > 0 then error "rat_prime_factors_c: non-empty factor" else Nothing)
+                 else Just e
+  in mapMaybe f (zip [0..] t)
+
+-- | 'Ratio' variant of 'rat_prime_factors_t'
+--
+-- > map (rational_prime_factors_c [3,5,31]) [3,5,31]
+rational_prime_factors_c :: (Integral i,Show i) => [i] -> Ratio i -> [Int]
+rational_prime_factors_c fc = rat_prime_factors_c fc . T.rational_nd

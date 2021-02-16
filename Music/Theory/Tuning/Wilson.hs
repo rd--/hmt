@@ -5,9 +5,10 @@ import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
-import Safe {- safe -}
 import System.FilePath {- filepath -}
 import Text.Printf {- base -}
+
+import qualified Safe {- safe -}
 
 import qualified Music.Theory.Array.Text as T {- hmt -}
 import qualified Music.Theory.Function as T {- hmt -}
@@ -49,52 +50,52 @@ v2_scale n = v2_map (* n)
 pt_set_normalise_sym :: (Fractional n,Ord n) => [V2 n] -> [V2 n]
 pt_set_normalise_sym x = let z = maximum (map (uncurry max . T.bimap1 abs) x) in map (v2_scale (recip z)) x
 
--- * LATTICE CO-ORD
+-- * Lattice_FactorsTICE CO-ORD
 
 -- | /k/-unit co-ordinates for /k/-lattice.
-type LC n = [V2 n]
+type Lattice_Coord n = [V2 n]
 
 -- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-ew_lc_std :: Num n => LC n
+ew_lc_std :: Num n => Lattice_Coord n
 ew_lc_std = [(20,0),(0,20),(4,3),(-3,4),(-1,2)]
 
 -- | Kraig Grady standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-kg_lc_std :: Num n => LC n
+kg_lc_std :: Num n => Lattice_Coord n
 kg_lc_std = [(40,0),(0,40),(13,11),(-14,18),(-8,4)]
 
 -- | Erv Wilson tetradic lattice, used especially when working with hexanies or 7 limit tunings
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-ew_lc_tetradic :: Num n => LC n
+ew_lc_tetradic :: Num n => Lattice_Coord n
 ew_lc_tetradic = [(-4,-2),(6,1),(5,-2)]
 
--- | Resolve POS against LC to V2
-lc_pos_to_pt :: (Fractional n, Ord n) => LC n -> POS -> V2 n
-lc_pos_to_pt lc x = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
-
--- * LAT
+-- * Lattice_Factors
 
 -- | A discrete /k/-lattice is described by a sequence of /k/-factors.
---   LAT values are ordinarily though not necessarily primes.
-type LAT = [Integer]
+--   Values are ordinarily though not necessarily primes.
+type Lattice_Factors = [Integer]
 
 -- | Positions in a /k/-lattice are given as a /k/-list of steps.
-type POS = [Int]
+type Lattice_Position = [Int]
 
--- | White-space pretty printer for POS.
+-- | Resolve Lattice_Position against Lattice_Coord to V2
+lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Coord n -> Lattice_Position -> V2 n
+lc_pos_to_pt lc x = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
+
+-- | White-space pretty printer for Lattice_Position.
 --
 -- > pos_pp_ws [0,-2,1] == "  0 -2  1"
-pos_pp_ws :: POS -> String
+pos_pp_ws :: Lattice_Position -> String
 pos_pp_ws = let f x = printf "%3d" x in concatMap f
 
--- | Given LAT [X,Y,Z..] and POS [x,y,z..], calculate the indicated ratio.
+-- | Given Lattice_Factors [X,Y,Z..] and Lattice_Position [x,y,z..], calculate the indicated ratio.
 --
 -- > lat_res [3,5] [-5,2] == (5 * 5) / (3 * 3 * 3 * 3 * 3)
-lat_res :: LAT -> POS -> Rational
+lat_res :: Lattice_Factors -> Lattice_Position -> Rational
 lat_res p q =
   let f i j = case compare j 0 of
                 GT -> (i ^ T.int_to_integer j) % 1
@@ -115,6 +116,7 @@ rat_rem_oct = T.bimap1 (product . filter (/= 2)) . T.rat_prime_factors
 rat_lift_1 :: (RAT -> RAT) -> Rational -> Rational
 rat_lift_1 f = uncurry (%) . f . T.rational_nd
 
+-- | Convert 'RAT' to 'Rational'
 rat_to_ratio :: RAT -> Rational
 rat_to_ratio (n,d) = n % d
 
@@ -124,6 +126,7 @@ rat_to_ratio (n,d) = n % d
 rat_mediant :: RAT -> RAT -> RAT
 rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
 
+-- | RAT written as n/d
 rat_pp :: RAT -> String
 rat_pp (n,d) = concat [show n,"/",show d]
 
@@ -145,11 +148,22 @@ r_verify_oct i = if i >= 1 && i < 2 then i else error (show ("r_verify_oct?",i))
 r_seq_limit :: [Rational] -> Integer
 r_seq_limit = maximum . map T.rational_prime_limit
 
+-- | Find factors of set of ratios, ie. the union of all factor in both numerator & denominator.
+--
+-- > r_seq_factors [1/3,5/7,9/8,13,27,31] == [2,3,5,7,13,31]
+r_seq_factors :: [Rational] -> [Integer]
+r_seq_factors = nub . sort . concatMap (\(i,j) -> i ++ j) . map T.rational_prime_factors
+
 -- * Table
 
--- > map (rat_fact_lm 11) [3,5,7,11] == [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
-rat_fact_lm :: Integer -> Rational -> POS
-rat_fact_lm lm = tail . T.rat_prime_factors_t (fromMaybe 1 (T.prime_k lm) + 1) . T.rational_nd
+-- | Vector of prime-factors up to /limit/.
+--
+-- > map (rat_fact_lm 11) [3,5,7,1/11] == [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,-1]]
+rat_fact_lm :: Integer -> Rational -> Lattice_Position
+rat_fact_lm lm =
+  tail .
+  T.rat_prime_factors_t (fromMaybe 1 (T.prime_k lm) + 1) .
+  T.rational_nd
 
 tbl_txt :: Integer -> [Rational] -> [[String]]
 tbl_txt lm_z rs =
@@ -165,27 +179,33 @@ tbl_txt lm_z rs =
   in map (intersperse "=" . f) (zip5 [0::Int ..] scl rs cs hs)
 
 -- > tbl_wr [1,7/6,5/4,4/3,3/2]
+-- > tbl_wr [1,3,1/5,15/31]
 tbl_wr :: [Rational] -> IO ()
 tbl_wr = putStr . unlines . T.table_pp (False,True,False," ",False) . tbl_txt 31
 
 -- * Graph
 
--- | (maybe-lc,gr-attr,vertex-pp)
-type EW_GR_OPT = (Maybe (LC Rational),[T.DOT_META_ATTR],Rational -> String)
+-- | (maybe-lc/primes,gr-attr,vertex-pp)
+type EW_GR_OPT = (Maybe (Lattice_Coord Rational,Maybe [Integer]),[T.DOT_META_ATTR],Rational -> String)
 
 ew_gr_opt_pos :: EW_GR_OPT -> Bool
 ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
 
-ew_gr_r_pos :: LC Rational -> Rational -> T.DOT_ATTR
-ew_gr_r_pos lc =
+-- > map (ew_gr_r_pos ew_lc_std (Just [2,3,5,31])) [2,3,5,31]
+ew_gr_r_pos :: Lattice_Coord Rational -> Maybe [Integer] -> Rational -> T.DOT_ATTR
+ew_gr_r_pos lc primes_l =
   let f m (x,y) = (m * x,m * y)
-  in T.node_pos_attr . f 160 . lc_pos_to_pt lc . Safe.tailDef [] . T.rational_prime_factors_l
+  in T.node_pos_attr .
+     f 160 .
+     lc_pos_to_pt lc .
+     Safe.tailDef [] .
+     (maybe T.rational_prime_factors_l T.rational_prime_factors_c primes_l)
 
 ew_gr_udot :: EW_GR_OPT -> T.LBL Rational () -> [String]
 ew_gr_udot (lc_m,attr,v_pp) =
   let (e,p_f) = case lc_m of
                   Nothing -> ("sfdp",const Nothing)
-                  Just lc -> ("neato",Just . ew_gr_r_pos lc)
+                  Just (lc,primes_l) -> ("neato",Just . ew_gr_r_pos lc primes_l)
   in T.lbl_to_udot
      ([("graph:layout",e),("node:shape","plain")] ++ attr) -- ("graph:K","0.6") ("edge:len","1.0")
      (\(_,v) -> T.mcons (p_f v) [("label",v_pp v)]
@@ -602,7 +622,7 @@ meru_k k = take k meru
 
 -- > map (sum . meru_1) [1 .. 13] == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1 :: Num n => Int -> [n]
-meru_1 k = zipWith (\x l -> atDef 0 l x) [0..] (reverse (meru_k k))
+meru_1 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (reverse (meru_k k))
 
 -- > take 13 meru_1_direct == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1_direct :: Num n => [n]
@@ -612,7 +632,7 @@ meru_1_direct = tail T.a000045
 --
 -- > map (sum . meru_2) [1 .. 14] == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
 meru_2 :: Num n => Int -> [n]
-meru_2 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 2)
+meru_2 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 2)
 
 -- > take 14 meru_2_direct == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
 meru_2_direct :: Num n => [n]
@@ -621,7 +641,7 @@ meru_2_direct = T.a000930
 -- | meru_3 = META-SLENDRO
 meru_3 :: Num n => Int -> [[n]]
 meru_3 k =
-  let f t = zipWith (\x l -> atDef 0 l x) [0,2..] t
+  let f t = zipWith (\x l -> Safe.atDef 0 l x) [0,2..] t
       t0 = reverse (meru_k k)
       t1 = map tail t0
   in [f t0,f t1]
@@ -636,7 +656,7 @@ meru_3_direct = drop 3 T.a000931
 
 -- > map (sum . meru_4) [1 .. 13] == [1,1,1,1,2,3,4,5,7,10,14,19,26]
 meru_4 :: Num n => Int -> [n]
-meru_4 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 3)
+meru_4 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 3)
 
 -- > take 31 meru_4_direct == map (sum . meru_4) [1 .. 31]
 meru_4_direct :: Num n => [n]
@@ -645,7 +665,7 @@ meru_4_direct = tail T.a003269
 -- > map meru_5 [1..4]
 meru_5 :: Num n => Int -> [[n]]
 meru_5 k =
-  let f t = zipWith (\x l -> atDef 0 l x) [0,3..] t
+  let f t = zipWith (\x l -> Safe.atDef 0 l x) [0,3..] t
       t0 = reverse (meru_k k)
   in map (\n -> f (map (drop n) t0)) [0 .. 2]
 
@@ -659,7 +679,7 @@ meru_5_direct = T.a017817
 
 -- > map (sum . meru_6) [1 .. 21] == [1,1,1,1,1,2,3,4,5,6,8,11,15,20,26,34,45,60,80,106,140]
 meru_6 :: Num n => Int -> [n]
-meru_6 k = zipWith (\x l -> atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 4)
+meru_6 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 4)
 
 -- > take 21 meru_6_direct == map (sum . meru_6) [1 .. 21]
 meru_6_direct :: Num n => [n]
