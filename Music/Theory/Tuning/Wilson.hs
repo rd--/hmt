@@ -50,53 +50,57 @@ v2_scale n = v2_map (* n)
 pt_set_normalise_sym :: (Fractional n,Ord n) => [V2 n] -> [V2 n]
 pt_set_normalise_sym x = let z = maximum (map (uncurry max . T.bimap1 abs) x) in map (v2_scale (recip z)) x
 
--- * Lattice_FactorsTICE CO-ORD
+-- * Lattice Design
 
 -- | /k/-unit co-ordinates for /k/-lattice.
-type Lattice_Coord n = [V2 n]
+type Lattice_Design n = (Int,[V2 n])
 
 -- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-ew_lc_std :: Num n => Lattice_Coord n
-ew_lc_std = [(20,0),(0,20),(4,3),(-3,4),(-1,2)]
+ew_lc_std :: Num n => Lattice_Design n
+ew_lc_std = (5,[(20,0),(0,20),(4,3),(-3,4),(-1,2)])
 
 -- | Kraig Grady standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-kg_lc_std :: Num n => Lattice_Coord n
-kg_lc_std = [(40,0),(0,40),(13,11),(-14,18),(-8,4)]
+kg_lc_std :: Num n => Lattice_Design n
+kg_lc_std = (5,[(40,0),(0,40),(13,11),(-14,18),(-8,4)])
 
--- | Erv Wilson tetradic lattice, used especially when working with hexanies or 7 limit tunings
+-- | Erv Wilson tetradic lattice (3-lattice), used especially when working with hexanies or 7 limit tunings
 --
 -- <http://anaphoria.com/wilsontreasure.html>
-ew_lc_tetradic :: Num n => Lattice_Coord n
-ew_lc_tetradic = [(-4,-2),(6,1),(5,-2)]
+ew_lc_tetradic :: Num n => Lattice_Design n
+ew_lc_tetradic = (3,[(-4,-2),(6,1),(5,-2)])
 
 -- * Lattice_Factors
 
 -- | A discrete /k/-lattice is described by a sequence of /k/-factors.
---   Values are ordinarily though not necessarily primes.
-type Lattice_Factors = [Integer]
+--   Values are ordinarily though not necessarily primes beginning at three.
+type Lattice_Factors i = (Int,[i])
 
 -- | Positions in a /k/-lattice are given as a /k/-list of steps.
-type Lattice_Position = [Int]
+type Lattice_Position = (Int,[Int])
 
--- | Resolve Lattice_Position against Lattice_Coord to V2
-lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Coord n -> Lattice_Position -> V2 n
-lc_pos_to_pt lc x = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
+-- | Delete entry at index.
+lc_pos_del :: Int -> Lattice_Position -> Lattice_Position
+lc_pos_del ix (k,x) = (k - 1,T.remove_ix ix x)
+
+-- | Resolve Lattice_Position against Lattice_Design to V2
+lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Design n -> Lattice_Position -> V2 n
+lc_pos_to_pt (_,lc) (_,x) = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
 
 -- | White-space pretty printer for Lattice_Position.
 --
--- > pos_pp_ws [0,-2,1] == "  0 -2  1"
+-- > pos_pp_ws (3,[0,-2,1]) == "  0 -2  1"
 pos_pp_ws :: Lattice_Position -> String
-pos_pp_ws = let f x = printf "%3d" x in concatMap f
+pos_pp_ws = let f x = printf "%3d" x in concatMap f . snd
 
 -- | Given Lattice_Factors [X,Y,Z..] and Lattice_Position [x,y,z..], calculate the indicated ratio.
 --
--- > lat_res [3,5] [-5,2] == (5 * 5) / (3 * 3 * 3 * 3 * 3)
-lat_res :: Lattice_Factors -> Lattice_Position -> Rational
-lat_res p q =
+-- > lat_res (2,[3,5]) (2,[-5,2]) == (5 * 5) / (3 * 3 * 3 * 3 * 3)
+lat_res :: Integral i => Lattice_Factors i -> Lattice_Position -> Ratio i
+lat_res (_,p) (_,q) =
   let f i j = case compare j 0 of
                 GT -> (i ^ T.int_to_integer j) % 1
                 EQ -> 1
@@ -158,17 +162,18 @@ r_seq_factors = nub . sort . concatMap (\(i,j) -> i ++ j) . map T.rational_prime
 
 -- | Vector of prime-factors up to /limit/.
 --
--- > map (rat_fact_lm 11) [3,5,7,1/11] == [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,-1]]
+-- > map (rat_fact_lm 11) [3,5,7,2/11] == [(5,[0,1,0,0,0]),(5,[0,0,1,0,0]),(5,[0,0,0,1,0]),(5,[1,0,0,0,-1])]
 rat_fact_lm :: Integer -> Rational -> Lattice_Position
 rat_fact_lm lm =
-  tail .
-  T.rat_prime_factors_t (fromMaybe 1 (T.prime_k lm) + 1) .
-  T.rational_nd
+  let k = fromMaybe 1 (T.prime_k lm) + 1
+  in (\c -> (k,c)) .
+     T.rat_prime_factors_t k .
+     T.rational_nd
 
-tbl_txt :: Integer -> [Rational] -> [[String]]
-tbl_txt lm_z rs =
+tbl_txt :: Bool -> Integer -> [Rational] -> [[String]]
+tbl_txt del lm_z rs =
   let lm = r_seq_limit rs
-      scl = map (rat_fact_lm lm) rs
+      scl = map ((if del then lc_pos_del 0 else id) . rat_fact_lm lm) rs
       cs = map (T.ratio_to_cents . T.fold_ratio_to_octave_err) rs
       hs = map (T.harmonicity_r T.barlow) rs :: [Double]
       f (k,x,r,c,h) = [show k
@@ -178,28 +183,29 @@ tbl_txt lm_z rs =
                       ,T.real_pp_unicode 2 h]
   in map (intersperse "=" . f) (zip5 [0::Int ..] scl rs cs hs)
 
--- > tbl_wr [1,7/6,5/4,4/3,3/2]
--- > tbl_wr [1,3,1/5,15/31]
-tbl_wr :: [Rational] -> IO ()
-tbl_wr = putStr . unlines . T.table_pp (False,True,False," ",False) . tbl_txt 31
+-- > tbl_wr False [1,7/6,5/4,4/3,3/2]
+-- > tbl_wr True [1,3,1/5,15/31]
+tbl_wr :: Bool -> [Rational] -> IO ()
+tbl_wr del = putStr . unlines . T.table_pp (False,True,False," ",False) . tbl_txt del 31
 
 -- * Graph
 
 -- | (maybe-lc/primes,gr-attr,vertex-pp)
-type EW_GR_OPT = (Maybe (Lattice_Coord Rational,Maybe [Integer]),[T.DOT_META_ATTR],Rational -> String)
+type EW_GR_OPT = (Maybe (Lattice_Design Rational,Maybe [Integer]),[T.DOT_META_ATTR],Rational -> String)
 
 ew_gr_opt_pos :: EW_GR_OPT -> Bool
 ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
 
--- > map (ew_gr_r_pos ew_lc_std (Just [2,3,5,31])) [2,3,5,31]
-ew_gr_r_pos :: Lattice_Coord Rational -> Maybe [Integer] -> Rational -> T.DOT_ATTR
-ew_gr_r_pos lc primes_l =
+-- > map (ew_gr_r_pos ew_lc_std (Just [3,5,31])) [3,5,31]
+ew_gr_r_pos :: Lattice_Design Rational -> Maybe [Integer] -> Rational -> T.DOT_ATTR
+ew_gr_r_pos (k,lc) primes_l =
   let f m (x,y) = (m * x,m * y)
   in T.node_pos_attr .
      f 160 .
-     lc_pos_to_pt lc .
-     Safe.tailDef [] .
-     (maybe T.rational_prime_factors_l T.rational_prime_factors_c primes_l)
+     lc_pos_to_pt (k,lc) .
+     (\c -> (k,c)) .
+     -- this is a little subtle, tail removes the '2' slot from rational_prime_factors_t
+     (maybe (tail . T.rational_prime_factors_t (k + 1)) T.rational_prime_factors_c primes_l)
 
 ew_gr_udot :: EW_GR_OPT -> T.LBL Rational () -> [String]
 ew_gr_udot (lc_m,attr,v_pp) =

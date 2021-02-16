@@ -1414,7 +1414,7 @@ group_tree (open_f,close_f) =
 
 -- | Remove element at index.
 --
--- > remove_ix 5 "remove" == "remov"
+-- > map (remove_ix 5) ["remove","removed"] == ["remov","removd"]
 -- > remove_ix 5 "short" == undefined
 remove_ix :: Int -> [a] -> [a]
 remove_ix k l = let (p,q) = splitAt k l in p ++ tail q

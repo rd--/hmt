@@ -389,6 +389,10 @@ int64_to_double :: Int64 -> Double
 int64_to_double = fromIntegral
 
 -- | Type specialised 'fromIntegral'
+int_to_integral :: Integral i => Int -> i
+int_to_integral = fromIntegral
+
+-- | Type specialised 'fromIntegral'
 int_to_word8 :: Int -> Word8
 int_to_word8 = fromIntegral
 

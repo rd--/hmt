@@ -182,7 +182,7 @@ rational_prime_factors_l = rat_prime_factors_l . T.rational_nd
 -- | Variant of 'rational_prime_factors_l' padding table to /k/ places.
 --   It is an error for /k/ to indicate a prime less than the limit of /x/.
 --
--- > rat_prime_factors_t 6 (12,7) == [2,1,0,-1,0,0]
+-- > map (rat_prime_factors_t 6) [(5,13),(12,7)] == [[0,0,1,0,0,-1],[2,1,0,-1,0,0]]
 -- > rat_prime_factors_t 3 (9,7) == undefined
 rat_prime_factors_t :: (Integral i,Show i) => Int -> (i,i) -> [Int]
 rat_prime_factors_t k = T.pad_right_err 0 k . rat_prime_factors_l
