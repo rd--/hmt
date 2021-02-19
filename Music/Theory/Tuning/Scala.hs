@@ -266,7 +266,7 @@ parse_scl nm s =
 -- sequence of directories used to locate scala files on.
 --
 -- > setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/90/scl"
-scl_get_dir :: IO [String]
+scl_get_dir :: IO [FilePath]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
 -- | Lookup the @SCALA_SCL_DIR@ environment variable, which must exist, and derive the filepath.

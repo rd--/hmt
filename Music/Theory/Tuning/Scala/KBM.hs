@@ -5,6 +5,7 @@
 module Music.Theory.Tuning.Scala.KBM where
 
 import Data.List {- base -}
+import System.FilePath {- filepath -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Directory as Directory {- hmt -}
@@ -90,24 +91,28 @@ kbm_parse s =
        _ -> error "kbm_parse?"
 
 -- | 'kbm_parse' of 'readFile'
-kbm_load :: FilePath -> IO KBM
-kbm_load = fmap kbm_parse . readFile
+kbm_load_file :: FilePath -> IO KBM
+kbm_load_file = fmap kbm_parse . readFile
 
 {- | 'kbm_parse' of 'Scala.load_dist_file'
 
-> pp fn = kbm_load_dist fn >>= \x -> putStrLn (kbm_pp x)
-> pp "example.kbm"
-> pp "bp.kbm"
-> pp "7.kbm" -- error -- 12/#13
-> pp "8.kbm" -- error -- 12/#13
-> pp "white.kbm" -- error -- 12/#13
-> pp "black.kbm" -- error -- 12/#13
-> pp "128.kbm"
-> pp "a440.kbm"
-> pp "61.kbm"
+> pp nm = kbm_load_dist nm >>= \x -> putStrLn (kbm_pp x)
+> pp "example"
+> pp "bp"
+> pp "7" -- error -- 12/#13
+> pp "8" -- error -- 12/#13
+> pp "white" -- error -- 12/#13
+> pp "black" -- error -- 12/#13
+> pp "128"
+> pp "a440"
+> pp "61"
 -}
-kbm_load_dist :: FilePath -> IO KBM
-kbm_load_dist = fmap kbm_parse . Scala.load_dist_file
+kbm_load_dist :: String -> IO KBM
+kbm_load_dist nm = fmap kbm_parse (Scala.load_dist_file (nm <.> "kbm"))
+
+-- | If /nm/ is a file name (has a .kbm) extension run 'kbm_load_file' else run 'kbm_load_dist'.
+kbm_load :: String -> IO KBM
+kbm_load nm = if hasExtension nm then kbm_load_file nm else kbm_load_dist nm
 
 -- | Load all .kbm files at directory.
 kbm_load_dir_fn :: FilePath -> IO [(FilePath, KBM)]
@@ -158,20 +163,21 @@ kbm_d12_c256 = (12,(0,127),60,(60,256.0),12,map Just [0 .. 11])
 -- | Given size and note-center calculate relative octave and key
 --   number (not scale degree) of the zero entry.
 --
--- > map (kbm_m0 12) [59,60,61] == [(-4,1),(-5,0),(-5,11)]
-kbm_m0 :: Int -> Int -> (Int,Int)
-kbm_m0 sz mC = let (o,r) = mC `quotRem` sz in (negate o,negate r `mod` sz)
+-- > map (kbm_k0 12) [59,60,61] == [(-4,1),(-5,0),(-5,11)]
+kbm_k0 :: Int -> Int -> (Int,Int)
+kbm_k0 sz mC = let (o,r) = mC `quotRem` sz in (negate o,negate r `mod` sz)
 
 -- | Given size and note-center calculate complete octave and key
 -- number sequence (ie. for entries 0 - 127).
 --
 -- > map (zip [0..] . kbm_oct_key_seq 12) [59,60,61]
-kbm_oct_key_seq :: Int -> Int -> [(Int,Int)]
-kbm_oct_key_seq sz mC =
-  let (o0,m0) = kbm_m0 sz mC
-      dgr = map (`mod` sz) (take 128 [m0 ..])
+kbm_oct_key_seq :: KBM -> [(Int,(Int,Int))]
+kbm_oct_key_seq (sz,(m0,mN),mC,(_mF,_f),_o,_m) =
+  let (o0,k0) = kbm_k0 sz mC
+      dgr = map (`mod` sz) (take 128 [k0 ..])
       upd o j = if j == 0 then (o + 1,(o + 1,j)) else (o,(o,j))
-  in snd (mapAccumL upd (o0 - 1) dgr)
+      key_seq = snd (mapAccumL upd (o0 - 1) dgr)
+  in zip [m0 .. ] (take (mN - m0 + 1) (drop m0 key_seq))
 
 -- | Given KBM and SCL calculate frequency of note-center.
 kbm_mC_freq :: KBM -> Scala.Scale -> Double
@@ -181,14 +187,30 @@ kbm_mC_freq (sz,(_m0,_mN),mC,(mF,f),_o,m) scl =
       c = Scala.scale_cents scl !! dgr
   in Tuning.cps_shift_cents f (- c)
 
+-- | Given KBM and SCL calculate fractional midi note-numbers for each key.
+kbm_fmidi_tbl :: KBM -> Scala.Scale -> [(Int, Double)]
+kbm_fmidi_tbl kbm scl =
+  let (_sz,(_m0,_mN),_mC,(_mF,_f),o,m) = kbm
+      mC_freq = kbm_mC_freq kbm scl
+      mC_fmidi = Pitch.cps_to_fmidi mC_freq
+      key_seq = kbm_oct_key_seq kbm
+      c = Scala.scale_cents scl
+      oct_cents = c !! o
+      oct_key_to_cents (oct,key) = maybe 0 (c !!) (m !! key) + (fromIntegral oct * oct_cents)
+  in map (\(mnn,oct_key) -> (mnn,mC_fmidi + (oct_key_to_cents oct_key / 100.0))) key_seq
+
+-- | Given KBM and SCL calculate frequencies for each key.
+kbm_cps_tbl :: KBM -> Scala.Scale -> [(Int, Double)]
+kbm_cps_tbl kbm = let f (k,n) = (k,Tuning.fmidi_to_cps n) in map f . kbm_fmidi_tbl kbm
+
 {-
 
 scl <- Scala.scl_load "young-lm_piano"
 scl <- Scala.scl_load "meanquar"
 scl <- Scala.scl_load "et12"
-kbm = kbm_d12_a440 -- kbm_d12_a440 kbm_d12_c256
+kbm <- kbm_load "example" -- d12_a440 -- kbm_d12_a440 kbm_d12_c256
 
-mC_f = kbm_mC_freq kbm scl
-Pitch.cps_to_fmidi mC_f
+kbm_fmidi_tbl kbm scl
+kbm_cps_tbl kbm scl
 
 -}

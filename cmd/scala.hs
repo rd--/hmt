@@ -17,18 +17,19 @@ import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Midi as T {- hmt -}
-import qualified Music.Theory.Tuning.Scala as T {- hmt -}
-import qualified Music.Theory.Tuning.Scala.Interval as T {- hmt -}
-import qualified Music.Theory.Tuning.Scala.Mode as T {- hmt -}
+import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
+import qualified Music.Theory.Tuning.Scala.KBM as KBM {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 type R = Double
 
 db_stat :: IO ()
 db_stat = do
-  db <- T.scl_load_db
-  let po = filter (== Just (Right 2)) (map T.scale_octave db)
-      uf = filter T.is_scale_uniform db
+  db <- Scala.scl_load_db
+  let po = filter (== Just (Right 2)) (map Scala.scale_octave db)
+      uf = filter Scala.is_scale_uniform db
       r = ["# entries        : " ++ show (length db)
           ,"# perfect-octave : " ++ show (length po)
           ,"# scale-uniform  : " ++ show (length uf)]
@@ -37,17 +38,17 @@ db_stat = do
 -- > db_summarise (Just 15) (Just 65)
 db_summarise :: Maybe Int -> Maybe Int -> IO ()
 db_summarise nm_lim dsc_lim = do
-  db <- T.scl_load_db
-  let nm_seq = map T.scale_name db
+  db <- Scala.scl_load_db
+  let nm_seq = map Scala.scale_name db
       nm_max = maybe (maximum (map length nm_seq)) id nm_lim
-      dsc_seq = map T.scale_description db
+      dsc_seq = map Scala.scale_description db
       fmt (nm,dsc) = printf "%-*s : %s" nm_max (take nm_max nm) (maybe dsc (flip take dsc) dsc_lim)
       tbl = map fmt (zip nm_seq dsc_seq)
   putStrLn (unlines tbl)
 
 env :: IO ()
 env = do
-  scl_dir <- T.scl_get_dir
+  scl_dir <- Scala.scl_get_dir
   dist_dir <- getEnv "SCALA_DIST_DIR"
   putStrLn ("SCALA_SCL_DIR = " ++ if null scl_dir then "NOT SET" else intercalate ":" scl_dir)
   putStrLn ("SCALA_DIST_DIR = " ++ if null dist_dir then "NOT SET" else dist_dir)
@@ -66,22 +67,22 @@ search (load_f,descr_f,stat_f) (ci,lm) txt = do
 -- > search_scale (True,Nothing) ["xenakis"]
 -- > search_scale (True,Just 75) ["lamonte","young"]
 search_scale :: (Bool,Maybe Int) -> [String] -> IO ()
-search_scale = search (T.scl_load_db,T.scale_description,T.scale_stat)
+search_scale = search (Scala.scl_load_db,Scala.scale_description,Scala.scale_stat)
 
 -- > search_mode (True,Nothing) ["xenakis"]
 search_mode :: (Bool,Maybe Int) -> [String] -> IO ()
-search_mode = search (fmap T.modenam_modes T.load_modenam,T.mode_description,T.mode_stat)
+search_mode = search (fmap Mode.modenam_modes Mode.load_modenam,Mode.mode_description,Mode.mode_stat)
 
 stat_all :: Maybe Int -> IO ()
 stat_all lm = do
-  db <- T.scl_load_db
-  mapM_ (putStrLn . unlines . map (cut lm) . T.scale_stat) db
+  db <- Scala.scl_load_db
+  mapM_ (putStrLn . unlines . map (cut lm) . Scala.scale_stat) db
 
 -- > stat_by_name Nothing "young-lm_piano"
 stat_by_name :: Maybe Int -> FilePath -> IO ()
 stat_by_name lm nm = do
-  sc <- T.scl_load nm
-  putStrLn (unlines (map (cut lm) (T.scale_stat sc)))
+  sc <- Scala.scl_load nm
+  putStrLn (unlines (map (cut lm) (Scala.scale_stat sc)))
 
 -- > rng_enum (60,72) == [60 .. 72]
 rng_enum :: Enum t => (t,t) -> [t]
@@ -111,20 +112,20 @@ cps_tbl fmt tbl mnn_rng = do
 -- > cps_tbl_d12 "md" ("young-lm_piano",-74.7,-3) (60,72)
 cps_tbl_d12 :: String -> (String,T.Cents,T.Midi) -> (T.Midi,T.Midi) -> IO ()
 cps_tbl_d12 fmt (nm,c,k) mnn_rng = do
-  t <- T.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO T.Tuning
   let tbl = T.gen_cps_tuning_tbl (T.lift_tuning_f (T.d12_midi_tuning_f (t,c,k)))
   cps_tbl fmt tbl mnn_rng
 
 -- > cps_tbl_cps "md" ("cet111",27.5,9,127-9) (69,69+25)
 cps_tbl_cps :: String -> (String,R,T.Midi,Int) -> (T.Midi,T.Midi) -> IO ()
 cps_tbl_cps fmt (nm,f0,k,n) mnn_rng = do
-  t <- T.scl_load_tuning nm
+  t <- Scala.scl_load_tuning nm
   let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t,f0,k,n))
   cps_tbl fmt tbl mnn_rng
 
 csv_mnd_retune_d12 :: (String,T.Cents,T.Midi) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
-  t <- T.scl_load_tuning nm
+  t <- Scala.scl_load_tuning nm
   let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
   m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,SC3.Param))
   let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
@@ -133,7 +134,7 @@ csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
 -- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,-3)
 fluidsynth_tuning_d12 :: (String,Int,Int) -> (String,T.Cents,T.Midi) -> IO ()
 fluidsynth_tuning_d12 (fs_name,fs_bank,fs_prog) (nm,c,k) = do
-  t <- T.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n = let (mnn,dt) = tun_f n
                    cents = fromIntegral mnn * 100 + dt
@@ -154,7 +155,7 @@ int8_to_word8 = fromIntegral
 
 midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,T.Cents,Int) -> IO ()
 midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
-  t <- T.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n = let (mnn,dt) = T.midi_detune_normalise (tun_f n)
                in [int_to_int8 mnn,int_to_int8 (round dt)]
@@ -166,7 +167,7 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 -- > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
 midi_tbl_tuning_d12 :: String -> (String,T.Cents,T.Midi) -> IO ()
 midi_tbl_tuning_d12 typ (nm,c,k) = do
-  t <- T.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
       pp_f n =
         case typ of
@@ -184,17 +185,17 @@ ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
 -- > intnam_lookup [7/4,7/6,9/8,13/8]
 intnam_lookup :: [Rational] -> IO ()
 intnam_lookup r_sq = do
-  let f db r = let nm = maybe "*UNKNOWN*" snd (T.intnam_search_ratio db r)
+  let f db r = let nm = maybe "*UNKNOWN*" snd (Interval.intnam_search_ratio db r)
                in concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
-  db <- T.load_intnam
+  db <- Interval.load_intnam
   mapM_ (putStrLn . f db) r_sq
 
 -- > intnam_search "didymus"
 intnam_search :: String -> IO ()
 intnam_search txt = do
-  db <- T.load_intnam
+  db <- Interval.load_intnam
   let f (r,nm) = concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
-  mapM_ (putStrLn . f) (T.intnam_search_description_ci db txt)
+  mapM_ (putStrLn . f) (Interval.intnam_search_description_ci db txt)
 
 -- * INTERVALS
 
@@ -212,20 +213,20 @@ interval_half_matrix_tbl show_f interval_f scl =
     let f n l = replicate n "" ++ map show_f l
     in zipWith f [1..] (interval_half_matrix interval_f scl)
 
-intervals_half_matrix :: (T.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
+intervals_half_matrix :: (Scala.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
 intervals_half_matrix scl_f interval_f show_f nm = do
-  scl <- T.scl_load nm
+  scl <- Scala.scl_load nm
   let txt = interval_half_matrix_tbl show_f interval_f (scl_f scl)
       pp = T.table_pp T.table_opt_plain
   putStrLn (unlines (pp txt))
 
 -- > mapM_ (intervals_half_matrix_cents 0) (words "pyth_12 kepler1")
 intervals_half_matrix_cents :: Int -> String -> IO ()
-intervals_half_matrix_cents k = intervals_half_matrix T.scale_cents (-) (T.real_pp k)
+intervals_half_matrix_cents k = intervals_half_matrix Scala.scale_cents (-) (T.real_pp k)
 
 -- > mapM_ (intervals_half_matrix_ratios) (words "pyth_12 kepler1")
 intervals_half_matrix_ratios :: String -> IO ()
-intervals_half_matrix_ratios = intervals_half_matrix T.scale_ratios_req (/) T.ratio_pp
+intervals_half_matrix_ratios = intervals_half_matrix Scala.scale_ratios_req (/) T.ratio_pp
 
 interval_matrix_ratio :: [Rational] -> [[Rational]]
 interval_matrix_ratio x = let f i = map (\j -> if j < i then j * 2 / i else j / i) x in map f x
@@ -233,20 +234,20 @@ interval_matrix_ratio x = let f i = map (\j -> if j < i then j * 2 / i else j / 
 interval_matrix_cents :: [T.Cents] -> [[T.Cents]]
 interval_matrix_cents x = let f i = map (\j -> if j < i then j + 1200 - i else j - i) x in map f x
 
-intervals_matrix :: (T.Scale -> [t]) -> ([t] -> [[t]]) -> (t -> String) -> String -> IO ()
+intervals_matrix :: (Scala.Scale -> [t]) -> ([t] -> [[t]]) -> (t -> String) -> String -> IO ()
 intervals_matrix scl_f tbl_f pp_f nm = do
-  scl <- T.scl_load nm
+  scl <- Scala.scl_load nm
   let txt = map (map pp_f) (tbl_f (scl_f scl))
       pp = T.table_pp T.table_opt_plain
   putStrLn (unlines (pp txt))
 
 -- > mapM_ (intervals_matrix_cents 0) (words "pyth_12 kepler1")
 intervals_matrix_cents :: Int -> String -> IO ()
-intervals_matrix_cents k = intervals_matrix T.scale_cents interval_matrix_cents (T.real_pp k)
+intervals_matrix_cents k = intervals_matrix Scala.scale_cents interval_matrix_cents (T.real_pp k)
 
 -- > mapM_ intervals_matrix_ratios (words "pyth_12 kepler1")
 intervals_matrix_ratios :: String -> IO ()
-intervals_matrix_ratios = intervals_matrix T.scale_ratios_req interval_matrix_ratio T.ratio_pp
+intervals_matrix_ratios = intervals_matrix Scala.scale_ratios_req interval_matrix_ratio T.ratio_pp
 
 -- | Type specialised 'round'
 round_int :: RealFrac t => t -> Int
@@ -258,17 +259,29 @@ interval_hist_ratios x = T.histogram [(if p < q then p * 2 else p) / q | p <- x,
 -- > mapM_ intervals_list_ratios (words "pyth_12 kepler1")
 intervals_list_ratios :: String -> IO ()
 intervals_list_ratios scl_nm = do
-  nam_db <- T.load_intnam
-  scl <- T.scl_load scl_nm
-  let _:rat = T.scale_ratios_req scl
+  nam_db <- Interval.load_intnam
+  scl <- Scala.scl_load scl_nm
+  let _:rat = Scala.scale_ratios_req scl
       hst = interval_hist_ratios rat
-      ln (r,n) = let nm = maybe "" snd (T.intnam_search_ratio nam_db r)
+      ln (r,n) = let nm = maybe "" snd (Interval.intnam_search_ratio nam_db r)
                      c = T.ratio_to_cents r
                      i = round_int (c / 100)
                  in [show i,show n,T.ratio_pp r,T.real_pp 1 c,nm]
       tbl = map ln hst
       pp = T.table_pp T.table_opt_plain
   putStrLn (unlines (pp tbl))
+
+kbm_tbl :: String -> String -> String -> IO ()
+kbm_tbl ty scl_nm kbm_nm = do
+  scl <- Scala.scl_load scl_nm
+  kbm <- KBM.kbm_load kbm_nm
+  let tbl = case ty of
+        "cps" -> KBM.kbm_cps_tbl kbm scl
+        "fmidi" -> KBM.kbm_fmidi_tbl kbm scl
+        _ -> error "kbm_tbl: unknown type"
+      fmt (i,j) = printf "%d,%.4f" i j
+      txt = unlines (map fmt tbl)
+  putStrLn txt
 
 -- * MAIN
 
@@ -284,6 +297,7 @@ help =
     ,"intervals {half-matrix|list|matrix} {cents|ratios} scale-name:string"
     ,"intname lookup interval:rational..."
     ,"intname search text:string"
+    ,"kbm table {cps | fmidi} scala-name:string kbm-name:string"
     ,"midi-table fmidi|freq|mts d12 name:string cents:real mnn:int"
     ,"search scale|mode ci|cs lm|nil text:string..."
     ,"stat all lm|nil"
@@ -314,6 +328,7 @@ main = do
     ["intervals","matrix",'r':_,nm] -> intervals_matrix_ratios nm
     "intnam":"lookup":r_sq -> intnam_lookup (map T.read_ratio_with_div_err r_sq)
     ["intnam","search",txt] -> intnam_search txt
+    ["kbm","table",ty,scl_nm,kbm_nm] -> kbm_tbl ty scl_nm kbm_nm
     ["midi-table",typ,"d12",scl_nm,c,k] -> midi_tbl_tuning_d12 typ (scl_nm,read c,read k)
     "search":ty:ci:lm:txt ->
         case ty of
