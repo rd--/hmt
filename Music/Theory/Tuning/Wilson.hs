@@ -402,12 +402,12 @@ r_to_scale nm dsc r =
      then error "r_to_scale?"
      else (nm,dsc,length r,map Right r')
 
-ew_scl_find_r :: [Rational] -> IO [String]
+ew_scl_find_r :: [Rational] -> [T.Scale] -> [String]
 ew_scl_find_r r =
   let set_eq x y = sort x == sort y
   in if head r /= 1
      then error "ew_scl_find_r?"
-     else fmap (map T.scale_name) (T.scl_find_ji set_eq (map T.fold_ratio_to_octave_err r ++ [2]))
+     else map T.scale_name . T.scl_find_ji set_eq (map T.fold_ratio_to_octave_err r ++ [2])
 
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 

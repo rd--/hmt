@@ -51,6 +51,10 @@ mode_length = length . mode_intervals
 mode_univ :: MODE -> Int
 mode_univ = sum . mode_intervals
 
+-- | 'List.dx_d' of 'mode_intervals'.
+mode_degree_seq :: MODE -> [Int]
+mode_degree_seq = List.dx_d 0 . mode_intervals
+
 -- | (mode-count,mode-length-maxima,mode-list)
 type MODENAM = (Int,Int,[MODE])
 
@@ -112,7 +116,7 @@ mode_stat m =
      ,"mode-univ         : " ++ show (mode_univ m)
      ,"mode-interval-set : " ++ intercalate "," (map show (mode_iset m))
      ,"mode-histogram    : " ++ intercalate "," (map (\(e,n) -> concat [show n,"×",show e]) hst)
-     ,"mode-degree-seq   : " ++ comma_map show (List.dx_d 0 (mode_intervals m))
+     ,"mode-degree-seq   : " ++ comma_map show (mode_degree_seq m)
      ]
 
 -- * Parser

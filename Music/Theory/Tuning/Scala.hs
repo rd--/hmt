@@ -471,10 +471,8 @@ scale_cmp_ji cmp x scl =
 
 -- | Find scale(s) that are 'scale_cmp_ji' to /x/.
 --   Usual /cmp/ are (==) and 'is_subset'.
-scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> IO [Scale]
-scl_find_ji cmp x = do
-  db <- scl_load_db
-  return (filter (scale_cmp_ji cmp x) db)
+scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
+scl_find_ji cmp x = filter (scale_cmp_ji cmp x)
 
 -- * Tuning
 
