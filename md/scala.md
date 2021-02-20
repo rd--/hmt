@@ -254,17 +254,29 @@ $
 $ hmt-scala search mode ci nil xenakis
 mode-start-degree : 0
 mode-intervals    : 5,19,6,12,5,19,6
-mode-degree       : 72
 mode-description  : Xenakis Byzantine Liturgical Chromatic
+mode-length       : 7
+mode-univ         : 72
+mode-interval-set : 5,6,12,19
+mode-histogram    : 2×5,2×6,1×12,2×19
+mode-degree-seq   : 0,5,24,30,42,47,66,72
 
 mode-start-degree : 0
 mode-intervals    : 7,16,7,12,7,16,7
-mode-degree       : 72
-mode-description  : Xenakis Byzantine Liturgical Soft Chromatic
+mode-description  : Xenakis Byzantine Liturgical Soft Chromatic, Quasi-Miracle-7
+mode-length       : 7
+mode-univ         : 72
+mode-interval-set : 7,12,16
+mode-histogram    : 4×7,1×12,2×16
+mode-degree-seq   : 0,7,23,30,42,49,65,72
 
 mode-start-degree : 0
 mode-intervals    : 12,11,7,12,12,11,7
-mode-degree       : 72
 mode-description  : Xenakis Byzantine Liturgical Diatonic, Misaelides 4th plagal Byzantine
+mode-length       : 7
+mode-univ         : 72
+mode-interval-set : 7,11,12
+mode-histogram    : 2×7,2×11,3×12
+mode-degree-seq   : 0,12,23,30,42,54,65,72
 $
 ~~~~
