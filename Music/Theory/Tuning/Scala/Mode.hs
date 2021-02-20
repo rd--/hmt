@@ -96,7 +96,7 @@ mode_rot_eqv p q =
 > let r = filter ((== [(1,2),(2,5)]) . mode_histogram) (modenam_modes mn) -- 2×1 and 5×2
 > let r = filter ((== 22) . mode_univ) (modenam_search_description mn "Raga") -- raga of 22 shruti univ
 
-> [(p,q) | p <- r, q <- r, p /= q, mode_rot_eqv p q]
+> [(p,q) | p <- r, q <- r, p < q, mode_rot_eqv p q] -- rotationally equivalent elements of r
 
 > length r
 > putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r
