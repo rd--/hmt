@@ -40,6 +40,7 @@ mode_iset = nub . sort . mode_intervals
 mode_histogram :: MODE -> [(Int, Int)]
 mode_histogram = List.histogram . mode_intervals
 
+-- | The text description of the mode, ordinarily a comma separated list of names.
 mode_description :: MODE -> String
 mode_description (_,_,d) = d
 
@@ -51,7 +52,7 @@ mode_length = length . mode_intervals
 mode_univ :: MODE -> Int
 mode_univ = sum . mode_intervals
 
--- | 'List.dx_d' of 'mode_intervals'.
+-- | 'List.dx_d' of 'mode_intervals'.  This seqence includes the octave.
 mode_degree_seq :: MODE -> [Int]
 mode_degree_seq = List.dx_d 0 . mode_intervals
 

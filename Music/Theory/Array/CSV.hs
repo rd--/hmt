@@ -227,3 +227,9 @@ csv_table_read_p5 f opt fn = do
 
 csv_table_write_p5 :: P5_Writer t1 t2 t3 t4 t5 -> CSV_Opt -> FilePath -> (Maybe [String],[(t1,t2,t3,t4,t5)]) -> IO ()
 csv_table_write_p5 f opt fn (hdr,dat) = csv_table_write id opt fn (hdr,map (T.p5_to_list f) dat)
+
+csv_table_read_t9 :: (String -> t) -> CSV_Opt -> FilePath -> IO (Maybe [String],[T.T9 t])
+csv_table_read_t9 f opt fn = do
+  (hdr,dat) <- csv_table_read opt id fn
+  return (hdr,map (T.t9_from_list . map f) dat)
+

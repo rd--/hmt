@@ -16,13 +16,13 @@ import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
-import qualified Music.Theory.Array.CSV as T {- hmt -}
-import qualified Music.Theory.Directory as T {- hmt -}
-import qualified Music.Theory.Either as T {- hmt -}
-import qualified Music.Theory.Function as T {- hmt -}
-import qualified Music.Theory.IO as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math.Prime as T {- hmt -}
+import qualified Music.Theory.Array.CSV as CSV {- hmt -}
+import qualified Music.Theory.Directory as Directory {- hmt -}
+import qualified Music.Theory.Either as Either {- hmt -}
+import qualified Music.Theory.Function as Function {- hmt -}
+import qualified Music.Theory.IO as IO {- hmt -}
+import qualified Music.Theory.List as List {- hmt -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.String as T {- hmt -}
@@ -145,7 +145,7 @@ is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
 
 -- | Are the pitches in ascending sequence.
 is_scale_ascending :: Scale -> Bool
-is_scale_ascending = T.is_ascending . map pitch_cents . scale_pitches
+is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches
 
 -- | Make scale pitches uniform, conforming to the most predominant pitch type.
 scale_uniform :: Epsilon -> Scale -> Scale
@@ -172,7 +172,7 @@ scale_ratios_u scl =
   let err = error "scale_ratios_u?"
       p = scale_pitches scl
   in case uniform_pitch_type p of
-       Just Pitch_Ratio -> Just (1 : map (fromMaybe err . T.from_right) p)
+       Just Pitch_Ratio -> Just (1 : map (fromMaybe err . Either.from_right) p)
        _ -> Nothing
 
 -- | Erroring variant of 'scale_ratios_u.
@@ -231,7 +231,7 @@ remove_eol_comments = takeWhile (/= '!')
 filter_comments :: [String] -> [String]
 filter_comments =
     map remove_eol_comments .
-    filter (not . T.predicate_any [is_comment])
+    filter (not . Function.predicate_any [is_comment])
 
 -- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
 --
@@ -278,7 +278,7 @@ scl_derive_filename nm = do
   dir <- scl_get_dir
   when (null dir) (error "scl_derive_filename: SCALA_SCL_DIR: nil")
   when (hasExtension nm) (error "scl_derive_filename: name has extension")
-  T.path_scan_err dir (nm <.> "scl")
+  Directory.path_scan_err dir (nm <.> "scl")
 
 -- | If the name is an absolute file path and has a @.scl@ extension,
 -- then return it, else run 'scl_derive_filename'.
@@ -301,7 +301,7 @@ scl_resolve_name nm =
 scl_load :: String -> IO Scale
 scl_load nm = do
   fn <- scl_resolve_name nm
-  s <- T.read_file_iso_8859_1 fn
+  s <- IO.read_file_iso_8859_1 fn
   return (parse_scl (takeBaseName nm) s)
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
@@ -313,7 +313,7 @@ scl_load nm = do
 -}
 scl_load_dir_fn :: FilePath -> IO [(FilePath,Scale)]
 scl_load_dir_fn d = do
-  fn <- T.dir_subset [".scl"] d
+  fn <- Directory.dir_subset [".scl"] d
   scl <- mapM scl_load fn
   return (zip fn scl)
 
@@ -344,7 +344,7 @@ scales_dir_txt_tbl =
 -- > db <- scl_load_db
 -- > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
 scales_dir_txt_csv :: [Scale] -> String
-scales_dir_txt_csv db = T.csv_table_pp id T.def_csv_opt (Nothing,scales_dir_txt_tbl db)
+scales_dir_txt_csv db = CSV.csv_table_pp id CSV.def_csv_opt (Nothing,scales_dir_txt_tbl db)
 
 -- | Simple plain-text display of scale data.
 --
@@ -423,12 +423,12 @@ scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches
 
 -- | Calculate limit for JI scale (ie. largest prime factor)
 scl_ji_limit :: Scale -> Integer
-scl_ji_limit = maximum . map fst . concatMap T.rational_prime_factors_m . scale_ratios_req
+scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . scale_ratios_req
 
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
 scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]
 scl_cdiff_abs_sum c scl =
-  let r = map (T.dx_d 0) (T.rotations (T.d_dx (sort (scale_cents scl))))
+  let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents scl))))
       ndiff x i = let d = zipWith (-) c x in (sum (map abs d),d,i)
   in sort (zipWith ndiff r [0..])
 
@@ -481,11 +481,11 @@ scl_find_ji cmp x = filter (scale_cmp_ji cmp x)
 scale_to_tuning :: Scale -> T.Tuning
 scale_to_tuning (_,_,_,p) =
     case partitionEithers p of
-      ([],r) -> let (r',o) = T.separate_last r
+      ([],r) -> let (r',o) = List.separate_last r
                 in T.Tuning (Left (1 : r')) (if o == 2 then Nothing else Just (Left o))
-      _ -> let (c,o) = T.separate_last p
+      _ -> let (c,o) = List.separate_last p
                c' = 0 : map pitch_cents c
-               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (T.either_swap o)
+               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (Either.either_swap o)
            in T.Tuning (Right c') o'
 
 -- | Convert 'T.Tuning' to 'Scale'.
@@ -494,7 +494,7 @@ scale_to_tuning (_,_,_,p) =
 tuning_to_scale :: (String,String) -> T.Tuning -> Scale
 tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
     let n = either length length p
-        p' = either (map Right . tail) (map Left . tail) p ++ [T.either_swap (T.tn_octave_def tn)]
+        p' = either (map Right . tail) (map Left . tail) p ++ [Either.either_swap (T.tn_octave_def tn)]
     in (nm,dsc,n,p')
 
 -- | 'scale_to_tuning' of 'scl_load'.

@@ -43,7 +43,7 @@ opt_plain (k,v,_,_) = (k,v)
 
 -- | OPT_USR to help string, indent is two spaces.
 opt_usr_help :: OPT_USR -> String
-opt_usr_help (k,v,t,n) = concat ["  ",k,":",t," -- ",n,"; default=",v]
+opt_usr_help (k,v,t,n) = concat ["  ",k,":",t," -- ",n,"; default=",if null v then "NIL" else v]
 
 -- | 'unlines' of 'opt_usr_help'
 opt_help :: [OPT_USR] -> String

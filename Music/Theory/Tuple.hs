@@ -300,6 +300,9 @@ type T9 a = (a,a,a,a,a,a,a,a,a)
 t9_to_list :: T9 t -> [t]
 t9_to_list (p,q,r,s,t,u,v,w,x) = [p,q,r,s,t,u,v,w,x]
 
+t9_from_list :: [t] -> T9 t
+t9_from_list l = case l of {[p,q,r,s,t,u,v,w,x] -> (p,q,r,s,t,u,v,w,x); _ -> error "t9_from_list?"}
+
 t9_map :: (p -> q) -> T9 p -> T9 q
 t9_map f (p,q,r,s,t,u,v,w,x) = (f p,f q,f r,f s,f t,f u,f v,f w,f x)
 
