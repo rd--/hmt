@@ -19,6 +19,7 @@ import qualified Music.Theory.Tuning.ET as T {- hmt -}
 import qualified Music.Theory.Tuning.Midi as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 import qualified Music.Theory.Tuning.Scala.KBM as KBM {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Functions as Functions {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
@@ -249,28 +250,6 @@ intervals_matrix_cents k = intervals_matrix Scala.scale_cents interval_matrix_ce
 intervals_matrix_ratios :: String -> IO ()
 intervals_matrix_ratios = intervals_matrix Scala.scale_ratios_req interval_matrix_ratio T.ratio_pp
 
--- | Type specialised 'round'
-round_int :: RealFrac t => t -> Int
-round_int = round
-
-interval_hist_ratios :: (Fractional t,Ord t) => [t] -> [(t,Int)]
-interval_hist_ratios x = T.histogram [(if p < q then p * 2 else p) / q | p <- x, q <- x, p /= q]
-
--- > mapM_ intervals_list_ratios (words "pyth_12 kepler1")
-intervals_list_ratios :: String -> IO ()
-intervals_list_ratios scl_nm = do
-  nam_db <- Interval.load_intnam
-  scl <- Scala.scl_load scl_nm
-  let _:rat = Scala.scale_ratios_req scl
-      hst = interval_hist_ratios rat
-      ln (r,n) = let nm = maybe "" snd (Interval.intnam_search_ratio nam_db r)
-                     c = T.ratio_to_cents r
-                     i = round_int (c / 100)
-                 in [show i,show n,T.ratio_pp r,T.real_pp 1 c,nm]
-      tbl = map ln hst
-      pp = T.table_pp T.table_opt_plain
-  putStrLn (unlines (pp tbl))
-
 kbm_tbl :: String -> String -> String -> IO ()
 kbm_tbl ty scl_nm kbm_nm = do
   scl <- Scala.scl_load scl_nm
@@ -323,7 +302,7 @@ main = do
         fluidsynth_tuning_d12 (fs_nm,read fs_bank,read fs_prog) (scl_nm,read c,read k)
     ["intervals","half-matrix",'c':_,k,nm] -> intervals_half_matrix_cents (read k) nm
     ["intervals","half-matrix",'r':_,nm] -> intervals_half_matrix_ratios nm
-    ["intervals","list",'r':_,nm] -> intervals_list_ratios nm
+    ["intervals","list",'r':_,nm] -> Functions.intervals_list_ratios nm
     ["intervals","matrix",'c':_,k,nm] -> intervals_matrix_cents (read k) nm
     ["intervals","matrix",'r':_,nm] -> intervals_matrix_ratios nm
     "intnam":"lookup":r_sq -> intnam_lookup (map T.read_ratio_with_div_err r_sq)

@@ -59,6 +59,10 @@ real_round = round . T.real_to_double
 real_round_int :: Real r => r -> Int
 real_round_int = real_round
 
+-- | Type specialised 'round'
+round_int :: RealFrac t => t -> Int
+round_int = round
+
 -- | Type-specialised 'fromIntegral'
 from_integral_to_int :: Integral i => i -> Int
 from_integral_to_int = fromIntegral
