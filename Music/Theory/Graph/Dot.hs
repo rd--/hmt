@@ -111,6 +111,7 @@ dot_attr_def (ly,fn,fs,sh) =
 -- | Graph pretty-printer, (v -> [attr],e -> [attr])
 type GR_PP v e = ((Int,v) -> [DOT_ATTR],((Int,Int),e) -> [DOT_ATTR])
 
+-- | Make GR_PP value given label functions for vertices and edges.
 gr_pp_label_m :: Maybe (v -> DOT_VALUE) -> Maybe (e -> DOT_VALUE) -> GR_PP v e
 gr_pp_label_m f_v f_e =
   let lift m (_,x) = case m of
@@ -148,6 +149,7 @@ g_type_to_edge_symbol ty =
       G_DIGRAPH -> " -> "
       G_UGRAPH -> " -- "
 
+-- | Generate node position attribute given (x,y) coordinate.
 node_pos_attr :: (Show n, Real n) => (n,n) -> DOT_ATTR
 node_pos_attr (x,y) = let pp = Show.real_pp_trunc 2 in ("pos",concat [pp x,",",pp y])
 

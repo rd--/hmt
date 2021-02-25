@@ -190,7 +190,7 @@ tbl_wr del = putStr . unlines . T.table_pp (False,True,False," ",False) . tbl_tx
 
 -- * Graph
 
--- | (maybe-lc/primes,gr-attr,vertex-pp)
+-- | (maybe (maybe lattice-design, maybe primes),gr-attr,vertex-pp)
 type EW_GR_OPT = (Maybe (Lattice_Design Rational,Maybe [Integer]),[T.DOT_META_ATTR],Rational -> String)
 
 ew_gr_opt_pos :: EW_GR_OPT -> Bool
@@ -207,6 +207,7 @@ ew_gr_r_pos (k,lc) primes_l =
      -- this is a little subtle, tail removes the '2' slot from rational_prime_factors_t
      (maybe (tail . T.rational_prime_factors_t (k + 1)) T.rational_prime_factors_c primes_l)
 
+-- | 'T.lbl_to_udot' add position attribute if a 'Lattice_Design' is given.
 ew_gr_udot :: EW_GR_OPT -> T.LBL Rational () -> [String]
 ew_gr_udot (lc_m,attr,v_pp) =
   let (e,p_f) = case lc_m of
@@ -217,6 +218,7 @@ ew_gr_udot (lc_m,attr,v_pp) =
      (\(_,v) -> T.mcons (p_f v) [("label",v_pp v)]
      ,\_ -> [])
 
+-- | 'writeFile' of 'ew_gr_udot'
 ew_gr_udot_wr :: EW_GR_OPT -> FilePath -> T.LBL Rational () -> IO ()
 ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
 
@@ -405,9 +407,10 @@ r_to_scale nm dsc r =
 ew_scl_find_r :: [Rational] -> [T.Scale] -> [String]
 ew_scl_find_r r =
   let set_eq x y = sort x == sort y
-  in if head r /= 1
-     then error "ew_scl_find_r?"
-     else map T.scale_name . T.scl_find_ji set_eq (map T.fold_ratio_to_octave_err r ++ [2])
+      r' = map T.fold_ratio_to_octave_err r
+  in if head r' /= 1
+     then error "ew_scl_find_r?: r'0 /= 1"
+     else map T.scale_name . T.scl_find_ji set_eq (r' ++ [2])
 
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 
@@ -416,7 +419,8 @@ ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 
 {- | P.3 7-limit {SCALA=NIL}
 
-> ew_scl_find_r (1 : ew_1357_3_r)
+> db <- T.scl_load_db
+> ew_scl_find_r (1 : ew_1357_3_r) db
 -}
 ew_1357_3_r :: [Rational]
 ew_1357_3_r = r_normalise (concatMap m3_gen_unfold ew_1357_3_gen)
@@ -428,7 +432,7 @@ ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" (1 : ew_135
 
 {- | P.7 11-limit {SCALA=NIL}
 
-> ew_scl_find_r ew_el12_7_r
+> ew_scl_find_r ew_el12_7_r db
 -}
 ew_el12_7_r :: [Rational]
 ew_el12_7_r = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,7*11/5]
@@ -438,7 +442,7 @@ ew_el12_7_scl = r_to_scale "ew_el12_7" "EW, earlylattices12.pdf, P.7" ew_el12_7_
 
 {- | P.9 7-limit {SCALA=wilson_class}
 
-> ew_scl_find_r ew_el12_9_r
+> ew_scl_find_r ew_el12_9_r db
 -}
 ew_el12_9_r :: [Rational]
 ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
@@ -448,7 +452,7 @@ ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
 
 {- | P.12 11-limit {SCALA=NIL}
 
-> ew_scl_find_r ew_el12_12_r
+> ew_scl_find_r ew_el12_12_r db
 -}
 ew_el12_12_r :: [Rational]
 ew_el12_12_r = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]
@@ -460,7 +464,7 @@ ew_el12_12_scl = r_to_scale "ew_el12_12" "EW, earlylattices12.pdf, P.12" ew_el12
 
 {- | P.2 11-limit {SCALA=wilson_l4}
 
-> ew_scl_find_r ew_el22_2_r
+> ew_scl_find_r ew_el22_2_r db
 -}
 ew_el22_2_r :: [Rational]
 ew_el22_2_r =
@@ -469,7 +473,7 @@ ew_el22_2_r =
 
 {- | P.3 11-limit {SCALA=wilson_l5}
 
-> ew_scl_find_r ew_el22_3_r
+> ew_scl_find_r ew_el22_3_r db
 -}
 ew_el22_3_r :: [Rational]
 ew_el22_3_r =
@@ -478,7 +482,7 @@ ew_el22_3_r =
 
 {- | P.4 11-limit {SCALA=wilson_l3}
 
-> ew_scl_find_r ew_el22_4_r
+> ew_scl_find_r ew_el22_4_r db
 -}
 ew_el22_4_r :: [Rational]
 ew_el22_4_r =
@@ -487,7 +491,7 @@ ew_el22_4_r =
 
 {- | P.5 11-limit {SCALA=wilson_l1}
 
-> ew_scl_find_r ew_el22_5_r
+> ew_scl_find_r ew_el22_5_r db
 -}
 ew_el22_5_r :: [Rational]
 ew_el22_5_r =
@@ -496,7 +500,7 @@ ew_el22_5_r =
 
 {- | P.6 11-limit {SCALA=wilson_l2}
 
-> ew_scl_find_r ew_el22_6_r
+> ew_scl_find_r ew_el22_6_r db
 -}
 ew_el22_6_r :: [Rational]
 ew_el22_6_r =
@@ -519,7 +523,7 @@ ew_diamond_12_gen =
 
 1,3,5,7,9,11 diamond
 
-> ew_scl_find_r ew_diamond_12_r -- partch_29
+> ew_scl_find_r ew_diamond_12_r db -- partch_29
 -}
 ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
@@ -528,7 +532,7 @@ ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
 1,3,5,7,9,11,13,15 diamond
 
-> ew_scl_find_r ew_diamond_13_r -- novaro15
+> ew_scl_find_r ew_diamond_13_r db -- novaro15
 -}
 ew_diamond_13_r :: [Rational]
 ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
@@ -568,7 +572,7 @@ hel_r (p,q) =
 
 22-tone 23-limit Evangalina tuning (2001)
 
-> ew_scl_find_r ew_hel_12_r
+> ew_scl_find_r ew_hel_12_r db
 -}
 ew_hel_12_r :: [Rational]
 ew_hel_12_r =
@@ -602,8 +606,8 @@ she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
 {- | she = Stellate Hexany Expansions, P.10 {SCALA=stelhex1,stelhex2,stelhex5,stelhex6}
 
 > she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
-> mapM (ew_scl_find_r . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
-> ew_scl_find_r (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) -- NIL
+> mapM (flip ew_scl_find_r db . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
+> ew_scl_find_r (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) db -- NIL
 -}
 she :: [Rational] -> [Rational]
 she r = nub (sort (map T.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
@@ -699,7 +703,7 @@ meru_7_direct = T.a001687
 
 {- | P.13, tanabe {SCALA=chin_7}
 
-> ew_scl_find_r ew_mos_13_tanabe_r
+> ew_scl_find_r ew_mos_13_tanabe_r db
 -}
 ew_mos_13_tanabe_r :: [Rational]
 ew_mos_13_tanabe_r = [1,9/8,81/64,4/3,3/2,27/16,243/128]
@@ -721,7 +725,7 @@ ew_novarotreediamond_1 =
 
 23-tone 7-limit (2004)
 
-> ew_scl_find_r ew_novarotreediamond_1_r
+> ew_scl_find_r ew_novarotreediamond_1_r db
 -}
 ew_novarotreediamond_1_r :: [Rational]
 ew_novarotreediamond_1_r = r_normalise (concat (snd ew_novarotreediamond_1))
@@ -735,7 +739,7 @@ ew_novarotreediamond_1_scl = r_to_scale "ew_novarotreediamond_1" "EW, novavotree
 
 9-tone Pelog cycle (1988)
 
-> ew_scl_find_r ew_pelogFlute_2
+> ew_scl_find_r ew_Pelogflute_2_r db
 -}
 ew_Pelogflute_2_r :: Fractional n => [n]
 ew_Pelogflute_2_r = [1,16/15,64/55,5/4,4/3,16/11,8/5,128/75,20/11]
@@ -777,7 +781,7 @@ xen3b_9_i =
 
 {- | P.9 {SCALA 5=nil 7=ptolemy_idiat 12=nil 19=wilson2 31=wilson_31}
 
-> mapM ew_scl_find_r xen3b_9_r
+> mapM ew_scl_find_r xen3b_9_r db
 -}
 xen3b_9_r :: [[Rational]]
 xen3b_9_r = map (T.drop_last . scanl (*) 1) xen3b_9_i
@@ -835,7 +839,7 @@ ew_xen456_7_gen = [(25/24,4),(5/3,4),(4/3,4),(16/15,4),(32/25,3)]
 
 19-tone "A Scale for Scott" (1976)
 
-> L.ew_find_scl_name ew_xen456_7_r -- wilson1
+> ew_scl_find_r ew_xen456_7_r db -- wilson1
 -}
 ew_xen456_7_r :: [Rational]
 ew_xen456_7_r = m3_gen_to_r ew_xen456_7_gen
@@ -853,10 +857,10 @@ ew_xen456_9_gen =
 
 19-tone scale for the Clavichord-19 (1976)
 
-> ew_scl_find_r ew_xen456_9_r
+> ew_scl_find_r ew_xen456_9_r db
 
 > import qualified Music.Theory.List as T {- hmt -}
-> T.scl_find_ji T.is_subset ew_xen456_9_r -- NIL
+> T.scl_find_ji T.is_subset ew_xen456_9_r db -- NIL
 -}
 ew_xen456_9_r :: [Rational]
 ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
@@ -870,7 +874,7 @@ ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
 13-limit 22-tone scale {SCALA=nil}
 
-> ew_scl_find_r ew_poole_r
+> ew_scl_find_r ew_poole_r db
 -}
 ew_poole_r :: [Rational]
 ew_poole_r =
@@ -884,7 +888,7 @@ ew_poole_scl = r_to_scale "ew_poole" "EW, 2010/10/scale-for-rod-poole.html" ew_p
 
 11-limit 17-tone scale {SCALA=wilcent17}
 
-> ew_scl_find_r ew_centaur17_r
+> ew_scl_find_r ew_centaur17_r db
 -}
 ew_centaur17_r :: [Rational]
 ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(3*3*3),5/3,7,11/3,3*5]
@@ -893,7 +897,7 @@ ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(
 
 7-limit 22-tone scale {SCALA=nil}
 
-> ew_scl_find_r ew_two_22_7_r
+> ew_scl_find_r ew_two_22_7_r db
 -}
 ew_two_22_7_r :: [Rational]
 ew_two_22_7_r =

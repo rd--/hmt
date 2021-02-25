@@ -6,6 +6,8 @@
 -- Heterogenous tuples (products) are prefixed @p2_@ etc.
 module Music.Theory.Tuple where
 
+import Data.List {- base -}
+
 -- * P2 (2-product)
 
 p2_from_list :: (t -> t1,t -> t2) -> [t] -> (t1,t2)
@@ -123,6 +125,9 @@ t3_infix f (i,j,k) = (i `f` j) `f` k
 
 t3_join :: T3 [a] -> [a]
 t3_join = t3_infix (++)
+
+t3_sort :: Ord t => (t,t,t) -> (t,t,t)
+t3_sort = t3_from_list . sort . t3_to_list
 
 -- * P4 (4-product)
 
