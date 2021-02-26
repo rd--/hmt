@@ -198,58 +198,6 @@ intnam_search txt = do
   let f (r,nm) = concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
   mapM_ (putStrLn . f) (Interval.intnam_search_description_ci db txt)
 
--- * INTERVALS
-
--- | Given interval function (ie. '-' or '/') and scale generate interval half-matrix.
-interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
-interval_half_matrix interval_f =
-  let tails' = filter (not . (< 2) . length) . tails
-      f l = case l of
-              [] -> []
-              i : l' -> map (\j -> j `interval_f` i) l'
-  in map f . tails'
-
-interval_half_matrix_tbl :: (t -> String) -> (t -> t -> t) -> [t] -> [[String]]
-interval_half_matrix_tbl show_f interval_f scl =
-    let f n l = replicate n "" ++ map show_f l
-    in zipWith f [1..] (interval_half_matrix interval_f scl)
-
-intervals_half_matrix :: (Scala.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
-intervals_half_matrix scl_f interval_f show_f nm = do
-  scl <- Scala.scl_load nm
-  let txt = interval_half_matrix_tbl show_f interval_f (scl_f scl)
-      pp = T.table_pp T.table_opt_plain
-  putStrLn (unlines (pp txt))
-
--- > mapM_ (intervals_half_matrix_cents 0) (words "pyth_12 kepler1")
-intervals_half_matrix_cents :: Int -> String -> IO ()
-intervals_half_matrix_cents k = intervals_half_matrix Scala.scale_cents (-) (T.real_pp k)
-
--- > mapM_ (intervals_half_matrix_ratios) (words "pyth_12 kepler1")
-intervals_half_matrix_ratios :: String -> IO ()
-intervals_half_matrix_ratios = intervals_half_matrix Scala.scale_ratios_req (/) T.ratio_pp
-
-interval_matrix_ratio :: [Rational] -> [[Rational]]
-interval_matrix_ratio x = let f i = map (\j -> if j < i then j * 2 / i else j / i) x in map f x
-
-interval_matrix_cents :: [T.Cents] -> [[T.Cents]]
-interval_matrix_cents x = let f i = map (\j -> if j < i then j + 1200 - i else j - i) x in map f x
-
-intervals_matrix :: (Scala.Scale -> [t]) -> ([t] -> [[t]]) -> (t -> String) -> String -> IO ()
-intervals_matrix scl_f tbl_f pp_f nm = do
-  scl <- Scala.scl_load nm
-  let txt = map (map pp_f) (tbl_f (scl_f scl))
-      pp = T.table_pp T.table_opt_plain
-  putStrLn (unlines (pp txt))
-
--- > mapM_ (intervals_matrix_cents 0) (words "pyth_12 kepler1")
-intervals_matrix_cents :: Int -> String -> IO ()
-intervals_matrix_cents k = intervals_matrix Scala.scale_cents interval_matrix_cents (T.real_pp k)
-
--- > mapM_ intervals_matrix_ratios (words "pyth_12 kepler1")
-intervals_matrix_ratios :: String -> IO ()
-intervals_matrix_ratios = intervals_matrix Scala.scale_ratios_req interval_matrix_ratio T.ratio_pp
-
 kbm_tbl :: String -> String -> String -> IO ()
 kbm_tbl ty scl_nm kbm_nm = do
   scl <- Scala.scl_load scl_nm
@@ -300,11 +248,11 @@ main = do
     ["env"] -> env
     ["fluidsynth","d12",scl_nm,c,k,fs_nm,fs_bank,fs_prog] ->
         fluidsynth_tuning_d12 (fs_nm,read fs_bank,read fs_prog) (scl_nm,read c,read k)
-    ["intervals","half-matrix",'c':_,k,nm] -> intervals_half_matrix_cents (read k) nm
-    ["intervals","half-matrix",'r':_,nm] -> intervals_half_matrix_ratios nm
+    ["intervals","half-matrix",'c':_,k,nm] -> Functions.intervals_half_matrix_cents (read k) nm
+    ["intervals","half-matrix",'r':_,nm] -> Functions.intervals_half_matrix_ratios nm
     ["intervals","list",'r':_,nm] -> Functions.intervals_list_ratios nm
-    ["intervals","matrix",'c':_,k,nm] -> intervals_matrix_cents (read k) nm
-    ["intervals","matrix",'r':_,nm] -> intervals_matrix_ratios nm
+    ["intervals","matrix",'c':_,k,nm] -> Functions.intervals_matrix_cents (read k) nm
+    ["intervals","matrix",'r':_,nm] -> Functions.intervals_matrix_ratios nm
     "intnam":"lookup":r_sq -> intnam_lookup (map T.read_ratio_with_div_err r_sq)
     ["intnam","search",txt] -> intnam_search txt
     ["kbm","table",ty,scl_nm,kbm_nm] -> kbm_tbl ty scl_nm kbm_nm

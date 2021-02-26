@@ -35,6 +35,8 @@ lineartemp scale_size octave _degree_of_fifth fifth down =
       rhs = tail (take (scale_size - down) (geom_oct 1 fifth))
   in sort (lhs ++ rhs) ++ [octave]
 
+-- * INTERVALS
+
 interval_hist_ratios :: (Fractional t,Ord t) => [t] -> [(t,Int)]
 interval_hist_ratios x = List.histogram [(if p < q then p * 2 else p) / q | p <- x, q <- x, p /= q]
 
@@ -58,3 +60,64 @@ intervals_list_ratios scl_nm = do
   nam_db <- Interval.load_intnam
   scl <- Scala.scl_load scl_nm
   intervals_list_ratios_r nam_db (tail (Scala.scale_ratios_req scl))
+
+-- * INTERVALS
+
+-- | Given interval function (ie. '-' or '/') and scale generate interval half-matrix.
+interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
+interval_half_matrix interval_f =
+  let tails' = filter (not . (< 2) . length) . tails
+      f l = case l of
+              [] -> []
+              i : l' -> map (\j -> j `interval_f` i) l'
+  in map f . tails'
+
+interval_half_matrix_tbl :: (t -> String) -> (t -> t -> t) -> [t] -> [[String]]
+interval_half_matrix_tbl show_f interval_f scl =
+    let f n l = replicate n "" ++ map show_f l
+    in zipWith f [1..] (interval_half_matrix interval_f scl)
+
+intervals_half_matrix :: (Scala.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
+intervals_half_matrix scl_f interval_f show_f nm = do
+  scl <- Scala.scl_load nm
+  let txt = interval_half_matrix_tbl show_f interval_f (scl_f scl)
+      pp = Text.table_pp Text.table_opt_plain
+  putStrLn (unlines (pp txt))
+
+-- > mapM_ (intervals_half_matrix_cents 0) (words "pyth_12 kepler1")
+intervals_half_matrix_cents :: Int -> String -> IO ()
+intervals_half_matrix_cents k = intervals_half_matrix Scala.scale_cents (-) (Show.real_pp k)
+
+-- > mapM_ (intervals_half_matrix_ratios) (words "pyth_12 kepler1")
+intervals_half_matrix_ratios :: String -> IO ()
+intervals_half_matrix_ratios = intervals_half_matrix Scala.scale_ratios_req (/) Show.ratio_pp
+
+{-
+> r = [3*5,3*7,3*11,5*7,5*11,7*11]
+> r = let u = [1,3,5,7,9,11] in [i*j*k | i <- u, j <- u, k <- u, i < j, j < k]
+> intervals_matrix_wr Show.ratio_pp (interval_matrix_ratio r)
+-}
+interval_matrix_ratio :: [Rational] -> [[Rational]]
+interval_matrix_ratio x = let f i = map (\j -> if j < i then j * 2 / i else j / i) x in map f x
+
+interval_matrix_cents :: [Tuning.Cents] -> [[Tuning.Cents]]
+interval_matrix_cents x = let f i = map (\j -> if j < i then j + 1200 - i else j - i) x in map f x
+
+intervals_matrix_wr :: (t -> String) -> [[t]] -> IO ()
+intervals_matrix_wr pp_f x = do
+  let txt = map (map pp_f) x
+      pp = Text.table_pp Text.table_opt_plain
+  putStrLn (unlines (pp txt))
+
+intervals_matrix :: (Scala.Scale -> [t]) -> ([t] -> [[t]]) -> (t -> String) -> String -> IO ()
+intervals_matrix scl_f tbl_f pp_f nm = do
+  scl <- Scala.scl_load nm
+  intervals_matrix_wr pp_f (tbl_f (scl_f scl))
+
+-- > mapM_ (intervals_matrix_cents 0) (words "pyth_12 kepler1")
+intervals_matrix_cents :: Int -> String -> IO ()
+intervals_matrix_cents k = intervals_matrix Scala.scale_cents interval_matrix_cents (Show.real_pp k)
+
+-- > mapM_ intervals_matrix_ratios (words "pyth_12 kepler1")
+intervals_matrix_ratios :: String -> IO ()
+intervals_matrix_ratios = intervals_matrix Scala.scale_ratios_req interval_matrix_ratio Show.ratio_pp
