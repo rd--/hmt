@@ -114,6 +114,12 @@ z_sro_apply z (SRO r r' t m i) x =
         x4 = if r' then reverse x3 else x3
     in List.rotate_left r x4
 
+-- | Find 'SRO's that map /x/ to /y/ given /m/ and /z/.
+--
+-- > map sro_pp (z_sro_rel 5 z12 [0,1,2,3] [11,6,1,4]) == ["r1T4MI","r1RT1M"]
+z_sro_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [SRO t]
+z_sro_rel m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
+
 -- * PLAIN
 
 -- | Transpose /p/ by /n/.

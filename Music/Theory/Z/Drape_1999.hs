@@ -382,7 +382,7 @@ rs m z p q = z_tto_rel m z (T.set p) (T.set q)
 
 -}
 rsg :: Integral i => i -> Z i -> [i] -> [i] -> [SRO i]
-rsg m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
+rsg = z_sro_rel
 
 -- | Subsets.
 --
@@ -421,7 +421,7 @@ type SI i = ([i],TTO i,[i])
 
 -- | Calculator for si.
 --
--- > si_calc z12 [0,5,3,11]
+-- > si_calc [0,5,3,11]
 si_calc :: Integral i => [i] -> (SI i,[i],[Int],SI i,SI i)
 si_calc p =
     let n = length p
@@ -433,7 +433,7 @@ si_calc p =
 
 -- | Pretty printer for RHS for si.
 --
--- > si_rhs_pp z12 [0,5,3,11]
+-- > si_rhs_pp [0,5,3,11]
 si_rhs_pp :: (Integral i,Show i) => [i] -> [String]
 si_rhs_pp p =
     let pf_pp concise (x_o,x_f) =
