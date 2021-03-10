@@ -90,7 +90,7 @@ pc_spell_flat = pc_spell_tbl (pc_spell_flat_tbl ++ pc_spell_natural_tbl)
 octpc_to_pitch_ks :: Integral i => T.Octave_PitchClass i -> T.Pitch
 octpc_to_pitch_ks = T.octpc_to_pitch pc_spell_ks
 
--- | 'midi_to_pitch' 'T.pc_spell_ks'.
+-- | 'T.midi_to_pitch' 'pc_spell_ks'.
 midi_to_pitch_ks :: Integral i => i -> T.Pitch
 midi_to_pitch_ks = T.midi_to_pitch (pc_spell_ks :: T.Spelling Int)
 
@@ -99,3 +99,7 @@ fmidi_to_pitch_ks = T.fmidi_to_pitch_err pc_spell_ks
 
 midi_detune_to_pitch_ks :: (Integral m,Real c) => (m,c) -> T.Pitch
 midi_detune_to_pitch_ks = T.midi_detune_to_pitch pc_spell_ks
+
+-- | 'T.midi_to_pitch' 'pc_spell_sharp'
+midi_to_pitch_sharp :: Integral i => i -> T.Pitch
+midi_to_pitch_sharp = T.midi_to_pitch (pc_spell_sharp :: T.Spelling Int)
