@@ -105,7 +105,7 @@ event_ch (_,_,ch,_) = ch
 
 -- | Are events equal at mnn and ch fields?
 event_eq_ol :: Eq t => Event t -> Event t -> Bool
-event_eq_ol = ((==) `on` (\(mnn,_,ch,_) -> (mnn,ch)))
+event_eq_ol = (==) `on` (\(mnn,_,ch,_) -> (mnn,ch))
 
 -- | Apply (mnn-f,vel-f,ch-f,param-f) to Event.
 event_map :: (t -> u,t -> u,Channel -> Channel,Param -> Param) -> Event t -> Event u

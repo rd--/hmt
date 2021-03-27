@@ -9,7 +9,7 @@ import qualified Music.Theory.List as T
 
 -- | Format section string
 tun_sec :: String -> String
-tun_sec nm = printf "[%s]" nm
+tun_sec = printf "[%s]"
 
 -- | Format 'String' (text) attribute
 tun_attr_txt :: (String,String) -> String
@@ -45,8 +45,8 @@ tun_info (nm,k) =
 -- > tun_tuning [0,100.. 12700]
 tun_tuning :: [Int] -> [String]
 tun_tuning =
-  let f (k,c) = printf "note %d = %d" k c
-  in (:) (tun_sec "Tuning") . map f . zip [0::Int .. 127]
+  let f k c = printf "note %d = %d" k c
+  in (:) (tun_sec "Tuning") . zipWith f [0::Int .. 127]
 
 -- | The default base frequency for /Exact Tuning/ (A4=440)
 tun_f0_default :: Double
@@ -57,10 +57,10 @@ tun_f0_default = 8.1757989156437073336
 -- > tun_exact_tuning tun_f0_default [0,100.. 12700]
 tun_exact_tuning :: Double -> [Double] -> [String]
 tun_exact_tuning f0 =
-  let f (k,c) = printf "note %d = %f" k c
+  let f k c = printf "note %d = %f" k c
       hdr = [tun_sec "Exact Tuning"
             ,tun_attr_real ("BaseFreq",f0)]
-  in (++) hdr  . map f . zip [0::Int .. 127]
+  in (++) hdr  . zipWith f [0::Int .. 127]
 
 {- | Format /Functional Tuning/ section given base frequency and sequence of 128 real cents values.
 
@@ -70,10 +70,10 @@ This simply sets note zero to /f0/ and increments each note by the difference fr
 -}
 tun_functional_tuning :: Double -> [Double] -> [String]
 tun_functional_tuning f0 =
-  let f (k,c) = printf "note %d = \"#x=%d %% %f\"" k (k - 1) c
+  let f k c = printf "note %d = \"#x=%d %% %f\"" k (k - 1) c
       hdr = [tun_sec "Functional Tuning"
             ,printf "note 0 = \"# %f\"" f0]
-  in (++) hdr  . map f . zip [1::Int .. 127] . T.d_dx
+  in (++) hdr  . zipWith f [1::Int .. 127] . T.d_dx
 
 -- | Format /Scale End/ section header.
 tun_end :: [String]

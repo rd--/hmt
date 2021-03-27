@@ -9,7 +9,7 @@ import qualified Music.Theory.List as T {- hmt -}
 -- | Z type.
 --
 -- > map z_modulus [z7,z12] == [7,12]
-data Z i = Z {z_modulus :: i}
+newtype Z i = Z {z_modulus :: i}
 
 -- | 'mod' of 'Z'.
 --
@@ -81,7 +81,7 @@ to_Z :: Integral i => Z i -> i -> i
 to_Z z = z_fromInteger z . fromIntegral
 
 from_Z :: (Integral i,Num n) => i -> n
-from_Z i = fromIntegral i
+from_Z = fromIntegral
 
 -- | Universe of 'Z'.
 --
@@ -115,7 +115,7 @@ z_divMod :: Integral i => Z i -> i -> i -> (i,i)
 z_divMod z p q = (z_div z p q,z_mod z (mod p q))
 
 z_toInteger :: Integral i => Z i -> i -> i
-z_toInteger z = to_Z z
+z_toInteger = to_Z
 
 -- * Z16
 

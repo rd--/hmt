@@ -27,6 +27,7 @@ reads_to_read_precise_err err f =
 -- | 'reads_to_read_precise' of 'reads'.
 --
 -- > read_maybe "1.0" :: Maybe Int
+-- > read_maybe "1.0" :: Maybe Float
 read_maybe :: Read a => String -> Maybe a
 read_maybe = reads_to_read_precise reads
 
@@ -34,11 +35,11 @@ read_maybe = reads_to_read_precise reads
 --
 -- > map (read_def 0) ["2","2:","2\n"] == [2,0,2]
 read_def :: Read a => a -> String -> a
-read_def x s = maybe x id (read_maybe s)
+read_def x s = fromMaybe x (read_maybe s)
 
 -- | Variant of 'read_maybe' that errors on 'Nothing', printing message.
 read_err_msg :: Read a => String -> String -> a
-read_err_msg msg s = maybe (error ("read_err: " ++ msg ++ ": " ++ s)) id (read_maybe s)
+read_err_msg msg s = fromMaybe (error ("read_err: " ++ msg ++ ": " ++ s)) (read_maybe s)
 
 -- | Default message.
 read_err :: Read a => String -> a
@@ -64,14 +65,14 @@ reads_exact_err err_txt str =
 -- | Allow commas as thousand separators.
 --
 -- > let r = [Just 123456,Just 123456,Nothing,Just 123456789]
--- > in map read_integral_allow_commas_maybe ["123456","123,456","1234,56","123,456,789"]
+-- > map read_integral_allow_commas_maybe ["123456","123,456","1234,56","123,456,789"] == r
 read_integral_allow_commas_maybe :: Read i => String -> Maybe i
 read_integral_allow_commas_maybe s =
     let c = filter ((== ',') . fst) (zip (reverse s) [0..])
     in if null c
        then read_maybe s
        else if map snd c `isPrefixOf` [3::Int,7..]
-            then read_maybe (filter (not . (== ',')) s)
+            then read_maybe (filter (/= ',') s)
             else Nothing
 
 read_integral_allow_commas_err :: (Integral i,Read i) => String -> i
@@ -79,6 +80,9 @@ read_integral_allow_commas_err s =
     let err = error ("read_integral_allow_commas: misplaced commas: " ++ s)
     in fromMaybe err (read_integral_allow_commas_maybe s)
 
+-- | Type specialised.
+--
+-- > map read_int_allow_commas ["123456","123,456","123,456,789"] == [123456,123456,123456789]
 read_int_allow_commas :: String -> Int
 read_int_allow_commas = read_integral_allow_commas_err
 

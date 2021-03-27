@@ -295,7 +295,7 @@ articulations_tbl =
 -- * Math
 
 ix_set_to_tbl :: Unicode_Table -> [Unicode_Index] -> Unicode_Table
-ix_set_to_tbl tbl ix = zip ix (map (flip T.lookup_err tbl) ix)
+ix_set_to_tbl tbl ix = zip ix (map (`T.lookup_err` tbl) ix)
 
 -- | Unicode dot-operator.
 --

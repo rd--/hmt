@@ -127,4 +127,4 @@ double_pp = realfloat_pp
 -- > unwords (map (show_bin Nothing) [0 .. 7]) == "0 1 10 11 100 101 110 111"
 -- > unwords (map (show_bin (Just 3)) [0 .. 7]) == "000 001 010 011 100 101 110 111"
 show_bin :: (Integral i,Show i) => Maybe Int -> i -> String
-show_bin k n = (maybe id (\x -> T.pad_left '0' x) k) (showIntAtBase 2 intToDigit n "")
+show_bin k n = maybe id (T.pad_left '0') k (showIntAtBase 2 intToDigit n "")

@@ -29,7 +29,7 @@ harmonic_series_cps_n n = take n . harmonic_series_cps
 
 -- | Sub-harmonic series on /n/.
 subharmonic_series_cps :: (Fractional t,Enum t) => t -> [t]
-subharmonic_series_cps n = map (* n) (map recip [1..])
+subharmonic_series_cps n = map ((* n) . recip) [1..]
 
 -- | /n/ elements of 'harmonic_series_cps'.
 --

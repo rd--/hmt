@@ -50,7 +50,7 @@ gr_degree (v,e) = (length v,length e)
 gr_relabel :: Eq t => [(t,u)] -> GR t -> GR u
 gr_relabel tbl (v,e) =
   let get z = T.lookup_err z tbl
-  in (map get v,map (\(p,q) -> (get p,get q)) e)
+  in (map get v,map (bimap get get) e)
 
 -- | If (i,j) and (j,i) are both in E delete (j,i) where i < j.
 gr_mk_undir :: Ord t => GR t -> GR t
@@ -105,7 +105,7 @@ gr_unlabel (v1,e1) =
       v2 = [0 .. n - 1]
       tbl = zip v2 v1
       get k = T.reverse_lookup_err k tbl
-      e2 = map (\(p,q) -> (get p,get q)) e1
+      e2 = map (bimap get get) e1
   in ((v2,e2),tbl)
 
 -- | 'fst' of 'gr_unlabel'

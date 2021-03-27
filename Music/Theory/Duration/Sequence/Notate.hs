@@ -17,7 +17,6 @@
 -- 5. Ascribe values to notated durations, see 'ascribe'.
 module Music.Theory.Duration.Sequence.Notate where
 
-import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
@@ -641,7 +640,7 @@ m_simplify p ts =
                 g i = if dots i <= n_dots && t && e && m && r
                       then Just (i,a)
                       else Nothing
-            in join (fmap g d)
+            in g =<< d
         z i (j,_) = i + duration_to_rq j
     in coalesce_sum z 0 f
 
@@ -695,9 +694,8 @@ notate_rqp limit r ts ts_p x = do
 -- | Variant of 'notate_rqp' without pulse divisions (derive).
 --
 -- > notate 4 (default_rule [((3,2),0,(2,2)),((3,2),0,(4,2))]) [(3,2)] [6]
-notate :: Int -> Simplify_P -> [Time_Signature] -> [RQ] ->
-          Either String [[Duration_A]]
-notate limit r ts x = notate_rqp limit r ts Nothing x
+notate :: Int -> Simplify_P -> [Time_Signature] -> [RQ] -> Either String [[Duration_A]]
+notate limit r ts = notate_rqp limit r ts Nothing
 
 -- * Ascribe
 

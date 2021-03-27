@@ -1,6 +1,7 @@
 -- | Functions to generate a click track from a metric structure.
 module Music.Theory.Duration.CT where
 
+import Data.Bifunctor {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
@@ -185,11 +186,11 @@ ct_rq_measure sq rq = fmap fst (find ((rq `elem`) . snd) (zip [1..] sq))
 
 ct_rq_mp :: [[T.RQ]] -> T.RQ -> Maybe (Measure,Pulse)
 ct_rq_mp sq rq =
-    let f (m,l) = (m,fromMaybe (error "ct_rq_mp: ix") (findIndex (== rq) l) + 1)
+    let f (m,l) = (m,fromMaybe (error "ct_rq_mp: ix") (elemIndex rq l) + 1)
     in fmap f (find ((rq `elem`) . snd) (zip [1..] sq))
 
 ct_rq_mp_err :: [[T.RQ]] -> T.RQ -> (Measure, Pulse)
 ct_rq_mp_err sq = fromMaybe (error "ct_rq_mp") . ct_rq_mp sq
 
 ct_mp_to_rq :: [[T.RQ]] -> [((Measure,Pulse),t)] -> [(T.RQ,t)]
-ct_mp_to_rq sq = map (\(mp,c) -> (ct_mp_lookup sq mp,c))
+ct_mp_to_rq sq = map (first (ct_mp_lookup sq))

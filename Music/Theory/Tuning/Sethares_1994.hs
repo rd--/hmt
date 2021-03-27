@@ -64,12 +64,12 @@ atms_fig_2 f0 =
       r_seq = map T.cents_to_fratio [0,1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq
 
--- > plot_p1_ln [atms_fig_3 880]
+-- > Sound.SC3.Plot.plot_p1_ln [atms_fig_3 880]
 -- > map fst (local_minima (atms_fig_3 880)) == [267,400,533,667,800,933,1043]
 atms_fig_3 :: (Ord t, Floating t, Enum t) => t -> [t]
 atms_fig_3 f0 =
   let b = 2 ** (1/9)
-      gen fq = map (\r -> (fq * r,1)) (1 : map (\n -> b ** n) [9,14,18,21,25,27,30])
+      gen fq = map (\r -> (fq * r,1)) (1 : map (b **) [9,14,18,21,25,27,30])
       r_seq = map T.cents_to_fratio [0,1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq
 

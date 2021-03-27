@@ -121,8 +121,8 @@ plc_stat plc_fn = do
 plc_stat_txt :: FilePath -> (Int, [(Int, Int, Int)]) -> [String]
 plc_stat_txt fn (k,g) =
   let hdr = printf "%s G=%d" (takeBaseName fn) k
-      gr (ix,(v,e,f)) = printf " %d: V=%d E=%d F=%d" ix v e f
-  in hdr : map gr (zip [1::Int ..] g)
+      gr ix (v,e,f) = printf " %d: V=%d E=%d F=%d" ix v e f
+  in hdr : zipWith gr [1::Int ..] g
 
 -- | Run "nauty-planarg" to convert (if possible) a set of G6 graphs to PLANAR-CODE.
 g6_planarg :: [String] -> IO B.ByteString
@@ -134,7 +134,7 @@ g6_planarg =
 
 -- | 'plc_parse' of 'g6_planarg' of 'G6.g_to_g6'
 g_to_plc :: [T.G] -> IO [PLC]
-g_to_plc g = G6.g_to_g6 g >>= g6_planarg >>= return . plc_parse
+g_to_plc g = fmap plc_parse (G6.g_to_g6 g >>= g6_planarg)
 
 -- | Run "nauty-planarg" to translate named G6 file to named PL file.
 g6_to_pl_wr :: FilePath -> FilePath -> IO ()

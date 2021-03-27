@@ -60,7 +60,7 @@ thomas_young_1799 = Tuning (Right thomas_young_1799_c) Nothing
 --
 -- > length zarlino_1588_r == 16
 zarlino_1588_r :: [Rational]
-zarlino_1588_r = [1/1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3,16/9,9/5,15/8]
+zarlino_1588_r = [1,25/24,10/9,9/8,32/27,6/5,5/4,4/3,25/18,45/32,3/2,25/16,5/3,16/9,9/5,15/8]
 
 -- | Gioseffo Zarlino, 1588, see <http://www.kylegann.com/tuning.html>.
 --
@@ -83,7 +83,7 @@ ben_johnston_mtp_1977_r =
     [1,17/16
     ,9/8,19/16
     ,5/4
-    ,21/16,11/8
+    ,216,11/8
     ,3/2,13/8
     ,27/16,7/4
     ,15/8]
@@ -100,7 +100,7 @@ ben_johnston_mtp_1977 = Tuning (Left ben_johnston_mtp_1977_r) Nothing
 -- | Ratios for 'gann_arcana_xvi'.
 gann_arcana_xvi_r :: [Rational]
 gann_arcana_xvi_r =
-    [1/1,21/20,16/15,9/8,7/6,6/5,11/9,5/4,21/16,4/3,27/20,7/5
+    [1,21/20,16/15,9/8,7/6,6/5,11/9,5/4,216,4/3,27/20,7/5
     ,22/15,3/2,55/36,8/5,44/27,5/3,42/25,7/4,9/5,11/6,15/8,88/45]
 
 -- | Kyle Gann, _Arcana XVI_, see <http://www.kylegann.com/Arcana.html>.
@@ -113,7 +113,7 @@ gann_arcana_xvi = Tuning (Left gann_arcana_xvi_r) Nothing
 -- | Ratios for 'gann_superparticular'.
 gann_superparticular_r :: [Rational]
 gann_superparticular_r =
-    [1/1,11/10,10/9,9/8,8/7,7/6,6/5,5/4,9/7,4/3
+    [1,110,10/9,9/8,8/7,7/6,6/5,5/4,9/7,4/3
     ,11/8,7/5,10/7,3/2
     ,11/7,14/9,8/5,5/3,12/7,7/4,16/9,9/5]
 

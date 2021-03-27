@@ -44,7 +44,7 @@ tbl_is_regular = (== 1) . length . nub . map length
 tbl_make_regular :: (t -> u,u) -> Table t -> Table u
 tbl_make_regular (f,k) tbl =
     let z = maximum (map length tbl)
-    in map (T.pad_right k z) (map (map f) tbl)
+    in map (T.pad_right k z . map f) tbl
 
 -- | Append a sequence of /nil/ (or default) values to each row of /tbl/
 -- so to make it regular (ie. all rows of equal length).

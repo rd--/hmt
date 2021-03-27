@@ -4,6 +4,7 @@ module Music.Theory.Tuning.Wilson where
 import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
+import Data.Ord {- base -}
 import Data.Ratio {- base -}
 import System.FilePath {- filepath -}
 import Text.Printf {- base -}
@@ -158,7 +159,7 @@ r_seq_limit = maximum . map Prime.rational_prime_limit
 --
 -- > r_seq_factors [1/3,5/7,9/8,13,27,31] == [2,3,5,7,13,31]
 r_seq_factors :: [Rational] -> [Integer]
-r_seq_factors = nub . sort . concatMap (\(i,j) -> i ++ j) . map Prime.rational_prime_factors
+r_seq_factors = nub . sort . concatMap (uncurry (++) . Prime.rational_prime_factors)
 
 -- * Table
 
@@ -207,7 +208,7 @@ ew_gr_r_pos (k,lc) primes_l =
      lc_pos_to_pt (k,lc) .
      (\c -> (k,c)) .
      -- this is a little subtle, tail removes the '2' slot from rational_prime_factors_t
-     (maybe (tail . Prime.rational_prime_factors_t (k + 1)) Prime.rational_prime_factors_c primes_l)
+     maybe (tail . Prime.rational_prime_factors_t (k + 1)) Prime.rational_prime_factors_c primes_l
 
 -- | 'Dot.lbl_to_udot' add position attribute if a 'Lattice_Design' is given.
 ew_gr_udot :: EW_GR_OPT -> Graph.LBL Rational () -> [String]
@@ -218,7 +219,7 @@ ew_gr_udot (lc_m,attr,v_pp) =
   in Dot.lbl_to_udot
      ([("graph:layout",e),("node:shape","plain")] ++ attr) -- ("graph:K","0.6") ("edge:len","1.0")
      (\(_,v) -> List.mcons (p_f v) [("label",v_pp v)]
-     ,\_ -> [])
+     ,const [])
 
 -- | 'writeFile' of 'ew_gr_udot'
 ew_gr_udot_wr :: EW_GR_OPT -> FilePath -> Graph.LBL Rational () -> IO ()
@@ -590,7 +591,7 @@ ew_hel_12_scl = r_to_scale "ew_hel_12" "EW, hel.pdf, P.12" ew_hel_12_r
 she_div :: Eq a => [a] -> [[[a]]]
 she_div x =
   let f = (== [1,length x - 1]) . sort . map length
-  in map (reverse . sortOn length) (filter f (Set.partitions x))
+  in map (sortOn (Down . length)) (filter f (Set.partitions x))
 
 -- > she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
 she_div_r :: [Rational] -> [Rational]
@@ -603,7 +604,7 @@ she_div_r =
 
 -- > she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
 she_mul_r :: [Rational] -> [Rational]
-she_mul_r r = [(x * y) | x <- r,y <- r,x <= y]
+she_mul_r r = [x * y | x <- r,y <- r,x <= y]
 
 {- | she = Stellate Hexany Expansions, P.10 {SCALA=stelhex1,stelhex2,stelhex5,stelhex6}
 
@@ -625,7 +626,7 @@ every_nth l k =
 
 meru :: Num n => [[n]]
 meru =
-  let f xs = zipWith (+) ([0] ++ xs) (xs ++ [0])
+  let f xs = zipWith (+) (0 : xs) (xs ++ [0])
   in iterate f [1]
 
 -- > meru_k 13
@@ -634,7 +635,7 @@ meru_k k = take k meru
 
 -- > map (sum . meru_1) [1 .. 13] == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1 :: Num n => Int -> [n]
-meru_1 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (reverse (meru_k k))
+meru_1 k = zipWith (flip (Safe.atDef 0)) [0..] (reverse (meru_k k))
 
 -- > take 13 meru_1_direct == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1_direct :: Num n => [n]
@@ -644,7 +645,7 @@ meru_1_direct = tail OEIS.a000045
 --
 -- > map (sum . meru_2) [1 .. 14] == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
 meru_2 :: Num n => Int -> [n]
-meru_2 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 2)
+meru_2 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 2)
 
 -- > take 14 meru_2_direct == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
 meru_2_direct :: Num n => [n]
@@ -653,7 +654,7 @@ meru_2_direct = OEIS.a000930
 -- | meru_3 = META-SLENDRO
 meru_3 :: Num n => Int -> [[n]]
 meru_3 k =
-  let f t = zipWith (\x l -> Safe.atDef 0 l x) [0,2..] t
+  let f t = zipWith (flip (Safe.atDef 0)) [0,2..] t
       t0 = reverse (meru_k k)
       t1 = map tail t0
   in [f t0,f t1]
@@ -668,7 +669,7 @@ meru_3_direct = drop 3 OEIS.a000931
 
 -- > map (sum . meru_4) [1 .. 13] == [1,1,1,1,2,3,4,5,7,10,14,19,26]
 meru_4 :: Num n => Int -> [n]
-meru_4 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 3)
+meru_4 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 3)
 
 -- > take 31 meru_4_direct == map (sum . meru_4) [1 .. 31]
 meru_4_direct :: Num n => [n]
@@ -677,7 +678,7 @@ meru_4_direct = tail OEIS.a003269
 -- > map meru_5 [1..4]
 meru_5 :: Num n => Int -> [[n]]
 meru_5 k =
-  let f t = zipWith (\x l -> Safe.atDef 0 l x) [0,3..] t
+  let f t = zipWith (flip (Safe.atDef 0)) [0,3..] t
       t0 = reverse (meru_k k)
   in map (\n -> f (map (drop n) t0)) [0 .. 2]
 
@@ -691,7 +692,7 @@ meru_5_direct = OEIS.a017817
 
 -- > map (sum . meru_6) [1 .. 21] == [1,1,1,1,1,2,3,4,5,6,8,11,15,20,26,34,45,60,80,106,140]
 meru_6 :: Num n => Int -> [n]
-meru_6 k = zipWith (\x l -> Safe.atDef 0 l x) [0..] (every_nth (reverse (meru_k k)) 4)
+meru_6 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 4)
 
 -- > take 21 meru_6_direct == map (sum . meru_6) [1 .. 21]
 meru_6_direct :: Num n => [n]
@@ -903,8 +904,8 @@ ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(
 -}
 ew_two_22_7_r :: [Rational]
 ew_two_22_7_r =
-  [1/1,9/35,1/15,35/1,9/1,7/3,3/5,315/1,245/3,21/1,27/5
-  ,7/5,735/1,189/1,49/1,63/5,5/3,3/7,1/9,1/35,15/1,35/9]
+  [1,9/35,1/15,35,9,7/3,3/5,315,245/3,21,27/5
+  ,7/5,735,189,49,63/5,5/3,3/7,1/9,1/35,15,35/9]
 
 ew_two_22_7_scl :: Scala.Scale
 ew_two_22_7_scl = r_to_scale "ew_two_22_7" "EW, 2018/03/an-unusual-22-tone-7-limit-tuning.html" ew_two_22_7_r

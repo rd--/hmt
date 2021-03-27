@@ -9,7 +9,7 @@ import Data.String {- base -}
 import qualified Data.Array as A {- array -}
 
 -- | @A@ indexed case-insensitive column references.  The column following @Z@ is @AA@.
-data Column_Ref = Column_Ref {column_ref_string :: String}
+newtype Column_Ref = Column_Ref {column_ref_string :: String}
 
 instance IsString Column_Ref where fromString = Column_Ref
 instance Read Column_Ref where readsPrec _ s = [(Column_Ref s,[])]

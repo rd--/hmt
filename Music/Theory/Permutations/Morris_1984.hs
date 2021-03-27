@@ -26,7 +26,7 @@ method_limit (Method p q) =
   let f c = case c of
               Swap_All -> 0
               Hold i -> maximum i
-  in maximum (map f (p ++ maybe [] id q))
+  in maximum (map f (p ++ fromMaybe [] q))
 
 -- | Complete list of 'Change's at 'Method', writing out symmetries.
 method_changes :: Method -> [Change]
@@ -191,7 +191,7 @@ closed_method_lp m l = concat (closed_method m l) ++ [l]
 
 -- | 'closed_method' of 'parse_method'
 closed_place :: Eq t => Place -> [t] -> [[[t]]]
-closed_place pl l = closed_method (parse_method pl) l
+closed_place pl = closed_method (parse_method pl)
 
 -- * Methods
 
@@ -213,7 +213,7 @@ double_cambridge_cyclic_bob_minor_pl = ("-14-16-56-36-16-12",Nothing)
 
 -- | 'parse_method' of 'double_cambridge_cyclic_bob_minor_pl'
 double_cambridge_cyclic_bob_minor :: Method
-double_cambridge_cyclic_bob_minor = parse_method (double_cambridge_cyclic_bob_minor_pl)
+double_cambridge_cyclic_bob_minor = parse_method double_cambridge_cyclic_bob_minor_pl
 
 -- | <https://rsw.me.uk/blueline/methods/view/Hammersmith_Bob_Triples>
 --

@@ -41,7 +41,7 @@ derive_vec :: Num n => LOC n -> LOC n -> VEC n
 derive_vec (c1,r1) (c2,r2) = (c2 - c1,r2 - r1)
 
 unfold_path :: Num n => LOC n -> [VEC n] -> [LOC n]
-unfold_path l p = scanl apply_vec l p
+unfold_path = scanl apply_vec
 
 -- * DIRECTION (non-diagonal)
 

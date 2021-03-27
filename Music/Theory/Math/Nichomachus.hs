@@ -42,7 +42,7 @@ cont_harmonic_mean a c = (a * a + c * c) / (a + c)
 > cont_geometric_mean 1 2 == (2-1+sqrt(5*1*1-2*1*2+2*2))/2 -- (1+sqrt 5)/2 -- GOLDEN RATIO -- 1.6180
 -}
 cont_geometric_mean :: Floating a => a -> a -> a
-cont_geometric_mean a c = (c - a + (sqrt (5 * a * a - 2 * a * c + c * c))) / 2
+cont_geometric_mean a c = (c - a + sqrt (5 * a * a - 2 * a * c + c * c)) / 2
 
 {- | a-b / c = b-c / b ; a-b / b-c = c/b ; a - c + (sqrt (aa - 2ac + 5cc)) / 2
 
@@ -50,4 +50,4 @@ cont_geometric_mean a c = (c - a + (sqrt (5 * a * a - 2 * a * c + c * c))) / 2
 > subcont_geometric_mean 1 2 == (-1 + sqrt 17) / 2 -- 1.5616
 -}
 subcont_geometric_mean :: Floating a => a -> a -> a
-subcont_geometric_mean a c = (a - c + (sqrt (a * a - 2 * a * c + 5 * c * c))) / 2
+subcont_geometric_mean a c = (a - c + sqrt (a * a - 2 * a * c + 5 * c * c)) / 2

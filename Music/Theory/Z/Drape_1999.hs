@@ -145,7 +145,7 @@ dim_nm =
 dis :: (Integral t) => [Int] -> [t]
 dis =
     let is = [[], [], [1,2], [3,4], [5,6], [6,7], [8,9], [10,11]]
-    in concatMap (\j -> is !! j)
+    in concatMap (is !!)
 
 -- | Degree of intersection.
 --
@@ -218,7 +218,7 @@ IC cycle vector: <1> <22> <111> <1100> <5> <000000>
 -}
 frg_pp :: Integral i => [i] -> String
 frg_pp =
-    let f = unwords . map (\p -> T.bracket ('[',']') p)
+    let f = unwords . map (T.bracket ('[',']'))
         g x y = x ++ ": " ++ y
     in unlines . zipWith g frg_hdr . T.t6_to_list . T.t6_map f . frg
 
@@ -310,7 +310,7 @@ imb cs p =
 issb :: Integral i => [i] -> [i] -> [String]
 issb p q =
     let k = length q - length p
-        f = any id . map (\x -> z_forte_prime z12 (p ++ x) == q) . z_tto_ti_related z12
+        f = any (\x -> z_forte_prime z12 (nub (p ++ x)) == q) . z_tto_ti_related z12
     in map sc_name (filter f (cf [k] scs))
 
 -- | Matrix search.
@@ -389,7 +389,7 @@ rsg = z_sro_rel
 -- > cf [4] (sb z12 [sc "6-32",sc "6-8"]) == [[0,2,3,5],[0,1,3,5],[0,2,3,7],[0,2,4,7],[0,2,5,7]]
 sb :: Integral i => Z i -> [[i]] -> [[i]]
 sb z xs =
-    let f p = all id (map (\q -> has_sc z q p) xs)
+    let f p = all (\q -> has_sc z q p) xs
     in filter f scs
 
 {- | scc = set class completion
@@ -536,7 +536,7 @@ sra z = map (z_sro_tn_to z 0) . T.rotations
 
 -}
 sro :: Integral i => Z i -> SRO i -> [i] -> [i]
-sro z o = z_sro_apply z o
+sro = z_sro_apply
 
 {- | tmatrix
 

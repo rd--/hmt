@@ -81,7 +81,7 @@ pcset_pp = intercalate "," . map show
 --
 -- > pcset_pp_hex [0,3,7,10] == "037A"
 pcset_pp_hex :: PCSET -> String
-pcset_pp_hex = map toUpper . concat . map (flip showHex "")
+pcset_pp_hex = map toUpper . concatMap (`showHex` "")
 
 -- * ATH
 
@@ -223,8 +223,8 @@ fig_2 =
      n' = filter ((== 2) . G.deg g . fst) n
      c = T.combinations (2::Int) n'
      p = map (\[lhs,rhs] -> G.esp (fst lhs) (fst rhs) g) c
-     p' = (filter (not . null) p)
- in map (mapMaybe (\x -> lookup x n)) p'
+     p' = filter (not . null) p
+ in map (mapMaybe (`lookup` n)) p'
 
 fig_3 :: [[T.EDGE PCSET]]
 fig_3 = map (concatMap (T.adj2 1) . realise_ath_seq) fig_2
@@ -296,5 +296,5 @@ d_fig_5_g' = T.g_from_edges_l d_fig_5_e
 
 d_fig_5' :: [String]
 d_fig_5' =
-    let pp = (\_ -> [("shape","")],\(_,e) -> [("label",ath_pp e)])
+    let pp = (const [("shape","")],\(_,e) -> [("label",ath_pp e)])
     in T.fgl_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'

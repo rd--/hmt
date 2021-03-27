@@ -13,7 +13,7 @@ transpose_to_zero :: Num n => [n] -> [n]
 transpose_to_zero p =
     case p of
       [] -> []
-      n:_ -> map (+ (negate n)) p
+      n:_ -> map (subtract n) p
 
 -- | Diatonic pitch class (Z7) set to /chord/.
 --

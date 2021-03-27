@@ -305,7 +305,7 @@ tone_set_near_frequency t k n =
 -- | Compare 'Tone's by frequency.  'Tone's without frequency compare
 -- as if at frequency @0@.
 tone_compare_frequency :: Tone t -> Tone t -> Ordering
-tone_compare_frequency = compare `on` (maybe 0 id . tone_frequency)
+tone_compare_frequency = compare `on` (fromMaybe 0 . tone_frequency)
 
 -- | If all /f/ of /a/ are 'Just' /b/, then 'Just' /[b]/, else
 -- 'Nothing'.
@@ -354,7 +354,7 @@ scale_degrees s =
 -- > degree_index Slendro 4 == Nothing
 -- > degree_index Pelog 4 == Just 3
 degree_index :: Scale -> Degree -> Maybe Int
-degree_index s d = findIndex (== d) (scale_degrees s)
+degree_index s d = elemIndex d (scale_degrees s)
 
 -- * Tone set
 

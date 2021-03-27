@@ -1,4 +1,4 @@
--- | List functions.
+ -- | List functions.
 module Music.Theory.List where
 
 import Data.Either {- base -}
@@ -348,13 +348,13 @@ rezip :: ([t] -> [u]) -> ([v] -> [w]) -> [(t,v)] -> [(u,w)]
 rezip f1 f2 l = let (p,q) = unzip l in zip (f1 p) (f2 q)
 
 -- | Generalised histogram, with equality function for grouping and comparison function for sorting.
-generic_histogram_by :: Integral i => (a->a->Bool) -> (Maybe (a->a->Ordering)) -> [a] -> [(a,i)]
+generic_histogram_by :: Integral i => (a -> a-> Bool) -> Maybe (a -> a-> Ordering) -> [a] -> [(a,i)]
 generic_histogram_by eq_f cmp_f x =
-    let g = groupBy eq_f (maybe x (\f -> sortBy f x) cmp_f)
+    let g = groupBy eq_f (maybe x (`sortBy` x) cmp_f)
     in zip (map head g) (map genericLength g)
 
 -- | Type specialised 'generic_histogram_by'.
-histogram_by :: (a->a->Bool) -> (Maybe (a->a->Ordering)) -> [a] -> [(a,Int)]
+histogram_by :: (a -> a-> Bool) -> Maybe (a -> a-> Ordering) -> [a] -> [(a,Int)]
 histogram_by = generic_histogram_by
 
 -- | Count occurences of elements in list, 'histogram_by' of '==' and 'compare'.
@@ -506,7 +506,7 @@ replace_at ns i x =
 
 -- | 'error' of 'stripPrefix'
 strip_prefix_err :: Eq t => [t] -> [t] -> [t]
-strip_prefix_err pfx = maybe (error "strip_prefix") id . stripPrefix pfx
+strip_prefix_err pfx = fromMaybe (error "strip_prefix") . stripPrefix pfx
 
 -- * Association lists
 
@@ -761,7 +761,7 @@ find_nearest_by sel_f bias_left l x =
   in case find_bounds_cmp cmp_f (adj2 1 l) x of
        Left ((p,_),GT) -> p
        Left ((_,q),_) -> q
-       Right (p,q) -> (decide_nearest bias_left x (sel_f p,sel_f q)) (p,q)
+       Right (p,q) -> decide_nearest bias_left x (sel_f p,sel_f q) (p,q)
 
 -- | Find the number that is nearest the requested value in an
 -- ascending list of numbers.
@@ -832,7 +832,7 @@ take_while_right p = reverse . takeWhile p . reverse
 -- > maybe_take (Just 5) [1 .. ] == [1 .. 5]
 -- > maybe_take Nothing [1 .. 9] == [1 .. 9]
 maybe_take :: Maybe Int -> [a] -> [a]
-maybe_take n l = maybe l (flip take l) n
+maybe_take n l = maybe l (`take` l) n
 
 {- | Take until /f/ is true.  This is not the same as 'not' at
      'takeWhile' because it keeps the last element. It is an error
@@ -949,7 +949,7 @@ all_equal l =
     case l of
       [] -> True
       [_] -> True
-      x:xs -> all id (map (== x) xs)
+      x:xs -> all (== x) xs
 
 -- | Variant using 'nub'.
 all_eq :: Eq n => [n] -> Bool
@@ -1103,7 +1103,7 @@ merge_by_resolve jn cmp =
 --
 -- > asc_seq_left_biased_merge_by (compare `on` fst) [(0,'A'),(1,'B'),(4,'E')] (zip [1..] "bcd")
 asc_seq_left_biased_merge_by :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
-asc_seq_left_biased_merge_by = merge_by_resolve (\x _ -> x)
+asc_seq_left_biased_merge_by = merge_by_resolve const
 
 -- | Find the first two adjacent elements for which /f/ is True.
 --
@@ -1159,8 +1159,8 @@ zip_with_maybe f lhs = catMaybes . zipWith f lhs
 zip_with_ext :: t -> u -> (t -> u -> v) -> [t] -> [u] -> [v]
 zip_with_ext i j f p q =
   case (p,q) of
-    ([],_) -> zipWith f (repeat i) q
-    (_,[]) -> zipWith f p (repeat j)
+    ([],_) -> map (f i) q
+    (_,[]) -> map (`f` j) p
     (x:p',y:q') -> f x y : zip_with_ext i j f p' q'
 
 {- | 'zip_with_ext' of ','
@@ -1348,7 +1348,7 @@ adopt_shape jn l =
 --
 -- > adopt_shape_2 (,) [0..4] (words "a bc d") == ([4],[[('a',0)],[('b',1),('c',2)],[('d',3)]])
 adopt_shape_2 :: (Traversable t,Traversable u) => (a -> b -> c) -> [b] -> t (u a) -> ([b],t (u c))
-adopt_shape_2 jn l = mapAccumL (adopt_shape jn) l
+adopt_shape_2 jn = mapAccumL (adopt_shape jn)
 
 -- | Two-level variant of 'zip' [1..]
 --
@@ -1456,9 +1456,8 @@ list_eq_ignoring_indices x =
           ([],[]) -> True
           ([],_) -> False
           (_,[]) -> False
-          (p1:p',q1:q') -> if n `elem` x || p1 == q1
-                           then f (n + 1) p' q'
-                           else False
+          (p1:p',q1:q') -> (n `elem` x || p1 == q1) &&
+                           f (n + 1) p' q'
   in f 0
 
 -- | Edit list to have /v/ at indices /k/.

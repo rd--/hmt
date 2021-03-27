@@ -34,8 +34,8 @@ midi_tseq_to_skini_seq :: (Num t,Eq n) => T.Tseq t (T.Begin_End (T.Event n)) -> 
 midi_tseq_to_skini_seq =
   let f e =
         case e of
-          (t,(T.Begin (d1,d2,ch,[]))) -> ("NoteOn",Delta t,ch,d1,d2)
-          (t,(T.End (d1,d2,ch,[]))) -> ("NoteOff",Delta t,ch,d1,d2)
+          (t,T.Begin (d1,d2,ch,[])) -> ("NoteOn",Delta t,ch,d1,d2)
+          (t,T.End (d1,d2,ch,[])) -> ("NoteOff",Delta t,ch,d1,d2)
           _ -> error "midi_tseq_to_skini_seq"
   in map f . T.tseq_to_iseq
 

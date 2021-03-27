@@ -73,7 +73,7 @@ chord_pcset (CH pc ty ex bs) =
         ex' = fmap extension_to_pc ex
         bs' = fmap get bs
         ch = map ((`mod` 12) . (+ pc')) (ty' ++ maybe [] return ex')
-        ch' = maybe ch (flip delete ch) bs'
+        ch' = maybe ch (`delete` ch) bs'
     in (bs',ch')
 
 bass_pp :: PC -> String

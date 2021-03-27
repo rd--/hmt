@@ -35,7 +35,7 @@ record_key_histogram = T.histogram . record_key_seq
 
 -- | Duplicate keys predicate.
 record_has_duplicate_keys :: Ord k => Record k v -> Bool
-record_has_duplicate_keys = any (> 0) . map snd . record_key_histogram
+record_has_duplicate_keys = any ((> 0) . snd) . record_key_histogram
 
 -- | Find all associations for key using given equality function.
 record_lookup_by :: (k -> k -> Bool) -> k -> Record k v -> [v]
@@ -93,7 +93,7 @@ db_lookup :: (Eq k,Eq v) => k -> v -> DB k v -> [Record k v]
 db_lookup = db_lookup_by (==) (==)
 
 db_has_duplicate_keys :: Ord k => DB k v -> Bool
-db_has_duplicate_keys = any id . map record_has_duplicate_keys
+db_has_duplicate_keys = any record_has_duplicate_keys
 
 db_key_histogram :: Ord k => DB k v -> [(k,Int)]
 db_key_histogram db =

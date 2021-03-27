@@ -46,7 +46,7 @@ predicate_or f g x = f x || g x
 -- > let r = [True,False,True,False,True,True]
 -- > map (predicate_any [(== 0),(== 5),even]) [0..5] == r
 predicate_any :: [t -> Bool] -> t -> Bool
-predicate_any p x = any id (map ($ x) p)
+predicate_any p x = any ($ x) p
 
 -- | '==' 'on'.
 eq_on :: Eq t => (u -> t) -> u -> u -> Bool

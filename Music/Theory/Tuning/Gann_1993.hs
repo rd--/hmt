@@ -84,7 +84,7 @@ lmy_wtp_univ =
 
 -}
 lmy_wtp_uniq :: [(Rational,[(T.PitchClass,T.PitchClass)])]
-lmy_wtp_uniq = sortOn (T.ratio_nd_sum . fst) $ T.collate_on fst snd $ lmy_wtp_univ
+lmy_wtp_uniq = sortOn (T.ratio_nd_sum . fst) (T.collate_on fst snd lmy_wtp_univ)
 
 {- | Gann, 1993, p.137.
 
@@ -136,6 +136,6 @@ lmy_wtp_euler :: T.Euler_Plane Rational
 lmy_wtp_euler =
     let {l1 = T.tun_seq 4 (3/2) (49/32)
         ;l2 = T.tun_seq 5 (3/2) (7/4)
-        ;l3 = T.tun_seq 3 (3/2) (1/1)
+        ;l3 = T.tun_seq 3 (3/2) 1
         ;(c1,c2) = T.euler_align_rat (7/4,7/4) (l1,l2,l3)}
     in ([l1,l2,l3],c1 ++ c2)

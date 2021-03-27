@@ -74,7 +74,7 @@ loc_dif_n_of n p q = loc_dif_n p q == n
 -- > min_vl [6,11,13] [6,10,14] == 2
 min_vl :: (Num a,Ord a) => [a] -> [a] -> a
 min_vl p q =
-    let f x = sum (map absdif (zip p x))
+    let f x = sum (zipWith (curry absdif) p x)
     in minimum (map f (permutations q))
 
 min_vl_of :: (Num a, Ord a) => a -> [a] -> [a] -> Bool
@@ -264,7 +264,7 @@ p14_nrt_gr =
           ,("node:fontsize","10")
           ,("node:fontname","century schoolbook")
           ,("edge:len","1")]
-      pp = (\(_,v) -> [("label",T.pc_pp (T.z_mod T.z12 v))],\_ -> [])
+      pp = (\(_,v) -> [("label",T.pc_pp (T.z_mod T.z12 v))],const [])
   in gen_graph o pp e
 
 -- * P.31
@@ -291,7 +291,7 @@ p114_mk_o el =
 
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
-  let n = (map sort (T.z_sro_ti_related T.z12 p114_f_3_7))
+  let n = map sort (T.z_sro_ti_related T.z12 p114_f_3_7)
   in gen_flt_graph (p114_mk_o el) flt n
 
 p114_f37_sc_pp :: [Z12] -> String
@@ -326,7 +326,7 @@ p114_gr_set =
 p125_gr :: [String]
 p125_gr =
     let t :: [[Int]]
-        t = [[p,q,r] | p <- [0 .. 11], q <- [0 .. 11], r <- [0 ..11], q > p, r > q]
+        t = [[p,q,r] | p <- [0 .. 11], q <- [0 .. 11], q > p, r <- [0 ..11], r > q]
         c = T.collate (zip (map sum t) t)
         with_h n = lookup n c
         ch = fromJust (liftM2 (++) (with_h 15) (with_h 16))
@@ -337,7 +337,7 @@ p125_gr =
 p131_gr :: [String]
 p131_gr =
     let c = let u = [6::Int .. 14]
-            in [[p,q,r] | p <- u, q <- u, r <- u, q > p, r > q, p + q + r == 30]
+            in [[p,q,r] | p <- u, q <- u, q > p, r <- u, r > q, p + q + r == 30]
     in gen_graph_ul [] set_pp (T.e_univ_select_u_edges (min_vl_of 2) c)
 
 -- * P.148

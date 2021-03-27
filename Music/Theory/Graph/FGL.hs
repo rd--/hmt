@@ -33,7 +33,7 @@ g_degree = G.noNodes
 
 -- | 'G.subgraph' of each of 'G.components'.
 g_partition :: G.Gr v e -> [G.Gr v e]
-g_partition gr = map (\n -> G.subgraph n gr) (G.components gr)
+g_partition gr = map (`G.subgraph` gr) (G.components gr)
 
 -- | Find first 'G.Node' with given label.
 g_node_lookup :: (Eq v,G.Graph gr) => gr v e -> v -> Maybe G.Node
@@ -107,7 +107,7 @@ g_from_edges = let f e = (e,()) in g_from_edges_l . map f
 
 -- | Label sequence of edges starting at one.
 e_label_seq :: [EDGE v] -> [EDGE_L v Int]
-e_label_seq = map (\(k,e) -> (e,k)) . zip [1..]
+e_label_seq = zipWith (\k e -> (e,k)) [1..]
 
 -- | Normalised undirected labeled edge (ie. order nodes).
 e_normalise_l :: Ord v => EDGE_L v l -> EDGE_L v l

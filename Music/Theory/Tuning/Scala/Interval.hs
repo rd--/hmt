@@ -37,7 +37,7 @@ intnam_search_ratio (_,i) x = find ((== x) . fst) i
 intnam_search_fratio :: (Fractional n,Ord n) => n -> INTNAM -> n -> Maybe INTERVAL
 intnam_search_fratio epsilon (_,i) x =
   let near p q = abs (p - q) < epsilon
-  in find ((near x) . fromRational . fst) i
+  in find (near x . fromRational . fst) i
 
 -- | Lookup name of interval, or error.
 intnam_search_ratio_name_err :: INTNAM -> Rational -> String

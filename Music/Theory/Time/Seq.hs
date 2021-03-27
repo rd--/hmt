@@ -53,11 +53,11 @@ type Wseq t a = [((t,t),a)]
 
 -- | Construct 'Pseq'.
 pseq_zip :: [t] -> [t] -> [t] -> [a] -> Pseq t a
-pseq_zip l o f a = (zip (zip3 l o f) a)
+pseq_zip l o f = zip (zip3 l o f)
 
 -- | Construct 'Wseq'.
 wseq_zip :: [t] -> [t] -> [a] -> Wseq t a
-wseq_zip t d a = (zip (zip t d) a)
+wseq_zip t d = zip (zip t d)
 
 -- * Time span
 
@@ -290,11 +290,11 @@ lseq_lookup_err cmp sq = fromMaybe (error "lseq_lookup") . lseq_lookup cmp sq
 
 -- | 'map' over time (/t/) data.
 seq_tmap :: (t1 -> t2) -> [(t1,a)] -> [(t2,a)]
-seq_tmap f = map (\(p,q) -> (f p,q))
+seq_tmap f = map (first f)
 
 -- | 'map' over element (/e/) data.
 seq_map :: (e1 -> e2) -> [(t,e1)] -> [(t,e2)]
-seq_map f = map (\(p,q) -> (p,f q))
+seq_map f = map (second f)
 
 -- | 'map' /t/ and /e/ simultaneously.
 --
@@ -319,7 +319,7 @@ seq_find f = find (f . snd)
 -- | 'mapMaybe' variant.
 seq_map_maybe :: (p -> Maybe q) -> [(t,p)] -> [(t,q)]
 seq_map_maybe f =
-    let g (t,e) = maybe Nothing (\e' -> Just (t,e')) (f e)
+    let g (t,e) = fmap (\e' -> (t,e')) (f e)
     in mapMaybe g
 
 -- | Variant of 'catMaybes'.
@@ -350,11 +350,11 @@ seq_changed = seq_changed_by (==)
 
 -- | Apply /f/ at time points of 'Wseq'.
 wseq_tmap_st :: (t -> t) -> Wseq t a -> Wseq t a
-wseq_tmap_st f = seq_tmap (bimap f id)
+wseq_tmap_st f = seq_tmap (first f)
 
 -- | Apply /f/ at durations of elements of 'Wseq'.
 wseq_tmap_dur :: (t -> t) -> Wseq t a -> Wseq t a
-wseq_tmap_dur f = seq_tmap (bimap id f)
+wseq_tmap_dur f = seq_tmap (second f)
 
 -- * Partition
 
@@ -364,7 +364,7 @@ seq_partition :: Ord v => (a -> v) -> [(t,a)] -> [(v,[(t,a)])]
 seq_partition voice sq =
     let assign m (t,a) = M.insertWith (++) (voice a) [(t,a)] m
         from_map = sortOn fst .
-                   map (\(v,l) -> (v,reverse l)) .
+                   map (second reverse) .
                    M.toList
     in from_map (foldl assign M.empty sq)
 
@@ -570,7 +570,7 @@ wseq_has_overlaps eq_fn =
   let recur sq =
         case sq of
           [] -> False
-          e0:sq' -> if wseq_find_overlap_1 eq_fn e0 sq' then True else recur sq'
+          e0:sq' -> wseq_find_overlap_1 eq_fn e0 sq' || recur sq'
   in recur
 
 {- | Remove overlaps by deleting any overlapping nodes.
@@ -960,7 +960,7 @@ wseq_cycle_ls :: Num t => Wseq t a -> [Wseq t a]
 wseq_cycle_ls sq =
     let (_,et) = wseq_tspan sq
         t_sq = iterate (+ et) 0
-    in map (\x -> wseq_tmap (\(t,d) -> (x + t,d)) sq) t_sq
+    in map (\x -> wseq_tmap (first (+ x)) sq) t_sq
 
 -- | Only finite 'Wseq' can be cycled, the resulting Wseq is infinite.
 --

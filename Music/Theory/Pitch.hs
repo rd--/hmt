@@ -759,8 +759,7 @@ pitch_parse_ly_err s =
 p_pitch_hly :: P.GenParser Char () Pitch
 p_pitch_hly = do
   (n,a) <- T.p_note_alteration_ly
-  o <- p_octave_iso
-  return (Pitch n (fromMaybe T.Natural a) o)
+  fmap (Pitch n (fromMaybe T.Natural a)) p_octave_iso
 
 -- | Run 'p_pitch_hly'.
 --

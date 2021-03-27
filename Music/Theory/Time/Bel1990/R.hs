@@ -16,7 +16,6 @@ For details see <http://rohandrape.net/?t=hmt-texts>.
 
 module Music.Theory.Time.Bel1990.R where
 
-import Control.Monad {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
@@ -199,7 +198,7 @@ lbel_normalise :: L_Bel a -> L_Bel a
 lbel_normalise b =
     let t = lbel_tempi b
         n = foldl1 lcm (map denominator t) % 1
-        m = foldl1 lcm (map numerator (map (* n) t)) % 1
+        m = foldl1 lcm (map (numerator . (* n)) t) % 1
     in lbel_tempo_mul (n / m) b
 
 -- | All leftmost voices are re-written to the last non-left turning point.
@@ -331,25 +330,25 @@ type P a = P.GenParser Char () a
 --
 -- > P.parse p_rest "" "-"
 p_rest :: P (Term a)
-p_rest = liftM (const Rest) (P.char '-')
+p_rest = fmap (const Rest) (P.char '-')
 
 -- | Parse 'Rest' 'Term'.
 --
 -- > P.parse p_nrests "" "3"
 p_nrests :: P (Bel a)
-p_nrests = liftM nrests p_non_negative_integer
+p_nrests = fmap nrests p_non_negative_integer
 
 -- | Parse 'Continue' 'Term'.
 --
 -- > P.parse p_continue "" "_"
 p_continue :: P (Term a)
-p_continue = liftM (const Continue) (P.char '_')
+p_continue = fmap (const Continue) (P.char '_')
 
 -- | Parse 'Char' 'Value' 'Term'.
 --
 -- > P.parse p_char_value "" "a"
 p_char_value :: P (Term Char)
-p_char_value = liftM Value P.lower
+p_char_value = fmap Value P.lower
 
 -- | Parse 'Char' 'Term'.
 --
@@ -361,13 +360,13 @@ p_char_term = P.choice [p_rest,p_continue,p_char_value]
 --
 -- > P.parse (P.many1 p_char_node) "" "-_a"
 p_char_node :: P (Bel Char)
-p_char_node = liftM Node p_char_term
+p_char_node = fmap Node p_char_term
 
 -- | Parse non-negative 'Integer'.
 --
 -- > P.parse p_non_negative_integer "" "3"
 p_non_negative_integer :: P Integer
-p_non_negative_integer = liftM read (P.many1 P.digit)
+p_non_negative_integer = fmap read (P.many1 P.digit)
 
 -- | Parse non-negative 'Rational'.
 --
@@ -396,8 +395,8 @@ p_non_negative_double = do
 p_non_negative_number :: P Rational
 p_non_negative_number =
     P.choice [P.try p_non_negative_rational
-             ,P.try (liftM toRational p_non_negative_double)
-             ,P.try (liftM toRational p_non_negative_integer)]
+             ,P.try (fmap toRational p_non_negative_double)
+             ,P.try (fmap toRational p_non_negative_integer)]
 
 -- | Parse 'Mul'.
 --

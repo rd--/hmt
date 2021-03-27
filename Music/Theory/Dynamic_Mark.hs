@@ -193,6 +193,6 @@ dynamic_node_ascii (mk,hp) =
 -- | ASCII pretty printer for 'Dynamic_Node' sequence.
 dynamic_sequence_ascii :: [Dynamic_Node] -> String
 dynamic_sequence_ascii =
-    intercalate " " .
+    unwords .
     filter (not . null) .
     map dynamic_node_ascii

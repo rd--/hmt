@@ -29,7 +29,7 @@ bit_array_complement = map not
 
 -- | Pretty printer for 'Bit_Array'.
 bit_array_pp :: Bit_Array -> String
-bit_array_pp = map intToDigit . map fromEnum
+bit_array_pp = map (intToDigit . fromEnum)
 
 -- | Parse PP of 'Bit_Array'.
 --

@@ -104,7 +104,7 @@ type OPT_USG = [String]
 
 -- | Print usage pre-amble and 'opt_help'.
 opt_usage :: OPT_USG -> [OPT_USR] -> IO ()
-opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitWith ExitSuccess
+opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitSuccess
 
 -- | Verify that all OPT have keys that are in OPT_USR
 opt_verify :: OPT_USG -> [OPT_USR] -> [OPT] -> IO ()

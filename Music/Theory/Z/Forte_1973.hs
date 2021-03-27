@@ -2,6 +2,7 @@
 --   Yale University Press, New Haven, 1973.
 module Music.Theory.Z.Forte_1973 where
 
+import Data.Bifunctor {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
@@ -55,6 +56,7 @@ forte_cmp p  q  =
 
 > z_forte_prime z12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
 > z_forte_prime z5 [0,1,4] == [0,1,2]
+> z_forte_prime z5 [0,1,1] -- ERROR
 
 > S.set (map (z_forte_prime z5) (S.powerset [0..4]))
 > S.set (map (z_forte_prime z7) (S.powerset [0..6]))
@@ -366,7 +368,7 @@ sc_table =
 sc_table_unicode :: Num n => SC_Table n
 sc_table_unicode =
     let f = map (\c -> if c == '-' then non_breaking_hypen else c)
-    in map (\(nm,pc) -> (f nm,pc)) sc_table
+    in map (first f) sc_table
 
 -- | Lookup name of prime form of set class.  It is an error for the
 -- input not to be a forte prime form.

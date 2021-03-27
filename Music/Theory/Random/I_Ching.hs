@@ -41,7 +41,7 @@ line_from_bit b = if b then L7 else L8
 
 -- | Seven character ASCII string for line.
 line_ascii_pp :: Line -> String
-line_ascii_pp n = fromMaybe (error "line_ascii_pp") (fmap T.p5_fifth (lookup n i_ching_chart))
+line_ascii_pp n = maybe (error "line_ascii_pp") T.p5_fifth (lookup n i_ching_chart)
 
 -- | Is line (ie. sum) moving (ie. 6 or 9).
 line_is_moving :: Line -> Bool

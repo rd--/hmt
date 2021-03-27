@@ -26,8 +26,7 @@ gen_bitseq n x =
 -- > 0b100100 == 36
 pack_bitseq :: Bits i => [Bool] -> i
 pack_bitseq =
-    last .
-    scanl (\n (k,b) -> if b then setBit n k else n) zeroBits .
+    foldl (\n (k,b) -> if b then setBit n k else n) zeroBits .
     zip [0..] .
     reverse
 

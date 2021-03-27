@@ -1,5 +1,5 @@
 -- | Larry Polansky. "Notes on Piano Study #5".
--- _1/1, The Journal of the Just Intonation Newtork_, 1(4), Autumn 1985.
+-- _1, The Journal of the Just Intonation Newtork_, 1(4), Autumn 1985.
 module Music.Theory.Tuning.Polansky_1985c where
 
 import Music.Theory.Tuning.Type {- hmt -}
@@ -7,10 +7,10 @@ import Music.Theory.Tuning.Type {- hmt -}
 -- | The tuning has four octaves, these ratios are per-octave.
 ps5_jpr_r :: [[Rational]]
 ps5_jpr_r =
-    [[1/1, 21/20, 9/8, 6/5, 5/4,  4/3,   7/5, 3/2, 8/5,  5/3,  7/4, 15/8]
-    ,[1/1, 21/20, 9/8, 6/5, 5/4,  4/3,   7/5, 3/2, 8/5,  5/3,  7/4, 15/8]
-    ,[1/1, 33/32, 9/8, 6/5, 5/4, 21/16, 11/8, 3/2, 8/5, 13/8,  7/4, 15/8]
-    ,[1/1, 21/20, 9/8, 7/6, 5/4,  4/3,  11/8, 3/2, 8/5, 27/16, 7/4, 15/8]]
+    [[1, 21/20, 9/8, 6/5, 5/4,  4/3,   7/5, 3/2, 8/5,  5/3,  7/4, 15/8]
+    ,[1, 21/20, 9/8, 6/5, 5/4,  4/3,   7/5, 3/2, 8/5,  5/3,  7/4, 15/8]
+    ,[1, 33/32, 9/8, 6/5, 5/4, 21/16, 11/8, 3/2, 8/5, 13/8,  7/4, 15/8]
+    ,[1, 21/20, 9/8, 7/6, 5/4,  4/3,  11/8, 3/2, 8/5, 27/16, 7/4, 15/8]]
 
 {- | Four-octave tuning.
 
@@ -30,6 +30,6 @@ ps5_jpr_r =
 -}
 ps5_jpr :: Tuning
 ps5_jpr =
-    let f (m,n) = map (* m) n
-        r = concat (map f (zip [1,2,4,8] ps5_jpr_r))
+    let f m n = map (* m) n
+        r = concat (zipWith f [1,2,4,8] ps5_jpr_r)
     in Tuning (Left r) (Just (Left 4))

@@ -14,7 +14,7 @@ import           Music.Theory.Pitch.Note.Name {- hmt -}
 cluster_normal_order :: [T.PitchClass] -> [T.PitchClass]
 cluster_normal_order =
     let with_bounds x = ((last x - head x) `mod` 12,x)
-    in snd . head . sort . map with_bounds . T.rotations
+    in snd . minimum . map with_bounds . T.rotations
 
 -- | Normal order starting in indicated octave.
 --
@@ -159,7 +159,7 @@ spell_cluster_c4 p =
         oct = map fst (cluster_normal_order_octpc o_0 p)
     in case spell_cluster p of
          Nothing -> Nothing
-         Just na -> Just (map (\((n,alt),o) -> T.Pitch n alt o) (zip na oct))
+         Just na -> Just (zipWith (\(n,alt) o -> T.Pitch n alt o) na oct)
 
 -- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave'.  An
 -- octave of @4@ is the identitiy, @3@ an octave below, @5@ an octave
@@ -189,7 +189,7 @@ spell_cluster_f o_f p =
                 [] -> []
                 l:_ -> let (o,n) = T.pitch_to_octpc l
                            oct_f = (+ (o_f n - o))
-                       in (map (T.pitch_edit_octave oct_f) r)
+                       in map (T.pitch_edit_octave oct_f) r
     in fmap fn (spell_cluster_c4 p)
 
 -- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave' so

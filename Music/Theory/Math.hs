@@ -76,7 +76,7 @@ int_id = id
 -- > map (flip zero_to_precision 0.00009) [4,5] == [True,False]
 -- > map (zero_to_precision 4) [0.00009,1.00009] == [True,False]
 zero_to_precision :: Real r => Int -> r -> Bool
-zero_to_precision k r = real_floor_int (r * (fromIntegral ((10::Int) ^ k))) == 0
+zero_to_precision k r = real_floor_int (r * fromIntegral ((10::Int) ^ k)) == 0
 
 -- | Is /r/ whole to /k/ decimal places.
 --

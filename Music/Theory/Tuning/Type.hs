@@ -33,7 +33,7 @@ tn_as_cents = either T.ratio_to_cents id
 
 -- | Tuning octave, defaulting to 2:1.
 tn_octave_def :: Tuning -> Either Rational T.Cents
-tn_octave_def = maybe (Left 2) id . tn_octave
+tn_octave_def = fromMaybe (Left 2) . tn_octave
 
 -- | Tuning octave in cents.
 tn_octave_cents :: Tuning -> T.Cents
@@ -110,7 +110,7 @@ tn_approximate_ratios_lookup :: Tuning -> Int -> T.Approximate_Ratio
 tn_approximate_ratios_lookup t n =
     let (o,pc) = n `divMod` tn_divisions t
         o_ratio = fromRational (T.oct_diff_to_ratio (tn_octave_ratio tn_epsilon t) o)
-    in o_ratio * ((tn_approximate_ratios t) !! pc)
+    in o_ratio * (tn_approximate_ratios t !! pc)
 
 -- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents'
 -- of 'Tuning'.

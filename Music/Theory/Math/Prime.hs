@@ -59,7 +59,7 @@ factor x n =
 -- > map prime_factors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 -- > map Primes.primeFactors [1,4,231,315] == [[],[2,2],[3,7,11],[3,3,5,7]]
 prime_factors :: Integral i => i -> [i]
-prime_factors n = factor primes_list n
+prime_factors = factor primes_list
 
 -- | 'maximum' of 'prime_factors'
 --

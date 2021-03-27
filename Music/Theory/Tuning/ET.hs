@@ -178,7 +178,7 @@ pitch_72et_k0 zero (x,n) =
 -- > T.minmax (map (round . snd) (tbl_72et_k0 (69,440))) == (16,33167)
 tbl_72et_k0 :: (Double, Double) -> [(Pitch_R,Double)]
 tbl_72et_k0 zero =
-    let f n = map (pitch_72et_k0 zero) (zip (replicate 6 n) [0..5])
+    let f n = zipWith (curry (pitch_72et_k0 zero)) (replicate 6 n) [0..5]
     in concatMap f [12 .. 143]
 
 -- | 'nearest_et_table_tone' for 'tbl_72et'.

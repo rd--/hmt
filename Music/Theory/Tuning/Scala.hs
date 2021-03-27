@@ -198,7 +198,7 @@ scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
 
 -- | Are scales equal at degree and 'intersect' to at least /k/ places of tuning data.
 scale_eq_n :: Int -> Scale -> Scale -> Bool
-scale_eq_n k (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && length (intersect p0 p1) >= k
+scale_eq_n k (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && length (p0 `intersect` p1) >= k
 
 -- | Is `s1` a proper subset of `s2`.
 scale_sub :: Scale -> Scale -> Bool
@@ -208,7 +208,7 @@ scale_sub (_,_,d0,p0) (_,_,d1,p1) = d0 < d1 && intersect p0 p1 == p0
 scale_eqv :: Epsilon -> Scale -> Scale -> Bool
 scale_eqv epsilon (_,_,d0,p0) (_,_,d1,p1) =
     let (~=) p q = abs (pitch_cents p - pitch_cents q) < epsilon
-    in d0 == d1 && all id (zipWith (~=) p0 p1)
+    in d0 == d1 && and (zipWith (~=) p0 p1)
 
 -- * Parser
 

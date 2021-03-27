@@ -2,9 +2,10 @@
 module Music.Theory.DB.Plain where
 
 import Data.List {- base -}
-import qualified Data.List.Split as Split {- split -}
 import Data.Maybe {- base -}
-import qualified Safe as Safe {- safe -}
+
+import qualified Data.List.Split as Split {- split -}
+import qualified Safe {- safe -}
 
 import qualified Music.Theory.IO as IO {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}

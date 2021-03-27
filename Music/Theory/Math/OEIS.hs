@@ -83,7 +83,7 @@ a(n) = 2^n + 1
 > [2,3,5,9,17,33,65,129,257,513,1025,2049,4097,8193,16385,32769,65537,131073] `isPrefixOf` a000051
 -}
 a000051 :: Num n => [n]
-a000051 = iterate ((subtract 1) . (* 2)) 2
+a000051 = iterate (subtract 1 . (* 2)) 2
 
 {- | <http://oeis.org/A000073>
 
@@ -643,7 +643,7 @@ a007318 = concat a007318_tbl
 
 a007318_tbl :: Integral i => [[i]]
 a007318_tbl =
-  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  let f r = zipWith (+) (0 : r) (r ++ [0])
   in iterate f [1]
 
 {- | <https://oeis.org/A008277>
@@ -656,7 +656,7 @@ a008277 :: (Enum n,Num n) => [n]
 a008277 = concat a008277_tbl
 
 a008277_tbl :: (Enum n,Num n) => [[n]]
-a008277_tbl = map tail $ a048993_tbl
+a008277_tbl = map tail a048993_tbl
 
 {- | <http://oeis.org/A008278>
 
@@ -671,7 +671,7 @@ a008278_tbl :: (Enum n,Num n) => [[n]]
 a008278_tbl =
   let f p =
         let q = reverse (zipWith (*) [1..] (reverse p))
-        in zipWith (+) ([0] ++ q) (p ++ [0])
+        in zipWith (+) (0 : q) (p ++ [0])
   in iterate f [1]
 
 {- | <http://oeis.org/A010049>
@@ -754,7 +754,7 @@ a029635 = concat a029635_tbl
 
 a029635_tbl :: Num i => [[i]]
 a029635_tbl =
-  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  let f r = zipWith (+) (0 : r) (r ++ [0])
   in [2] : iterate f [1,2]
 
 {- | <http://oeis.org/A030308>
@@ -787,7 +787,7 @@ Minimal number of factorials that add to n.
 -}
 a034968 :: Integral n => [n]
 a034968 =
-  let f i s n = if n == 0 then s else f (i + 1) (s + (rem n i)) (quot n i)
+  let f i s n = if n == 0 then s else f (i + 1) (s + rem n i) (quot n i)
   in map (f 2 0) [0 ..]
 
 {- | <http://oeis.org/A046042>
@@ -813,7 +813,7 @@ a047999 :: [Int]
 a047999 = concat a047999_tbl
 
 a047999_tbl :: [[Int]]
-a047999_tbl = iterate (\r -> zipWith xor ([0] ++ r) (r ++ [0])) [1]
+a047999_tbl = iterate (\r -> zipWith xor (0 : r) (r ++ [0])) [1]
 
 {- | <https://oeis.org/A048993>
 
@@ -825,7 +825,7 @@ a048993 :: (Enum n,Num n) => [n]
 a048993 = concat a048993_tbl
 
 a048993_tbl :: (Enum n,Num n) => [[n]]
-a048993_tbl = iterate (\row -> [0] ++ (zipWith (+) row $ zipWith (*) [1..] $ tail row) ++ [1]) [1]
+a048993_tbl = iterate (\row -> 0 : zipWith (+) row (zipWith (*) [1..] (tail row)) ++ [1]) [1]
 
 {- | <http://oeis.org/A049455>
 
@@ -860,7 +860,7 @@ a053121 :: Num n => [n]
 a053121 = concat a053121_tbl
 
 a053121_tbl :: Num n => [[n]]
-a053121_tbl = iterate (\row -> zipWith (+) ([0] ++ row) (tail row ++ [0, 0])) [1]
+a053121_tbl = iterate (\row -> zipWith (+) (0 : row) (tail row ++ [0, 0])) [1]
 
 {- | <http://oeis.org/A058265>
 
@@ -978,7 +978,7 @@ a095660 = concat a095660_tbl
 
 a095660_tbl :: Num i => [[i]]
 a095660_tbl =
-  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  let f r = zipWith (+) (0 : r) (r ++ [0])
   in [3] : iterate f [1,3]
 
 {- | <http://oeis.org/A095666>
@@ -993,7 +993,7 @@ a095666 = concat a095666_tbl
 
 a095666_tbl :: Num i => [[i]]
 a095666_tbl =
-  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  let f r = zipWith (+) (0 : r) (r ++ [0])
   in [4] : iterate f [1,4]
 
 {- | <http://oeis.org/A096940>
@@ -1008,7 +1008,7 @@ a096940 = concat a096940_tbl
 
 a096940_tbl :: Num i => [[i]]
 a096940_tbl =
-  let f r = zipWith (+) ([0] ++ r) (r ++ [0])
+  let f r = zipWith (+) (0 : r) (r ++ [0])
   in [5] : iterate f [1,5]
 
 {- | <http://oeis.org/A105809>
@@ -1022,7 +1022,7 @@ a105809 = concat a105809_tbl
 
 a105809_tbl :: Num n => [[n]]
 a105809_tbl =
-  let f (u:_, vs) = (vs, zipWith (+) ([u] ++ vs) (vs ++ [0]))
+  let f (u:_, vs) = (vs, zipWith (+) (u : vs) (vs ++ [0]))
       f _ = error "A105809"
   in map fst (iterate f ([1], [1, 1]))
 

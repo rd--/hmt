@@ -6,6 +6,7 @@
 -- Ireland, 64:129—175, 1934.
 module Music.Theory.Graph.Deacon_1934 where
 
+import Data.Bifunctor {- base -}
 import Data.List {- base -}
 
 import qualified Music.Theory.Array.Cell_Ref as T {- hmt -}
@@ -66,7 +67,7 @@ g8 =
 g9 :: G
 g9 =
     let d9' = ("E6",words "U R D LL (03/D6) U R R U L D D LL (11/C6) U R R U U R D L L D D LL (22/B6) U R R U U R R U L D D L L D D LL (38/A6) U R R U U R R U U R D L L D D L L D D LUU (56/A4) R R U U R R U L D D L L D D L UU (71/A3) R R U U R D L L D D L UU (83/A2) R R U L D D L UU (91/A1) R D L")
-        d9 = (fst d9',filter T.is_direction (snd d9'))
+        d9 = second (filter T.is_direction) d9'
         c9 = T.dir_seq_to_cell_seq d9
         o9 = [("node:shape","circle"),("edge:len","1.5"),("edge:fontsize","7")]
     in (T.adj2 1 c9,o9,"F")
@@ -74,7 +75,7 @@ g9 =
 g10 :: G
 g10 =
     let d10' = ("B7",words "U R LL (03/A6) R R U L D D LUU (10/A5) R R U L D D L UU (18/A4) R R U L D D L UU (26/A3) R R U L D D L UU (34/A2) R R U L D D L UU (41/A1) R D L")
-        d10 = (fst d10',filter T.is_direction (snd d10'))
+        d10 = second (filter T.is_direction) d10'
         c10 = T.dir_seq_to_cell_seq d10
         e10 = T.adj2 1 c10
         o10 = [("node:shape","circle"),("edge:len","1.5"),("edge:fontsize","7")]
@@ -83,7 +84,7 @@ g10 =
 g11 :: G
 g11 =
     let d11' = ("C3",words "DR DDL UUR U L (05/C3) DL DDR UUL U R (10/C3) D D U UL UUR DDL (16/B3) DL R U (18/B3) L DR R (21/C4) UR UUL DDR DR L (26/D4) U R DL L U (31/C3) U D (33/C3) R UUR DDDDD UUL L . (40/C4) L DDL UUUUU DDR R (44/C3)")
-        d11 = (fst d11',filter T.is_direction (snd d11'))
+        d11 = second (filter T.is_direction) d11'
         c11 = T.dir_seq_to_cell_seq d11
         e11 = T.adj2 1 c11
         o11 = [("node:shape","circle"),("edge:len","1.5"),("edge:fontsize","7")]
@@ -92,7 +93,7 @@ g11 =
 g12 :: G
 g12 =
     let d12' = ("C2",words "DR UR (02/E2) L DL UL L (06/A2) DR UR UR DR (10/E2) L UL DL L (14/A2) UR DR (16/C2)")
-        d12 = (fst d12',filter T.is_direction (snd d12'))
+        d12 = second (filter T.is_direction) d12'
         c12 = T.dir_seq_to_cell_seq d12
         e12 = T.adj2 1 c12
         o12 = [("node:shape","circle"),("edge:len","1.5"),("edge:fontsize","7")]
@@ -101,7 +102,7 @@ g12 =
 g13 :: G
 g13 =
     let d13' = ("B3",words "U D D U R DDL UUL R (07/C3) R UU DDL L UU DDR (11/C3)")
-        d13 = (fst d13',filter T.is_direction (snd d13'))
+        d13 = second (filter T.is_direction) d13'
         c13 = T.dir_seq_to_cell_seq d13
         e13 = T.adj2 1 c13
         o13 = [("node:shape","circle"),("edge:len","1.5"),("edge:fontsize","7")]

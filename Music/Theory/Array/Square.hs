@@ -1,8 +1,10 @@
 module Music.Theory.Array.Square where
 
 import Data.List {- base -}
-import Data.List.Split {- split -}
-import qualified Data.Map as M {- containers -}
+import Data.Maybe {- base -}
+
+import qualified Data.Map as Map {- containers -}
+import qualified Data.List.Split as Split {- split -}
 
 import qualified Music.Theory.Array as T {- hmt -}
 import qualified Music.Theory.Array.Text as T {- hmt -}
@@ -45,7 +47,7 @@ type SQ_Linear t = [t]
 
 -- | Given degree of square, form 'SQ' from 'SQ_Linear'.
 sq_from_list :: Int -> SQ_Linear t -> SQ t
-sq_from_list n = chunksOf n
+sq_from_list = Split.chunksOf
 
 -- | True if list can form a square, ie. if 'length' is a square.
 --
@@ -58,7 +60,7 @@ sq_is_linear_square l = length l `T.elem_ordered` T.a000290
 -- > sq_linear_degree T.a126710 == 4
 sq_linear_degree :: SQ_Linear t -> Int
 sq_linear_degree =
-    maybe (error "sq_linear_degree") id .
+    fromMaybe (error "sq_linear_degree") .
     flip T.elemIndex_ordered T.a000290 .
     length
 
@@ -149,17 +151,17 @@ sq_wr_m e = putStrLn . sq_pp_m e
 type SQ_Ix = T.Ix Int
 
 -- | Map from SQ_Ix to value.
-type SQ_Map t = M.Map SQ_Ix t
+type SQ_Map t = Map.Map SQ_Ix t
 
 -- | 'SQ' to 'SQ_Map'.
 sq_to_map :: SQ t -> SQ_Map t
 sq_to_map =
-    let f r = map (\(c,e) -> ((r,c),e)) . zip [0..]
-    in M.fromList . concat . zipWith f [0..]
+    let f r = zipWith (\c e -> ((r,c),e)) [0..]
+    in Map.fromList . concat . zipWith f [0..]
 
--- | Alias for 'M.!'
+-- | Alias for 'Map.!'
 sqm_ix :: SQ_Map t -> SQ_Ix -> t
-sqm_ix = (M.!)
+sqm_ix = (Map.!)
 
 -- | 'map' of 'sqm_ix'.
 sqm_ix_seq :: SQ_Map t -> [SQ_Ix] -> [t]
@@ -169,8 +171,8 @@ sqm_ix_seq m = map (sqm_ix m)
 -- indicated indices, else 'Nothing'.
 sqm_to_partial_sq :: Int -> SQ_Map t -> [SQ_Ix] -> SQ (Maybe t)
 sqm_to_partial_sq dm m ix_set =
-    let f i = if i `elem` ix_set then Just (m M.! i) else Nothing
-    in chunksOf dm (map f (T.matrix_indices (dm,dm)))
+    let f i = if i `elem` ix_set then Just (m Map.! i) else Nothing
+    in Split.chunksOf dm (map f (T.matrix_indices (dm,dm)))
 
 -- * TRS SEQ
 

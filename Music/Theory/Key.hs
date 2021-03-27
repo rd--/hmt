@@ -58,7 +58,7 @@ key_sequence_42 =
 --
 -- > length key_sequence_30 == 30
 key_sequence_30 :: [Key]
-key_sequence_30 = filter (\k -> maybe False ((< 8) . abs) (key_fifths k)) key_sequence_42
+key_sequence_30 = filter (maybe False ((< 8) . abs) . key_fifths) key_sequence_42
 
 -- | Parallel key, ie. 'mode_parallel' of 'Key'.
 key_parallel :: Key -> Key
@@ -133,17 +133,15 @@ note_char_to_key c =
 
 -- | Parse 'Key' from /lc-uc/ string.
 --
--- > import Data.Maybe
---
 -- > let k = mapMaybe key_lc_uc_parse ["c","E","f♯","ab","G#"]
--- > in map key_lc_uc_pp k == ["c♮","E♮","f♯","a♭","G♯"]
+-- > map key_lc_uc_pp k == ["c♮","E♮","f♯","a♭","G♯"]
 key_lc_uc_parse :: String -> Maybe Key
 key_lc_uc_parse k =
     let with_k a (n,_,m) = (n,a,m)
         with_a n a = fmap (with_k a) (note_char_to_key n)
     in case k of
          [c] -> note_char_to_key c
-         [n,a] -> join (fmap (with_a n) (T.symbol_to_alteration_iso a))
+         [n,a] -> with_a n =<< T.symbol_to_alteration_iso a
          _ -> Nothing
 
 -- | Distance along circle of fifths path of indicated 'Key'.  A
@@ -170,7 +168,7 @@ key_fifths (n,a,m) =
 -- | Table mapping 'Key' to 'key_fifths' value.
 key_fifths_tbl :: [(Key,Int)]
 key_fifths_tbl =
-    let f (k,n) = maybe Nothing (\n' -> Just (k,n')) n
+    let f (k,n) = fmap (\n' -> (k,n')) n
     in mapMaybe f (zip key_sequence_42 (map key_fifths key_sequence_42))
 
 -- | Lookup 'key_fifths' value in 'key_fifths_tbl'.
@@ -196,7 +194,7 @@ implied_key md pc_set =
 
 -- | 'key_fifths' of 'implied_key'.
 implied_fifths :: Integral i => Mode_T -> [i] -> Maybe Int
-implied_fifths md = join . fmap key_fifths . implied_key md
+implied_fifths md = key_fifths <=< implied_key md
 
 implied_key_err :: Integral i => Mode_T -> [i] -> Key
 implied_key_err md = fromMaybe (error "implied_key") . implied_key md

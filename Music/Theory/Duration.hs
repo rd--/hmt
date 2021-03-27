@@ -1,7 +1,6 @@
 -- | Common music notation duration model.
 module Music.Theory.Duration where
 
-import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
@@ -96,7 +95,7 @@ sum_dur y0 y1 =
                     then sum_dur_undotted (division x0, division x1)
                     else sum_dur_dotted (division x0, dots x0
                                         ,division x1, dots x1)
-    in join (fmap f (T.sort_pair_m duration_compare_meq (y0,y1)))
+    in T.sort_pair_m duration_compare_meq (y0,y1) >>= f
 
 -- | Erroring variant of 'sum_dur'.
 sum_dur_err :: Duration -> Duration -> Duration

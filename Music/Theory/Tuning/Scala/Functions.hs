@@ -66,10 +66,10 @@ intervals_list_ratios scl_nm = do
 -- | Given interval function (ie. '-' or '/') and scale generate interval half-matrix.
 interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
 interval_half_matrix interval_f =
-  let tails' = filter (not . (< 2) . length) . tails
+  let tails' = filter ((>= 2) . length) . tails
       f l = case l of
               [] -> []
-              i : l' -> map (\j -> j `interval_f` i) l'
+              i : l' -> map (`interval_f` i) l'
   in map f . tails'
 
 interval_half_matrix_tbl :: (t -> String) -> (t -> t -> t) -> [t] -> [[String]]

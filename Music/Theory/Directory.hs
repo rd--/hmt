@@ -50,7 +50,7 @@ dir_list_ext dir ext = do
 --
 -- > dir_list_ext_path "/home/rohan/rd/j/" ".hs"
 dir_list_ext_path :: FilePath -> String -> IO [FilePath]
-dir_list_ext_path dir ext = dir_list_ext dir ext >>= return . map ((</>) dir)
+dir_list_ext_path dir ext = fmap (map (dir </>)) (dir_list_ext dir ext)
 
 -- | Find files having indicated filename.
 --   This runs the system utility /find/, so is UNIX only.

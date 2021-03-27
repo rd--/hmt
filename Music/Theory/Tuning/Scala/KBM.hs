@@ -66,7 +66,7 @@ kbm_lookup kbm mnn =
        then Just (0,mnn)
        else let (sz,(_m0,_mN),mC,(_mF,_f),_o,m) = kbm
                 (oct,ix) = ((mnn - mC) `divMod` sz)
-            in maybe Nothing (\dgr -> Just (oct,dgr)) (m !! ix)
+            in fmap (\dgr -> (oct,dgr)) (m !! ix)
 
 -- | Return the triple (mF,kbm_lookup k mF,f).  The lookup for mF is not-nil by definition.
 --

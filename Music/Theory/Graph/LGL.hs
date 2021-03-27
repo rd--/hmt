@@ -4,7 +4,8 @@
 -}
 module Music.Theory.Graph.LGL where
 
-import Data.List {- hsc3 -}
+import Data.Bifunctor {- base -}
+import Data.List {- base -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
@@ -48,12 +49,12 @@ ncol_store k fn dat = writeFile fn (unlines (map (ncol_ent_format k) dat))
 
 -- | Type-specialised.
 ncol_store_int :: Int -> FilePath -> NCOL Int -> IO ()
-ncol_store_int k = ncol_store k
+ncol_store_int = ncol_store
 
 -- | NCOL data must be un-directed and have no self-arcs.
 --   This function sorts edges (i,j) so that i <= j and deletes edges where i == j.
 ncol_rewrite_eset :: Ord t => [(t,t)] -> [(t,t)]
-ncol_rewrite_eset e = filter (\(i,j) -> i /= j) (nub (sort (map T.t2_sort e)))
+ncol_rewrite_eset e = filter (uncurry (/=)) (nub (sort (map T.t2_sort e)))
 
 -- | eset (edge-set) to NCOL (runs 'ncol_rewrite_eset')
 eset_to_ncol :: Ord t => [(t,t)] -> NCOL t
@@ -77,7 +78,7 @@ lgl_format :: Show t => Int -> LGL t -> String
 lgl_format k =
   let f (i,j) = show i ++ maybe "" ((' ' :) . T.double_pp k) j
       g (i,j) = unlines (('#' : ' ' : show i) : map f j)
-  in concat . map g
+  in concatMap g
 
 -- | 'writeFile' of 'lgl_format'
 lgl_store :: Show t => Int -> FilePath -> LGL t -> IO ()
@@ -89,7 +90,7 @@ adj_to_lgl = map (\(i,j) -> (i,zip j (repeat Nothing)))
 
 -- | Inverse of 'adj_to_lgl', 'error' if 'LGL' is weighted
 lgl_to_adj :: LGL t -> T.ADJ t
-lgl_to_adj = map (\(i,j) -> (i,map (\(k,w) -> case w of {Nothing -> k;_ -> error "lgl_to_adj?"}) j))
+lgl_to_adj = map (second (map (\(k,w) -> case w of {Nothing -> k;_ -> error "lgl_to_adj?"})))
 
 -- | 'lgl_store' of 'adj_to_lgl'
 lgl_store_adj :: Show t => FilePath -> T.ADJ t -> IO ()

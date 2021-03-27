@@ -34,14 +34,14 @@ lcf_to_edg (l,k) =
       v = [0 .. v_n - 1]
   in ((v_n,v_n + (v_n `div` 2))
      ,concat [[(i,i `add` 1) | i <- v]
-             ,nub (sort (map T.e_sort (zip v (zipWith add v (lcf_seq (l,k))))))])
+             ,nub (sort (zipWith (curry T.e_sort) v (zipWith add v (lcf_seq (l,k)))))])
 
 -- | LCF edge-list to graph labeled with circular co-ordinates.
 edg_circ_gr :: R -> T.EDG -> T.LBL (R,R) ()
 edg_circ_gr rad ((n,_),e) =
   let polar_to_rectangular (mg,ph) = let c = mkPolar mg ph in (realPart c,imagPart c)
       ph_incr = (2 * pi) / fromIntegral n
-      v = zip [0 .. n - 1] (map polar_to_rectangular (zip (repeat rad) [0, ph_incr ..]))
+      v = zip [0 .. n - 1] (map (curry polar_to_rectangular rad) [0, ph_incr ..])
   in (v,zip e (repeat ()))
 
 {- | LCF graph set given at <http://mathworld.wolfram.com/LCFNotation.html>

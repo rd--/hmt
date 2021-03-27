@@ -30,7 +30,7 @@ table_concat sq = map concat (transpose sq)
 --
 -- > table_number_rows 0 tbl
 table_number_rows :: Int -> TABLE -> TABLE
-table_number_rows k dat = map (\(i,r) -> show i : r) (zip [k ..] dat)
+table_number_rows k = zipWith (\i r -> show i : r) [k ..]
 
 {- | (HEADER,PAD-LEFT,EQ-WIDTH,COL-SEP,TBL-DELIM).
 
@@ -68,7 +68,7 @@ table_pp (has_hdr,pad_left,eq_width,col_sep,print_eot) dat =
             in if eq_width then replicate nc (maximum k) else k
         ext k s = if pad_left then T.pad_left ' ' k s else T.pad_right ' ' k s
         jn = intercalate col_sep
-        m = jn (map (flip replicate '-') n)
+        m = jn (map (`replicate` '-') n)
         w = map jn (transpose (zipWith (map . ext) n c))
         d = map T.delete_trailing_whitespace w
         pr x = if print_eot then T.bracket (m,m) x else x

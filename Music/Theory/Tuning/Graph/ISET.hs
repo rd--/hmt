@@ -55,7 +55,7 @@ r_pcset_univ = nub . r_pcset
 
 -- | Does [R] construct indicated /pcset/.
 r_is_pcset :: [Int] -> [R] -> Bool
-r_is_pcset pcset = ((==) pcset) . r_pcset
+r_is_pcset pcset = (==) pcset . r_pcset
 
 -- * G
 

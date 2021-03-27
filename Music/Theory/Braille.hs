@@ -103,7 +103,7 @@ braille_lookup_unicode c = find ((== c) . braille_unicode) braille_table
 --
 -- > braille_lookup_ascii 'N' == Just (0x4E,'N',[1,3,4,5],'⠝',"n")
 braille_lookup_ascii :: Char -> Maybe BRAILLE
-braille_lookup_ascii c = find ((== (toUpper c)) . braille_ascii) braille_table
+braille_lookup_ascii c = find ((== toUpper c) . braille_ascii) braille_table
 
 -- | The arrangement of the 6-dot patterns into /decades/, sequences
 -- of (1,10,3) cells.  The cell to the left of the decade is the empty

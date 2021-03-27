@@ -33,7 +33,7 @@ is_symbol = s_classify isAlpha isAlphaNum (const True)
 --
 -- > map is_number ["123","123.45",".25","1.","1.2.3",""] == [True,True,False,True,False,False]
 is_number :: String -> Bool
-is_number = s_classify isDigit (\c -> isDigit c || c == '.') ((< 2) . length . filter ((==) '.'))
+is_number = s_classify isDigit (\c -> isDigit c || c == '.') ((< 2) . length . filter ('.' ==))
 
 -- | Quote /s/ if 'is_symbol' or 'is_number'.
 --
@@ -99,7 +99,7 @@ dot_attr_collate opt =
 --
 -- > k = dot_attr_def ("neato","century schoolbook",10,"plaintext")
 -- > map dot_attr_set_pp (dot_attr_collate k)
-dot_attr_def :: (String,String,Double,String) -> [(DOT_META_ATTR)]
+dot_attr_def :: (String,String,Double,String) -> [DOT_META_ATTR]
 dot_attr_def (ly,fn,fs,sh) =
     [("graph:layout",ly)
     ,("node:fontname",fn)
@@ -185,7 +185,7 @@ lbl_to_dot g_typ opt (v_attr,e_attr) (v,e) =
               ,["}"]]
 
 lbl_to_udot :: [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> [String]
-lbl_to_udot o pp = lbl_to_dot G_UGRAPH o pp
+lbl_to_udot = lbl_to_dot G_UGRAPH
 
 -- | 'writeFile' of 'lbl_to_udot'
 lbl_to_udot_wr :: FilePath -> [DOT_META_ATTR] -> GR_PP v e -> T.LBL v e -> IO ()

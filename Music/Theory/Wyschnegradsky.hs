@@ -3,12 +3,13 @@ module Music.Theory.Wyschnegradsky where
 
 import Data.Char {- base -}
 import Data.List {- list -}
-import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
-import Music.Theory.List {- hmt -}
-import Music.Theory.Pitch {- hmt -}
-import Music.Theory.Pitch.Spelling.Table {- hmt -}
+import qualified Data.List.Split as Split {- split -}
+
+import qualified Music.Theory.List as List {- hmt -}
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Pitch.Spelling.Table as Spelling {- hmt -}
 
 -- | In a modulo /m/ system, normalise step increments to be either -1
 -- or 1.  Non steps raise an error.
@@ -27,7 +28,7 @@ normalise_step m n
 -- > map parse_num_sign ["2+","4-"] == [2,-4]
 parse_num_sign :: (Num n, Read n) => String -> n
 parse_num_sign s =
-    case separate_last s of
+    case List.separate_last s of
       (n,'+') -> read n
       (n,'-') -> negate (read n)
       _ -> error "parse_num_sign"
@@ -46,9 +47,9 @@ vec_expand n = if n > 0 then replicate n 1 else replicate (abs n) (-1)
 parse_vec :: Num n => Maybe Int -> n -> String -> [n]
 parse_vec n m =
     let f = case n of
-              Just i -> dx_d m . take i . cycle
-              Nothing -> dx_d m
-    in dropRight 1 . f . concatMap (vec_expand . parse_num_sign) . splitOn ","
+              Just i -> List.dx_d m . take i . cycle
+              Nothing -> List.dx_d m
+    in List.dropRight 1 . f . concatMap (vec_expand . parse_num_sign) . Split.splitOn ","
 
 -- | Modulo addition.
 add_m :: Integral a => a -> a -> a -> a
@@ -82,13 +83,13 @@ data Seq a = Radial [a] | Circumferential [a]
 seq_group :: Int -> Int -> Seq a -> [[a]]
 seq_group c_div r_div s =
     case s of
-      Circumferential c -> chunksOf c_div c
-      Radial r -> transpose (chunksOf r_div r)
+      Circumferential c -> Split.chunksOf c_div c
+      Radial r -> transpose (Split.chunksOf r_div r)
 
 -- | Printer for pitch-class segments.
 iw_pc_pp :: Integral n => String -> [[n]] -> IO ()
 iw_pc_pp sep =
-    let f = pitch_pp_opt (False,False) . octpc_to_pitch pc_spell_ks . (,) 4
+    let f = Pitch.pitch_pp_opt (False,False) . Pitch.octpc_to_pitch Spelling.pc_spell_ks . (,) 4
     in putStrLn . intercalate sep . map (unwords . map f)
 
 -- * U3
@@ -133,7 +134,7 @@ u3_vec_text_iw =
 -- > let f = parse_vec Nothing 0 in map (\(p,q) -> (f p,f q)) u3_vec_text_rw
 --
 -- > let f (c,r) = putStrLn (unlines ["C: " ++ c,"R: " ++ r])
--- > in mapM_ f (interleave u3_vec_text_iw u3_vec_text_rw)
+-- > mapM_ f (List.interleave u3_vec_text_iw u3_vec_text_rw)
 u3_vec_text_rw :: [(String, String)]
 u3_vec_text_rw =
     [("4+,3-,5+,3-,3+"
@@ -170,7 +171,7 @@ u3_ix_radial :: Integral n => [[n]]
 u3_ix_radial =
     let (c,r) = u3_vec_ix
         r' = zipWith replicate (map length c) r
-    in zipWith (\p q -> map (add_m 6 p) q) (concat c) (concat r')
+    in zipWith (map . add_m 6) (concat c) (concat r')
 
 -- | Colour names in index sequence.
 u3_clr_nm :: [String]
@@ -207,7 +208,7 @@ u3_ch_seq_to_vec =
     map length .
     group .
     map (normalise_step 6) .
-    d_dx .
+    List.d_dx .
     map u3_ch_ix .
     filter (not . isSpace)
 
@@ -263,7 +264,7 @@ dc9_clr_hex =
             ,"#c2ba3d","#a2a367"
             ,"#537a77","#203342"
             ,"#84525e","#bc6460"]
-        n = interleave [6,4,2,0,10,8] [5,3,1,11,9,7] :: [Int]
+        n = List.interleave [6,4,2,0,10,8] [5,3,1,11,9,7] :: [Int]
     in map snd (sort (zip n c))
 
 -- | RGB form of colours.
@@ -302,7 +303,7 @@ u11_circ =
 
 -- > iw_pc_pp "|" [u11_gen_seq 7 18 [5]]
 u11_gen_seq :: Integral i => i -> Int -> [i] -> [i]
-u11_gen_seq z n = map (`mod` 12) . take n . dx_d z . cycle
+u11_gen_seq z n = map (`mod` 12) . take n . List.dx_d z . cycle
 
 u11_seq_rule :: Integral i => Maybe Int -> [i]
 u11_seq_rule n = u11_gen_seq 0 18 (maybe [-1] (\x -> replicate x (-1) ++ [5]) n)

@@ -5,8 +5,10 @@
 -}
 module Music.Theory.Graph.G6 where
 
-import Data.List.Split {- split -}
-import System.Process {- process -}
+import Data.Bifunctor {- base -}
+
+import qualified Data.List.Split as Split {- split -}
+import qualified System.Process as Process {- process -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
@@ -30,8 +32,8 @@ g6_dsc_load fn = do
 -- | Call nauty-listg to transform a sequence of G6. (debian = nauty)
 g6_to_edg :: [String] -> IO [T.EDG]
 g6_to_edg g6 = do
-  r <- readProcess "nauty-listg" ["-q","-l0","-e"] (unlines g6)
-  return (map T.edg_parse (chunksOf 2 (lines r)))
+  r <- Process.readProcess "nauty-listg" ["-q","-l0","-e"] (unlines g6)
+  return (map T.edg_parse (Split.chunksOf 2 (lines r)))
 
 -- | 'T.edg_to_g' of 'g6_to_edg'
 g6_to_g :: [String] -> IO [T.G]
@@ -47,7 +49,7 @@ g6_dsc_load_edg fn = do
 
 -- | 'T.edg_to_g' of 'g6_dsc_load_edg'
 g6_dsc_load_gr :: FilePath -> IO [(String,T.G)]
-g6_dsc_load_gr = fmap (map (\(dsc,e) -> (dsc,T.edg_to_g e))) . g6_dsc_load_edg
+g6_dsc_load_gr = fmap (map (second T.edg_to_g)) . g6_dsc_load_edg
 
 {- | Generate the text format read by nauty-amtog.
 
@@ -67,7 +69,7 @@ adj_mtx_to_am (nv,mtx) =
 -- > adj_mtx_to_g6 [m,m]
 adj_mtx_to_g6 :: [T.ADJ_MTX Int] -> IO [String]
 adj_mtx_to_g6 adj = do
-  r <- readProcess "nauty-amtog" ["-q"] (unlines (map adj_mtx_to_am adj))
+  r <- Process.readProcess "nauty-amtog" ["-q"] (unlines (map adj_mtx_to_am adj))
   return (lines r)
 
 -- | 'adj_mtx_to_g6' of 'T.g_to_adj_mtx_undir'
@@ -80,7 +82,7 @@ g_store_g6 fn gr = g_to_g6 gr >>= writeFile fn . unlines
 
 -- | Call nauty-labelg to canonise a set of graphs.
 g6_labelg :: [String] -> IO [String]
-g6_labelg = fmap lines . readProcess "nauty-labelg" ["-q"] . unlines
+g6_labelg = fmap lines . Process.readProcess "nauty-labelg" ["-q"] . unlines
 
 {- | 'g6_to_g' of 'g6_labelg' of 'g_to_g6'
 
