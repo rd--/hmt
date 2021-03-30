@@ -54,47 +54,53 @@ no_dots :: (Duration, Duration) -> Bool
 no_dots (x0,x1) = dots x0 == 0 && dots x1 == 0
 
 -- | Sum undotted divisions, input is required to be sorted.
-sum_dur_undotted :: (Division, Division) -> Maybe Duration
-sum_dur_undotted (x0, x1)
-    | x0 == x1 = Just (Duration (x0 `div` 2) 0 1)
-    | x0 == x1 * 2 = Just (Duration x1 1 1)
+sum_dur_undotted :: Rational -> (Division, Division) -> Maybe Duration
+sum_dur_undotted m (x0, x1)
+    | x0 == x1 = Just (Duration (x0 `div` 2) 0 m)
+    | x0 == x1 * 2 = Just (Duration x1 1 m)
     | otherwise = Nothing
 
--- | Sum dotted divisions, input is required to be sorted.
---
--- > sum_dur_dotted (4,1,4,1) == Just (Duration 2 1 1)
--- > sum_dur_dotted (4,0,2,1) == Just (Duration 1 0 1)
--- > sum_dur_dotted (8,1,4,0) == Just (Duration 4 2 1)
--- > sum_dur_dotted (16,0,4,2) == Just (Duration 2 0 1)
-sum_dur_dotted :: (Division,Dots,Division,Dots) -> Maybe Duration
-sum_dur_dotted (x0, n0, x1, n1)
+{- | Sum dotted divisions, input is required to be sorted.
+
+> sum_dur_dotted 1 (4,1,4,1) == Just (Duration 2 1 1)
+> sum_dur_dotted 1 (4,0,2,1) == Just (Duration 1 0 1)
+> sum_dur_dotted 1 (8,1,4,0) == Just (Duration 4 2 1)
+> sum_dur_dotted 1 (16,0,4,2) == Just (Duration 2 0 1)
+-}
+sum_dur_dotted :: Rational -> (Division,Dots,Division,Dots) -> Maybe Duration
+sum_dur_dotted m (x0, n0, x1, n1)
     | x0 == x1 &&
       n0 == 1 &&
-      n1 == 1 = Just (Duration (x1 `div` 2) 1 1)
+      n1 == 1 = Just (Duration (x1 `div` 2) 1 m)
     | x0 == x1 * 2 &&
       n0 == 0 &&
-      n1 == 1 = Just (Duration (x1 `div` 2) 0 1)
+      n1 == 1 = Just (Duration (x1 `div` 2) 0 m)
     | x0 == x1 * 4 &&
       n0 == 0 &&
-      n1 == 2 = Just (Duration (x1 `div` 2) 0 1)
+      n1 == 2 = Just (Duration (x1 `div` 2) 0 m)
     | x0 == x1 * 2 &&
       n0 == 1 &&
-      n1 == 0 = Just (Duration x1 2 1)
+      n1 == 0 = Just (Duration x1 2 m)
     | otherwise = Nothing
 
--- | Sum durations.  Not all durations can be summed, and the present
---   algorithm is not exhaustive.
---
--- > import Music.Theory.Duration.Name
--- > sum_dur quarter_note eighth_note == Just dotted_quarter_note
--- > sum_dur dotted_quarter_note eighth_note == Just half_note
--- > sum_dur quarter_note dotted_eighth_note == Just double_dotted_quarter_note
+{- | Sum durations.  Not all durations can be summed, and the present
+     algorithm is not exhaustive.
+
+> import Music.Theory.Duration
+> import Music.Theory.Duration.Name
+> sum_dur quarter_note eighth_note == Just dotted_quarter_note
+> sum_dur dotted_quarter_note eighth_note == Just half_note
+> sum_dur quarter_note dotted_eighth_note == Just double_dotted_quarter_note
+-}
 sum_dur :: Duration -> Duration -> Maybe Duration
 sum_dur y0 y1 =
-    let f (x0,x1) = if no_dots (x0,x1)
-                    then sum_dur_undotted (division x0, division x1)
-                    else sum_dur_dotted (division x0, dots x0
-                                        ,division x1, dots x1)
+    let (m0,m1) = (multiplier y0,multiplier y1)
+        f (x0,x1) = if m0 /= m1
+                    then Nothing -- cannot sum durations with non-equal multipliers
+                    else if no_dots (x0,x1)
+                         then sum_dur_undotted m0 (division x0, division x1)
+                         else sum_dur_dotted m0 (division x0, dots x0
+                                                ,division x1, dots x1)
     in T.sort_pair_m duration_compare_meq (y0,y1) >>= f
 
 -- | Erroring variant of 'sum_dur'.
