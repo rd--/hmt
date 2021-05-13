@@ -280,3 +280,11 @@ stern_brocot_tree_lhs = stern_brocot_tree_f [(0,1),(1,1)]
 -}
 stern_brocot_tree_f_r :: Integral n => [Ratio n] -> [[Ratio n]]
 stern_brocot_tree_f_r = map (map (uncurry (%))) . stern_brocot_tree_f . map rational_nd
+
+{- | Outer product of vectors represented as lists, c.f. liftM2
+
+> outer_product (*) [2..5] [2..5] == [[4,6,8,10],[6,9,12,15],[8,12,16,20],[10,15,20,25]]
+> liftM2 (*) [2..5] [2..5] == [4,6,8,10,6,9,12,15,8,12,16,20,10,15,20,25]
+-}
+outer_product :: (a -> b -> c) -> [a] -> [b] -> [[c]]
+outer_product f xs ys = map (flip map ys . f) xs

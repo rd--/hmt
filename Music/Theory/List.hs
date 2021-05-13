@@ -1,6 +1,7 @@
  -- | List functions.
 module Music.Theory.List where
 
+import Data.Bifunctor {- base -}
 import Data.Either {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
@@ -815,6 +816,13 @@ dropRight n = reverse . drop n . reverse
 dropWhileRight :: (a -> Bool) -> [a] -> [a]
 dropWhileRight p = reverse . dropWhile p . reverse
 
+{- | 'foldr' form of 'dropWhileRight'.
+
+> drop_while_right Data.Char.isDigit "A440" == "A"
+-}
+drop_while_right :: (a -> Bool) -> [a] -> [a]
+drop_while_right p = foldr (\x xs -> if p x && null xs then [] else x:xs) []
+
 -- | 'take' from right.
 --
 -- > take_right 3 "taking" == "ing"
@@ -823,9 +831,18 @@ take_right n = reverse . take n . reverse
 
 -- | 'takeWhile' from right.
 --
--- > take_while_right Data.Char.isDigit "A440" == "440"
+-- > takeWhileRight Data.Char.isDigit "A440" == "440"
+takeWhileRight :: (a -> Bool) -> [a] -> [a]
+takeWhileRight p = reverse . takeWhile p . reverse
+
+{- | 'foldr' form of 'takeWhileRight'.
+
+> take_while_right Data.Char.isDigit "A440" == "440"
+-}
 take_while_right :: (a -> Bool) -> [a] -> [a]
-take_while_right p = reverse . takeWhile p . reverse
+take_while_right p =
+  snd .
+  foldr (\x xys -> (if p x && fst xys then second (x:) else first (const False)) xys) (True, [])
 
 -- | Variant of 'take' that allows 'Nothing' to indicate the complete list.
 --
