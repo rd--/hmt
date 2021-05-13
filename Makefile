@@ -1,21 +1,27 @@
+GL_GIT=git@gitlab.com:rd--/hmt.git
+GL_HTTP=https://gitlab.com/rd--/hmt.git
+
 all:
 	echo "hmt"
 
 mk-cmd:
 	(cd cmd ; make all install)
 
+mk-svg:
+	(cd data/dot/tj/oh; sh mk.sh)
+
 clean:
 	rm -Rf dist
 	(cd cmd; make clean)
 
-push-rd:
-	darcs push -a rd@rohandrape.net:sw/hmt
+push-gl:
+	git push $(GL_GIT)
 
-pull-rd:
-	darcs pull -a http://rohandrape.net/sw/hmt
+pull-gl:
+	git pull $(GL_HTTP)
 
-remote-update:
-	ssh rd@rohandrape.net "(cd sw/hmt; make)"
+update-rd:
+	ssh rd@rohandrape.net "(cd sw/hmt; git pull $(GL_HTTP))"
 
-mk-svg:
-	(cd data/dot/tj/oh; sh mk.sh)
+push-all:
+	make push-gl update-rd
