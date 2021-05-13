@@ -288,9 +288,9 @@ fmidi_to_pitch_err sp m = fromMaybe (error (show ("fmidi_to_pitch",m))) (fmidi_t
 --
 -- > import Music.Theory.Pitch.Name as T
 -- > import Music.Theory.Pitch.Spelling as T
--- > pitch_tranpose T.pc_spell_ks 2 T.ees5 == T.f5
-pitch_tranpose :: (RealFrac n,Show n) => Spelling Int -> n -> Pitch -> Pitch
-pitch_tranpose sp n p =
+-- > pitch_transpose T.pc_spell_ks 2 T.ees5 == T.f5
+pitch_transpose :: (RealFrac n,Show n) => Spelling Int -> n -> Pitch -> Pitch
+pitch_transpose sp n p =
     let m = pitch_to_fmidi p
     in fmidi_to_pitch_err sp (m + n)
 

@@ -24,13 +24,11 @@ mod16 :: Integral i => i -> i
 mod16 n = n `mod` 16
 
 -- | <http://reference.wolfram.com/mathematica/ref/FractionalPart.html>
+--   i.e. 'properFraction'
 --
 -- > integral_and_fractional_parts 1.5 == (1,0.5)
 integral_and_fractional_parts :: (Integral i, RealFrac t) => t -> (i,t)
-integral_and_fractional_parts n =
-    if n >= 0
-    then let n' = floor n in (n',n - fromIntegral n')
-    else let n' = ceiling n in (n',n - fromIntegral n')
+integral_and_fractional_parts = properFraction
 
 -- | Type specialised.
 integer_and_fractional_parts :: RealFrac t => t -> (Integer,t)

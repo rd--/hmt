@@ -19,8 +19,7 @@ Data-files:        README
                    data/scl/*.scl
 
 Library
-  Build-Depends:   aeson,
-                   array,
+  Build-Depends:   array,
                    base >= 4.9 && < 5,
                    bytestring,
                    colour,
@@ -33,6 +32,7 @@ Library
                    hsc3 == 0.19.*,
                    lazy-csv,
                    logict,
+                   microaeson,
                    multiset-comb,
                    parsec,
                    primes,

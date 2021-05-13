@@ -199,10 +199,8 @@ fgl_to_udot opt pp gr = lbl_to_udot opt pp (T.fgl_to_lbl gr)
 
 -- * DOT-PROCESS
 
-{- | Run /dot/ to generate a file type based on the output file extension
-   (ie. .svg, .png, .jpeg, .gif)
-
-   /-n/ must be given to not run the layout algorithm and to use position data in the /dot/ file.
+{- | Run /dot/ to generate a file type based on the output file extension (ie. .svg, .png, .jpeg, .gif)
+     /-n/ must be given to not run the layout algorithm and to use position data in the /dot/ file.
 -}
 dot_to_ext :: [String] -> FilePath -> FilePath -> IO ()
 dot_to_ext opt dot_fn ext_fn =

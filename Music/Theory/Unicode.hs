@@ -51,6 +51,7 @@ subscript_digits = "₀₁₂₃₄₅₆₇₈₉"
 -- | The combining over line character.
 --
 -- > ['1',combining_overline] == "1̅"
+-- > ['A',combining_overline] == "A̅"
 combining_overline :: Char
 combining_overline = toEnum 0x0305
 
