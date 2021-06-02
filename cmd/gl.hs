@@ -21,7 +21,7 @@ import Data.CG.Minus.Plain {- hcg-minus -}
 import qualified Sound.SC3.Data.Geometry.OBJ as OBJ {- hsc3-data -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt -}
-import qualified Music.Theory.Opt as T {- hmt -}
+import qualified Music.Theory.Opt as Opt {- hmt -}
 
 -- * GEOMETRY
 
@@ -237,10 +237,10 @@ gl_gr_obj opt sz dly fn = do
   addTimerCallback dly (timer_f dly)
   mainLoop
 
-cli_usg :: T.OPT_USG
+cli_usg :: Opt.OptHelp
 cli_usg = ["obj-gr [opt] file-name..."]
 
-cli_opt :: [T.OPT_USR]
+cli_opt :: [Opt.OptUsr]
 cli_opt =
   [("chain","False","bool","OBJ is vertex sequence")
   ,("delay","100","int","timer delay (ms)")
@@ -249,12 +249,12 @@ cli_opt =
 
 main :: IO ()
 main = do
-  (o,a) <- T.opt_get_arg True cli_usg cli_opt
+  (o,a) <- Opt.opt_get_arg True cli_usg cli_opt
   case a of
     "obj-gr":fn -> gl_gr_obj
-                   (T.opt_read o "chain",T.opt_read o "normalise")
-                   (T.opt_read o "size")
-                   (T.opt_read o "delay")
+                   (Opt.opt_read o "chain",Opt.opt_read o "normalise")
+                   (Opt.opt_read o "size")
+                   (Opt.opt_read o "delay")
                    fn
-    _ -> T.opt_usage cli_usg cli_opt
+    _ -> Opt.opt_usage cli_usg cli_opt
 

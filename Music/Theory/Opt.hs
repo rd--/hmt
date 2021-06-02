@@ -2,7 +2,7 @@
 
 Only allows options of the form --key=value, with the form --key equal to --key=True.
 
-A list of OPT_USR describes the options and provides default values.
+A list of OptUsr describes the options and provides default values.
 
 'get_opt_arg' merges user and default values into a table with values for all options.
 
@@ -24,45 +24,45 @@ import qualified Music.Theory.Read as T {- hmt -}
 
 -- | (KEY,VALUE)
 --   Key does not include leading '--'.
-type OPT = (String,String)
+type Opt = (String,String)
 
 -- | (KEY,DEFAULT-VALUE,TYPE,NOTE)
-type OPT_USR = (String,String,String,String)
+type OptUsr = (String,String,String,String)
 
--- | Re-write default values at USR_OPT.
-opt_usr_rw_def :: [OPT] -> [OPT_USR] -> [OPT_USR]
+-- | Re-write default values at OptUsr.
+opt_usr_rw_def :: [Opt] -> [OptUsr] -> [OptUsr]
 opt_usr_rw_def rw =
   let f (k,v,ty,dsc) = case lookup k rw of
                          Just v' -> (k,v',ty,dsc)
                          Nothing -> (k,v,ty,dsc)
   in map f
 
--- | OPT_USR to OPT.
-opt_plain :: OPT_USR -> OPT
+-- | OptUsr to Opt.
+opt_plain :: OptUsr -> Opt
 opt_plain (k,v,_,_) = (k,v)
 
--- | OPT_USR to help string, indent is two spaces.
-opt_usr_help :: OPT_USR -> String
+-- | OptUsr to help string, indent is two spaces.
+opt_usr_help :: OptUsr -> String
 opt_usr_help (k,v,t,n) = concat ["  ",k,":",t," -- ",n,"; default=",if null v then "NIL" else v]
 
 -- | 'unlines' of 'opt_usr_help'
-opt_help :: [OPT_USR] -> String
+opt_help :: [OptUsr] -> String
 opt_help = unlines . map opt_usr_help
 
--- | Lookup KEY in OPT, error if non-existing.
-opt_get :: [OPT] -> String -> String
+-- | Lookup KEY in Opt, error if non-existing.
+opt_get :: [Opt] -> String -> String
 opt_get o k = fromMaybe (error ("opt_get: " ++ k)) (lookup k o)
 
 -- | Variant that returns Nothing if the result is the empty string, else Just the result.
-opt_get_nil :: [OPT] -> String -> Maybe String
+opt_get_nil :: [Opt] -> String -> Maybe String
 opt_get_nil o k = let r = opt_get o k in if null r then Nothing else Just r
 
 -- | 'read' of 'get_opt'
-opt_read :: Read t => [OPT] -> String -> t
+opt_read :: Read t => [Opt] -> String -> t
 opt_read o = T.read_err . opt_get o
 
 -- | Parse k or k=v string, else error.
-opt_param_parse :: String -> OPT
+opt_param_parse :: String -> Opt
 opt_param_parse p =
   case Split.splitOn "=" p of
     [lhs] -> (lhs,"True")
@@ -73,7 +73,7 @@ opt_param_parse p =
 --
 -- > opt_parse "--opt" == Just ("opt","True")
 -- > opt_parse "--key=value" == Just ("key","value")
-opt_parse :: String -> Maybe OPT
+opt_parse :: String -> Maybe Opt
 opt_parse s =
   case s of
     '-':'-':p -> Just (opt_param_parse p)
@@ -82,32 +82,32 @@ opt_parse s =
 -- | Parse option sequence, collating options and non-options.
 --
 -- > opt_set_parse (words "--a --b=c d") == ([("a","True"),("b","c")],["d"])
-opt_set_parse :: [String] -> ([OPT],[String])
+opt_set_parse :: [String] -> ([Opt],[String])
 opt_set_parse =
   let f s = maybe (Right s) Left (opt_parse s)
   in partitionEithers . map f
 
--- | Left-biased OPT merge.
-opt_merge :: [OPT] -> [OPT] -> [OPT]
+-- | Left-biased Opt merge.
+opt_merge :: [Opt] -> [Opt] -> [Opt]
 opt_merge p q =
   let x = map fst p
   in p ++ filter (\(k,_) -> k `notElem` x) q
 
 -- | Process argument list.
-opt_proc :: [OPT_USR] -> [String] -> ([OPT], [String])
+opt_proc :: [OptUsr] -> [String] -> ([Opt], [String])
 opt_proc def arg =
   let (o,a) = opt_set_parse arg
   in (opt_merge o (map opt_plain def),a)
 
 -- | Usage text
-type OPT_USG = [String]
+type OptHelp = [String]
 
 -- | Print usage pre-amble and 'opt_help'.
-opt_usage :: OPT_USG -> [OPT_USR] -> IO ()
+opt_usage :: OptHelp -> [OptUsr] -> IO ()
 opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitSuccess
 
--- | Verify that all OPT have keys that are in OPT_USR
-opt_verify :: OPT_USG -> [OPT_USR] -> [OPT] -> IO ()
+-- | Verify that all Opt have keys that are in OptUsr
+opt_verify :: OptHelp -> [OptUsr] -> [Opt] -> IO ()
 opt_verify usg def =
   let k_set = map (fst . opt_plain) def
       f (k,_) = if k `elem` k_set
@@ -117,7 +117,7 @@ opt_verify usg def =
 
 -- | 'opt_set_parse' and maybe 'opt_verify' and 'opt_merge' of 'getArgs'.
 --   If arguments include -h or --help run 'opt_usage'
-opt_get_arg :: Bool -> OPT_USG -> [OPT_USR] -> IO ([OPT],[String])
+opt_get_arg :: Bool -> OptHelp -> [OptUsr] -> IO ([Opt],[String])
 opt_get_arg chk usg def = do
   a <- getArgs
   when ("-h" `elem` a || "--help" `elem` a) (opt_usage usg def)
@@ -128,7 +128,7 @@ opt_get_arg chk usg def = do
 -- | Parse param set, one parameter per line.
 --
 -- > opt_param_set_parse "a\nb=c" == [("a","True"),("b","c")]
-opt_param_set_parse :: String -> [OPT]
+opt_param_set_parse :: String -> [Opt]
 opt_param_set_parse = map opt_param_parse . lines
 
 -- | Simple scanner over argument list.
