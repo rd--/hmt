@@ -102,9 +102,17 @@ opt_proc def arg =
 -- | Usage text
 type OptHelp = [String]
 
--- | Print usage pre-amble and 'opt_help'.
+-- | Format usage pre-amble and 'opt_help'.
+opt_help_pp :: OptHelp -> [OptUsr] -> String
+opt_help_pp usg def = unlines (usg ++ ["",opt_help def])
+
+-- | Print help and exit.
 opt_usage :: OptHelp -> [OptUsr] -> IO ()
-opt_usage usg def = putStrLn (unlines (usg ++ ["",opt_help def])) >> exitSuccess
+opt_usage usg def = putStrLn (opt_help_pp usg def)  >> exitSuccess
+
+-- | Print help and error.
+opt_error :: OptHelp -> [OptUsr] -> t
+opt_error usg def = error (opt_help_pp usg def)
 
 -- | Verify that all Opt have keys that are in OptUsr
 opt_verify :: OptHelp -> [OptUsr] -> [Opt] -> IO ()
