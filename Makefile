@@ -20,6 +20,9 @@ push-gl:
 pull-gl:
 	git pull $(GL_HTTP)
 
+push-tags:
+	git push $(GL_GIT) --tags
+
 update-rd:
 	ssh rd@rohandrape.net "(cd sw/hmt; git pull $(GL_HTTP))"
 
