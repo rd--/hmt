@@ -32,7 +32,6 @@ Library
                    hmt-base == 0.20.*,
                    lazy-csv,
                    logict,
-                   microaeson,
                    multiset-comb,
                    parsec,
                    primes,
@@ -56,7 +55,6 @@ Library
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.DB.Common
                    Music.Theory.DB.CSV
-                   Music.Theory.DB.JSON
                    Music.Theory.DB.Plain
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation

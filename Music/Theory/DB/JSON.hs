@@ -1,6 +1,7 @@
 -- | JSON string association database.
 -- JSON objects do no allow multiple keys.
 -- Here multiple keys are read & written as arrays.
+-- This is not built since it is little and introduces dependencies.
 module Music.Theory.DB.JSON where
 
 import Data.Bifunctor {- base -}
