@@ -30,7 +30,6 @@ Library
                    fgl,
                    filepath,
                    hmt-base == 0.20.*,
-                   hsc3 == 0.20.*,
                    lazy-csv,
                    logict,
                    microaeson,

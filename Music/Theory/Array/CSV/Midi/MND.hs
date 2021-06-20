@@ -8,16 +8,35 @@ Non-integral note number and key velocity data are allowed.
 module Music.Theory.Array.CSV.Midi.MND where
 
 import Data.Function {- base -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Word {- base -}
 
-import Sound.SC3.Server.Param {- hsc3 -}
+import Data.List.Split {- split -}
 
 import qualified Music.Theory.Array.CSV as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
+
+-- * Param ; Sound.SC3.Server.Param
+
+type Param = [(String,Double)]
+
+param_parse :: (Char,Char) -> String -> Param
+param_parse (c1,c2) str =
+    let f x = case splitOn [c2] x of
+                [lhs,rhs] -> (lhs,read rhs)
+                _ -> error ("param_parse: " ++ x)
+    in if null str then [] else map f (splitOn [c1] str)
+
+param_pp :: (Char,Char) -> Int -> Param -> String
+param_pp (c1,c2) k =
+    let f (lhs,rhs) = concat [lhs,[c2],T.double_pp k rhs]
+    in intercalate [c1] . map f
+
+-- * MND
 
 -- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
 data_value_pp :: Real t => Int -> t -> String
