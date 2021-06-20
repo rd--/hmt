@@ -8,7 +8,7 @@ import qualified PLY.Types {- ply-loader -}
 
 import qualified Sound.SC3.Data.Geometry.PLY as PLY {- hsc3-data -}
 
-import qualified Music.Theory.Graph.Type as T {- hmt -}
+import qualified Music.Theory.Graph.Type as T {- hmt-base -}
 
 ply_load_v3_e2 :: FilePath -> IO ([(Double,Double,Double)],[(Int,Int)])
 ply_load_v3_e2 fn = do

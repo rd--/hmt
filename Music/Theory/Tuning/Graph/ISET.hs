@@ -7,11 +7,12 @@ import Data.Maybe {- base -}
 import qualified Data.Graph.Inductive.Graph as FGL {- fgl -}
 import qualified Data.Graph.Inductive.PatriciaTree as FGL {- fgl -}
 
+import qualified Music.Theory.Graph.Type as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Show as T {- hmt-base -}
+
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
-import qualified Music.Theory.Graph.Type as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as Euler {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}

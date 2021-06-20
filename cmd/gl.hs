@@ -20,8 +20,8 @@ import Data.CG.Minus.Plain {- hcg-minus -}
 
 import qualified Sound.SC3.Data.Geometry.OBJ as OBJ {- hsc3-data -}
 
-import qualified Music.Theory.Graph.Type as T {- hmt -}
-import qualified Music.Theory.Opt as Opt {- hmt -}
+import qualified Music.Theory.Graph.Type as T {- hmt-base -}
+import qualified Music.Theory.Opt as Opt {- hmt-base -}
 
 -- * GEOMETRY
 

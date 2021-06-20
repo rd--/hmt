@@ -11,21 +11,22 @@ import Text.Printf {- base -}
 
 import qualified Safe {- safe -}
 
-import qualified Music.Theory.Array.Text as Text {- hmt -}
-import qualified Music.Theory.Function as Function {- hmt -}
+import qualified Music.Theory.Array.Text as Text {- hmt-base -}
+import qualified Music.Theory.Function as Function {- hmt-base -}
+import qualified Music.Theory.Graph.Type as Graph {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
+import qualified Music.Theory.Math.Convert as Convert {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
+
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
-import qualified Music.Theory.Graph.Type as Graph {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Math as Math {- hmt -}
-import qualified Music.Theory.Math.Convert as Convert {- hmt -}
 import qualified Music.Theory.Math.OEIS as OEIS {- hmt -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Set.List as Set {- hmt -}
-import qualified Music.Theory.Show as Show {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
-import qualified Music.Theory.Tuple as Tuple {- hmt -}
 
 -- * GEOM (SEE "Data.CG.Minus.Plain")
 
