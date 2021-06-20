@@ -3,6 +3,10 @@ hmt - haskell music theory
 
 [haskell](http://haskell.org/) music theory
 
+requires:
+
+- [hmt-base](http://rohandrape.net/?t=hmt-base)
+
 related:
 
 - [hmt-diagrams](http://rohandrape.net/?t=hmt-diagrams)

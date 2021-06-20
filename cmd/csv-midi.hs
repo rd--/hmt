@@ -1,6 +1,6 @@
 import System.Environment {- base -}
 
-import qualified Music.Theory.Array.CSV.Midi.MND as T
+import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
 usage :: [String]

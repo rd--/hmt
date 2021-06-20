@@ -2,10 +2,10 @@ import Data.Char {- base -}
 import Data.Int {- base -}
 import System.Environment {- base -}
 
-import Music.Theory.Z
-import Music.Theory.Z.Drape_1999
-import Music.Theory.Z.Forte_1973
-import Music.Theory.Z.SRO
+import Music.Theory.Z {- hmt -}
+import Music.Theory.Z.Drape_1999 {- hmt -}
+import Music.Theory.Z.Forte_1973 {- hmt -}
+import Music.Theory.Z.SRO {- hmt -}
 
 type Z12 = Int8
 

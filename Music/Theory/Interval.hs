@@ -4,9 +4,9 @@ module Music.Theory.Interval where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.Ord as T
-import qualified Music.Theory.Pitch as T
-import qualified Music.Theory.Pitch.Note as T
+import qualified Music.Theory.Ord as T {- hmt -}
+import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Pitch.Note as T {- hmt -}
 
 -- | Interval type or degree.
 data Interval_T = Unison | Second | Third | Fourth

@@ -1,9 +1,9 @@
 import System.Environment {- base -}
 
-import qualified Music.Theory.DB.CSV as CSV
-import qualified Music.Theory.DB.Common as Common
-import qualified Music.Theory.DB.JSON as JSON
-import qualified Music.Theory.DB.Plain as Plain
+import qualified Music.Theory.DB.CSV as CSV {- hmt -}
+import qualified Music.Theory.DB.Common as Common {- hmt -}
+import qualified Music.Theory.DB.JSON as JSON {- hmt -}
+import qualified Music.Theory.DB.Plain as Plain {- hmt -}
 
 db_load_ty :: String -> FilePath -> IO (Common.DB String String)
 db_load_ty ty fn =
