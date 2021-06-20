@@ -1,8 +1,9 @@
+cabal-version:     2.4
 Name:              hmt
 Version:           0.20
 Synopsis:          Haskell Music Theory
 Description:       Haskell music theory library
-License:           GPL
+License:           GPL-3.0-only
 Category:          Music
 Copyright:         Rohan Drape, 2006-2021
 Author:            Rohan Drape
@@ -11,7 +12,6 @@ Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
 Tested-With:       GHC == 8.8.4
 Build-Type:        Simple
-Cabal-Version:     >= 1.10
 
 Data-files:        README.md
                    data/csv/mnd/*.csv

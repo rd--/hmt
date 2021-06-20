@@ -11,7 +11,7 @@ mk-svg:
 	(cd data/dot/tj/oh; sh mk.sh)
 
 clean:
-	rm -Rf dist
+	rm -Rf dist dist-newstyle *~
 	(cd cmd; make clean)
 
 push-gl:
