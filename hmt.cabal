@@ -69,16 +69,10 @@ Library
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Gamelan
-                   Music.Theory.Graph.Bliss
                    Music.Theory.Graph.Deacon_1934
                    Music.Theory.Graph.Dot
                    Music.Theory.Graph.FGL
-                   Music.Theory.Graph.G6
                    Music.Theory.Graph.Johnson_2014
-                   Music.Theory.Graph.LCF
-                   Music.Theory.Graph.LGL
-                   Music.Theory.Graph.Planar
-                   Music.Theory.Graph.Type
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
                    Music.Theory.Interval
