@@ -3,16 +3,15 @@ import Data.List {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
-import qualified Sound.SC3.Server.Param as SC3 {- hsc3 -}
+import qualified Music.Theory.Array.Text as T {- hmt-base -}
+import qualified Music.Theory.Function as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Read as T {- hmt-base -}
+import qualified Music.Theory.Show as T {- hmt-base -}
 
 import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
-import qualified Music.Theory.Array.Text as T {- hmt -}
-import qualified Music.Theory.Function as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
-import qualified Music.Theory.Read as T {- hmt -}
-import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt -}
@@ -128,7 +127,7 @@ csv_mnd_retune_d12 :: (String,T.Cents,T.Midi) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm,c,k) in_fn out_fn = do
   t <- Scala.scl_load_tuning nm
   let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t,c,k)
-  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,SC3.Param))
+  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R,R,T.Channel,T.Param))
   let f (tm,(mnn,vel,ch,pm)) = (tm,(retune_f (floor mnn),vel,ch,pm))
   T.csv_mndd_write_wseq 4 out_fn (map f m)
 
