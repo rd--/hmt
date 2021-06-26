@@ -40,7 +40,7 @@ rq_to_duration_err msg n =
 -- > map whole_note_division_to_rq [1,2,4,8] == [4,2,1,1/2]
 whole_note_division_to_rq :: Division -> RQ
 whole_note_division_to_rq x =
-    let f = (* 4) . recip . (%1)
+    let f = (* 4) . recip . (% 1)
     in case x of
          0 -> 8
          -1 -> 16

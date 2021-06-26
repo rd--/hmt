@@ -2,7 +2,7 @@ cabal-version:     2.4
 Name:              hmt
 Version:           0.20
 Synopsis:          Haskell Music Theory
-Description:       Haskell music theory library
+Description:       Haskell Music Theory
 License:           GPL-3.0-only
 Category:          Music
 Copyright:         Rohan Drape, 2006-2021
