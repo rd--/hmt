@@ -85,6 +85,15 @@ a(n) = 2^n + 1
 a000051 :: Num n => [n]
 a000051 = iterate (subtract 1 . (* 2)) 2
 
+{- | <http://oeis.org/A000071>
+
+a(n) = Fibonacci(n) - 1.
+
+> [0,0,1,2,4,7,12,20,33,54,88,143,232,376,609,986,1596,2583,4180,6764,10945,17710] `isPrefixOf` a000071
+-}
+a000071 :: Num n => [n]
+a000071 = map (subtract 1) (tail a000045)
+
 {- | <http://oeis.org/A000073>
 
 Tribonacci numbers: a(n) = a(n-1) + a(n-2) + a(n-3) for n >= 3 with a(0) = a(1) = 0 and a(2) = 1.
