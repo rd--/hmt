@@ -3,6 +3,7 @@ module Music.Theory.Set.List where
 
 import Control.Monad {- base -}
 import Data.List {- base -}
+
 import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
 
 import qualified Music.Theory.List as T {- hmt -}
@@ -91,3 +92,11 @@ nfold_cartesian_product l =
       [_] -> []
       [x,y] -> [[i,j] | i <- x, j <- y]
       x:l' -> concatMap (\e -> map (e :) (nfold_cartesian_product l')) x
+
+{- | 
+
+-- > 
+-- > M.cycles (M.fromCounts [(0,6),(1,6)])
+-}
+multiset_cycles :: Ord t => [t] -> [[t]]
+multiset_cycles = M.cycles . M.fromList

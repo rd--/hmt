@@ -59,6 +59,7 @@ Library
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.CT
+                   Music.Theory.Duration.Hollos2014
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Name.Abbreviation
                    Music.Theory.Duration.RQ

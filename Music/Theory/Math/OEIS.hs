@@ -9,6 +9,7 @@ import Data.Ratio {- base -}
 import qualified Data.MemoCombinators as Memo {- data-memocombinators -}
 
 import qualified Music.Theory.Math as Math {- hmt -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 
 {- | <http://oeis.org/A000010>
 
@@ -17,9 +18,10 @@ Euler totient function phi(n): count numbers <= n and prime to n.
 > [1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8,12,10,22,8,20,12] `isPrefixOf` a000010
 -}
 a000010 :: Integral n => [n]
-a000010 =
-  let phi n = genericLength (filter (==1) (map (gcd n) [1..n]))
-  in map phi [1::Integer ..]
+a000010 = map a000010_n [1 ..]
+
+a000010_n :: Integral n => n -> n
+a000010_n n = genericLength (filter (==1) (map (gcd n) [1..n]))
 
 {- | <http://oeis.org/A000012>
 
@@ -27,6 +29,22 @@ The simplest sequence of positive numbers: the all 1's sequence.
 -}
 a000012 :: Num n => [n]
 a000012 = repeat 1
+
+{- | <https://oeis.org/A000031>
+
+Number of n-bead necklaces with 2 colors when turning over is not allowed; also number of output sequences from a simple n-stage cycling shift register; also number of binary irreducible polynomials whose degree divides n.
+
+> [1,2,3,4,6,8,14,20,36,60,108,188,352,632,1182,2192,4116,7712,14602,27596] `isPrefixOf` a000031
+-}
+a000031 :: Integral n => [n]
+a000031 = map a000031_n [0..]
+
+a000031_n :: Integral n => n -> n
+a000031_n n =
+  if n == 0
+  then 1
+  else let divs = a027750_row n
+       in ((`div` n) . sum . zipWith (*) (map a000010_n divs) . map (2 ^) . reverse) divs
 
 {- | <http://oeis.org/A000032>
 
@@ -119,6 +137,7 @@ a000078 =
 Powers of 2: a(n) = 2^n. (Formerly M1129 N0432)
 
 > [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536] `isPrefixOf` a000079
+> [1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536] `isPrefixOf` map (2 ^) [0..]
 -}
 a000079 :: Num n => [n]
 a000079 = iterate (* 2) 1
@@ -325,6 +344,21 @@ Numerators of harmonic numbers H(n) = Sum_{i=1..n} 1/i
 -}
 a001008 :: Integral i => [i]
 a001008 = map numerator (scanl1 (+) (map (1 %) [1..]))
+
+{- | <http://oeis.org/A001037>
+
+Number of degree-n irreducible polynomials over GF(2); number of
+n-bead necklaces with beads of 2 colors when turning over is not
+allowed and with primitive period n; number of binary Lyndon words of
+length n.
+
+> [1,2,1,2,3,6,9,18,30,56,99,186,335,630,1161,2182,4080,7710,14532,27594,52377,99858,190557,364722,698870] `isPrefixOf` a001037
+-}
+a001037 :: Integral n => [n]
+a001037 = map a001037_n [0..]
+
+a001037_n :: Integral n => n -> n
+a001037_n n = if n == 0 then 1 else (sum (map (\d -> (2 ^ d) * a008683_n (n `div` d)) (a027750_row n))) `div` n
 
 {- | <http://oeis.org/A001113>
 
@@ -683,6 +717,22 @@ a008278_tbl =
         in zipWith (+) (0 : q) (p ++ [0])
   in iterate f [1]
 
+{- | <http://oeis.org/A008683>
+
+Möbius (or Moebius) function mu(n). mu(1) = 1; mu(n) = (-1)^k if n is the product of k different primes; otherwise mu(n) = 0.
+
+> [1,-1,-1,0,-1,1,-1,0,0,1,-1,0,-1,1,1,0,-1,0,-1,0,1,1,-1,0,0,1,0,0,-1,-1,-1,0,1] `isPrefixOf` a008683
+-}
+a008683 :: Integral n => [n]
+a008683 = map a008683_n [1..]
+
+a008683_n :: Integral n => n -> n
+a008683_n =
+  let mu [] = 1
+      mu (1:es) = - mu es
+      mu _ = 0
+  in mu . snd . unzip . Prime.prime_factors_m 
+
 {- | <http://oeis.org/A010049>
 
 Second-order Fibonacci numbers.
@@ -739,6 +789,18 @@ Fibonacci sequence beginning 1, 6.
 -}
 a022096 :: Num n => [n]
 a022096 = 1 : 6 : zipWith (+) a022096 (tail a022096)
+
+{- | <https://oeis.org/A027750>
+
+Triangle read by rows in which row n lists the divisors of n.
+
+> [1,1,2,1,3,1,2,4,1,5,1,2,3,6,1,7,1,2,4,8,1,3,9,1,2,5,10,1,11,1,2,3,4,6,12,1,13] `isPrefixOf` a027750
+-}
+a027750 :: Integral n => [n]
+a027750 = concatMap a027750_row [1..]
+
+a027750_row :: Integral n => n -> [n]
+a027750_row n = filter ((== 0) . (mod n)) [1..n]
 
 {- | <http://oeis.org/A027934>
 

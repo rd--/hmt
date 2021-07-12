@@ -27,7 +27,7 @@ permutations_nk_l n k e =
 -- | Generate all distinct permutations of a multi-set.
 --
 -- > multiset_permutations [0,1,1] == [[0,1,1],[1,1,0],[1,0,1]]
-multiset_permutations :: (Ord a) => [a] -> [[a]]
+multiset_permutations :: Ord a => [a] -> [[a]]
 multiset_permutations = C.permutations . C.fromList
 
 -- | Calculate number of permutations of a multiset.
