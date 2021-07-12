@@ -93,10 +93,9 @@ nfold_cartesian_product l =
       [x,y] -> [[i,j] | i <- x, j <- y]
       x:l' -> concatMap (\e -> map (e :) (nfold_cartesian_product l')) x
 
-{- | 
+{- | Generate all distinct cycles, aka necklaces, with elements taken from a multiset.
 
--- > 
--- > M.cycles (M.fromCounts [(0,6),(1,6)])
+> concatMap multiset_cycles [replicate i 0 ++ replicate (6 - i) 1 | i <- [0 .. 6]]
 -}
 multiset_cycles :: Ord t => [t] -> [[t]]
 multiset_cycles = M.cycles . M.fromList
