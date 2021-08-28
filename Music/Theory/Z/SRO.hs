@@ -4,7 +4,6 @@ module Music.Theory.Z.SRO where
 import Data.List {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Parse as Parse {- hmt -}
@@ -29,7 +28,7 @@ sro_pp (SRO rN r tN m i) =
            ,if i then "I" else ""]
 
 -- | Parser for SRO.
-p_sro :: Integral t => t -> P.GenParser Char () (SRO t)
+p_sro :: Integral t => t -> Parse.P (SRO t)
 p_sro m_mul = do
   let rot = P.option 0 (P.char 'r' >> Parse.parse_int)
   r <- rot

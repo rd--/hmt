@@ -4,10 +4,10 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.Key as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Parse as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 
 type PC = (T.Note_T,T.Alteration_T)
@@ -90,21 +90,19 @@ chord_pp (CH pc ty ex bs) =
               ,maybe "" chord_type_pp post_ty
               ,maybe "" bass_pp bs]
 
-type P a = P.GenParser Char () a
-
 m_error :: String -> Maybe a -> a
 m_error txt = fromMaybe (error txt)
 
-p_pc :: P PC
+p_pc :: T.P PC
 p_pc = do
   n <- T.p_note_t
-  a <- P.optionMaybe T.p_alteration_t_iso
+  a <- P.optionMaybe (T.p_alteration_t_iso True)
   return (n,fromMaybe T.Natural a)
 
-p_mode_m :: P T.Mode_T
+p_mode_m :: T.P T.Mode_T
 p_mode_m = P.option T.Major_Mode (P.char 'm' >> return T.Minor_Mode)
 
-p_chord_type :: P Chord_Type
+p_chord_type :: T.P Chord_Type
 p_chord_type =
     let m = P.char 'm' >> return Minor
         au = P.char '+' >> return Augmented
@@ -115,16 +113,16 @@ p_chord_type =
         sus4 = P.try (P.string "sus4" >> return Suspended_4)
     in P.option Major (P.choice [dm7,dm,hdm,au,sus2,sus4,m])
 
-p_extension :: P Extension
+p_extension :: T.P Extension
 p_extension =
     let d7 = P.char '7' >> return D7
         m7 = P.try (P.string "M7" >> return M7)
     in P.choice [d7,m7]
 
-p_bass :: P (Maybe PC)
+p_bass :: T.P (Maybe PC)
 p_bass = P.optionMaybe (P.char '/' >> p_pc)
 
-p_chord :: P Chord
+p_chord :: T.P Chord
 p_chord = do
   pc <- p_pc
   ty <- p_chord_type

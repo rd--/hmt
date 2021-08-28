@@ -5,9 +5,9 @@ import Data.Char {- base -}
 import Data.Maybe {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Parse as T {- hmt -}
 
 -- * Note_T
 
@@ -59,6 +59,9 @@ parse_note_t :: Bool -> Char -> Maybe Note_T
 parse_note_t ci c =
     let tbl = zip "CDEFGAB" [C,D,E,F,G,A,B]
     in lookup (if ci then toUpper c else c) tbl
+
+char_to_note_t :: Bool -> Char -> Note_T
+char_to_note_t ci = fromMaybe (error "char_to_note_t") . parse_note_t ci
 
 -- | Inclusive set of 'Note_T' within indicated interval.  This is not
 -- equal to 'enumFromTo' which is not circular.
@@ -217,10 +220,26 @@ alteration_symbol a = fromMaybe (error "alteration_symbol") (lookup a alteration
 symbol_to_alteration :: Char -> Maybe Alteration_T
 symbol_to_alteration c = T.reverse_lookup c alteration_symbol_tbl
 
--- | Variant of 'symbol_to_alteration' that /also/ recognises @b@ for 'Flat'
--- and @#@ for 'Sharp' and 'x' for double sharp.
-symbol_to_alteration_iso :: Char -> Maybe Alteration_T
-symbol_to_alteration_iso c =
+-- | ISO alteration notation.  When not strict extended to allow ## for x.
+symbol_to_alteration_iso :: Bool -> String -> Maybe Alteration_T
+symbol_to_alteration_iso strict txt =
+    case txt of
+      "bb" -> Just DoubleFlat
+      "b" -> Just Flat
+      "#" -> Just Sharp
+      "##" -> if strict then Nothing else Just DoubleSharp
+      "x" -> Just DoubleSharp
+      "" -> Just Natural
+      _ -> Nothing
+
+symbol_to_alteration_iso_err :: Bool -> String -> Alteration_T
+symbol_to_alteration_iso_err strict =
+  fromMaybe (error "symbol_to_alteration_iso") .
+  symbol_to_alteration_iso strict
+
+-- | 'symbol_to_alteration' extended to allow single character ISO notations.
+symbol_to_alteration_unicode_plus_iso :: Char -> Maybe Alteration_T
+symbol_to_alteration_unicode_plus_iso c =
     case c of
       'b' -> Just Flat
       '#' -> Just Sharp
@@ -278,6 +297,9 @@ alteration_tonh a = T.lookup_err a alteration_tonh_tbl
 tonh_to_alteration :: String -> Maybe Alteration_T
 tonh_to_alteration s = T.reverse_lookup s alteration_tonh_tbl
 
+tonh_to_alteration_err :: String -> Alteration_T
+tonh_to_alteration_err = fromMaybe (error "tonh_to_alteration") . tonh_to_alteration
+
 -- * 12-ET
 
 -- | Note and alteration to pitch-class, or not.
@@ -321,35 +343,32 @@ alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])
 
 -- * Parsers
 
--- > map (P.runP p_note_t () "" . return) "ABCDEFG"
-p_note_t :: P.GenParser Char () Note_T
-p_note_t =
-    fmap
-    (fromMaybe (error "p_note_t") . parse_note_t False)
-    (P.oneOf "ABCDEFG")
+-- | Parser for ISO note name, upper case.
+--
+-- > map (T.run_parser_error p_note_t . return) "ABCDEFG"
+p_note_t :: T.P Note_T
+p_note_t = fmap (char_to_note_t False) (P.oneOf "ABCDEFG")
 
-p_note_t_lc :: P.GenParser Char () Note_T
-p_note_t_lc =
-    fmap
-    (fromMaybe (error "p_note_t_lc") . parse_note_t False . toUpper)
-    (P.oneOf "abcdefg")
+-- | Note name in lower case (not ISO)
+p_note_t_lc :: T.P Note_T
+p_note_t_lc = fmap (char_to_note_t True) (P.oneOf "abcdefg")
 
--- > map (P.runP p_alteration_t_iso () "" . return) "b#x"
-p_alteration_t_iso :: P.GenParser Char () Alteration_T
-p_alteration_t_iso =
-    fmap
-    (fromMaybe (error "p_alteration_t_iso") . symbol_to_alteration_iso)
-    (P.oneOf "b#x")
+-- | Case-insensitive note name (not ISO).
+p_note_t_ci :: T.P Note_T
+p_note_t_ci = fmap (char_to_note_t True) (P.oneOf "abcdefgABCDEFG")
 
--- > map (P.runP p_alteration_t_tonh () "") ["eses","es","is","isis"]
-p_alteration_t_tonh :: P.GenParser Char () Alteration_T
-p_alteration_t_tonh =
-    fmap
-    (fromMaybe (error "p_alteration_t_tonh") . tonh_to_alteration)
-    (P.many1 (P.oneOf "ehis"))
+-- | Parser for ISO alteration name.
+--
+-- > map (T.run_parser_error p_alteration_t_iso) (words "bb b # x ##")
+p_alteration_t_iso :: Bool -> T.P Alteration_T
+p_alteration_t_iso strict = fmap (symbol_to_alteration_iso_err strict) (P.many (P.oneOf "b#x"))
 
--- > map (P.runP p_note_alteration_ly () "") ["c","ees","fis","aeses"]
-p_note_alteration_ly :: P.GenParser Char () (Note_T,Maybe Alteration_T)
+-- > map (T.run_parser_error p_alteration_t_tonh) ["eses","es","is","isis"]
+p_alteration_t_tonh :: T.P Alteration_T
+p_alteration_t_tonh = fmap tonh_to_alteration_err (P.many1 (P.oneOf "ehis"))
+
+-- > map (T.run_parser_error p_note_alteration_ly) ["c","ees","fis","aeses"]
+p_note_alteration_ly :: T.P (Note_T,Maybe Alteration_T)
 p_note_alteration_ly = do
   n <- p_note_t_lc
   a <- P.optionMaybe p_alteration_t_tonh

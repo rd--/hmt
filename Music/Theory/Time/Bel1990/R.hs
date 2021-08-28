@@ -21,9 +21,9 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as T
+import qualified Music.Theory.Parse as T
 import qualified Music.Theory.Show as T
 
 -- * Bel
@@ -323,55 +323,52 @@ bel_ascii_pp s = do
 
 -- * Parsing
 
--- | A 'Char' parser.
-type P a = P.GenParser Char () a
-
 -- | Parse 'Rest' 'Term'.
 --
 -- > P.parse p_rest "" "-"
-p_rest :: P (Term a)
+p_rest :: T.P (Term a)
 p_rest = fmap (const Rest) (P.char '-')
 
 -- | Parse 'Rest' 'Term'.
 --
 -- > P.parse p_nrests "" "3"
-p_nrests :: P (Bel a)
+p_nrests :: T.P (Bel a)
 p_nrests = fmap nrests p_non_negative_integer
 
 -- | Parse 'Continue' 'Term'.
 --
 -- > P.parse p_continue "" "_"
-p_continue :: P (Term a)
+p_continue :: T.P (Term a)
 p_continue = fmap (const Continue) (P.char '_')
 
 -- | Parse 'Char' 'Value' 'Term'.
 --
 -- > P.parse p_char_value "" "a"
-p_char_value :: P (Term Char)
+p_char_value :: T.P (Term Char)
 p_char_value = fmap Value P.lower
 
 -- | Parse 'Char' 'Term'.
 --
 -- > P.parse (P.many1 p_char_term) "" "-_a"
-p_char_term :: P (Term Char)
+p_char_term :: T.P (Term Char)
 p_char_term = P.choice [p_rest,p_continue,p_char_value]
 
 -- | Parse 'Char' 'Node'.
 --
 -- > P.parse (P.many1 p_char_node) "" "-_a"
-p_char_node :: P (Bel Char)
+p_char_node :: T.P (Bel Char)
 p_char_node = fmap Node p_char_term
 
 -- | Parse non-negative 'Integer'.
 --
 -- > P.parse p_non_negative_integer "" "3"
-p_non_negative_integer :: P Integer
+p_non_negative_integer :: T.P Integer
 p_non_negative_integer = fmap read (P.many1 P.digit)
 
 -- | Parse non-negative 'Rational'.
 --
 -- > P.parse (p_non_negative_rational `P.sepBy` (P.char ',')) "" "3%5,2/3"
-p_non_negative_rational :: P Rational
+p_non_negative_rational :: T.P Rational
 p_non_negative_rational = do
   n <- p_non_negative_integer
   _ <- P.oneOf "%/"
@@ -382,7 +379,7 @@ p_non_negative_rational = do
 --
 -- > P.parse p_non_negative_double "" "3.5"
 -- > P.parse (p_non_negative_double `P.sepBy` (P.char ',')) "" "3.5,7.2,1.0"
-p_non_negative_double :: P Double
+p_non_negative_double :: T.P Double
 p_non_negative_double = do
   a <- P.many1 P.digit
   _ <- P.char '.'
@@ -392,7 +389,7 @@ p_non_negative_double = do
 -- | Parse non-negative number as 'Rational'.
 --
 -- > P.parse (p_non_negative_number `P.sepBy` (P.char ',')) "" "7%2,3.5,3"
-p_non_negative_number :: P Rational
+p_non_negative_number :: T.P Rational
 p_non_negative_number =
     P.choice [P.try p_non_negative_rational
              ,P.try (fmap toRational p_non_negative_double)
@@ -401,7 +398,7 @@ p_non_negative_number =
 -- | Parse 'Mul'.
 --
 -- > P.parse (P.many1 p_mul) "" "/3*3/2"
-p_mul :: P (Bel a)
+p_mul :: T.P (Bel a)
 p_mul = do
   op <- P.oneOf "*/"
   n <- p_non_negative_number
@@ -412,7 +409,7 @@ p_mul = do
   return (Mul n')
 
 -- | Given parser for 'Bel' /a/, generate 'Iso' parser.
-p_iso :: P (Bel a) -> P (Bel a)
+p_iso :: T.P (Bel a) -> T.P (Bel a)
 p_iso f = do
   open <- P.oneOf "{(["
   iso <- P.many1 f
@@ -424,11 +421,11 @@ p_iso f = do
 -- | 'p_iso' of 'p_char_bel'.
 --
 -- > P.parse p_char_iso "" "{abcde}"
-p_char_iso :: P (Bel Char)
+p_char_iso :: T.P (Bel Char)
 p_char_iso = p_iso p_char_bel
 
 -- | Given parser for 'Bel' /a/, generate 'Par' parser.
-p_par :: P (Bel a) -> P (Bel a)
+p_par :: T.P (Bel a) -> T.P (Bel a)
 p_par f = do
   tilde <- P.optionMaybe (P.char '~')
   open <- P.oneOf "{(["
@@ -449,13 +446,13 @@ p_par f = do
 --
 -- > P.parse p_char_par "" "{ab,{c,de}}"
 -- > P.parse p_char_par "" "{ab,~(c,de)}"
-p_char_par :: P (Bel Char)
+p_char_par :: T.P (Bel Char)
 p_char_par = p_par p_char_bel
 
 -- | Parse 'Bel' 'Char'.
 --
 -- > P.parse (P.many1 p_char_bel) "" "-_a*3"
-p_char_bel :: P (Bel Char)
+p_char_bel :: T.P (Bel Char)
 p_char_bel = P.choice [P.try p_char_par,p_char_iso,p_mul,p_nrests,p_char_node]
 
 -- | Run parser for 'Bel' of 'Char'.

@@ -9,10 +9,10 @@ import Data.Word {- base -}
 import Text.Printf {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Parse as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
@@ -594,19 +594,39 @@ pitch_r_class_pp = T.dropWhileRight isDigit . pitch_r_pp
 
 -- * Parsers
 
+-- | Parser for single digit ISO octave (C4 = middle-C)
+p_octave_iso :: T.P Octave
+p_octave_iso = fmap digitToInt P.digit
+
+-- | Parser for single digit ISO octave with default value in case of no parse.
+p_octave_iso_opt :: Octave -> T.P Octave
+p_octave_iso_opt def_o = do
+  o <- P.optionMaybe p_octave_iso
+  return (fromMaybe def_o o)
+
+-- | Parser for ISO pitch notation.
+p_iso_pitch_strict :: T.P Pitch
+p_iso_pitch_strict = do
+  n <- T.p_note_t
+  a <- T.p_alteration_t_iso True
+  o <- p_octave_iso
+  return (Pitch  n a o)
+
+-- | Parser for extended form of ISO pitch notation.
+p_iso_pitch_oct :: Octave -> T.P Pitch
+p_iso_pitch_oct def_o = do
+  n <- T.p_note_t_ci -- ISO is requires upper case note names
+  a <- T.p_alteration_t_iso False -- ISO does not allow ##
+  o <- p_octave_iso_opt def_o -- ISO requires octave
+  return (Pitch  n a o)
+
 -- | Parse possible octave from single integer.
 --
--- > map (parse_octave 2) ["","4","x","11"] == [Just 2,Just 4,Nothing,Nothing]
-parse_octave :: Num a => a -> String -> Maybe a
-parse_octave def_o o =
-    case o of
-      [] -> Just def_o
-      [n] -> if isDigit n
-             then Just (fromIntegral (digitToInt n))
-             else Nothing
-      _ -> Nothing
+-- > map (parse_octave 2) ["","4","x","11"] == [2,4,2,1]x
+parse_octave :: Octave -> String -> Octave
+parse_octave def_o = T.run_parser_error (p_octave_iso_opt def_o)
 
--- | Slight generalisation of ISO pitch representation.  Allows octave
+-- | Generalisation of ISO pitch representation.  Allows octave
 -- to be elided, pitch names to be lower case, and double sharps
 -- written as @##@.
 --
@@ -615,18 +635,7 @@ parse_octave def_o o =
 -- > let r = [Pitch T.C T.Natural 4,Pitch T.A T.Flat 5,Pitch T.F T.DoubleSharp 6]
 -- > mapMaybe (parse_iso_pitch_oct 4) ["C","Ab5","f##6",""] == r
 parse_iso_pitch_oct :: Octave -> String -> Maybe Pitch
-parse_iso_pitch_oct def_o s =
-    let mk n a o = case T.parse_note_t True n of
-                   Nothing -> Nothing
-                   Just n' -> fmap (Pitch n' a) (parse_octave def_o o)
-    in case s of
-         [] -> Nothing
-         n:'b':'b':o -> mk n T.DoubleFlat o
-         n:'#':'#':o -> mk n T.DoubleSharp o
-         n:'x':o -> mk n T.DoubleSharp o
-         n:'b':o -> mk n T.Flat o
-         n:'#':o -> mk n T.Sharp o
-         n:o -> mk n T.Natural o
+parse_iso_pitch_oct def_o = T.run_parser_maybe (p_iso_pitch_oct def_o)
 
 -- | Variant of 'parse_iso_pitch_oct' requiring octave.
 parse_iso_pitch :: String -> Maybe Pitch
@@ -731,16 +740,13 @@ pitch_pp_tonh (Pitch n a o) =
 
 -- * Parsers
 
-p_octave_iso :: P.GenParser Char () Octave
-p_octave_iso = fmap digitToInt P.digit
-
-p_octave_ly :: P.GenParser Char () Octave
+p_octave_ly :: T.P Octave
 p_octave_ly =
     fmap
     (fromMaybe (error "p_octave_ly") . octave_parse_ly)
     (P.many1 (P.oneOf ",'"))
 
-p_pitch_ly :: P.GenParser Char () Pitch
+p_pitch_ly :: T.P Pitch
 p_pitch_ly = do
   (n,a) <- T.p_note_alteration_ly
   o <- P.optionMaybe p_octave_ly
@@ -750,13 +756,10 @@ p_pitch_ly = do
 --
 -- > map (pitch_pp . pitch_parse_ly_err) ["c","d'","ees,","fisis''"] == ["C3","D4","E♭2","F𝄪5"]
 pitch_parse_ly_err :: String -> Pitch
-pitch_parse_ly_err s =
-  case P.runP p_pitch_ly () "pitch_parse_ly" s of
-    Left err -> error (show err)
-    Right r -> r
+pitch_parse_ly_err = T.run_parser_error p_pitch_ly
 
 -- | Parser for hly notation.
-p_pitch_hly :: P.GenParser Char () Pitch
+p_pitch_hly :: T.P Pitch
 p_pitch_hly = do
   (n,a) <- T.p_note_alteration_ly
   fmap (Pitch n (fromMaybe T.Natural a)) p_octave_iso
@@ -765,7 +768,4 @@ p_pitch_hly = do
 --
 -- > map (pitch_pp . pitch_parse_hly) ["ees4","fih3","b6"] == ["E♭4","F𝄲3","B6"]
 pitch_parse_hly :: String -> Pitch
-pitch_parse_hly s =
-  case P.runP p_pitch_hly () "pitch_parse_hly" s of
-    Left err -> error (show err)
-    Right r -> r
+pitch_parse_hly = T.run_parser_error p_pitch_hly

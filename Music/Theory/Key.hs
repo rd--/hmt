@@ -141,7 +141,7 @@ key_lc_uc_parse k =
         with_a n a = fmap (with_k a) (note_char_to_key n)
     in case k of
          [c] -> note_char_to_key c
-         [n,a] -> with_a n =<< T.symbol_to_alteration_iso a
+         [n,a] -> with_a n =<< T.symbol_to_alteration_unicode_plus_iso a
          _ -> Nothing
 
 -- | Distance along circle of fifths path of indicated 'Key'.  A

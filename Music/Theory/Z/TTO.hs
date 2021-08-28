@@ -5,7 +5,6 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
 
 import qualified Music.Theory.Parse as Parse {- hmt -}
 
@@ -29,7 +28,7 @@ tto_pp (TTO t m i) =
          ,if i then "I" else ""]
 
 -- | Parser for TTO, requires value for M (ordinarily 5 for 12-tone TTO).
-p_tto :: Integral t => t -> P.GenParser Char () (TTO t)
+p_tto :: Integral t => t -> Parse.P (TTO t)
 p_tto m_mul = do
   _ <- P.char 'T'
   t <- Parse.parse_int
