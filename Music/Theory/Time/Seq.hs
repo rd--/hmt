@@ -834,6 +834,13 @@ dseq_to_tseq t0 nil = T.rezip (T.dx_d t0) (T.snoc nil)
 dseq_to_tseq_last :: Num t => t -> Dseq t a -> Tseq t a
 dseq_to_tseq_last t0 sq = dseq_to_tseq t0 (snd (last sq)) sq
 
+{- | Variant where the final duration is discarded.
+
+> dseq_to_tseq_discard 0 (zip [1,2,3,2,1] "abcde") == zip [0,1,3,6,8] "abcde"
+-}
+dseq_to_tseq_discard :: Num t => t -> Dseq t a -> Tseq t a
+dseq_to_tseq_discard t0 = T.drop_last . dseq_to_tseq t0 undefined
+
 -- | 'Iseq' to 'Tseq', requires t0.
 --
 -- > let r = zip [1,3,6,8,9] "abcde"
@@ -869,6 +876,27 @@ tseq_to_dseq empty sq =
     in case t of
          [] -> []
          t0:_ -> if t0 > 0 then (t0,empty) : zip d a else zip d a
+
+{- | Variant that requires a final duration be provided, and that the Tseq have no end marker.
+
+> let r = zip [1,2,3,2,9] "abcde"
+> tseq_to_dseq_final_dur undefined 9 (zip [0,1,3,6,8] "abcde") == r
+-}
+tseq_to_dseq_final_dur :: (Ord t,Num t) => a -> t -> Tseq t a -> Dseq t a
+tseq_to_dseq_final_dur empty dur sq =
+  let (t,a) = unzip sq
+      d = T.d_dx t ++ [dur]
+  in case t of
+       [] -> []
+       t0:_ -> if t0 > 0 then (t0,empty) : zip d a else zip d a
+
+{- | Variant that requires a total duration be provided, and that the Tseq have no end marker.
+
+> let r = zip [1,2,3,2,7] "abcde"
+> tseq_to_dseq_total_dur undefined 15 (zip [0,1,3,6,8] "abcde")
+-}
+tseq_to_dseq_total_dur :: (Ord t,Num t) => a -> t -> Tseq t a -> Dseq t a
+tseq_to_dseq_total_dur empty dur sq = tseq_to_dseq_final_dur empty (dur - tseq_end sq) sq
 
 -- | The last element of 'Tseq' is required to be an /eof/ marker that
 -- has no duration and is not represented in the 'Wseq'.  The duration

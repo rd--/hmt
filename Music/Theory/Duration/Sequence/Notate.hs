@@ -782,7 +782,7 @@ notate_mm_ascribe :: Show a => Int -> [Simplify_T] -> [Time_Signature] -> Maybe 
 notate_mm_ascribe limit r ts rqp d p =
     let n = notate_rqp limit (default_rule r) ts rqp d
         f = flip mm_ascribe p
-        err str = show ("notate_ascribe",str,ts,d,p)
+        err str = show ("notate_mm_ascribe",str,ts,d,p)
     in either (Left . err) (Right . f) n
 
 notate_mm_ascribe_err :: Show a => Int -> [Simplify_T] -> [Time_Signature] -> Maybe [[RQ]] -> [RQ] -> [a] ->
