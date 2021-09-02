@@ -11,17 +11,55 @@ import Music.Theory.Duration {- hmt -}
 -- | Rational Quarter-Note
 type RQ = Rational
 
--- > rq_duration_tbl 2
-rq_duration_tbl :: Dots -> [(Rational,Duration)]
-rq_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
+{- | Table mapping tuple RQ values to Durations.
+     Only has cases where the duration can be expressed without a tie.
+     Currently has entries for 3-,5-,6- and 7-tuplets.
 
--- | Rational quarter note to duration value.  It is a mistake to hope
--- this could handle tuplets directly since, for instance, a @3:2@
--- dotted note will be of the same duration as a plain undotted note.
---
--- > rq_to_duration (3/4) == Just dotted_eighth_note
+> all (\(i,j) -> i == duration_to_rq j) rq_tuplet_duration_table == True
+-}
+rq_tuplet_duration_table :: [(RQ, Duration)]
+rq_tuplet_duration_table =
+  [(1/3,Duration 8 0 (2/3))
+  ,(2/3,Duration 4 0 (2/3))
+  ,(1/5,Duration 16 0 (4/5))
+  ,(2/5,Duration 8 0 (4/5))
+  ,(3/5,Duration 8 1 (4/5))
+  ,(4/5,Duration 4 0 (4/5))
+  ,(1/6,Duration 16 0 (2/3))
+  ,(1/7,Duration 16 0 (4/7))
+  ,(2/7,Duration 8 0 (4/7))
+  ,(3/7,Duration 8 1 (4/7))
+  ,(4/7,Duration 4 0 (4/7))
+  ,(6/7,Duration 4 1 (4/7))
+  ]
+
+{- | Lookup rq_tuplet_duration_tbl.
+
+> rq_tuplet_to_duration (1/3) == Just (Duration 8 0 (2/3))
+-}
+rq_tuplet_to_duration :: RQ -> Maybe Duration
+rq_tuplet_to_duration x = lookup x rq_tuplet_duration_table
+
+{- | Make table of (RQ,Duration) associations.
+     Only lists durations with a multiplier of 1.
+
+> map (length . rq_duration_tbl) [1,2,3] == [20,30,40]
+> map (multiplier . snd) (rq_duration_tbl 1) == replicate 20 1
+-}
+rq_plain_duration_tbl :: Dots -> [(RQ,Duration)]
+rq_plain_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
+
+{- | Rational quarter note to duration value.
+     Lookup composite plain and tuplet tables.
+     It is a mistake to hope this could handle tuplets directly in a general sense.
+     For instance, a @3:2@ dotted note is the same duration as a plain undotted note.
+     However it does give durations for simple notations of simple tuplet values.
+
+> rq_to_duration (3/4) == Just (Duration 8 1 1) -- dotted_eighth_note
+> rq_to_duration (1/3) == Just (Duration 8 0 (2/3))
+-}
 rq_to_duration :: RQ -> Maybe Duration
-rq_to_duration x = lookup x (rq_duration_tbl 2)
+rq_to_duration x = lookup x (rq_tuplet_duration_table ++ rq_plain_duration_tbl 2)
 
 -- | Is 'RQ' a /cmn/ duration.
 --
@@ -54,11 +92,10 @@ rq_apply_dots n d =
     let m = iterate (/ 2) n
     in sum (genericTake (d + 1) m)
 
--- | Convert 'Duration' to 'RQ' value, see 'rq_to_duration' for
--- partial inverse.
+-- | Convert 'Duration' to 'RQ' value, see 'rq_to_duration' for partial inverse.
 --
--- > let d = [half_note,dotted_quarter_note,dotted_whole_note]
--- > in map duration_to_rq d == [2,3/2,6]
+-- > let d = [Duration 2 0 1,Duration 4 1 1,Duration 1 1 1]
+-- > map duration_to_rq d == [2,3/2,6] -- half_note,dotted_quarter_note,dotted_whole_note
 duration_to_rq :: Duration -> RQ
 duration_to_rq (Duration n d m) =
     let x = whole_note_division_to_rq n
