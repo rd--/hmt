@@ -34,14 +34,14 @@ import Music.Theory.Time_Signature {- hmt -}
 
 -- * Lists
 
--- | Applies a /join/ function to the first two elements of the list.
--- If the /join/ function succeeds the joined element is considered
--- for further coalescing.
---
--- > coalesce (\p q -> Just (p + q)) [1..5] == [15]
---
--- > let jn p q = if even p then Just (p + q) else Nothing
--- > in coalesce jn [1..5] == map sum [[1],[2,3],[4,5]]
+{- | Applies a /join/ function to the first two elements of the list.
+     If the /join/ function succeeds the joined element is considered for further coalescing.
+
+> coalesce (\p q -> Just (p + q)) [1..5] == [15]
+
+> let jn p q = if even p then Just (p + q) else Nothing
+> coalesce jn [1..5] == map sum [[1],[2,3],[4,5]]
+-}
 coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
 coalesce f x =
     case x of
@@ -53,13 +53,13 @@ coalesce f x =
 
 -- | Variant of 'coalesce' with accumulation parameter.
 --
--- > coalesce_accum (\i p q -> Left (p + q)) 0 [1..5] == [(0,15)]
+-- > coalesce_accum (\_ p q -> Left (p + q)) 0 [1..5] == [(0,15)]
 --
 -- > let jn i p q = if even p then Left (p + q) else Right (p + i)
--- > in coalesce_accum jn 0 [1..7] == [(0,1),(1,5),(6,9),(15,13)]
+-- > coalesce_accum jn 0 [1..7] == [(0,1),(1,5),(6,9),(15,13)]
 --
 -- > let jn i p q = if even p then Left (p + q) else Right [p,q]
--- > in coalesce_accum jn [] [1..5] == [([],1),([1,2],5),([5,4],9)]
+-- > coalesce_accum jn [] [1..5] == [([],1),([1,2],5),([5,4],9)]
 coalesce_accum :: (b -> a -> a -> Either a b) -> b -> [a] -> [(b,a)]
 coalesce_accum f i x =
     case x of
@@ -73,7 +73,7 @@ coalesce_accum f i x =
 -- | Variant of 'coalesce_accum' that accumulates running sum.
 --
 -- > let f i p q = if i == 1 then Just (p + q) else Nothing
--- > in coalesce_sum (+) 0 f [1,1/2,1/4,1/4] == [1,1]
+-- > coalesce_sum (+) 0 f [1,1/2,1/4,1/4] == [1,1]
 coalesce_sum :: (b -> a -> b) -> b -> (b -> a -> a -> Maybe a) -> [a] -> [a]
 coalesce_sum add zero f =
     let g i p q = case f i p q of
@@ -292,6 +292,10 @@ rqt_tuplet_subdivide_seq_sanity_ i =
 -- > in to_measures_rq [3] d == Right [[(4/7,f),(33/28,f),(9/20,f),(4/5,f)]]
 to_measures_rq :: [RQ] -> [RQ] -> Either String [[RQ_T]]
 to_measures_rq m = rqt_separate m . map rq_rqt
+
+-- | Variant that is applicable only at sequence that do not require splitting and ties, else error.
+to_measures_rq_untied_err :: [RQ] -> [RQ] -> [[RQ]]
+to_measures_rq_untied_err m = either (error "to_measures_rq_untied") (map (map rqt_to_rq_err)) . to_measures_rq m
 
 -- | Variant of 'to_measures_rq' that ensures 'RQ_T' are /cmn/
 -- durations.  This is not a good composition.

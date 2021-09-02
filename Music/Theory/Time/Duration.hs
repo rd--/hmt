@@ -1,7 +1,9 @@
+-- | Ordinary timing durations, in H:M:S:m
 module Music.Theory.Time.Duration where
 
-import qualified Data.List.Split as S {- split -}
 import Text.Printf {- base -}
+
+import qualified Data.List.Split as Split {- split -}
 
 -- | Duration stored as /hours/, /minutes/, /seconds/ and /milliseconds/.
 data Duration = Duration {hours :: Int
@@ -30,7 +32,7 @@ read_duration_tuple :: String -> (Int,Int,Int,Int)
 read_duration_tuple x =
     let f :: (Int,Int,Double) -> (Int,Int,Int,Int)
         f (h,m,s) = let (s',ms) = s_sms s in (h,m,s',ms)
-    in case S.splitOneOf ":" x of
+    in case Split.splitOneOf ":" x of
         [h,m,s] -> f (read h,read m,read s)
         [m,s] -> f (0,read m,read s)
         [s] -> f (0,0,read s)

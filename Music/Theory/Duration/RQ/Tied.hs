@@ -1,16 +1,26 @@
 -- | 'RQ' values with /tie right/ qualifier.
 module Music.Theory.Duration.RQ.Tied where
 
-import Data.Maybe
-import Music.Theory.Duration.Annotation
-import Music.Theory.Duration.RQ
-import Music.Theory.List
+import Data.Maybe {- base -}
+
+import Music.Theory.List {- hmt-base -}
+
+import qualified Music.Theory.Duration.Annotation as Annotation {- hmt -}
+import Music.Theory.Duration.RQ {- hmt -}
 
 -- | Boolean.
 type Tied_Right = Bool
 
 -- | 'RQ' with /tie right/.
 type RQ_T = (RQ,Tied_Right)
+
+-- | If RQ_T is not tied, get RQ.
+rqt_to_rq :: RQ_T -> Maybe RQ
+rqt_to_rq (rq,x) = if x then Nothing else Just rq
+
+-- | Erroring variant of rqt_to_rq.
+rqt_to_rq_err :: RQ_T -> RQ
+rqt_to_rq_err = fromMaybe (error "rqt_to_rq") . rqt_to_rq
 
 -- | Construct 'RQ_T'.
 rqt :: Tied_Right -> RQ -> RQ_T
@@ -53,12 +63,12 @@ rq_tie_last = at_last rq_rqt (\d -> (d,True))
 -- indicates if the initial value is tied left.
 --
 -- > rqt_to_duration_a False [(1,T),(1/4,T),(3/4,F)]
-rqt_to_duration_a :: Bool -> [RQ_T] -> [Duration_A]
+rqt_to_duration_a :: Bool -> [RQ_T] -> [Annotation.Duration_A]
 rqt_to_duration_a z x =
     let rt = map is_tied_right x
         lt = z : rt
         f p e = if p then Just e else Nothing
-        g r l = catMaybes [f r Tie_Right,f l Tie_Left]
+        g r l = catMaybes [f r Annotation.Tie_Right,f l Annotation.Tie_Left]
         h = rq_to_duration_err (show ("rqt_to_duration_a",z,x)) . rqt_rq
     in zip (map h x) (zipWith g rt lt)
 
