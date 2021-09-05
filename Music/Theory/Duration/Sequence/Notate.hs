@@ -236,7 +236,7 @@ rqt_separate_m m = either_to_maybe . rqt_separate m
 -- > in rqt_separate_tuplet (1/2) d
 rqt_separate_tuplet :: RQ -> [RQ_T] -> Either String [[RQ_T]]
 rqt_separate_tuplet i x =
-    if rqt_can_notate x
+    if rqt_can_notate 2 x
     then Left (show ("rqt_separate_tuplet: separation not required",x))
     else let j = sum (map rqt_rq x) / 2
          in if j < i
@@ -476,7 +476,7 @@ p_notate z x =
         d = case p_tuplet_rqt x of
               Just (t,x') -> da_tuplet t (f x')
               Nothing -> f x
-    in if rq_can_notate (map rqt_rq x)
+    in if rq_can_notate 2 (map rqt_rq x)
        then Right d
        else Left (show ("p_notate",z,x))
 

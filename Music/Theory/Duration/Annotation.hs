@@ -57,7 +57,7 @@ da_tuplet :: (Integer,Integer) -> [Duration_A] -> [Duration_A]
 da_tuplet (d,n) x =
     let fn (p,q) = (p {multiplier = n%d},q)
         k = sum (map (duration_to_rq . fst) x) / (d%1)
-        ty = rq_to_duration_err (show ("da_tuplet",d,n,x,k)) k
+        ty = rq_to_duration_err (show ("da_tuplet",d,n,x,k)) 2 k
         t0 = [Begin_Tuplet (d,n,ty)]
         ts = [t0] ++ replicate (length x - 2) [] ++ [[End_Tuplet]]
         jn (p,q) z = (p,q++z)

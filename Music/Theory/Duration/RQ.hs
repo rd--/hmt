@@ -6,6 +6,8 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.List as T {- hmt-base -}
+
 import Music.Theory.Duration {- hmt -}
 
 -- | Rational Quarter-Note
@@ -43,35 +45,41 @@ rq_tuplet_to_duration x = lookup x rq_tuplet_duration_table
 {- | Make table of (RQ,Duration) associations.
      Only lists durations with a multiplier of 1.
 
-> map (length . rq_duration_tbl) [1,2,3] == [20,30,40]
-> map (multiplier . snd) (rq_duration_tbl 1) == replicate 20 1
+> map (length . rq_plain_duration_tbl) [1,2,3] == [20,30,40]
+> map (multiplier . snd) (rq_plain_duration_tbl 1) == replicate 20 1
 -}
 rq_plain_duration_tbl :: Dots -> [(RQ,Duration)]
 rq_plain_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
 
+rq_plain_to_duration :: Dots -> RQ -> Maybe Duration
+rq_plain_to_duration k x = lookup x (rq_plain_duration_tbl k)
+
+rq_plain_to_duration_err :: Dots -> RQ -> Duration
+rq_plain_to_duration_err k x = T.lookup_err x (rq_plain_duration_tbl k)
+
 {- | Rational quarter note to duration value.
-     Lookup composite plain and tuplet tables.
+     Lookup composite plain (hence dots) and tuplet tables.
      It is a mistake to hope this could handle tuplets directly in a general sense.
      For instance, a @3:2@ dotted note is the same duration as a plain undotted note.
      However it does give durations for simple notations of simple tuplet values.
 
-> rq_to_duration (3/4) == Just (Duration 8 1 1) -- dotted_eighth_note
-> rq_to_duration (1/3) == Just (Duration 8 0 (2/3))
+> rq_to_duration 2 (3/4) == Just (Duration 8 1 1) -- dotted_eighth_note
+> rq_to_duration 2 (1/3) == Just (Duration 8 0 (2/3))
 -}
-rq_to_duration :: RQ -> Maybe Duration
-rq_to_duration x = lookup x (rq_tuplet_duration_table ++ rq_plain_duration_tbl 2)
-
--- | Is 'RQ' a /cmn/ duration.
---
--- > map rq_is_cmn [1/4,1/5,1/8,3/32] == [True,False,True,False]
-rq_is_cmn :: RQ -> Bool
-rq_is_cmn = isJust . rq_to_duration
+rq_to_duration :: Dots -> RQ -> Maybe Duration
+rq_to_duration k x = lookup x (rq_tuplet_duration_table ++ rq_plain_duration_tbl k)
 
 -- | Variant of 'rq_to_duration' with error message.
-rq_to_duration_err :: Show a => a -> RQ -> Duration
-rq_to_duration_err msg n =
+rq_to_duration_err :: Show a => a -> Dots -> RQ -> Duration
+rq_to_duration_err msg k n =
     let err = error ("rq_to_duration:" ++ show (msg,n))
-    in fromMaybe err (rq_to_duration n)
+    in fromMaybe err (rq_to_duration k n)
+
+-- | Is 'RQ' a /cmn/ duration (ie. rq_plain_to_duration)
+--
+-- > map (rq_is_cmn 2) [1/4,1/5,1/8,3/32] == [True,False,True,True]
+rq_is_cmn :: Dots -> RQ -> Bool
+rq_is_cmn k = isJust . rq_plain_to_duration k
 
 -- | Convert a whole note division integer to an 'RQ' value.
 --
@@ -193,21 +201,22 @@ rq_to_cmn x =
         f (n,m) = (n%j,m%j)
     in fmap f k
 
--- | Predicate to determine if a segment can be notated either without
--- a tuplet or with a single tuplet.
---
--- > rq_can_notate [1/2,1/4,1/4] == True
--- > rq_can_notate [1/3,1/6] == True
--- > rq_can_notate [2/5,1/10] == True
--- > rq_can_notate [1/3,1/6,2/5,1/10] == False
--- > rq_can_notate [4/7,1/7,6/7,3/7] == True
--- > rq_can_notate [4/7,1/7,2/7] == True
-rq_can_notate :: [RQ] -> Bool
-rq_can_notate x =
+{- | Predicate to determine if a segment can be notated
+     either without a tuplet or with a single tuplet.
+
+> rq_can_notate 2 [1/2,1/4,1/4] == True
+> rq_can_notate 2 [1/3,1/6] == True
+> rq_can_notate 2 [2/5,1/10] == True
+> rq_can_notate 2 [1/3,1/6,2/5,1/10] == False
+> rq_can_notate 2 [4/7,1/7,6/7,3/7] == True
+> rq_can_notate 2 [4/7,1/7,2/7] == True
+-}
+rq_can_notate :: Dots -> [RQ] -> Bool
+rq_can_notate k x =
     let x' = case rq_derive_tuplet x of
                Nothing -> x
                Just t -> map (rq_un_tuplet t) x
-    in all rq_is_cmn x'
+    in all (rq_is_cmn k) x'
 
 -- * TIME
 

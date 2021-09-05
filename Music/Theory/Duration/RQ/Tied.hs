@@ -5,6 +5,7 @@ import Data.Maybe {- base -}
 
 import Music.Theory.List {- hmt-base -}
 
+import Music.Theory.Duration {- hmt -}
 import qualified Music.Theory.Duration.Annotation as Annotation {- hmt -}
 import Music.Theory.Duration.RQ {- hmt -}
 
@@ -69,12 +70,12 @@ rqt_to_duration_a z x =
         lt = z : rt
         f p e = if p then Just e else Nothing
         g r l = catMaybes [f r Annotation.Tie_Right,f l Annotation.Tie_Left]
-        h = rq_to_duration_err (show ("rqt_to_duration_a",z,x)) . rqt_rq
+        h = rq_to_duration_err (show ("rqt_to_duration_a",z,x)) 2 . rqt_rq
     in zip (map h x) (zipWith g rt lt)
 
 -- | 'RQ_T' variant of 'rq_can_notate'.
-rqt_can_notate :: [RQ_T] -> Bool
-rqt_can_notate = rq_can_notate . map rqt_rq
+rqt_can_notate :: Dots -> [RQ_T] -> Bool
+rqt_can_notate k = rq_can_notate k  . map rqt_rq
 
 -- | 'RQ_T' variant of 'rq_to_cmn'.
 --
