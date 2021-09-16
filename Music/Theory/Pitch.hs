@@ -50,6 +50,14 @@ octave_pitchclass_to_midi (o,pc) = 60 + ((o - 4) * 12) + pc
 midi_to_octave_pitchclass :: (Integral m,Integral i) => m -> Octave_PitchClass i
 midi_to_octave_pitchclass n = (fromIntegral n - 12) `divMod` 12
 
+{- | One-indexed piano key number (for standard 88 key piano) to pitch class.
+     This has the mnemonic that 49 maps to (4,9).
+
+> map pianokey_to_octave_pitchclass [1,49,88] == [(0,9),(4,9),(8,0)]
+-}
+pianokey_to_octave_pitchclass :: (Integral m,Integral i) => m -> Octave_PitchClass i
+pianokey_to_octave_pitchclass = midi_to_octave_pitchclass . (+) 20
+
 -- * Octave & PitchClass
 
 -- | Pitch classes are modulo twelve integers.
