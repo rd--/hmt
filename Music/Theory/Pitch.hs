@@ -5,7 +5,6 @@ import Data.Char {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import Data.Word {- base -}
 import Text.Printf {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
@@ -96,18 +95,23 @@ octpc_range (l,r) =
 
 -- * Midi note number (0 - 127)
 
--- | Midi note number
-type Midi = Word8
+{- | Midi note number (0 - 127).
+     Midi data values are unsigned 7-bit integers, however using an unsigned type would be problematic.
+     It would make transposition, for instance, awkward.
+     x - 12 would transpose down an octave, but the transposition interval itself could not be negative.
+-}
+type Midi = Int
 
+-- | Type conversion
 midi_to_int :: Midi -> Int
-midi_to_int = fromIntegral
+midi_to_int = id
 
 -- | 'OctPC' value to integral /midi/ note number.
 --
 -- > map octpc_to_midi [(0,0),(2,6),(4,9),(6,2),(9,0)] == [12,42,69,86,120]
 -- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
 octpc_to_midi :: OctPC -> Midi
-octpc_to_midi = fromIntegral . octave_pitchclass_to_midi
+octpc_to_midi = octave_pitchclass_to_midi
 
 -- | Inverse of 'octpc_to_midi'.
 --
