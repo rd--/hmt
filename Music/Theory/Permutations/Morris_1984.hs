@@ -9,9 +9,9 @@ import Data.List {- base -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Permutations as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Permutations as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
 
 -- | A change either swaps all adjacent bells, or holds a subset of bells.
 data Change = Swap_All | Hold [Int] deriving (Eq,Show)

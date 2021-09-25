@@ -11,10 +11,10 @@ import Safe {- safe -}
 import qualified Data.List.Ordered as O {- data-ordlist -}
 import qualified Data.Map as M {- containers -}
 
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
-import qualified Music.Theory.Ord as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Math as T {- hmt-base -}
+import qualified Music.Theory.Ord as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
 
 -- * Types
 

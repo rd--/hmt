@@ -11,16 +11,17 @@ import qualified Data.Map as M {- containers -}
 import qualified Data.Graph.Inductive as G {- fgl -}
 --import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
-import qualified Music.Theory.Combinations as T {- hmt -}
+import qualified Music.Theory.Combinations as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
+
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
 import qualified Music.Theory.Key as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
 import qualified Music.Theory.Z as T {- hmt -}
 import qualified Music.Theory.Z.Forte_1973 as T {- hmt -}
 import qualified Music.Theory.Z.TTO as T {- hmt -}

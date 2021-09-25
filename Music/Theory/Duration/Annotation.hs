@@ -5,9 +5,10 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Data.Tree {- containers -}
 
+import qualified Music.Theory.List as L {- hmt-base -}
+
 import Music.Theory.Duration
 import Music.Theory.Duration.RQ
-import qualified Music.Theory.List as L {- hmt -}
 
 -- | Standard music notation durational model annotations
 data D_Annotation = Tie_Right

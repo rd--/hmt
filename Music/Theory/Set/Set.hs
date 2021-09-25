@@ -2,7 +2,8 @@
 module Music.Theory.Set.Set where
 
 import qualified Data.Set as S {- containers -}
-import qualified Music.Theory.Set.List as L
+
+import qualified Music.Theory.Set.List as L {- hmt -}
 
 set :: (Ord a) => [a] -> S.Set a
 set = S.fromList

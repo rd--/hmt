@@ -1,7 +1,7 @@
 -- | Names for common music notation durations.
 module Music.Theory.Duration.Name where
 
-import Music.Theory.Duration
+import Music.Theory.Duration {- hmt -}
 
 -- * Constants
 

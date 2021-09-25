@@ -8,7 +8,7 @@ import Data.List {- base -}
 
 import qualified Data.Numbers.Primes as P {- primes -}
 
-import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math as T {- hmt-base -}
 
 traceShow :: a -> b -> b
 traceShow _ x = x

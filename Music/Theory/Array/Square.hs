@@ -1,3 +1,4 @@
+-- | Square arrays, where the number of rows and columns are equal.
 module Music.Theory.Array.Square where
 
 import Data.List {- base -}
@@ -6,9 +7,10 @@ import Data.Maybe {- base -}
 import qualified Data.Map as Map {- containers -}
 import qualified Data.List.Split as Split {- split -}
 
-import qualified Music.Theory.Array as T {- hmt -}
-import qualified Music.Theory.Array.Text as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Array as T {- hmt-base -}
+import qualified Music.Theory.Array.Text as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+
 import qualified Music.Theory.Math.OEIS as T {- hmt -}
 
 -- | Square as list of lists.

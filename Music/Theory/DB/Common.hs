@@ -1,11 +1,12 @@
+-- | Database as [[(key,value)]]
 module Music.Theory.DB.Common where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Safe {- safe -}
 
-import qualified Music.Theory.List as T {- base -}
-import qualified Music.Theory.Maybe as T {- base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Maybe as T {- hmt-base -}
 
 -- * Type
 

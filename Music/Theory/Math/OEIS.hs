@@ -8,7 +8,8 @@ import Data.Ratio {- base -}
 
 import qualified Data.MemoCombinators as Memo {- data-memocombinators -}
 
-import qualified Music.Theory.Math as Math {- hmt -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
+
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 
 {- | <http://oeis.org/A000010>

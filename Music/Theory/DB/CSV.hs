@@ -4,8 +4,9 @@ module Music.Theory.DB.CSV where
 import Data.Maybe {- base -}
 import qualified Text.CSV.Lazy.String as C {- lazy-csv -}
 
+import qualified Music.Theory.IO as T {- hmt-base -}
+
 import Music.Theory.DB.Common {- hmt -}
-import qualified Music.Theory.IO as T {- hmt -}
 
 -- | Load 'DB' from 'FilePath'.
 db_load_utf8 :: FilePath -> IO DB'

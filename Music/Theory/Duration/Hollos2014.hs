@@ -1,9 +1,11 @@
--- http://abrazol.com/books/rhythm1/software.html
+-- | "Creating Rhythms" by Stefan Hollos and J. Richard Hollos
+--    <http://abrazol.com/books/rhythm1/software.html>
 module Music.Theory.Duration.Hollos2014 where
 
 import Data.List {- base -}
 
-import Music.Theory.List {- hmt -}
+import Music.Theory.List {- hmt-base -}
+
 import Music.Theory.Permutations.List {- hmt -}
 import Music.Theory.Set.List {- hmt -}
 

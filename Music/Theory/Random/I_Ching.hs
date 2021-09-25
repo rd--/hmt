@@ -6,10 +6,10 @@ import Data.Maybe {- base -}
 import Data.Int {- base -}
 import System.Random {- random -}
 
-import qualified Music.Theory.Bits as T {- hmt -}
-import qualified Music.Theory.Read as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
-import qualified Music.Theory.Unicode as T {- hmt -}
+import qualified Music.Theory.Bits as T {- hmt-base -}
+import qualified Music.Theory.Read as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
+import qualified Music.Theory.Unicode as T {- hmt-base -}
 
 -- * LINE
 

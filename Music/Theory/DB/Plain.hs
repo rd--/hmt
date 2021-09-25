@@ -7,8 +7,8 @@ import Data.Maybe {- base -}
 import qualified Data.List.Split as Split {- split -}
 import qualified Safe {- safe -}
 
-import qualified Music.Theory.IO as IO {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.IO as IO {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
 
 -- | (RECORD-SEPARATOR,FIELD-SEPARATOR,ENTRY-SEPARATOR)
 type SEP = (String,String,String)

@@ -6,8 +6,9 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.List as L {- hmt-base -}
+
 import qualified Music.Theory.Contour.Polansky_1992 as C {- hmt -}
-import qualified Music.Theory.List as L {- hmt -}
 
 -- | Distance function, ordinarily /n/ below is in 'Num', 'Fractional' or 'Real'.
 type Interval a n = (a -> a -> n)

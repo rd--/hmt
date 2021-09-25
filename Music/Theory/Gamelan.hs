@@ -1,3 +1,4 @@
+-- | Gamelan instruments and pitch structures.
 module Music.Theory.Gamelan where
 
 import Data.Char {- base -}
@@ -7,8 +8,9 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
+import qualified Music.Theory.Enum as T {- hmt-base -}
+
 import qualified Music.Theory.Clef as T {- hmt -}
-import qualified Music.Theory.Enum as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.ET as T {- hmt-diagrams -}

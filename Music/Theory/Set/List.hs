@@ -6,7 +6,7 @@ import Data.List {- base -}
 
 import qualified Math.Combinatorics.Multiset as M {- multiset-comb -}
 
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as T {- hmt-base -}
 
 -- | 'sort' then 'nub'.
 --

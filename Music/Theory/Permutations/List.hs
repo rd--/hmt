@@ -2,9 +2,10 @@
 module Music.Theory.Permutations.List where
 
 import Data.List {- base -}
+
 import qualified Math.Combinatorics.Multiset as C {- multiset-comb -}
 
-import qualified Music.Theory.Permutations as P {- hmt -}
+import qualified Music.Theory.Permutations as P {- hmt-base -}
 
 -- | Generate all permutations.
 --

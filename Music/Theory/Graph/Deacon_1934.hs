@@ -9,12 +9,13 @@ module Music.Theory.Graph.Deacon_1934 where
 import Data.Bifunctor {- base -}
 import Data.List {- base -}
 
-import qualified Music.Theory.Array.Cell_Ref as T {- hmt -}
+import qualified Music.Theory.Array.Cell_Ref as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
+
 import qualified Music.Theory.Array.Direction as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
 
 gen_graph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)

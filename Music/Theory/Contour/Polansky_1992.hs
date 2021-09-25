@@ -10,10 +10,11 @@ import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.List as T
-import qualified Music.Theory.Ord as T
-import qualified Music.Theory.Permutations.List as T
-import qualified Music.Theory.Set.List as T
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Ord as T {- hmt-base -}
+
+import qualified Music.Theory.Permutations.List as T {- hmt -}
+import qualified Music.Theory.Set.List as T {- hmt -}
 
 -- * Indices
 
