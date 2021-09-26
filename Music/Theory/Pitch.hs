@@ -59,36 +59,36 @@ pianokey_to_octave_pitchclass = midi_to_octave_pitchclass . (+) 20
 
 -- * Octave & PitchClass
 
--- | Pitch classes are modulo twelve integers.
+-- | Pitch classes are modulo twelve integers (0-11)
 type PitchClass = Int
 
 -- | Octaves are integers, the octave of middle C is @4@.
 type Octave = Int
 
 -- | 'Octave' and 'PitchClass' duple.
-type OctPC = (Octave,PitchClass)
+type OctPc = (Octave,PitchClass)
 
 -- | Translate from generic octave & pitch-class duple.
-octave_pitchclass_to_octpc :: (Integral pc, Integral oct) => (oct,pc) -> OctPC
+octave_pitchclass_to_octpc :: (Integral pc, Integral oct) => (oct,pc) -> OctPc
 octave_pitchclass_to_octpc (oct,pc) = (fromIntegral oct,fromIntegral pc)
 
--- | Normalise 'OctPC'.
+-- | Normalise 'OctPc'.
 --
 -- > octpc_nrm (4,16) == (5,4)
-octpc_nrm :: OctPC -> OctPC
+octpc_nrm :: OctPc -> OctPc
 octpc_nrm = octave_pitchclass_nrm
 
--- | Transpose 'OctPC'.
+-- | Transpose 'OctPc'.
 --
 -- > octpc_trs 7 (4,9) == (5,4)
 -- > octpc_trs (-11) (4,9) == (3,10)
-octpc_trs :: Int -> OctPC -> OctPC
+octpc_trs :: Int -> OctPc -> OctPc
 octpc_trs = octave_pitchclass_trs
 
 -- | Enumerate range, inclusive.
 --
 -- > octpc_range ((3,8),(4,1)) == [(3,8),(3,9),(3,10),(3,11),(4,0),(4,1)]
-octpc_range :: (OctPC,OctPC) -> [OctPC]
+octpc_range :: (OctPc,OctPc) -> [OctPc]
 octpc_range (l,r) =
     let (l',r') = (octpc_to_midi l,octpc_to_midi r)
     in map midi_to_octpc [l' .. r']
@@ -106,17 +106,17 @@ type Midi = Int
 midi_to_int :: Midi -> Int
 midi_to_int = id
 
--- | 'OctPC' value to integral /midi/ note number.
+-- | 'OctPc' value to integral /midi/ note number.
 --
 -- > map octpc_to_midi [(0,0),(2,6),(4,9),(6,2),(9,0)] == [12,42,69,86,120]
 -- > map octpc_to_midi [(0,9),(8,0)] == [21,108]
-octpc_to_midi :: OctPC -> Midi
+octpc_to_midi :: OctPc -> Midi
 octpc_to_midi = octave_pitchclass_to_midi
 
 -- | Inverse of 'octpc_to_midi'.
 --
 -- > map midi_to_octpc [40,69] == [(2,4),(4,9)]
-midi_to_octpc :: Midi -> OctPC
+midi_to_octpc :: Midi -> OctPc
 midi_to_octpc = midi_to_octave_pitchclass
 
 -- * Octave & fractional pitch-class
@@ -147,7 +147,7 @@ foct_to_midi = octave_pitchclass_to_midi . foct_to_octpc
 type FMidi = Double
 
 -- | Fractional octave pitch-class (octave is integral, pitch-class is fractional).
-type FOctPC = (Int,Double)
+type FOctPc = (Int,Double)
 
 -- | 'fromIntegral' of 'octpc_to_midi'.
 octpc_to_fmidi :: (Integral i,Num n) => Octave_PitchClass i -> n
@@ -256,7 +256,7 @@ type Spelling n = n -> (T.Note_T,T.Alteration_T)
 -- | Variant of 'Spelling' for incomplete functions.
 type Spelling_M i = i -> Maybe (T.Note_T,T.Alteration_T)
 
--- | Given 'Spelling' function translate from 'OctPC' notation to 'Pitch'.
+-- | Given 'Spelling' function translate from 'OctPc' notation to 'Pitch'.
 --
 -- > octpc_to_pitch T.pc_spell_sharp (4,6) == Pitch T.F T.Sharp 4
 octpc_to_pitch :: Integral i => Spelling i -> Octave_PitchClass i -> Pitch
@@ -457,9 +457,10 @@ cps_to_midi = round . cps_to_fmidi
 octpc_to_cps_k0 :: (Integral i,Floating n) => (n,n) -> Octave_PitchClass i -> n
 octpc_to_cps_k0 o = T.midi_to_cps_k0 o . octave_pitchclass_to_midi
 
--- | 'octpc_to_cps_k0' (69,440).
---
--- > octpc_to_cps (4,9) == 440
+{- | 'octpc_to_cps_k0' (69,440).
+
+> map (round . octpc_to_cps) [(-1,0),(0,0),(4,9),(9,0)] == [8,16,440,8372]
+-}
 octpc_to_cps :: (Integral i,Floating n) => Octave_PitchClass i -> n
 octpc_to_cps = octpc_to_cps_k0 (69,440)
 
