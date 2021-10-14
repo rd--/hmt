@@ -8,3 +8,6 @@ mk-gl:
 
 mk-gr-planar:
 	(g++ -Wall -g gr-planar.cpp -o gr-planar ; mv gr-planar $(prefix)/bin/hmt-gr-planar)
+
+mk-dep:
+	cabal v1-install ply-loader
