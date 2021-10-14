@@ -6,7 +6,7 @@ import qualified Music.Theory.Pitch.Spelling.Cluster as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Key as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 
-spell_octpc_set :: [T.OctPC] -> [T.Pitch]
+spell_octpc_set :: [T.OctPc] -> [T.Pitch]
 spell_octpc_set o =
   case T.octpc_spell_implied_key o of
     Just r -> r

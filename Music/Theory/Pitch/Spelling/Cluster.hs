@@ -19,7 +19,7 @@ cluster_normal_order =
 -- | Normal order starting in indicated octave.
 --
 -- > cluster_normal_order_octpc 3 [0,1,11] == [(3,11),(4,0),(4,1)]
-cluster_normal_order_octpc :: T.Octave -> [T.PitchClass] -> [T.OctPC]
+cluster_normal_order_octpc :: T.Octave -> [T.PitchClass] -> [T.OctPc]
 cluster_normal_order_octpc o pc =
     let pc_n = cluster_normal_order pc
         pc_0 = head pc_n
@@ -133,10 +133,10 @@ spell_cluster_table =
 spell_cluster :: [T.PitchClass] -> Maybe [(T.Note_T,T.Alteration_T)]
 spell_cluster = flip lookup spell_cluster_table
 
--- | Spell an arbitrary sequence of 'T.OctPC' values.
+-- | Spell an arbitrary sequence of 'T.OctPc' values.
 --
 -- > fmap (map T.pitch_pp_iso) (spell_cluster_octpc [(3,11),(4,3),(4,11),(5,1)])
-spell_cluster_octpc :: [T.OctPC] -> Maybe [T.Pitch]
+spell_cluster_octpc :: [T.OctPc] -> Maybe [T.Pitch]
 spell_cluster_octpc o =
     let p = cluster_normal_order (sort (nub (map snd o)))
         na_f na =

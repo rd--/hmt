@@ -13,11 +13,11 @@ import Music.Theory.Pitch.Spelling.Table {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 
 -- | 'octpc_to_pitch' and 'octpc_to_cps_k0'.
-octpc_to_pitch_cps_k0 :: (Floating n) => (n,n) -> OctPC -> (Pitch,n)
+octpc_to_pitch_cps_k0 :: (Floating n) => (n,n) -> OctPc -> (Pitch,n)
 octpc_to_pitch_cps_k0 zero x = (octpc_to_pitch pc_spell_ks x,octpc_to_cps_k0 zero x)
 
 -- | 'octpc_to_pitch_cps_k0' of (69,440)
-octpc_to_pitch_cps :: (Floating n) => OctPC -> (Pitch,n)
+octpc_to_pitch_cps :: (Floating n) => OctPc -> (Pitch,n)
 octpc_to_pitch_cps = octpc_to_pitch_cps_k0 (69,440)
 
 -- | 12-tone equal temperament table equating 'Pitch' and frequency
@@ -213,7 +213,7 @@ nearest_pitch_detune_24et_k0 :: (Double, Double) -> Double -> Pitch_Detune
 nearest_pitch_detune_24et_k0 zero = hsr_to_pitch_detune . nearest_24et_tone_k0 zero
 
 -- | Given /near/ function, /f0/ and ratio derive 'Pitch_Detune'.
-ratio_to_pitch_detune :: (Double -> HS_R Pitch) -> OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune :: (Double -> HS_R Pitch) -> OctPc -> Rational -> Pitch_Detune
 ratio_to_pitch_detune near_f f0 r =
     let f = octpc_to_cps f0 * realToFrac r
         (_,p,_,_,c) = near_f f
@@ -226,11 +226,11 @@ pitch_detune_to_cps :: Floating n => Pitch_Detune -> n
 pitch_detune_to_cps (p,d) = cps_shift_cents (pitch_to_cps p) (realToFrac d)
 
 -- | 'ratio_to_pitch_detune' of 'nearest_12et_tone'
-ratio_to_pitch_detune_12et_k0 :: (Double, Double) -> OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune_12et_k0 :: (Double, Double) -> OctPc -> Rational -> Pitch_Detune
 ratio_to_pitch_detune_12et_k0 zero = ratio_to_pitch_detune (nearest_12et_tone_k0 zero)
 
 -- | 'ratio_to_pitch_detune' of 'nearest_24et_tone'
-ratio_to_pitch_detune_24et_k0 :: (Double, Double) -> OctPC -> Rational -> Pitch_Detune
+ratio_to_pitch_detune_24et_k0 :: (Double, Double) -> OctPc -> Rational -> Pitch_Detune
 ratio_to_pitch_detune_24et_k0 zero = ratio_to_pitch_detune (nearest_24et_tone_k0 zero)
 
 pitch_detune_in_octave_nearest  :: Pitch -> Pitch_Detune -> Pitch_Detune
