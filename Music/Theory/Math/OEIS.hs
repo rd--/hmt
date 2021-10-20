@@ -167,7 +167,7 @@ a000108 = map last (iterate (scanl1 (+) . (++ [0])) [1])
 
 > [0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,1,2,2,3,2,3,3] `isPrefixOf` a000120
 -}
-a000120 :: [Int]
+a000120 :: Integral i => [i]
 a000120 = let r = [0] : (map . map) (+ 1) (scanl1 (++) r) in concat r
 
 {- | <http://oeis.org/A000142>
@@ -435,6 +435,16 @@ a(n) = a(n-1) + a(n-2) + a(n-3), a(0)=3, a(1)=1, a(2)=3.
 a001644 :: Num n => [n]
 a001644 = 3 : 1 : 3 : zipWith3 (((+) .) . (+)) a001644 (tail a001644) (drop 2 a001644)
 
+{- | <https://oeis.org/A001653>
+
+Numbers k such that 2*k^2 - 1 is a square.
+
+> [1, 5, 29, 169, 985, 5741, 33461, 195025, 1136689, 6625109, 38613965, 225058681, 1311738121, 7645370045, 44560482149] `isPrefixOf` a001653
+
+-}
+a001653 :: [Integer]
+a001653 = 1 : 5 : zipWith (-) (map (* 6) (tail a001653)) a001653
+
 {- | <http://oeis.org/A001687>
 
 a(n) = a(n-2) + a(n-5).
@@ -471,6 +481,26 @@ a002487 =
       f _ _ = error "a002487"
       x = 1 : 1 : f (tail x) x
   in 0 : x
+
+{- | <https://oeis.org/A002858>
+
+Ulam numbers: a(1) = 1; a(2) = 2; for n>2, a(n) = least number > a(n-1) which is a unique sum of two distinct earlier terms.
+
+> [1, 2, 3, 4, 6, 8, 11, 13, 16, 18, 26, 28, 36, 38, 47, 48, 53, 57, 62, 69, 72, 77, 82, 87, 97, 99, 102, 106, 114, 126] `isPrefixOf` a002858
+-}
+a002858 :: [Integer]
+a002858 = 1 : 2 : ulam 2 2 a002858
+
+ulam :: Int -> Integer -> [Integer] -> [Integer]
+ulam n u us =
+  let u' = f 0 (u + 1) us'
+      f 2 z _                         = f 0 (z + 1) us'
+      f e z (v:vs) | z - v <= v       = if e == 1 then z else f 0 (z + 1) us'
+                   | z - v `elem` us' = f (e + 1) z vs
+                   | otherwise        = f e z vs
+      f _ _ []                        = error "ulam?"
+      us' = take n us
+  in u' : ulam (n + 1) u' us
 
 {- | <http://oeis.org/A003108>
 
@@ -746,6 +776,40 @@ a010049 =
       c _ _ = error "A010049"
   in uncurry c (splitAt 1 a000045)
 
+{- | <https://oeis.org/A010060>
+
+Thue-Morse sequence: let A_k denote the first 2^k terms; then A_0 = 0 and for k >= 0, A_{k+1} = A_k B_k, where B_k is obtained from A_k by interchanging 0's and 1's.
+
+[0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0] `isPrefixOf` a010060
+
+-}
+a010060 :: [Integer]
+a010060 =
+  let interleave (x:xs) ys = x : interleave ys xs
+      interleave [] _ = error "a010060?"
+   in 0 : interleave (map (1 -) a010060) (tail a010060)
+
+{- | <https://oeis.org/A014081>
+
+a(n) is the number of occurrences of '11' in binary expansion of n.
+
+> [0, 0, 0, 1, 0, 0, 1, 2, 0, 0, 0, 1, 1, 1, 2, 3, 0, 0, 0, 1, 0, 0, 1, 2, 1, 1, 1, 2, 2, 2, 3, 4, 0, 0, 0, 1, 0, 0, 1, 2] `isPrefixOf` a014081
+
+-}
+a014081 :: (Integral i, Bits i) => [i]
+a014081 = map (\n -> a000120 !! (n .&. div n 2)) [0..]
+
+{- | <https://oeis.org/A014577>
+
+The regular paper-folding sequence (or dragon curve sequence).
+
+> [1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1] `isPrefixOf` a014577
+-}
+a014577 :: Integral i => [i]
+a014577 =
+  let f n = if n `rem` 2 == 1 then f (n `quot` 2) else 1 - (n `div` 2 `rem` 2)
+  in map f [0..]
+
 {- | <http://oeis.org/A016813>
 
 a(n) = 4*n + 1.
@@ -772,6 +836,18 @@ Pisot sequence E(2,3).
 -}
 a020695 :: Num n => [n]
 a020695 = drop 3 a000045
+
+{- | <https://oeis.org/A020985>
+
+The Rudin-Shapiro or Golay-Rudin-Shapiro sequence (coefficients of the Shapiro polynomials).		45
+
+> [1, 1, 1, -1, 1, 1, -1, 1, 1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1] `isPrefixOf` a020985
+-}
+a020985 :: [Integer]
+a020985 =
+  let f (x:xs) w = x : x*w : f xs (0 - w)
+      f [] _ = error "a020985?"
+  in 1 : 1 : f (tail a020985) (-1)
 
 {- | <http://oeis.org/A022095>
 
