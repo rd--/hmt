@@ -21,49 +21,49 @@ import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 -- | (mode-start-degree,mode-intervals,mode-description)
-type MODE = (Int,[Int],String)
+type Mode = (Int,[Int],String)
 
 -- | Starting degree of mode in underlying scale.  If non-zero the
 -- mode will not lie within an ordinary octave of the tuning.
-mode_starting_degree :: MODE -> Int
+mode_starting_degree :: Mode -> Int
 mode_starting_degree (d,_,_) = d
 
 -- | Intervals (in steps) between adjacent elements of the mode.
-mode_intervals :: MODE -> [Int]
+mode_intervals :: Mode -> [Int]
 mode_intervals (_,i,_) = i
 
 -- | Interval set of mode (ie. 'nub' of 'sort' of 'mode_intervals')
-mode_iset :: MODE -> [Int]
+mode_iset :: Mode -> [Int]
 mode_iset = nub . sort . mode_intervals
 
 -- | Histogram ('List.histogram') of 'mode_intervals'
-mode_histogram :: MODE -> [(Int, Int)]
+mode_histogram :: Mode -> [(Int, Int)]
 mode_histogram = List.histogram . mode_intervals
 
 -- | The text description of the mode, ordinarily a comma separated list of names.
-mode_description :: MODE -> String
+mode_description :: Mode -> String
 mode_description (_,_,d) = d
 
 -- | 'length' (or degree) of 'mode_intervals' (ie. number of notes in mode)
-mode_length :: MODE -> Int
+mode_length :: Mode -> Int
 mode_length = length . mode_intervals
 
 -- | 'sum' of 'mode_intervals' (ie. number of notes in tuning system)
-mode_univ :: MODE -> Int
+mode_univ :: Mode -> Int
 mode_univ = sum . mode_intervals
 
 -- | 'List.dx_d' of 'mode_intervals'.  This seqence includes the octave.
-mode_degree_seq :: MODE -> [Int]
+mode_degree_seq :: Mode -> [Int]
 mode_degree_seq = List.dx_d 0 . mode_intervals
 
 -- | (mode-count,mode-length-maxima,mode-list)
-type MODENAM = (Int,Int,[MODE])
+type ModeNam = (Int,Int,[Mode])
 
-modenam_modes :: MODENAM -> [MODE]
+modenam_modes :: ModeNam -> [Mode]
 modenam_modes (_,_,m) = m
 
 -- | Search for mode by interval list.
-modenam_search_seq :: MODENAM -> [Int] -> [MODE]
+modenam_search_seq :: ModeNam -> [Int] -> [Mode]
 modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
 
 -- | Expect /one/ result.
@@ -77,17 +77,17 @@ modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
 -- > sq [1,2,1,2,1,2,1,2]
 -- > sq [2,1,2,1,2,1,2,1]
 -- > sq (replicate 12 1)
-modenam_search_seq1 :: MODENAM -> [Int] -> Maybe MODE
+modenam_search_seq1 :: ModeNam -> [Int] -> Maybe Mode
 modenam_search_seq1 mn = List.unlist1 . modenam_search_seq mn
 
 -- | Search for mode by description text.
 --
 -- > map (modenam_search_description mn) ["Messiaen","Xenakis","Raga"]
-modenam_search_description :: MODENAM -> String -> [MODE]
+modenam_search_description :: ModeNam -> String -> [Mode]
 modenam_search_description (_,_,m) x = filter (isInfixOf x . mode_description) m
 
 -- | Is /p/ an element of the set of rotations of /q/.
-mode_rot_eqv :: MODE -> MODE -> Bool
+mode_rot_eqv :: Mode -> Mode -> Bool
 mode_rot_eqv p q =
   (mode_length p == mode_length q) &&
   (mode_univ p == mode_univ q) &&
@@ -106,7 +106,7 @@ mode_rot_eqv p q =
 > length r
 > putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r
 -}
-mode_stat :: MODE -> [String]
+mode_stat :: Mode -> [String]
 mode_stat m =
   let hst = mode_histogram m
       comma_map f = intercalate "," . map f
@@ -138,7 +138,7 @@ is_non_implicit_degree = isJust . non_implicit_degree
 is_integer :: String -> Bool
 is_integer = all isDigit
 
-parse_modenam_entry :: [String] -> MODE
+parse_modenam_entry :: [String] -> Mode
 parse_modenam_entry w =
     let (n0:n,c) = span (Function.predicate_or is_non_implicit_degree is_integer) w
     in case non_implicit_degree n0 of
@@ -155,7 +155,7 @@ join_long_lines l =
       _ -> l
 
 -- | Parse joined non-comment lines of modenam file.
-parse_modenam :: [String] -> MODENAM
+parse_modenam :: [String] -> ModeNam
 parse_modenam l =
     case l of
       n_str:x_str:m_str ->
@@ -172,7 +172,7 @@ parse_modenam l =
 -- > mn <- load_modenam
 -- > let (n,x,m) = mn
 -- > n == 2933 && x == 15 && length m == n -- Scala 2.42p
-load_modenam :: IO MODENAM
+load_modenam :: IO ModeNam
 load_modenam = do
   l <- Scala.load_dist_file_ln "modenam.par"
   return (parse_modenam (Scala.filter_comments (join_long_lines l)))
