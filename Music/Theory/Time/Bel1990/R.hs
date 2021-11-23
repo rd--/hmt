@@ -16,6 +16,7 @@ For details see <http://rohandrape.net/?t=hmt-texts>.
 
 module Music.Theory.Time.Bel1990.R where
 
+import Control.Monad {- base -}
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
@@ -44,6 +45,17 @@ par_mode_brackets m =
       Par_Max -> ("{","}")
       Par_None -> ("[","]")
 
+-- | Inverse of par_mode_brackets
+par_mode_kind :: (String, String) -> Par_Mode
+par_mode_kind brk =
+  case brk of
+    ("{","}") -> Par_Max
+    ("~{","}") -> Par_Min
+    ("(",")") -> Par_Left
+    ("~(",")") -> Par_Right
+    ("[","]") -> Par_None
+    _ -> error "par_mode_kind: incoherent par"
+
 bel_brackets_match :: (Char,Char) -> Bool
 bel_brackets_match (open,close) =
     case (open,close) of
@@ -69,6 +81,14 @@ data Bel a = Node (Term a) -- ^ Leaf node
            | Par Par_Mode (Bel a) (Bel a) -- ^ Parallel
            | Mul Tempo -- ^ Tempo multiplier
            deriving (Eq,Show)
+
+par_of :: Par_Mode -> [Bel a] -> Bel a
+par_of m l =
+  case l of
+    [] -> error "par_of: null"
+    [e] -> Iso e
+    lhs : rhs : [] -> Par m lhs rhs
+    e : l' -> Par m e (par_of m l')
 
 -- | Pretty printer for 'Bel', given pretty printer for the term type.
 bel_pp :: (a -> String) -> Bel a -> String
@@ -414,9 +434,8 @@ p_iso f = do
   open <- P.oneOf "{(["
   iso <- P.many1 f
   close <- P.oneOf "})]"
-  if bel_brackets_match (open,close)
-    then return (Iso (lseq iso))
-    else error "p_iso: open/close mismatch"
+  when (not (bel_brackets_match (open,close))) (error "p_iso: open/close mismatch")
+  return (Iso (lseq iso))
 
 -- | 'p_iso' of 'p_char_bel'.
 --
@@ -429,23 +448,17 @@ p_par :: T.P (Bel a) -> T.P (Bel a)
 p_par f = do
   tilde <- P.optionMaybe (P.char '~')
   open <- P.oneOf "{(["
-  lhs <- P.many1 f
-  _ <- P.char ','
-  rhs <- P.many1 f
+  items <- P.sepBy (P.many1 f) (P.char ',')
   close <- P.oneOf "})]"
-  let m = case (tilde,open,close) of
-            (Nothing,'{','}') -> Par_Max
-            (Just '~','{','}') -> Par_Min
-            (Nothing,'(',')') -> Par_Left
-            (Just '~','(',')') -> Par_Right
-            (Nothing,'[',']') -> Par_None
-            _ -> error "p_par: incoherent par"
-  return (Par m (lseq lhs) (lseq rhs))
+  let m = par_mode_kind (T.mcons tilde [open], [close])
+  return (par_of m (map lseq items))
 
--- | 'p_par' of 'p_char_bel'.
---
--- > P.parse p_char_par "" "{ab,{c,de}}"
--- > P.parse p_char_par "" "{ab,~(c,de)}"
+{- | 'p_par' of 'p_char_bel'.
+
+> p = P.parse p_char_par ""
+> p "{ab,{c,de}}" == p "{ab,c,de}"
+> p "{ab,~(c,de)}"
+-}
 p_char_par :: T.P (Bel Char)
 p_char_par = p_par p_char_bel
 
