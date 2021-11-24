@@ -74,6 +74,13 @@ data Term a = Value a
             | Continue
            deriving (Eq,Show)
 
+-- | Value of Term, else Nothing
+term_value :: Term t -> Maybe t
+term_value t =
+  case t of
+    Value x -> Just x
+    _ -> Nothing
+
 -- | Recursive temporal structure.
 data Bel a = Node (Term a) -- ^ Leaf node
            | Iso (Bel a) -- ^ Isolate
@@ -82,6 +89,7 @@ data Bel a = Node (Term a) -- ^ Leaf node
            | Mul Tempo -- ^ Tempo multiplier
            deriving (Eq,Show)
 
+-- | Given a Par mode, generate either: 1. an Iso, 2. a Par, 3. a series of nested Par.
 par_of :: Par_Mode -> [Bel a] -> Bel a
 par_of m l =
   case l of
@@ -90,7 +98,9 @@ par_of m l =
     lhs : rhs : [] -> Par m lhs rhs
     e : l' -> Par m e (par_of m l')
 
--- | Pretty printer for 'Bel', given pretty printer for the term type.
+{- | Pretty printer for 'Bel', given pretty printer for the term type.
+     Note this does not write nested Par nodes in their simplified form.
+-}
 bel_pp :: (a -> String) -> Bel a -> String
 bel_pp f b =
     case b of
@@ -178,6 +188,18 @@ lterm_duration ((_,tm,_),_) = 1 / tm
 lterm_end_time :: L_Term a -> Time
 lterm_end_time e = lterm_time e + lterm_duration e
 
+-- | Voice of 'L_Term'.
+lterm_voice :: L_Term t -> Voice
+lterm_voice ((_,_,vc),_) = vc
+
+-- | Term of L_Term
+lterm_term :: L_Term t -> Term t
+lterm_term (_,t) = t
+
+-- | Value of Term of L_Term
+lterm_value :: L_Term t -> Maybe t
+lterm_value = term_value . lterm_term
+
 -- | Linear form of 'Bel', an ascending sequence of 'L_Term'.
 type L_Bel a = [L_Term a]
 
@@ -213,13 +235,19 @@ lbel_tempi = nub . sort . map (\((_,t,_),_) -> t)
 lbel_tempo_mul :: Rational -> L_Bel a -> L_Bel a
 lbel_tempo_mul n = map (\((st,tm,vc),e) -> ((st / n,tm * n,vc),e))
 
--- | After normalisation all start times and durations are integral.
+{- | The multiplier that will normalise an L_Bel value.
+     After normalisation all start times and durations are integral.
+-}
+lbel_normalise_multiplier :: L_Bel t -> Rational
+lbel_normalise_multiplier b =
+  let t = lbel_tempi b
+      n = foldl1 lcm (map denominator t) % 1
+      m = foldl1 lcm (map (numerator . (* n)) t) % 1
+  in n / m
+
+-- | Calculate and apply L_Bel normalisation multiplier.
 lbel_normalise :: L_Bel a -> L_Bel a
-lbel_normalise b =
-    let t = lbel_tempi b
-        n = foldl1 lcm (map denominator t) % 1
-        m = foldl1 lcm (map (numerator . (* n)) t) % 1
-    in lbel_tempo_mul (n / m) b
+lbel_normalise b = lbel_tempo_mul (lbel_normalise_multiplier b) b
 
 -- | All leftmost voices are re-written to the last non-left turning point.
 --
@@ -334,7 +362,7 @@ bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 
 -- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
 --
--- > bel_ascii_pp "{i{ab,{c[d,oh]e,sr{p,qr}}},{jk,ghjkj}}"
+-- > bel_ascii_pp "{i{ab,c[d,oh]e,sr{p,qr}},{jk,ghjkj}}"
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
   let p = bel_char_parse s
