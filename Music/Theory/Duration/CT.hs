@@ -6,8 +6,9 @@ import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
+import qualified Music.Theory.List as List {- hmt-base -}
+
 import qualified Music.Theory.Duration.RQ as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Time_Signature as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
@@ -17,15 +18,26 @@ type Measure = Int
 -- | 1-indexed.
 type Pulse = Int
 
--- | Transform measures given as 'T.RQ' divisions to absolute 'T.RQ'
--- locations.  /mdv/ abbreviates measure divisions.
---
--- > mdv_to_mrq [[1,2,1],[3,2,1]] == [[0,1,3],[4,7,9]]
-mdv_to_mrq :: [[T.RQ]] -> [[T.RQ]]
-mdv_to_mrq = snd . mapAccumL T.dx_d' 0
+-- | Measures given as 'T.RQ' divisions, Mdv abbreviates measure divisions.
+type Mdv = [[T.RQ]]
 
--- | Lookup function for ('Measure','Pulse') indexed structure.
-mp_lookup_err :: [[a]] -> (Measure,Pulse) -> a
+{- | Absolute 'T.RQ' locations grouped in measures.
+     mrq abbreviates measure rational quarter-notes.
+     Locations are zero-indexed.
+-}
+type Mrq = [[T.RQ]]
+
+{- | Transform Mdv to Mrq.
+
+> mdv_to_mrq [[1,2,1],[3,2,1]] == [[0,1,3],[4,7,9]]
+-}
+mdv_to_mrq :: Mdv -> Mrq
+mdv_to_mrq = snd . mapAccumL List.dx_d' 0
+
+{- | Lookup function for ('Measure','Pulse') indexed structure.
+     mp abbreviates Measure Pulse.
+-}
+mp_lookup_err :: [[t]] -> (Measure,Pulse) -> t
 mp_lookup_err sq (m,p) =
     if m < 1 || p < 1
     then error (show ("mp_lookup_err: one indexed?",m,p))
@@ -33,18 +45,20 @@ mp_lookup_err sq (m,p) =
 
 -- | Comparison for ('Measure','Pulse') indices.
 mp_compare :: (Measure,Pulse) -> (Measure,Pulse) -> Ordering
-mp_compare = T.two_stage_compare (compare `on` fst) (compare `on` snd)
+mp_compare = List.two_stage_compare (compare `on` fst) (compare `on` snd)
 
 -- * CT
 
--- | Latch measures (ie. make measures contiguous, hold previous value).
---
--- > unzip (ct_ext 10 'a' [(3,'b'),(8,'c')]) == ([1..10],"aabbbbbccc")
-ct_ext :: Int -> a -> [(Measure,a)] -> [(Measure,a)]
+{- | Latch measures (ie. make measures contiguous, hold previous value).
+     Arguments are the number of measures and the default (intial) value.
+
+> unzip (ct_ext 10 'a' [(3,'b'),(8,'c')]) == ([1..10],"aabbbbbccc")
+-}
+ct_ext :: Int -> t -> T.Tseq Measure t -> T.Tseq Measure t
 ct_ext n def sq = T.tseq_latch def sq [1 .. n]
 
 -- | Variant that requires a value at measure one (first measure).
-ct_ext1 :: Int -> [(Measure,a)] -> [(Measure,a)]
+ct_ext1 :: Int -> T.Tseq Measure t -> T.Tseq Measure t
 ct_ext1 n sq =
     case sq of
       (1,e) : sq' -> ct_ext n e sq'
@@ -54,7 +68,7 @@ ct_ext1 n sq =
 ct_dv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [(Measure,[[T.RQ]])]
 ct_dv_seq n ts = map (fmap T.rts_divisions) (ct_ext1 n ts)
 
--- | 'ct_dv_seq' without measures numbers.
+-- | 'ct_dv_seq' without measures numbers (which are 1..n)
 ct_mdv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.RQ]]
 ct_mdv_seq n = map (concat . snd) . ct_dv_seq n
 
@@ -123,6 +137,10 @@ delay1 l =
       [] -> error "delay1: []"
       e:_ -> e : l
 
+{- | Generate CT measure.
+     Calculates durations of events considering only the tempo at the start of the event.
+     To be correct it should consider the tempo envelope through the event.
+-}
 ct_measure:: T.Lseq T.RQ T.RQ -> ([T.RQ],Maybe Char,Maybe (),[[T.RQ]]) -> [(Rational,CT_Node)]
 ct_measure sq (mrq,mk,pr,dv) =
     let dv' = concatMap (zip [1::Int ..]) dv
@@ -158,7 +176,7 @@ ct_tempo0_err = fromMaybe (error "ct_tempo0") . ct_tempo0
 
 -- > import Music.Theory.Duration.CT
 -- > import Music.Theory.Time.Seq
--- > let ct = CT 2 [(1,[(3,8),(2,4)])] [(1,'a')] [(((1,0),T.None),60)] undefined
+-- > let ct = CT 2 [(1,[(3,8),(2,4)])] [(1,'a')] [(((1,1),T.None),60)] undefined
 -- > ct_measures ct
 ct_measures :: CT -> [T.Dseq Rational CT_Node]
 ct_measures (CT n ts mk tm _) =

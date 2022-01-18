@@ -259,7 +259,9 @@ data Interpolation_T = None | Linear
 -- | Variant of 'Tseq' where nodes have an 'Intepolation_T' value.
 type Lseq t a = Tseq (t,Interpolation_T) a
 
--- | Linear interpolation.
+{- | Linear interpolation.
+     The Real constraint on t is to allow conversion from t to e (realToFrac).
+-}
 lerp :: (Fractional t,Real t,Fractional e) => (t,e) -> (t,e) -> t -> e
 lerp (t0,e0) (t1,e1) t =
     let n = t1 - t0
