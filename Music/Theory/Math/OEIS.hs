@@ -493,7 +493,7 @@ a002858 = 1 : 2 : ulam 2 2 a002858
 
 ulam :: Int -> Integer -> [Integer] -> [Integer]
 ulam n u us =
-  let u' = f 0 (u + 1) us'
+  let u' = f (0 :: Integer) (u + 1) us'
       f 2 z _                         = f 0 (z + 1) us'
       f e z (v:vs) | z - v <= v       = if e == 1 then z else f 0 (z + 1) us'
                    | z - v `elem` us' = f (e + 1) z vs
