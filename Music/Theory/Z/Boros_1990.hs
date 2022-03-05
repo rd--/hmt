@@ -164,7 +164,7 @@ table_3 =
               in (i p,i q)
     in map f ath_trichords
 
-pp_tbl :: T.TABLE -> [String]
+pp_tbl :: T.Text_Table -> [String]
 pp_tbl = T.table_pp T.table_opt_simple
 
 -- > putStrLn $ unlines $ table_3_md

@@ -132,7 +132,7 @@ sq_sums sq =
 
 -- * PP
 
-sq_opt :: T.TABLE_OPT
+sq_opt :: T.Text_Table_Opt
 sq_opt = (False,True,False," ",False)
 
 sq_pp :: Show t => SQ t -> String
