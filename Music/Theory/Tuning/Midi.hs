@@ -4,7 +4,6 @@ module Music.Theory.Tuning.Midi where
 import Data.List {- base -}
 import qualified Data.Map as M {- containers -}
 import Data.Maybe {- base -}
-import Data.Word {- base -}
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.List as T {- hmt -}
@@ -73,7 +72,7 @@ cps_midi_tuning_f (t,f0,k,g) n =
 -- * Midi tuning tables.
 
 -- | midi-note-number -> fractional-midi-note-number table, possibly sparse.
-type MNN_FMNN_Table = [(Word8,Double)]
+type MNN_FMNN_Table = [(Int,Double)]
 
 -- | Load 'MNN_FMNN_Table' from two-column CSV file.
 mnn_fmnn_table_load_csv :: FilePath -> IO MNN_FMNN_Table
