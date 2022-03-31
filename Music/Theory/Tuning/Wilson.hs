@@ -229,9 +229,9 @@ ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
 ew_gr_udot_wr_svg :: Ew_Gr_Opt -> FilePath -> Graph.Lbl Rational () -> IO ()
 ew_gr_udot_wr_svg opt fn gr = do
   ew_gr_udot_wr opt fn gr
-  void (Dot.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn (replaceExtension fn "svg"))
+  void (Dot.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn)
 
--- * ZIG-ZAG
+-- * Zig-Zag
 
 zz_seq_1 :: (Eq n,Num n) => Int -> (n,n) -> (n,n) -> [(n,n)]
 zz_seq_1 k (p,q) (n,d) = if k == 0 then [(n,d)] else (n,d) : zz_seq_1 (k - 1) (p,q) (n+p,d+q)
@@ -255,7 +255,7 @@ zz_recur k_seq p =
 zz_seq :: (Eq n, Num n) => [Int] -> [[(n, n)]]
 zz_seq k_seq = zz_recur k_seq [(0,1),(1,1)]
 
--- * MOS
+-- * Mos
 
 -- > gen_coprime 12 == [1,5]
 -- > gen_coprime 49 == [1..24] \\ [7,14,21]
@@ -313,7 +313,7 @@ mos_tbl_pp = map mos_row_pp
 mos_tbl_wr :: (Integral i,Show i) => [[i]] -> IO ()
 mos_tbl_wr = putStrLn . unlines . mos_tbl_pp
 
--- * MOS/LOG
+-- * Mos/Log
 
 mos_recip_seq :: Double -> [(Int,Double)]
 mos_recip_seq x = let y = truncate x in (y,x) : mos_recip_seq (recip (x - fromIntegral y))
@@ -326,7 +326,7 @@ mos_log r = mos_recip_seq (recip (logBase 2 r))
 mos_log_kseq :: Double -> [Int]
 mos_log_kseq = map fst . mos_log
 
--- * STERN-BROCOT TREE
+-- * Stern-Brocot Tree
 
 data SBT_DIV = NIL | LHS | RHS deriving (Show)
 type Sbt_Node = (SBT_DIV,Rat,Rat,Rat)
@@ -367,7 +367,7 @@ sbt_dot n =
   let e = map sbt_node_to_edge n
   in concat [["graph {","node [shape=plain]"],e,["}"]]
 
--- * M-GEN
+-- * M-Gen
 
 (^.) :: Rational -> Int -> Rational
 (^.) = (^)
@@ -384,7 +384,7 @@ m_gen_unfold (r,m,n) = take n (iterate (* m) r)
 m_gen_to_r :: [M_GEN] -> [Rational]
 m_gen_to_r = r_normalise . concatMap m_gen_unfold
 
--- * M3-GEN
+-- * M3-Gen
 
 -- | (ratio,M3-steps)
 type M3_GEN = (Rational,Int)
@@ -399,7 +399,7 @@ m3_gen_unfold = m_gen_unfold . m3_to_m
 m3_gen_to_r :: [M3_GEN] -> [Rational]
 m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
 
--- * SCALA
+-- * Scala
 
 r_to_scale :: String -> String -> [Rational] -> Scala.Scale
 r_to_scale nm dsc r =
@@ -872,7 +872,7 @@ ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
 ew_xen456_9_scl :: Scala.Scale
 ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
--- * GEMS
+-- * Gems
 
 {- | <http://wilsonarchives.blogspot.com/2010/10/scale-for-rod-poole.html>
 
@@ -911,7 +911,7 @@ ew_two_22_7_r =
 ew_two_22_7_scl :: Scala.Scale
 ew_two_22_7_scl = r_to_scale "ew_two_22_7" "EW, 2018/03/an-unusual-22-tone-7-limit-tuning.html" ew_two_22_7_r
 
--- * DB
+-- * Db
 
 {- | Scales /not/ present in the standard scala file set.
 

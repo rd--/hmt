@@ -9,10 +9,11 @@ import System.Process {- process -}
 
 import qualified Data.Graph.Inductive.Graph as G {- fgl -}
 
+import qualified Music.Theory.Graph.Type as T {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
+
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
-import qualified Music.Theory.Graph.Type as T {- hmt -}
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Show as Show {- hmt -}
 
 -- * Util
 
@@ -207,7 +208,6 @@ dot_to_ext opt dot_fn ext_fn =
   let arg = opt ++ ["-T",tail (takeExtension ext_fn),"-o",ext_fn,dot_fn]
   in void (rawSystem "dot" arg)
 
--- | Alias for 'dot_to_ext'
-dot_to_svg :: [String] -> FilePath -> FilePath -> IO ()
-dot_to_svg = dot_to_ext
-
+-- | 'dot_to_ext' generating .svg filename by replacing .dot extension with .svg
+dot_to_svg :: [String] -> FilePath -> IO ()
+dot_to_svg opt dot_fn = dot_to_ext opt dot_fn (replaceExtension dot_fn "svg")
