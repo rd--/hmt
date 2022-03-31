@@ -119,7 +119,7 @@ gen_u_edges = T.e_univ_select_u_edges
 
 -- * Graph
 
-oh_def_opt :: [T.DOT_META_ATTR]
+oh_def_opt :: [T.Dot_Meta_Attr]
 oh_def_opt =
   [("graph:layout","neato")
   ,("graph:epsilon","0.000001")
@@ -127,19 +127,19 @@ oh_def_opt =
   ,("node:fontsize","10")
   ,("node:fontname","century schoolbook")]
 
-gen_graph :: Ord v => [T.DOT_META_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
+gen_graph :: Ord v => [T.Dot_Meta_Attr] -> T.Graph_Pp v e -> [T.Edge_Lbl v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot (oh_def_opt ++ opt) pp (T.g_from_edges_l es)
 
-gen_graph_ul :: Ord v => [T.DOT_META_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
+gen_graph_ul :: Ord v => [T.Dot_Meta_Attr] -> (v -> String) -> [T.Edge v] -> [String]
 gen_graph_ul opt pp es = T.fgl_to_udot (oh_def_opt ++ opt) (T.gr_pp_label_v pp) (T.g_from_edges es)
 
-gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.EDGE v] -> [String]
+gen_graph_ul_ty :: Ord v => String -> (v -> String) -> [T.Edge v] -> [String]
 gen_graph_ul_ty ty = gen_graph_ul [("graph:layout",ty)]
 
-gen_flt_graph_pp :: Ord t => [T.DOT_META_ATTR] -> ([t] -> String) -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
+gen_flt_graph_pp :: Ord t => [T.Dot_Meta_Attr] -> ([t] -> String) -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
 gen_flt_graph_pp opt pp f p = gen_graph_ul opt pp (gen_u_edges f p)
 
-gen_flt_graph :: (Ord t, Show t) => [T.DOT_META_ATTR] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
+gen_flt_graph :: (Ord t, Show t) => [T.Dot_Meta_Attr] -> ([t] -> [t] -> Bool) -> [[t]] -> [String]
 gen_flt_graph opt = gen_flt_graph_pp opt set_pp
 
 -- * P.12
@@ -165,7 +165,7 @@ p12_c5_eset =
         align p q = filter ((== 4) . T.z_mod T.z12 . dif) (all_pairs p q)
     in concatMap adj [l1,l2,l3] ++ align l1 l2 ++ align l2 l3
 
-e_add_label :: (T.EDGE v -> l) -> [T.EDGE v] -> [T.EDGE_L v l]
+e_add_label :: (T.Edge v -> l) -> [T.Edge v] -> [T.Edge_Lbl v l]
 e_add_label f = let g (p,q) = ((p,q),f (p,q)) in map g
 
 p12_c5_gr :: [String]
@@ -221,7 +221,7 @@ p14_edges =
       e_mod = concat [rem_set del_par e_par,rem_set del_rel e_rel,rem_set del_med e_med]
   in p14_mk_e e_mod
 
-p14_mk_gr :: [T.DOT_META_ATTR] -> [T.EDGE T.Key] -> [String]
+p14_mk_gr :: [T.Dot_Meta_Attr] -> [T.Edge T.Key] -> [String]
 p14_mk_gr opt e =
     let opt' = ("graph:start","168732") : opt
         pp = T.gr_pp_label_v T.key_lc_uc_pp
@@ -284,7 +284,7 @@ p31_gr = gen_graph_ul [] set_pp p31_e_set
 p114_f_3_7 :: [Z12]
 p114_f_3_7 = [0,2,5]
 
-p114_mk_o :: Show t => t -> [T.DOT_META_ATTR]
+p114_mk_o :: Show t => t -> [T.Dot_Meta_Attr]
 p114_mk_o el =
   [("node:shape","box")
   ,("edge:len",show el)
@@ -374,7 +374,7 @@ p162_ch =
   in filter ((== 1) . (`mod` 4) . sum) c
 
 -- > length p162_e == 47
-p162_e :: [T.EDGE [Int]]
+p162_e :: [T.Edge [Int]]
 p162_e = T.e_univ_select_u_edges (doi_of 3) p162_ch
 
 p162_gr :: [String]
@@ -394,7 +394,7 @@ p172_nd_map =
 p172_nd_e_set :: [(Int,Int)]
 p172_nd_e_set = T.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0..23]
 
-p172_nd_e_set_alt :: [T.EDGE Int]
+p172_nd_e_set_alt :: [T.Edge Int]
 p172_nd_e_set_alt = concatMap (T.e_path_to_edges . T.close 1) p172_cyc0
 
 p172_gr :: G.Gr () ()
@@ -571,7 +571,7 @@ p201_mk_e =
 p201_e :: [[E]]
 p201_e = map p201_mk_e [[0,3,4],[1,6,7],[2,5,8]]
 
-p201_o :: [T.DOT_META_ATTR]
+p201_o :: [T.Dot_Meta_Attr]
 p201_o =
   [("graph:splines","false")
   ,("node:shape","box")

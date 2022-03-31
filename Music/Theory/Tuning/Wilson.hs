@@ -28,7 +28,7 @@ import qualified Music.Theory.Set.List as Set {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
--- * GEOM (SEE "Data.CG.Minus.Plain")
+-- * Geom (see "Data.CG.Minus.Plain")
 
 type V2 n = (n,n)
 v2_map :: (t -> u) -> V2 t -> V2 u
@@ -42,7 +42,7 @@ v2_sum = foldl v2_add (0,0)
 v2_scale :: Num n => n -> V2 n -> V2 n
 v2_scale n = v2_map (* n)
 
--- * PT SET
+-- * Pt Set
 
 {- | Normalise set of points to lie in (-1,-1) - (1,1), scaling symetrically about (0,0)
 
@@ -111,31 +111,31 @@ lat_res (_,p) (_,q) =
                 LT -> 1 % (i ^ abs (Convert.int_to_integer j))
   in product (zipWith f p q)
 
--- * RAT (n,d)
+-- * Rat (n,d)
 
 -- | Ratio given as (/n/,/d/)
-type RAT = (Integer,Integer)
+type Rat = (Integer,Integer)
 
 -- | Remove all octaves from /n/ and /d/.
-rat_rem_oct :: RAT -> RAT
+rat_rem_oct :: Rat -> Rat
 rat_rem_oct = Function.bimap1 (product . filter (/= 2)) . Prime.rat_prime_factors
 
--- | Lift 'RAT' function to 'Rational'.
-rat_lift_1 :: (RAT -> RAT) -> Rational -> Rational
+-- | Lift 'Rat' function to 'Rational'.
+rat_lift_1 :: (Rat -> Rat) -> Rational -> Rational
 rat_lift_1 f = uncurry (%) . f . Math.rational_nd
 
--- | Convert 'RAT' to 'Rational'
-rat_to_ratio :: RAT -> Rational
+-- | Convert 'Rat' to 'Rational'
+rat_to_ratio :: Rat -> Rational
 rat_to_ratio (n,d) = n % d
 
 -- | Mediant, ie. n1+n2/d1+d2
 --
 -- > rat_mediant (0,1) (1,2) == (1,3)
-rat_mediant :: RAT -> RAT -> RAT
+rat_mediant :: Rat -> Rat -> Rat
 rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
 
--- | RAT written as n/d
-rat_pp :: RAT -> String
+-- | Rat written as n/d
+rat_pp :: Rat -> String
 rat_pp (n,d) = concat [show n,"/",show d]
 
 -- * Rational
@@ -195,13 +195,13 @@ tbl_wr del = putStr . unlines . Text.table_pp (False,True,False," ",False) . tbl
 -- * Graph
 
 -- | (maybe (maybe lattice-design, maybe primes),gr-attr,vertex-pp)
-type EW_GR_OPT = (Maybe (Lattice_Design Rational,Maybe [Integer]),[Dot.DOT_META_ATTR],Rational -> String)
+type Ew_Gr_Opt = (Maybe (Lattice_Design Rational,Maybe [Integer]),[Dot.Dot_Meta_Attr],Rational -> String)
 
-ew_gr_opt_pos :: EW_GR_OPT -> Bool
+ew_gr_opt_pos :: Ew_Gr_Opt -> Bool
 ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
 
 -- > map (ew_gr_r_pos ew_lc_std (Just [3,5,31])) [3,5,31]
-ew_gr_r_pos :: Lattice_Design Rational -> Maybe [Integer] -> Rational -> Dot.DOT_ATTR
+ew_gr_r_pos :: Lattice_Design Rational -> Maybe [Integer] -> Rational -> Dot.Dot_Attr
 ew_gr_r_pos (k,lc) primes_l =
   let f m (x,y) = (m * x,m * y)
   in Dot.node_pos_attr .
@@ -212,7 +212,7 @@ ew_gr_r_pos (k,lc) primes_l =
      maybe (tail . Prime.rational_prime_factors_t (k + 1)) Prime.rational_prime_factors_c primes_l
 
 -- | 'Dot.lbl_to_udot' add position attribute if a 'Lattice_Design' is given.
-ew_gr_udot :: EW_GR_OPT -> Graph.LBL Rational () -> [String]
+ew_gr_udot :: Ew_Gr_Opt -> Graph.Lbl Rational () -> [String]
 ew_gr_udot (lc_m,attr,v_pp) =
   let (e,p_f) = case lc_m of
                   Nothing -> ("sfdp",const Nothing)
@@ -223,10 +223,10 @@ ew_gr_udot (lc_m,attr,v_pp) =
      ,const [])
 
 -- | 'writeFile' of 'ew_gr_udot'
-ew_gr_udot_wr :: EW_GR_OPT -> FilePath -> Graph.LBL Rational () -> IO ()
+ew_gr_udot_wr :: Ew_Gr_Opt -> FilePath -> Graph.Lbl Rational () -> IO ()
 ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
 
-ew_gr_udot_wr_svg :: EW_GR_OPT -> FilePath -> Graph.LBL Rational () -> IO ()
+ew_gr_udot_wr_svg :: Ew_Gr_Opt -> FilePath -> Graph.Lbl Rational () -> IO ()
 ew_gr_udot_wr_svg opt fn gr = do
   ew_gr_udot_wr opt fn gr
   void (Dot.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn (replaceExtension fn "svg"))
@@ -329,26 +329,26 @@ mos_log_kseq = map fst . mos_log
 -- * STERN-BROCOT TREE
 
 data SBT_DIV = NIL | LHS | RHS deriving (Show)
-type SBT_NODE = (SBT_DIV,RAT,RAT,RAT)
+type Sbt_Node = (SBT_DIV,Rat,Rat,Rat)
 
-sbt_step :: SBT_NODE -> [SBT_NODE]
+sbt_step :: Sbt_Node -> [Sbt_Node]
 sbt_step (_,l,m,r) = [(LHS,l,rat_mediant l m, m),(RHS,m,rat_mediant m r,r)]
 
 -- sbt = stern-brocot tree
-sbt_root :: SBT_NODE
+sbt_root :: Sbt_Node
 sbt_root = (NIL,(0,1),(1,1),(1,0))
 
-sbt_half :: SBT_NODE
+sbt_half :: Sbt_Node
 sbt_half = (NIL,(0,1),(1,2),(1,1))
 
 -- > sbt_from sbt_root
-sbt_from :: SBT_NODE -> [[SBT_NODE]]
+sbt_from :: Sbt_Node -> [[Sbt_Node]]
 sbt_from = iterate (concatMap sbt_step) . return
 
-sbt_k_from :: Int -> SBT_NODE -> [[SBT_NODE]]
+sbt_k_from :: Int -> Sbt_Node -> [[Sbt_Node]]
 sbt_k_from k = take k . sbt_from
 
-sbt_node_to_edge :: SBT_NODE -> String
+sbt_node_to_edge :: Sbt_Node -> String
 sbt_node_to_edge (dv,l,m,r) =
   let edge_pp p q = printf "\"%s\" -- \"%s\"" (rat_pp p) (rat_pp q)
   in case dv of
@@ -356,13 +356,13 @@ sbt_node_to_edge (dv,l,m,r) =
        LHS -> edge_pp r m
        RHS -> edge_pp l m
 
-sbt_node_elem :: SBT_NODE -> [RAT]
+sbt_node_elem :: Sbt_Node -> [Rat]
 sbt_node_elem (dv,l,m,r) =
   case dv of
     NIL -> [l,m,r]
     _ -> [m]
 
-sbt_dot :: [SBT_NODE] -> [String]
+sbt_dot :: [Sbt_Node] -> [String]
 sbt_dot n =
   let e = map sbt_node_to_edge n
   in concat [["graph {","node [shape=plain]"],e,["}"]]
@@ -755,11 +755,11 @@ ew_Pelogflute_2_scl = r_to_scale "ew_Pelogflute_2" "EW, Pelogflute.pdf, P.2" ew_
 -- * <http://anaphoria.com/xen1.pdf>
 
 -- | P.9, Fig. 3
-xen1_fig3 :: (SBT_NODE,Int)
+xen1_fig3 :: (Sbt_Node,Int)
 xen1_fig3 = ((NIL,(1,3),(2,5),(1,2)),5)
 
 -- | P.9, Fig. 4
-xen1_fig4 :: (SBT_NODE,Int)
+xen1_fig4 :: (Sbt_Node,Int)
 xen1_fig4 = ((NIL,(2,5),(5,12),(3,7)),5)
 
 -- * <http://anaphoria.com/xen3b.pdf>

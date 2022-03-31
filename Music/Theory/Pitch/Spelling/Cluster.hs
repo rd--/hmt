@@ -177,10 +177,10 @@ spell_cluster_c o =
 --
 -- > import Data.Maybe
 --
--- > let {f n = if n >= 11 then 3 else 4
--- >     ;g = map T.pitch_pp .fromJust . spell_cluster_f f
--- >     ;r = [["B3","C4"],["B3"],["C4"],["A♯4","B4"]]}
--- > in map g [[11,0],[11],[0],[10,11]] == r
+-- > let f n = if n >= 11 then 3 else 4
+-- > let g = map T.pitch_pp .fromJust . spell_cluster_f f
+-- > let r = [["B3","C4"],["B3"],["C4"],["A♯4","B4"]]
+-- > map g [[11,0],[11],[0],[10,11]] == r
 --
 -- > map (spell_cluster_f (const 4)) [[0,11],[11,0],[6,7],[7,6]]
 spell_cluster_f :: (T.PitchClass -> T.Octave) -> [T.PitchClass] -> Maybe [T.Pitch]

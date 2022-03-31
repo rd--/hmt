@@ -17,16 +17,16 @@ import qualified Music.Theory.Array.Direction as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.FGL as T {- hmt -}
 
-gen_graph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
+gen_graph :: Ord v => [T.Dot_Attr] -> T.Graph_Pp v e -> [T.Edge_Lbl v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
 
-gen_graph_ul :: Ord v => [T.DOT_ATTR] -> (v -> String) -> [T.EDGE v] -> [String]
+gen_graph_ul :: Ord v => [T.Dot_Attr] -> (v -> String) -> [T.Edge v] -> [String]
 gen_graph_ul opt pp es = T.fgl_to_udot opt (T.gr_pp_label_v pp) (T.g_from_edges es)
 
-gen_digraph :: Ord v => [T.DOT_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
-gen_digraph opt pp es = T.fgl_to_dot T.G_DIGRAPH opt pp (T.g_from_edges_l es)
+gen_digraph :: Ord v => [T.Dot_Attr] -> T.Graph_Pp v e -> [T.Edge_Lbl v e] -> [String]
+gen_digraph opt pp es = T.fgl_to_dot T.Graph_Digraph opt pp (T.g_from_edges_l es)
 
-type G = ([T.EDGE String],[T.DOT_ATTR],FilePath)
+type G = ([T.Edge String],[T.Dot_Attr],FilePath)
 
 -- * E
 g1 :: G

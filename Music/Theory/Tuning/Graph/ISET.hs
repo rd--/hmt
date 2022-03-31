@@ -61,7 +61,7 @@ r_is_pcset pcset = (==) pcset . r_pcset
 -- * G
 
 -- | Edges are (v1,v2) where v1 < v2
-type G = T.GR R
+type G = T.Gr R
 
 edj_r :: (R, R) -> R
 edj_r = r_nrm . r_rel
@@ -77,7 +77,7 @@ mk_graph iset scl_r =
      q <- scl_r,
      p < q])
 
-gen_graph :: Ord v => [T.DOT_META_ATTR] -> T.GR_PP v e -> [T.EDGE_L v e] -> [String]
+gen_graph :: Ord v => [T.Dot_Meta_Attr] -> T.Graph_Pp v e -> [T.Edge_Lbl v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)
 
 g_to_dot :: Int -> [(String,String)] -> (R -> [(String,String)]) -> G -> [String]

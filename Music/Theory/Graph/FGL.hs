@@ -15,16 +15,16 @@ import qualified Control.Monad.Logic as L {- logict -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
--- | 'T.LBL' to FGL graph
-lbl_to_fgl :: G.Graph gr => T.LBL v e -> gr v e
+-- | 'T.Lbl' to FGL graph
+lbl_to_fgl :: G.Graph gr => T.Lbl v e -> gr v e
 lbl_to_fgl (v,e) = let f ((i,j),k) = (i,j,k) in G.mkGraph v (map f e)
 
 -- | Type-specialised.
-lbl_to_fgl_gr :: T.LBL v e -> G.Gr v e
+lbl_to_fgl_gr :: T.Lbl v e -> G.Gr v e
 lbl_to_fgl_gr = lbl_to_fgl
 
--- | FGL graph to 'T.LBL'
-fgl_to_lbl :: G.Graph gr => gr v e -> T.LBL v e
+-- | FGL graph to 'T.Lbl'
+fgl_to_lbl :: G.Graph gr => gr v e -> T.Lbl v e
 fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
 
 -- | Synonym for 'G.noNodes'.
@@ -53,14 +53,14 @@ ug_node_set_impl gr nl =
 -- * Hamiltonian
 
 -- | Node select function, ie. given a graph /g/ and a node /n/ select a set of related nodes from /g/
-type G_NODE_SEL_F v e = G.Gr v e -> G.Node -> [G.Node]
+type G_Node_Sel_f v e = G.Gr v e -> G.Node -> [G.Node]
 
 -- | 'L.msum' '.' 'map' 'return'.
 ml_from_list :: L.MonadLogic m => [t] -> m t
 ml_from_list = L.msum . map return
 
 -- | Use /sel_f/ of 'G.pre' for directed graphs and 'G.neighbors' for undirected.
-g_hamiltonian_path_ml :: L.MonadLogic m => G_NODE_SEL_F v e -> G.Gr v e -> G.Node -> m [G.Node]
+g_hamiltonian_path_ml :: L.MonadLogic m => G_Node_Sel_f v e -> G.Gr v e -> G.Node -> m [G.Node]
 g_hamiltonian_path_ml sel_f gr =
     let n_deg = g_degree gr
         recur r c =
@@ -80,13 +80,13 @@ ug_hamiltonian_path_ml_0 gr = g_hamiltonian_path_ml G.neighbors gr (G.nodes gr !
 -- * G (from edges)
 
 -- | Edge, no label.
-type EDGE v = (v,v)
+type Edge v = (v,v)
 
 -- | Edge, with label.
-type EDGE_L v l = (EDGE v,l)
+type Edge_Lbl v l = (Edge v,l)
 
 -- | Generate a graph given a set of labelled edges.
-g_from_edges_l :: (Eq v,Ord v) => [EDGE_L v e] -> G.Gr v e
+g_from_edges_l :: (Eq v,Ord v) => [Edge_Lbl v e] -> G.Gr v e
 g_from_edges_l e =
     let n = nub (concatMap (\((lhs,rhs),_) -> [lhs,rhs]) e)
         n_deg = length n
@@ -100,43 +100,43 @@ g_from_edges_l e =
 --
 -- > let g = G.mkGraph [(0,'a'),(1,'b'),(2,'c')] [(0,1,()),(1,2,())]
 -- > in g_from_edges_ul [('a','b'),('b','c')] == g
-g_from_edges :: Ord v => [EDGE v] -> G.Gr v ()
+g_from_edges :: Ord v => [Edge v] -> G.Gr v ()
 g_from_edges = let f e = (e,()) in g_from_edges_l . map f
 
 -- * Edges
 
 -- | Label sequence of edges starting at one.
-e_label_seq :: [EDGE v] -> [EDGE_L v Int]
+e_label_seq :: [Edge v] -> [Edge_Lbl v Int]
 e_label_seq = zipWith (\k e -> (e,k)) [1..]
 
 -- | Normalised undirected labeled edge (ie. order nodes).
-e_normalise_l :: Ord v => EDGE_L v l -> EDGE_L v l
+e_normalise_l :: Ord v => Edge_Lbl v l -> Edge_Lbl v l
 e_normalise_l ((p,q),r) = ((min p q,max p q),r)
 
 -- | Collate labels for edges that are otherwise equal.
-e_collate_l :: Ord v => [EDGE_L v l] -> [EDGE_L v [l]]
+e_collate_l :: Ord v => [Edge_Lbl v l] -> [Edge_Lbl v [l]]
 e_collate_l = T.collate
 
 -- | 'e_collate_l' of 'e_normalise_l'.
-e_collate_normalised_l :: Ord v => [EDGE_L v l] -> [EDGE_L v [l]]
+e_collate_normalised_l :: Ord v => [Edge_Lbl v l] -> [Edge_Lbl v [l]]
 e_collate_normalised_l = e_collate_l . map e_normalise_l
 
 -- | Apply predicate to universe of possible edges.
-e_univ_select_edges :: (t -> t -> Bool) -> [t] -> [EDGE t]
+e_univ_select_edges :: (t -> t -> Bool) -> [t] -> [Edge t]
 e_univ_select_edges f l = [(p,q) | p <- l, q <- l, f p q]
 
 -- | Consider only edges (p,q) where p < q.
-e_univ_select_u_edges :: Ord t => (t -> t -> Bool) -> [t] -> [EDGE t]
+e_univ_select_u_edges :: Ord t => (t -> t -> Bool) -> [t] -> [Edge t]
 e_univ_select_u_edges f = let g p q = p < q && f p q in e_univ_select_edges g
 
 -- | Sequence of connected vertices to edges.
 --
 -- > e_path_to_edges "abcd" == [('a','b'),('b','c'),('c','d')]
-e_path_to_edges :: [t] -> [EDGE t]
+e_path_to_edges :: [t] -> [Edge t]
 e_path_to_edges = T.adj2 1
 
 -- | Undirected edge equality.
-e_undirected_eq :: Eq t => EDGE t -> EDGE t -> Bool
+e_undirected_eq :: Eq t => Edge t -> Edge t -> Bool
 e_undirected_eq (a,b) (c,d) = (a == c && b == d) || (a == d && b == c)
 
 -- | /any/ of /f/.
@@ -145,16 +145,16 @@ elem_by f = any . f
 
 -- | Is the sequence of vertices a path at the graph, ie. are all
 -- adjacencies in the sequence edges.
-e_is_path :: Eq t => [EDGE t] -> [t] -> Bool
+e_is_path :: Eq t => [Edge t] -> [t] -> Bool
 e_is_path e sq =
     case sq of
       p:q:sq' -> elem_by e_undirected_eq (p,q) e && e_is_path e (q:sq')
       _ -> True
 
--- * ANALYSIS
+-- * Analysis
 
 -- | <https://github.com/ivan-m/Graphalyze/blob/master/Data/Graph/Analysis/Algorithms/Common.hs>
---   GRAPHALYZE has PANDOC as a dependency...
+--   Graphalyze has pandoc as a dependency...
 pathTree             :: (G.DynGraph g) => G.Decomp g a b -> [[G.Node]]
 pathTree (Nothing,_) = []
 pathTree (Just ct,g)
