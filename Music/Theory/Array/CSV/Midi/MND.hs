@@ -10,7 +10,6 @@ module Music.Theory.Array.CSV.Midi.MND where
 import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
-import Data.Word {- base -}
 
 import Data.List.Split {- split -}
 
@@ -46,7 +45,7 @@ data_value_pp k r =
     else T.real_pp k r
 
 -- | Channel values are 4-bit (0-15).
-type Channel = Word8
+type Channel = Int
 
 -- | The required header (column names) field.
 csv_mnd_hdr :: [String]
