@@ -407,16 +407,17 @@ coalesce_f dec_f jn_f z =
 coalesce_m :: Monoid t => (t -> t -> Bool) -> [t] -> [t]
 coalesce_m dec_f = coalesce_f dec_f mappend
 
--- | Form of 'coalesce_f' where the decision predicate is on the
--- /element/, and a join function sums the /times/.
---
--- > let r = [(1,'a'),(2,'b'),(3,'c'),(2,'d'),(1,'e')]
--- > seq_coalesce (==) const (useq_to_dseq (1,"abbcccdde")) == r
+-- | Form of 'coalesce_t' where the join predicate is on the /element/ only, the /times/ are summed.
+coalesce_t :: Num t => ((t,a) -> (t,a) -> Bool) -> (a -> a -> a) -> [(t,a)] -> [(t,a)]
+coalesce_t dec_f jn_f = coalesce_f dec_f (\(t1,a1) (t2,a2) -> (t1 + t2,jn_f a1 a2))
+
+{- | Form of 'coalesce_f' where both the decision and join predicates are on the/element/, the /times/ are summed.
+
+> let r = [(1,'a'),(2,'b'),(3,'c'),(2,'d'),(1,'e')]
+> seq_coalesce (==) const (useq_to_dseq (1,"abbcccdde")) == r
+-}
 seq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> [(t,a)] -> [(t,a)]
-seq_coalesce dec_f jn_f =
-    let dec_f' = dec_f `on` snd
-        jn_f' (t1,a1) (t2,a2) = (t1 + t2,jn_f a1 a2)
-    in coalesce_f dec_f' jn_f'
+seq_coalesce dec_f jn_f = coalesce_t (dec_f `on` snd) jn_f
 
 dseq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> Dseq t a -> Dseq t a
 dseq_coalesce = seq_coalesce
