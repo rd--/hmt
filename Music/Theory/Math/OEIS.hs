@@ -12,6 +12,15 @@ import qualified Music.Theory.Math as Math {- hmt-base -}
 
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 
+{- | <http://oeis.org/A000005>
+
+d(n) (also called tau(n) or sigma_0(n)), the number of divisors of n. (Formerly M0246 N0086)
+
+[1, 2, 2, 3, 2, 4, 2, 4, 3, 4, 2, 6, 2, 4, 4, 5, 2, 6, 2, 6, 4, 4, 2, 8, 3, 4, 4, 6, 2, 8, 2, 6, 4, 4, 4, 9, 2, 4, 4, 8, 2, 8, 2, 6, 6, 4, 2, 10, 3, 6, 4, 6, 2, 8, 4, 8, 4, 4, 2, 12, 2, 4, 6, 7, 4, 8, 2, 6, 4, 8, 2, 12, 2, 4, 6, 6, 4, 8, 2, 10, 5, 4, 2, 12, 4, 4, 4, 8, 2, 12, 4, 6, 4, 4, 4, 12, 2, 6, 6, 9, 2, 8, 2, 8] `isPrefixOf` a000005
+-}
+a000005 :: Integral n => [n]
+a000005 = map (product . map (+ 1) . a124010_row) [1..]
+
 {- | <http://oeis.org/A000010>
 
 Euler totient function phi(n): count numbers <= n and prime to n.
@@ -1173,6 +1182,34 @@ a105809_tbl =
   let f (u:_, vs) = (vs, zipWith (+) (u : vs) (vs ++ [0]))
       f _ = error "A105809"
   in map fst (iterate f ([1], [1, 1]))
+
+{- | <http://oeis.org/A124010>
+
+Triangle in which first row is 0, n-th row (n>1) lists the (ordered)
+prime signature of n, that is, the exponents of distinct prime factors
+in factorization of n.
+
+> [0,1,1,2,1,1,1,1,3,2,1,1,1,2,1,1,1,1,1,1,4,1,1,2,1,2,1,1,1,1,1,1,3,1,2,1,1,3,2,1,1,1,1,1,1,5,1] `isPrefixOf` a124010
+-}
+a124010 :: Integral n => [n]
+a124010 = concatMap a124010_row [1..]
+
+a124010_row :: Integral n => n -> [n]
+a124010_row n =
+  let f u w =
+        case (u, w) of
+          (1, _) -> []
+          (_, p:ps) ->
+            let h v e =
+                  let (v', m) = divMod v p
+                  in if m == 0
+                     then h v' (e + 1)
+                     else if e > 0
+                          then e : f v ps
+                          else f v ps
+            in h u 0
+          _ -> error "a124010"
+  in if n == 1 then [0] else f n a000040
 
 {- | <https://oeis.org/A124472>
 

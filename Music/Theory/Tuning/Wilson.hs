@@ -6,7 +6,6 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ord {- base -}
 import Data.Ratio {- base -}
-import System.FilePath {- filepath -}
 import Text.Printf {- base -}
 
 import qualified Safe {- safe -}
