@@ -121,6 +121,10 @@ event_mnn (mnn,_,_,_) = mnn
 event_ch :: Event t -> Channel
 event_ch (_,_,ch,_) = ch
 
+-- | Are events equal at mnn field?
+event_eq_mnn :: Eq t => Event t -> Event t -> Bool
+event_eq_mnn = (==) `on` event_mnn
+
 -- | Are events equal at mnn and ch fields?
 event_eq_ol :: Eq t => Event t -> Event t -> Bool
 event_eq_ol = (==) `on` (\(mnn,_,ch,_) -> (mnn,ch))
