@@ -11,6 +11,7 @@ import qualified Text.Parsec as P {- parsec -}
 
 import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.Math.Convert as T {- hmt -}
 import qualified Music.Theory.Parse as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Show as T {- hmt -}
@@ -105,6 +106,10 @@ type Midi = Int
 -- | Type conversion
 midi_to_int :: Midi -> Int
 midi_to_int = id
+
+-- | Type-specialise /f/, ie. round, ceiling, truncate
+double_to_midi :: (Double -> Midi) -> Double -> Midi
+double_to_midi = T.double_to_int
 
 -- | 'OctPc' value to integral /midi/ note number.
 --
