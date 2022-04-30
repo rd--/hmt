@@ -4,16 +4,16 @@ module Music.Theory.Tempo_Marking where
 import Data.List {- base -}
 
 import Music.Theory.Duration
-import Music.Theory.Duration.RQ
+import Music.Theory.Duration.Rq
 import Music.Theory.Time_Signature
 
 -- | A tempo marking is in terms of a common music notation 'Duration'.
 type Tempo_Marking = (Duration,Rational)
 
--- | Duration of a RQ value, in seconds, given indicated tempo.
+-- | Duration of a Rq value, in seconds, given indicated tempo.
 --
 -- > rq_to_seconds (quarter_note,90) 1 == 60/90
-rq_to_seconds :: Tempo_Marking -> RQ -> Rational
+rq_to_seconds :: Tempo_Marking -> Rq -> Rational
 rq_to_seconds (d,n) x =
     let d' = duration_to_rq d
         s = 60 / n

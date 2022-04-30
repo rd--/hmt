@@ -1,5 +1,5 @@
 -- | Functions to generate a click track from a metric structure.
-module Music.Theory.Duration.CT where
+module Music.Theory.Duration.ClickTrack where
 
 import Data.Bifunctor {- base -}
 import Data.Function {- base -}
@@ -8,7 +8,7 @@ import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 
-import qualified Music.Theory.Duration.RQ as T {- hmt -}
+import qualified Music.Theory.Duration.Rq as T {- hmt -}
 import qualified Music.Theory.Time_Signature as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
@@ -18,14 +18,14 @@ type Measure = Int
 -- | 1-indexed.
 type Pulse = Int
 
--- | Measures given as 'T.RQ' divisions, Mdv abbreviates measure divisions.
-type Mdv = [[T.RQ]]
+-- | Measures given as 'T.Rq' divisions, Mdv abbreviates measure divisions.
+type Mdv = [[T.Rq]]
 
-{- | Absolute 'T.RQ' locations grouped in measures.
+{- | Absolute 'T.Rq' locations grouped in measures.
      mrq abbreviates measure rational quarter-notes.
      Locations are zero-indexed.
 -}
-type Mrq = [[T.RQ]]
+type Mrq = [[T.Rq]]
 
 {- | Transform Mdv to Mrq.
 
@@ -65,21 +65,21 @@ ct_ext1 n sq =
       _ -> error "ct_ext1"
 
 -- | 'T.rts_divisions' of 'ct_ext1'.
-ct_dv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [(Measure,[[T.RQ]])]
+ct_dv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [(Measure,[[T.Rq]])]
 ct_dv_seq n ts = map (fmap T.rts_divisions) (ct_ext1 n ts)
 
 -- | 'ct_dv_seq' without measures numbers (which are 1..n)
-ct_mdv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.RQ]]
+ct_mdv_seq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.Rq]]
 ct_mdv_seq n = map (concat . snd) . ct_dv_seq n
 
 -- | 'mdv_to_mrq' of 'ct_mdv_seq'.
-ct_rq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.RQ]]
+ct_rq :: Int -> T.Tseq Measure T.Rational_Time_Signature -> [[T.Rq]]
 ct_rq n ts = mdv_to_mrq (ct_mdv_seq n ts)
 
-ct_mp_lookup :: [[T.RQ]] -> (Measure,Pulse) -> T.RQ
+ct_mp_lookup :: [[T.Rq]] -> (Measure,Pulse) -> T.Rq
 ct_mp_lookup = mp_lookup_err . mdv_to_mrq
 
-ct_m_to_rq :: [[T.RQ]] -> [(Measure,t)] -> [(T.RQ,t)]
+ct_m_to_rq :: [[T.Rq]] -> [(Measure,t)] -> [(T.Rq,t)]
 ct_m_to_rq sq = map (\(m,c) -> (ct_mp_lookup sq (m,1),c))
 
 -- | Latch rehearsal mark sequence, only indicating marks.  Initial mark is @.@.
@@ -108,24 +108,24 @@ ct_pre_mark_seq n mk =
     let pre = ct_pre_mark mk
     in T.tseq_merge_resolve const pre (zip [1 .. n] (repeat Nothing))
 
-ct_tempo_lseq_rq :: [[T.RQ]] -> T.Lseq (Measure,Pulse) T.RQ -> T.Lseq T.RQ T.RQ
+ct_tempo_lseq_rq :: [[T.Rq]] -> T.Lseq (Measure,Pulse) T.Rq -> T.Lseq T.Rq T.Rq
 ct_tempo_lseq_rq sq = T.lseq_tmap (ct_mp_lookup sq)
 
 -- | Interpolating lookup of tempo sequence ('T.lseq_lookup_err').
-ct_tempo_at :: T.Lseq T.RQ T.RQ -> T.RQ -> Rational
+ct_tempo_at :: T.Lseq T.Rq T.Rq -> T.Rq -> Rational
 ct_tempo_at = T.lseq_lookup_err compare
 
 -- | Types of nodes.
-data CT_Node = CT_Mark T.RQ -- ^ The start of a measure with a rehearsal mark.
-             | CT_Start T.RQ -- ^ The start of a regular measure.
-             | CT_Normal T.RQ -- ^ A regular pulse.
-             | CT_Edge T.RQ -- ^ The start of a pulse group within a measure.
-             | CT_Pre T.RQ -- ^ A regular pulse in a measure prior to a rehearsal mark.
+data CT_Node = CT_Mark T.Rq -- ^ The start of a measure with a rehearsal mark.
+             | CT_Start T.Rq -- ^ The start of a regular measure.
+             | CT_Normal T.Rq -- ^ A regular pulse.
+             | CT_Edge T.Rq -- ^ The start of a pulse group within a measure.
+             | CT_Pre T.Rq -- ^ A regular pulse in a measure prior to a rehearsal mark.
              | CT_End -- ^ The end of the track.
                deriving (Eq,Show)
 
 -- | Lead-in of @(pulse,tempo,count)@.
-ct_leadin :: (T.RQ,Double,Int) -> T.Dseq Double CT_Node
+ct_leadin :: (T.Rq,Double,Int) -> T.Dseq Double CT_Node
 ct_leadin (du,tm,n) = replicate n (realToFrac du * (60 / tm),CT_Normal du)
 
 -- | Prepend initial element to start of list.
@@ -141,7 +141,7 @@ delay1 l =
      Calculates durations of events considering only the tempo at the start of the event.
      To be correct it should consider the tempo envelope through the event.
 -}
-ct_measure:: T.Lseq T.RQ T.RQ -> ([T.RQ],Maybe Char,Maybe (),[[T.RQ]]) -> [(Rational,CT_Node)]
+ct_measure:: T.Lseq T.Rq T.Rq -> ([T.Rq],Maybe Char,Maybe (),[[T.Rq]]) -> [(Rational,CT_Node)]
 ct_measure sq (mrq,mk,pr,dv) =
     let dv' = concatMap (zip [1::Int ..]) dv
         f (p,rq,(g,du)) =
@@ -159,19 +159,19 @@ ct_measure sq (mrq,mk,pr,dv) =
 data CT = CT {ct_len :: Int
              ,ct_ts :: [(Measure,T.Rational_Time_Signature)]
              ,ct_mark :: [(Measure,Char)]
-             ,ct_tempo :: T.Lseq (Measure,Pulse) T.RQ
-             ,ct_count :: (T.RQ,Int)}
+             ,ct_tempo :: T.Lseq (Measure,Pulse) T.Rq
+             ,ct_count :: (T.Rq,Int)}
           deriving Show
 
 -- | Initial tempo, if given.
-ct_tempo0 :: CT -> Maybe T.RQ
+ct_tempo0 :: CT -> Maybe T.Rq
 ct_tempo0 ct =
     case ct_tempo ct of
       (((1,1),_),n):_ -> Just n
       _ -> Nothing
 
 -- | Erroring variant.
-ct_tempo0_err :: CT -> T.RQ
+ct_tempo0_err :: CT -> T.Rq
 ct_tempo0_err = fromMaybe (error "ct_tempo0") . ct_tempo0
 
 -- > import Music.Theory.Duration.CT
@@ -199,16 +199,16 @@ ct_dseq = T.dseq_tmap fromRational . ct_dseq'
 
 -- * Indirect
 
-ct_rq_measure :: [[T.RQ]] -> T.RQ -> Maybe Measure
+ct_rq_measure :: [[T.Rq]] -> T.Rq -> Maybe Measure
 ct_rq_measure sq rq = fmap fst (find ((rq `elem`) . snd) (zip [1..] sq))
 
-ct_rq_mp :: [[T.RQ]] -> T.RQ -> Maybe (Measure,Pulse)
+ct_rq_mp :: [[T.Rq]] -> T.Rq -> Maybe (Measure,Pulse)
 ct_rq_mp sq rq =
     let f (m,l) = (m,fromMaybe (error "ct_rq_mp: ix") (elemIndex rq l) + 1)
     in fmap f (find ((rq `elem`) . snd) (zip [1..] sq))
 
-ct_rq_mp_err :: [[T.RQ]] -> T.RQ -> (Measure, Pulse)
+ct_rq_mp_err :: [[T.Rq]] -> T.Rq -> (Measure, Pulse)
 ct_rq_mp_err sq = fromMaybe (error "ct_rq_mp") . ct_rq_mp sq
 
-ct_mp_to_rq :: [[T.RQ]] -> [((Measure,Pulse),t)] -> [(T.RQ,t)]
+ct_mp_to_rq :: [[T.Rq]] -> [((Measure,Pulse),t)] -> [(T.Rq,t)]
 ct_mp_to_rq sq = map (first (ct_mp_lookup sq))

@@ -1,5 +1,5 @@
 -- | Rational quarter-note notation for durations.
-module Music.Theory.Duration.RQ where
+module Music.Theory.Duration.Rq where
 
 import Data.Function {- base -}
 import Data.List {- base -}
@@ -11,15 +11,15 @@ import qualified Music.Theory.List as T {- hmt-base -}
 import Music.Theory.Duration {- hmt -}
 
 -- | Rational Quarter-Note
-type RQ = Rational
+type Rq = Rational
 
-{- | Table mapping tuple RQ values to Durations.
+{- | Table mapping tuple Rq values to Durations.
      Only has cases where the duration can be expressed without a tie.
      Currently has entries for 3-,5-,6- and 7-tuplets.
 
 > all (\(i,j) -> i == duration_to_rq j) rq_tuplet_duration_table == True
 -}
-rq_tuplet_duration_table :: [(RQ, Duration)]
+rq_tuplet_duration_table :: [(Rq, Duration)]
 rq_tuplet_duration_table =
   [(1/3,Duration 8 0 (2/3))
   ,(2/3,Duration 4 0 (2/3))
@@ -39,22 +39,22 @@ rq_tuplet_duration_table =
 
 > rq_tuplet_to_duration (1/3) == Just (Duration 8 0 (2/3))
 -}
-rq_tuplet_to_duration :: RQ -> Maybe Duration
+rq_tuplet_to_duration :: Rq -> Maybe Duration
 rq_tuplet_to_duration x = lookup x rq_tuplet_duration_table
 
-{- | Make table of (RQ,Duration) associations.
+{- | Make table of (Rq,Duration) associations.
      Only lists durations with a multiplier of 1.
 
 > map (length . rq_plain_duration_tbl) [1,2,3] == [20,30,40]
 > map (multiplier . snd) (rq_plain_duration_tbl 1) == replicate 20 1
 -}
-rq_plain_duration_tbl :: Dots -> [(RQ,Duration)]
+rq_plain_duration_tbl :: Dots -> [(Rq,Duration)]
 rq_plain_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
 
-rq_plain_to_duration :: Dots -> RQ -> Maybe Duration
+rq_plain_to_duration :: Dots -> Rq -> Maybe Duration
 rq_plain_to_duration k x = lookup x (rq_plain_duration_tbl k)
 
-rq_plain_to_duration_err :: Dots -> RQ -> Duration
+rq_plain_to_duration_err :: Dots -> Rq -> Duration
 rq_plain_to_duration_err k x = T.lookup_err x (rq_plain_duration_tbl k)
 
 {- | Rational quarter note to duration value.
@@ -66,25 +66,25 @@ rq_plain_to_duration_err k x = T.lookup_err x (rq_plain_duration_tbl k)
 > rq_to_duration 2 (3/4) == Just (Duration 8 1 1) -- dotted_eighth_note
 > rq_to_duration 2 (1/3) == Just (Duration 8 0 (2/3))
 -}
-rq_to_duration :: Dots -> RQ -> Maybe Duration
+rq_to_duration :: Dots -> Rq -> Maybe Duration
 rq_to_duration k x = lookup x (rq_tuplet_duration_table ++ rq_plain_duration_tbl k)
 
 -- | Variant of 'rq_to_duration' with error message.
-rq_to_duration_err :: Show a => a -> Dots -> RQ -> Duration
+rq_to_duration_err :: Show a => a -> Dots -> Rq -> Duration
 rq_to_duration_err msg k n =
     let err = error ("rq_to_duration:" ++ show (msg,n))
     in fromMaybe err (rq_to_duration k n)
 
--- | Is 'RQ' a /cmn/ duration (ie. rq_plain_to_duration)
+-- | Is 'Rq' a /cmn/ duration (ie. rq_plain_to_duration)
 --
 -- > map (rq_is_cmn 2) [1/4,1/5,1/8,3/32] == [True,False,True,True]
-rq_is_cmn :: Dots -> RQ -> Bool
+rq_is_cmn :: Dots -> Rq -> Bool
 rq_is_cmn k = isJust . rq_plain_to_duration k
 
--- | Convert a whole note division integer to an 'RQ' value.
+-- | Convert a whole note division integer to an 'Rq' value.
 --
 -- > map whole_note_division_to_rq [1,2,4,8] == [4,2,1,1/2]
-whole_note_division_to_rq :: Division -> RQ
+whole_note_division_to_rq :: Division -> Rq
 whole_note_division_to_rq x =
     let f = (* 4) . recip . (% 1)
     in case x of
@@ -92,19 +92,19 @@ whole_note_division_to_rq x =
          -1 -> 16
          _ -> f x
 
--- | Apply dots to an 'RQ' duration.
+-- | Apply dots to an 'Rq' duration.
 --
 -- > map (rq_apply_dots 1) [1,2] == [1 + 1/2,1 + 1/2 + 1/4]
-rq_apply_dots :: RQ -> Dots -> RQ
+rq_apply_dots :: Rq -> Dots -> Rq
 rq_apply_dots n d =
     let m = iterate (/ 2) n
     in sum (genericTake (d + 1) m)
 
--- | Convert 'Duration' to 'RQ' value, see 'rq_to_duration' for partial inverse.
+-- | Convert 'Duration' to 'Rq' value, see 'rq_to_duration' for partial inverse.
 --
 -- > let d = [Duration 2 0 1,Duration 4 1 1,Duration 1 1 1]
 -- > map duration_to_rq d == [2,3/2,6] -- half_note,dotted_quarter_note,dotted_whole_note
-duration_to_rq :: Duration -> RQ
+duration_to_rq :: Duration -> Rq
 duration_to_rq (Duration n d m) =
     let x = whole_note_division_to_rq n
     in rq_apply_dots x d * m
@@ -115,10 +115,10 @@ duration_to_rq (Duration n d m) =
 duration_compare_rq :: Duration -> Duration -> Ordering
 duration_compare_rq = compare `on` duration_to_rq
 
--- | 'RQ' modulo.
+-- | 'Rq' modulo.
 --
 -- > map (rq_mod (5/2)) [3/2,3/4,5/2] == [1,1/4,0]
-rq_mod :: RQ -> RQ -> RQ
+rq_mod :: Rq -> Rq -> Rq
 rq_mod i j
     | i == j = 0
     | i < 0 = rq_mod (i + j) j
@@ -128,22 +128,22 @@ rq_mod i j
 -- | Is /p/ divisible by /q/, ie. is the 'denominator' of @p/q@ '==' @1@.
 --
 -- > map (rq_divisible_by (3%2)) [1%2,1%3] == [True,False]
-rq_divisible_by :: RQ -> RQ -> Bool
+rq_divisible_by :: Rq -> Rq -> Bool
 rq_divisible_by i j = denominator (i / j) == 1
 
--- | Is 'RQ' a whole number (ie. is 'denominator' '==' @1@.
+-- | Is 'Rq' a whole number (ie. is 'denominator' '==' @1@.
 --
 -- > map rq_is_integral [1,3/2,2] == [True,False,True]
-rq_is_integral :: RQ -> Bool
+rq_is_integral :: Rq -> Bool
 rq_is_integral = (== 1) . denominator
 
--- | Return 'numerator' of 'RQ' if 'denominator' '==' @1@.
+-- | Return 'numerator' of 'Rq' if 'denominator' '==' @1@.
 --
 -- > map rq_integral [1,3/2,2] == [Just 1,Nothing,Just 2]
-rq_integral :: RQ -> Maybe Integer
+rq_integral :: Rq -> Maybe Integer
 rq_integral n = if rq_is_integral n then Just (numerator n) else Nothing
 
--- | Derive the tuplet structure of a set of 'RQ' values.
+-- | Derive the tuplet structure of a set of 'Rq' values.
 --
 -- > rq_derive_tuplet_plain [1/2] == Nothing
 -- > rq_derive_tuplet_plain [1/2,1/2] == Nothing
@@ -156,21 +156,21 @@ rq_integral n = if rq_is_integral n then Just (numerator n) else Nothing
 --
 -- > map rq_derive_tuplet_plain [[1/3,1/6],[2/5,1/10]] == [Just (6,4)
 -- >                                                      ,Just (10,8)]
-rq_derive_tuplet_plain :: [RQ] -> Maybe (Integer,Integer)
+rq_derive_tuplet_plain :: [Rq] -> Maybe (Integer,Integer)
 rq_derive_tuplet_plain x =
     let i = foldl lcm 1 (map denominator x)
         j = let z = iterate (* 2) 2
             in fromJust (find (>= i) z) `div` 2
     in if i `rem` j == 0 then Nothing else Just (i,j)
 
--- | Derive the tuplet structure of a set of 'RQ' values.
+-- | Derive the tuplet structure of a set of 'Rq' values.
 --
 -- > rq_derive_tuplet [1/4,1/8,1/8] == Nothing
 -- > rq_derive_tuplet [1/3,2/3] == Just (3,2)
 -- > rq_derive_tuplet [1/2,1/3,1/6] == Just (3,2)
 -- > rq_derive_tuplet [2/5,3/5] == Just (5,4)
 -- > rq_derive_tuplet [1/3,1/6,2/5,1/10] == Just (15,8)
-rq_derive_tuplet :: [RQ] -> Maybe (Integer,Integer)
+rq_derive_tuplet :: [Rq] -> Maybe (Integer,Integer)
 rq_derive_tuplet =
     let f (i,j) = let k = i % j
                   in (numerator k,denominator k)
@@ -181,16 +181,16 @@ rq_derive_tuplet =
 -- Ie. is @1@ a quarter note or a @3:2@ tuplet dotted-quarter-note etc.
 --
 -- > map (rq_un_tuplet (3,2)) [1,2/3,1/2,1/3] == [3/2,1,3/4,1/2]
-rq_un_tuplet :: (Integer,Integer) -> RQ -> RQ
+rq_un_tuplet :: (Integer,Integer) -> Rq -> Rq
 rq_un_tuplet (i,j) x = x * (i % j)
 
--- | If an 'RQ' duration is un-representable by a single /cmn/
+-- | If an 'Rq' duration is un-representable by a single /cmn/
 -- duration, give tied notation.
 --
 -- > catMaybes (map rq_to_cmn [1..9]) == [(4,1),(4,3),(8,1)]
 --
 -- > map rq_to_cmn [5/4,5/8] == [Just (1,1/4),Just (1/2,1/8)]
-rq_to_cmn :: RQ -> Maybe (RQ,RQ)
+rq_to_cmn :: Rq -> Maybe (Rq,Rq)
 rq_to_cmn x =
     let (i,j) = (numerator x,denominator x)
         k = case i of
@@ -211,7 +211,7 @@ rq_to_cmn x =
 > rq_can_notate 2 [4/7,1/7,6/7,3/7] == True
 > rq_can_notate 2 [4/7,1/7,2/7] == True
 -}
-rq_can_notate :: Dots -> [RQ] -> Bool
+rq_can_notate :: Dots -> [Rq] -> Bool
 rq_can_notate k x =
     let x' = case rq_derive_tuplet x of
                Nothing -> x
@@ -220,13 +220,13 @@ rq_can_notate k x =
 
 -- * TIME
 
--- | Duration in seconds of RQ given ppm
+-- | Duration in seconds of Rq given ppm
 --
 --   ppm = pulses-per-minute, rq = rational-quarter-note
 --
 -- > map (\sd -> rq_to_seconds_ppm (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
 -- > map (rq_to_seconds_ppm 90) [1,2,3,4] == [2/3,1 + 1/3,2,2 + 2/3]
--- > map (rq_to_seconds_ppm 90) [0::RQ,1,1 + 1/2,1 + 3/4,1 + 7/8,2]
+-- > map (rq_to_seconds_ppm 90) [0::Rq,1,1 + 1/2,1 + 3/4,1 + 7/8,2]
 rq_to_seconds_ppm :: Fractional a => a -> a -> a
 rq_to_seconds_ppm ppm rq = rq * (60 / ppm)
 

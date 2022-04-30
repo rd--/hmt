@@ -58,13 +58,13 @@ Library
                    Music.Theory.DB.Plain
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
-                   Music.Theory.Duration.CT
+                   Music.Theory.Duration.ClickTrack
                    Music.Theory.Duration.Hollos2014
                    Music.Theory.Duration.Name
                    Music.Theory.Duration.Name.Abbreviation
-                   Music.Theory.Duration.RQ
-                   Music.Theory.Duration.RQ.Division
-                   Music.Theory.Duration.RQ.Tied
+                   Music.Theory.Duration.Rq
+                   Music.Theory.Duration.Rq.Division
+                   Music.Theory.Duration.Rq.Tied
                    Music.Theory.Duration.Sequence.Notate
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Gamelan

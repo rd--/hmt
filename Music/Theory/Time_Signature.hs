@@ -6,7 +6,7 @@ import Data.Ratio {- base -}
 
 import Music.Theory.Duration
 import Music.Theory.Duration.Name
-import Music.Theory.Duration.RQ
+import Music.Theory.Duration.Rq
 import Music.Theory.Math
 
 -- | A Time Signature is a /(numerator,denominator)/ pair.
@@ -49,26 +49,26 @@ ts_whole_note t =
       (6,2) -> [dotted_breve]
       _ -> error ("ts_whole_note: " ++ show t)
 
--- | Duration of measure in 'RQ'.
+-- | Duration of measure in 'Rq'.
 --
 -- > map ts_whole_note_rq [(3,8),(2,2)] == [3/2,4]
-ts_whole_note_rq :: Time_Signature -> RQ
+ts_whole_note_rq :: Time_Signature -> Rq
 ts_whole_note_rq = sum . map duration_to_rq . ts_whole_note
 
--- | Duration, in 'RQ', of a measure of indicated 'Time_Signature'.
+-- | Duration, in 'Rq', of a measure of indicated 'Time_Signature'.
 --
 -- > map ts_rq [(3,4),(5,8)] == [3,5/2]
-ts_rq :: Time_Signature -> RQ
+ts_rq :: Time_Signature -> Rq
 ts_rq (n,d) = (4 * n) % d
 
 -- | 'compare' 'on' 'ts_rq'.
 ts_compare :: Time_Signature -> Time_Signature -> Ordering
 ts_compare = compare `on` ts_rq
 
--- | 'Time_Signature' derived from whole note duration in 'RQ' form.
+-- | 'Time_Signature' derived from whole note duration in 'Rq' form.
 --
 -- > map rq_to_ts [4,3/2,7/4,6] == [(4,4),(3,8),(7,16),(6,4)]
-rq_to_ts :: RQ -> Time_Signature
+rq_to_ts :: Rq -> Time_Signature
 rq_to_ts rq =
     let n = numerator rq
         d = denominator rq * 4
@@ -81,7 +81,7 @@ rq_to_ts rq =
 -- > ts_divisions (2,2) == [2,2]
 -- > ts_divisions (1,1) == [4]
 -- > ts_divisions (7,4) == [1,1,1,1,1,1,1]
-ts_divisions :: Time_Signature -> [RQ]
+ts_divisions :: Time_Signature -> [Rq]
 ts_divisions (i,j) =
     let k = fromIntegral i
     in replicate k (recip (j % 4))
@@ -123,23 +123,23 @@ ts_sum t =
 -- | A composite time signature is a sequence of 'Time_Signature's.
 type Composite_Time_Signature = [Time_Signature]
 
--- | The 'RQ' is the 'sum' of 'ts_rq' of the elements.
+-- | The 'Rq' is the 'sum' of 'ts_rq' of the elements.
 --
 -- > cts_rq [(3,4),(1,8)] == 3 + 1/2
-cts_rq :: Composite_Time_Signature -> RQ
+cts_rq :: Composite_Time_Signature -> Rq
 cts_rq = sum . map ts_rq
 
 -- | The divisions are the 'concat' of the 'ts_divisions' of the
 -- elements.
 --
 -- > cts_divisions [(3,4),(1,8)] == [1,1,1,1/2]
-cts_divisions :: Composite_Time_Signature -> [RQ]
+cts_divisions :: Composite_Time_Signature -> [Rq]
 cts_divisions = concatMap ts_divisions
 
--- | Pulses are 1-indexed, RQ locations are 0-indexed.
+-- | Pulses are 1-indexed, Rq locations are 0-indexed.
 --
 -- > map (cts_pulse_to_rq [(2,4),(1,8),(1,4)]) [1 .. 4] == [0,1,2,2 + 1/2]
-cts_pulse_to_rq :: Composite_Time_Signature -> Int -> RQ
+cts_pulse_to_rq :: Composite_Time_Signature -> Int -> Rq
 cts_pulse_to_rq cts p =
     let dv = cts_divisions cts
     in sum (take (p - 1) dv)
@@ -149,7 +149,7 @@ cts_pulse_to_rq cts p =
 --
 -- > let r = [(0,1),(1,1),(2,1/2),(2 + 1/2,1)]
 -- > in map (cts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
-cts_pulse_to_rqw :: Composite_Time_Signature -> Int -> (RQ,RQ)
+cts_pulse_to_rqw :: Composite_Time_Signature -> Int -> (Rq,Rq)
 cts_pulse_to_rqw cts p = (cts_pulse_to_rq cts p,cts_divisions cts !! (p - 1))
 
 -- * Rational Time Signatures
@@ -158,11 +158,11 @@ cts_pulse_to_rqw cts p = (cts_pulse_to_rq cts p,cts_divisions cts !! (p - 1))
 -- the parts are 'Rational'.
 type Rational_Time_Signature = [(Rational,Rational)]
 
--- | The 'sum' of the RQ of the elements.
+-- | The 'sum' of the Rq of the elements.
 --
 -- > rts_rq [(3,4),(1,8)] == 3 + 1/2
 -- > rts_rq [(3/2,4),(1/2,8)] == 3/2 + 1/4
-rts_rq :: Rational_Time_Signature -> RQ
+rts_rq :: Rational_Time_Signature -> Rq
 rts_rq =
     let f (n,d) = (4 * n) / d
     in sum . map f
@@ -171,7 +171,7 @@ rts_rq =
 --
 -- > rts_divisions [(3,4),(1,8)] == [1,1,1,1/2]
 -- > rts_divisions [(3/2,4),(1/2,8)] == [1,1/2,1/4]
-rts_divisions :: Rational_Time_Signature -> [[RQ]]
+rts_divisions :: Rational_Time_Signature -> [[Rq]]
 rts_divisions =
     let f (n,d) = let (ni,nf) = integral_and_fractional_parts n
                       rq = recip (d / 4)
@@ -181,14 +181,14 @@ rts_divisions =
 
 -- > rts_derive [1,1,1,1/2]
 -- > rts_derive [1,1/2,1/4]
-rts_derive :: [RQ] -> Rational_Time_Signature
+rts_derive :: [Rq] -> Rational_Time_Signature
 rts_derive = let f rq = (rq,4) in map f
 
--- | Pulses are 1-indexed, RQ locations are 0-indexed.
+-- | Pulses are 1-indexed, Rq locations are 0-indexed.
 --
 -- > map (rts_pulse_to_rq [(2,4),(1,8),(1,4)]) [1 .. 4] == [0,1,2,2 + 1/2]
 -- > map (rts_pulse_to_rq [(3/2,4),(1/2,8),(1/4,4)]) [1 .. 4] == [0,1,3/2,7/4]
-rts_pulse_to_rq :: Rational_Time_Signature -> Int -> RQ
+rts_pulse_to_rq :: Rational_Time_Signature -> Int -> Rq
 rts_pulse_to_rq rts p =
     let dv = concat (rts_divisions rts)
     in sum (take (p - 1) dv)
@@ -198,5 +198,5 @@ rts_pulse_to_rq rts p =
 --
 -- > let r = [(0,1),(1,1),(2,1/2),(2 + 1/2,1)]
 -- > in map (rts_pulse_to_rqw [(2,4),(1,8),(1,4)]) [1 .. 4] == r
-rts_pulse_to_rqw :: Rational_Time_Signature -> Int -> (RQ,RQ)
+rts_pulse_to_rqw :: Rational_Time_Signature -> Int -> (Rq,Rq)
 rts_pulse_to_rqw ts p = (rts_pulse_to_rq ts p,concat (rts_divisions ts) !! (p - 1))

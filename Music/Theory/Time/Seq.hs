@@ -9,7 +9,7 @@ import Data.Ratio {- base -}
 import Safe {- safe -}
 
 import qualified Data.List.Ordered as O {- data-ordlist -}
-import qualified Data.Map as M {- containers -}
+import qualified Data.Map as Map {- containers -}
 
 import qualified Music.Theory.List as T {- hmt-base -}
 import qualified Music.Theory.Math as T {- hmt-base -}
@@ -364,11 +364,11 @@ wseq_tmap_dur f = seq_tmap (second f)
 -- a sequence into voices.
 seq_partition :: Ord v => (a -> v) -> [(t,a)] -> [(v,[(t,a)])]
 seq_partition voice sq =
-    let assign m (t,a) = M.insertWith (++) (voice a) [(t,a)] m
+    let assign m (t,a) = Map.insertWith (++) (voice a) [(t,a)] m
         from_map = sortOn fst .
                    map (second reverse) .
-                   M.toList
-    in from_map (foldl assign M.empty sq)
+                   Map.toList
+    in from_map (foldl assign Map.empty sq)
 
 -- | Type specialised 'seq_partition'.
 --
@@ -1077,3 +1077,12 @@ wseq_map_maybe = seq_map_maybe
 
 wseq_cat_maybes :: Wseq t (Maybe a) -> Wseq t a
 wseq_cat_maybes = seq_cat_maybes
+
+-- * Maps
+
+{- | Requires but does not check that there are no duplicate time points in Tseq.
+
+> tseq_to_map [(0, 'a'), (0, 'b')] == tseq_to_map [(0, 'b')]
+-}
+tseq_to_map :: Ord t => Tseq t e -> Map.Map t e
+tseq_to_map = Map.fromList
