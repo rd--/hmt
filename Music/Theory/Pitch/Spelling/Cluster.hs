@@ -36,7 +36,7 @@ cluster_is_multiple_octave x = sort x /= cluster_normal_order x
 --
 -- > let f (p,q) = (p == map T.note_alteration_to_pc_err q)
 -- > in all f spell_cluster_table
-spell_cluster_table :: [([T.PitchClass],[(T.Note_T,T.Alteration_T)])]
+spell_cluster_table :: [([T.PitchClass],[(T.Note,T.Alteration)])]
 spell_cluster_table =
     [([0,1,2,3],[bis,cis,d,ees])
     ,([0,1,2],[bis,cis,d])
@@ -130,7 +130,7 @@ spell_cluster_table =
     ,([9,10],[a,bes])
     ,([9],[a])]
 
-spell_cluster :: [T.PitchClass] -> Maybe [(T.Note_T,T.Alteration_T)]
+spell_cluster :: [T.PitchClass] -> Maybe [(T.Note,T.Alteration)]
 spell_cluster = flip lookup spell_cluster_table
 
 -- | Spell an arbitrary sequence of 'T.OctPc' values.

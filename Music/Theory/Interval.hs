@@ -9,12 +9,12 @@ import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 
 -- | Interval type or degree.
-data Interval_T = Unison | Second | Third | Fourth
+data Interval_Type = Unison | Second | Third | Fourth
                 | Fifth | Sixth | Seventh
                   deriving (Eq,Enum,Bounded,Ord,Show)
 
 -- | Interval quality.
-data Interval_Q = Diminished | Minor
+data Interval_Quality = Diminished | Minor
                 | Perfect
                 | Major | Augmented
                   deriving (Eq,Enum,Bounded,Ord,Show)
@@ -22,23 +22,23 @@ data Interval_Q = Diminished | Minor
 -- | Common music notation interval.  An 'Ordering' of 'LT' indicates
 -- an ascending interval, 'GT' a descending interval, and 'EQ' a
 -- unison.
-data Interval = Interval {interval_type :: Interval_T
-                         ,interval_quality :: Interval_Q
+data Interval = Interval {interval_type :: Interval_Type
+                         ,interval_quality :: Interval_Quality
                          ,interval_direction :: Ordering
                          ,interval_octave :: T.Octave}
                 deriving (Eq,Show)
 
--- | Interval type between 'Note_T' values.
+-- | Interval type between 'Note' values.
 --
 -- > map (interval_ty C) [E,B] == [Third,Seventh]
-interval_ty :: T.Note_T -> T.Note_T -> Interval_T
+interval_ty :: T.Note -> T.Note -> Interval_Type
 interval_ty n1 n2 = toEnum ((fromEnum n2 - fromEnum n1) `mod` 7)
 
--- | Table of interval qualities.  For each 'Interval_T' gives
--- directed semitone interval counts for each allowable 'Interval_Q'.
+-- | Table of interval qualities.  For each 'Interval_Type' gives
+-- directed semitone interval counts for each allowable 'Interval_Quality'.
 -- For lookup function see 'interval_q', for reverse lookup see
 -- 'interval_q_reverse'.
-interval_q_tbl :: Integral n => [(Interval_T, [(n,Interval_Q)])]
+interval_q_tbl :: Integral n => [(Interval_Type, [(n,Interval_Quality)])]
 interval_q_tbl =
     [(Unison,[(11,Diminished)
              ,(0,Perfect)
@@ -66,20 +66,20 @@ interval_q_tbl =
               ,(11,Major)
               ,(12,Augmented)])]
 
--- | Lookup 'Interval_Q' for given 'Interval_T' and semitone count.
+-- | Lookup 'Interval_Quality' for given 'Interval_Type' and semitone count.
 --
 -- > interval_q Unison 11 == Just Diminished
 -- > interval_q Third 5 == Just Augmented
 -- > interval_q Fourth 5 == Just Perfect
 -- > interval_q Unison 3 == Nothing
-interval_q :: Interval_T -> Int -> Maybe Interval_Q
+interval_q :: Interval_Type -> Int -> Maybe Interval_Quality
 interval_q i n = lookup i interval_q_tbl >>= lookup n
 
--- | Lookup semitone difference of 'Interval_T' with 'Interval_Q'.
+-- | Lookup semitone difference of 'Interval_Type' with 'Interval_Quality'.
 --
 -- > interval_q_reverse Third Minor == Just 3
 -- > interval_q_reverse Unison Diminished == Just 11
-interval_q_reverse :: Interval_T -> Interval_Q -> Maybe Int
+interval_q_reverse :: Interval_Type -> Interval_Quality -> Maybe Int
 interval_q_reverse ty qu =
     case lookup ty interval_q_tbl of
       Nothing -> Nothing
@@ -121,14 +121,14 @@ interval p1 p2 =
 invert_interval :: Interval -> Interval
 invert_interval (Interval t qu d o) = Interval t qu (T.ord_invert d) o
 
--- | The signed difference in semitones between two 'Interval_Q'
--- values when applied to the same 'Interval_T'.  Can this be written
--- correctly without knowing the Interval_T?
+-- | The signed difference in semitones between two 'Interval_Quality'
+-- values when applied to the same 'Interval_Type'.  Can this be written
+-- correctly without knowing the Interval_Type?
 --
 -- > quality_difference_m Minor Augmented == Just 2
 -- > quality_difference_m Augmented Diminished == Just (-3)
 -- > quality_difference_m Major Perfect == Nothing
-quality_difference_m :: Interval_Q -> Interval_Q -> Maybe Int
+quality_difference_m :: Interval_Quality -> Interval_Quality -> Maybe Int
 quality_difference_m a b =
     let rule (x,y) =
             if x == y
@@ -152,7 +152,7 @@ quality_difference_m a b =
                       Nothing -> Nothing
 
 -- | Erroring variant of 'quality_difference_m'.
-quality_difference :: Interval_Q -> Interval_Q -> Int
+quality_difference :: Interval_Quality -> Interval_Quality -> Int
 quality_difference a b =
     let err = error ("quality_difference: " ++ show (a,b))
     in fromMaybe err (quality_difference_m a b)
@@ -203,7 +203,7 @@ circle_of_fifths x =
 -- displacement.
 --
 -- > mapMaybe parse_interval_type (map show [1 .. 15])
-parse_interval_type :: String -> Maybe (Interval_T,T.Octave)
+parse_interval_type :: String -> Maybe (Interval_Type,T.Octave)
 parse_interval_type n =
     case reads n of
       [(n',[])] -> if n' == 0
@@ -215,7 +215,7 @@ parse_interval_type n =
 -- | Parse interval quality notation.
 --
 -- > mapMaybe parse_interval_quality "dmPMA" == [minBound .. maxBound]
-parse_interval_quality :: Char -> Maybe Interval_Q
+parse_interval_quality :: Char -> Maybe Interval_Quality
 parse_interval_quality q =
     let c = zip "dmPMA" [0..]
     in fmap toEnum (lookup q c)
@@ -224,11 +224,11 @@ parse_interval_quality q =
 -- 'parse_interval_type'.
 --
 -- > map interval_type_degree [(Third,0),(Second,1),(Unison,2)] == [3,9,15]
-interval_type_degree :: (Interval_T,T.Octave) -> Int
+interval_type_degree :: (Interval_Type,T.Octave) -> Int
 interval_type_degree (t,o) = fromEnum t + 1 + (fromIntegral o * 7)
 
 -- | Inverse of 'parse_interval_quality.
-interval_quality_pp :: Interval_Q -> Char
+interval_quality_pp :: Interval_Quality -> Char
 interval_quality_pp q = "dmPMA" !! fromEnum q
 
 -- | Parse standard common music interval notation.

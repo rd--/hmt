@@ -16,7 +16,7 @@ pcset_spell_implied_key_f x =
                      else Just T.pc_spell_sharp
 
 -- > map pcset_spell_implied_key [[0,1],[4,10],[3,9],[3,11]]
-pcset_spell_implied_key :: Integral i => [i] -> Maybe [(T.Note_T, T.Alteration_T)]
+pcset_spell_implied_key :: Integral i => [i] -> Maybe [(T.Note, T.Alteration)]
 pcset_spell_implied_key x =
     case pcset_spell_implied_key_f x of
       Just f -> Just (map f x)

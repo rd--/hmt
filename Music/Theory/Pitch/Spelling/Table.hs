@@ -6,7 +6,7 @@ import Data.Maybe {- base -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import Music.Theory.Pitch.Note {- hmt -}
 
-type Spelling_Table i = [(i,(Note_T,Alteration_T))]
+type Spelling_Table i = [(i,(Note,Alteration))]
 
 -- | Spelling table for natural (♮) notes only.
 pc_spell_natural_tbl :: Integral i => Spelling_Table i

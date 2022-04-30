@@ -10,9 +10,9 @@ import qualified Music.Theory.List as T {- hmt -}
 import qualified Music.Theory.Parse as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 
-type PC = (T.Note_T,T.Alteration_T)
+type Pc = (T.Note,T.Alteration)
 
-pc_pp :: (T.Note_T, T.Alteration_T) -> [Char]
+pc_pp :: Pc -> [Char]
 pc_pp (n,a) = T.note_pp n : T.alteration_iso a
 
 -- | D = dominant, M = major
@@ -62,11 +62,11 @@ chord_type_pcset :: Num n => Chord_Type -> [n]
 chord_type_pcset = snd . chord_type_dat
 
 -- (root,mode,extensions,bass)
-data Chord = CH PC Chord_Type (Maybe Extension) (Maybe PC)
+data Chord = Chord Pc Chord_Type (Maybe Extension) (Maybe Pc)
              deriving (Show)
 
 chord_pcset :: Chord -> (Maybe Int,[Int])
-chord_pcset (CH pc ty ex bs) =
+chord_pcset (Chord pc ty ex bs) =
     let get = m_error "chord_pcset" . T.note_alteration_to_pc
         pc' = get pc
         ty' = chord_type_pcset ty
@@ -76,11 +76,11 @@ chord_pcset (CH pc ty ex bs) =
         ch' = maybe ch (`delete` ch) bs'
     in (bs',ch')
 
-bass_pp :: PC -> String
+bass_pp :: Pc -> String
 bass_pp = ('/' :) . pc_pp
 
 chord_pp :: Chord -> String
-chord_pp (CH pc ty ex bs) =
+chord_pp (Chord pc ty ex bs) =
     let (pre_ty,post_ty) = if is_suspended ty
                            then (Nothing,Just ty)
                            else (Just ty,Nothing)
@@ -93,13 +93,13 @@ chord_pp (CH pc ty ex bs) =
 m_error :: String -> Maybe a -> a
 m_error txt = fromMaybe (error txt)
 
-p_pc :: T.P PC
+p_pc :: T.P Pc
 p_pc = do
   n <- T.p_note_t
   a <- P.optionMaybe (T.p_alteration_t_iso True)
   return (n,fromMaybe T.Natural a)
 
-p_mode_m :: T.P T.Mode_T
+p_mode_m :: T.P T.Mode
 p_mode_m = P.option T.Major_Mode (P.char 'm' >> return T.Minor_Mode)
 
 p_chord_type :: T.P Chord_Type
@@ -119,7 +119,7 @@ p_extension =
         m7 = P.try (P.string "M7" >> return M7)
     in P.choice [d7,m7]
 
-p_bass :: T.P (Maybe PC)
+p_bass :: T.P (Maybe Pc)
 p_bass = P.optionMaybe (P.char '/' >> p_pc)
 
 p_chord :: T.P Chord
@@ -134,7 +134,7 @@ p_chord = do
                (Major,Suspended_4) -> Suspended_4
                (_,Major) -> ty -- ie. nothing
                _ -> error ("trailing type not sus2 or sus4: " ++ show ty')
-  return (CH pc ty'' ex b)
+  return (Chord pc ty'' ex b)
 
 -- | Parse chord.
 --

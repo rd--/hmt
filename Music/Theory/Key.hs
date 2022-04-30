@@ -13,35 +13,35 @@ import qualified Music.Theory.Pitch.Note as T
 import qualified Music.Theory.Interval as T
 
 -- | Enumeration of common music notation modes.
-data Mode_T = Minor_Mode | Major_Mode
+data Mode = Minor_Mode | Major_Mode
               deriving (Eq,Ord,Show)
 
--- | Pretty printer for 'Mode_T'.
-mode_pp :: Mode_T -> String
+-- | Pretty printer for 'Mode'.
+mode_pp :: Mode -> String
 mode_pp m =
     case m of
       Minor_Mode -> "Minor"
       Major_Mode -> "Major"
 
 -- | Lower-cased 'mode_pp'.
-mode_identifier_pp :: Mode_T -> String
+mode_identifier_pp :: Mode -> String
 mode_identifier_pp = map toLower . mode_pp
 
 -- | There are two modes, given one return the other.
-mode_parallel :: Mode_T -> Mode_T
+mode_parallel :: Mode -> Mode
 mode_parallel m = if m == Minor_Mode then Major_Mode else Minor_Mode
 
-mode_pc_seq :: Num t => Mode_T -> [t]
+mode_pc_seq :: Num t => Mode -> [t]
 mode_pc_seq md =
     case md of
       Major_Mode -> [0,2,4,5,7,9,11]
       Minor_Mode -> [0,2,3,5,7,8,10]
 
--- | A common music notation key is a 'Note_T', 'Alteration_T', 'Mode_T' triple.
-type Key = (T.Note_T,T.Alteration_T,Mode_T)
+-- | A common music notation key is a 'Note', 'Alteration', 'Mode' triple.
+type Key = (T.Note,T.Alteration,Mode)
 
--- | 'Mode_T' of 'Key'.
-key_mode :: Key -> Mode_T
+-- | 'Mode' of 'Key'.
+key_mode :: Key -> Mode
 key_mode (_,_,m) = m
 
 -- | Enumeration of 42 CMN keys.
@@ -98,7 +98,7 @@ key_pc_set (n,a,md) =
 
 -- | Pretty-printer where 'Minor_Mode' is written in lower case (lc) and
 -- alteration symbol is shown using indicated function.
-key_lc_pp :: (T.Alteration_T -> String) -> Key -> String
+key_lc_pp :: (T.Alteration -> String) -> Key -> String
 key_lc_pp a_pp (n,a,m) =
     let c = T.note_pp n
         c' = if m == Minor_Mode then toLower c else c
@@ -121,7 +121,7 @@ key_lc_tonh_pp :: Key -> String
 key_lc_tonh_pp = key_lc_pp T.alteration_tonh
 
 -- > map key_identifier_pp [(T.C,T.Sharp,Minor_Mode),(T.E,T.Flat,Major_Mode)]
-key_identifier_pp :: (Show a, Show a1) => (a, a1, Mode_T) -> [Char]
+key_identifier_pp :: (Show a, Show a1) => (a, a1, Mode) -> [Char]
 key_identifier_pp (n,a,m) = map toLower (intercalate "_" [show n,show a,mode_pp m])
 
 -- > import Data.Maybe
@@ -177,7 +177,7 @@ key_fifths_tbl =
 -- > let f md = map key_lc_iso_pp . mapMaybe (fifths_to_key md)
 -- > f Minor_Mode a
 -- > f Major_Mode a
-fifths_to_key :: Mode_T -> Int -> Maybe Key
+fifths_to_key :: Mode -> Int -> Maybe Key
 fifths_to_key md n =
     let eq_f = (\((_,_,md'),n') -> md == md' && n == n')
     in fmap fst (find eq_f key_fifths_tbl)
@@ -186,18 +186,18 @@ fifths_to_key md n =
 --
 -- > mapMaybe (implied_key Major_Mode) [[0,2,4],[1,3],[4,10],[3,9],[8,9]]
 -- > map (implied_key Major_Mode) [[0,1,2],[0,1,3,4]] == [Nothing,Nothing]
-implied_key :: Integral i => Mode_T -> [i] -> Maybe Key
+implied_key :: Integral i => Mode -> [i] -> Maybe Key
 implied_key md pc_set =
     let a_seq = [0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6]
         key_seq = mapMaybe (fifths_to_key md) a_seq
     in find (\k -> pc_set `T.is_subset` key_pc_set k) key_seq
 
 -- | 'key_fifths' of 'implied_key'.
-implied_fifths :: Integral i => Mode_T -> [i] -> Maybe Int
+implied_fifths :: Integral i => Mode -> [i] -> Maybe Int
 implied_fifths md = key_fifths <=< implied_key md
 
-implied_key_err :: Integral i => Mode_T -> [i] -> Key
+implied_key_err :: Integral i => Mode -> [i] -> Key
 implied_key_err md = fromMaybe (error "implied_key") . implied_key md
 
-implied_fifths_err :: Integral i => Mode_T -> [i] -> Int
+implied_fifths_err :: Integral i => Mode -> [i] -> Int
 implied_fifths_err md = fromMaybe (error "implied_fifths") . key_fifths . implied_key_err md

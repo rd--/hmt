@@ -191,8 +191,8 @@ fmidi_et12_cents_pp sp =
 -- * Pitch
 
 -- | Common music notation pitch value.
-data Pitch = Pitch {note :: T.Note_T
-                   ,alteration :: T.Alteration_T
+data Pitch = Pitch {note :: T.Note
+                   ,alteration :: T.Alteration
                    ,octave :: Octave}
            deriving (Eq,Show)
 
@@ -256,10 +256,10 @@ pitch_compare =
 -- * Spelling
 
 -- | Function to spell a 'PitchClass'.
-type Spelling n = n -> (T.Note_T,T.Alteration_T)
+type Spelling n = n -> (T.Note,T.Alteration)
 
 -- | Variant of 'Spelling' for incomplete functions.
-type Spelling_M i = i -> Maybe (T.Note_T,T.Alteration_T)
+type Spelling_M i = i -> Maybe (T.Note,T.Alteration)
 
 -- | Given 'Spelling' function translate from 'OctPc' notation to 'Pitch'.
 --
@@ -388,7 +388,7 @@ pitch_in_octave_nearest p1 p2 =
         o = fmidi_octave (fmidi_in_octave_nearest (f p1) (f p2))
     in p2 {octave = o}
 
--- | Raise 'Note_T' of 'Pitch', account for octave transposition.
+-- | Raise 'Note' of 'Pitch', account for octave transposition.
 --
 -- > pitch_note_raise (Pitch B Natural 3) == Pitch C Natural 4
 pitch_note_raise :: Pitch -> Pitch
@@ -397,7 +397,7 @@ pitch_note_raise (Pitch n a o) =
     then Pitch minBound a (o + 1)
     else Pitch (succ n) a o
 
--- | Lower 'Note_T' of 'Pitch', account for octave transposition.
+-- | Lower 'Note' of 'Pitch', account for octave transposition.
 --
 -- > pitch_note_lower (Pitch C Flat 4) == Pitch B Flat 3
 pitch_note_lower :: Pitch -> Pitch
@@ -599,7 +599,7 @@ pc24et_to_pitch = genericIndex pc24et_univ
 -- * Pitch, rational alteration.
 
 -- | Generalised pitch, given by a generalised alteration.
-data Pitch_R = Pitch_R T.Note_T T.Alteration_R Octave
+data Pitch_R = Pitch_R T.Note T.Alteration_R Octave
                deriving (Eq,Show)
 
 -- | Pretty printer for 'Pitch_R'.
