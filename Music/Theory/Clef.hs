@@ -5,11 +5,11 @@ import Music.Theory.Pitch {- hmt -}
 import Music.Theory.Pitch.Name {- hmt -}
 
 -- | Clef enumeration type.
-data Clef_T = Bass | Tenor | Alto | Treble | Percussion
+data Clef_Type = Bass | Tenor | Alto | Treble | Percussion
               deriving (Eq,Ord,Show)
 
 -- | Clef with octave offset.
-data Clef i = Clef {clef_t :: Clef_T
+data Clef i = Clef {clef_t :: Clef_Type
                    ,clef_octave :: i}
               deriving (Eq,Ord,Show)
 
@@ -18,7 +18,7 @@ data Clef i = Clef {clef_t :: Clef_T
 --
 -- > map clef_range [Treble,Bass] == [Just (d4,g5),Just (f2,b3)]
 -- > clef_range Percussion == Nothing
-clef_range :: Clef_T -> Maybe (Pitch,Pitch)
+clef_range :: Clef_Type -> Maybe (Pitch,Pitch)
 clef_range c =
     case c of
       Bass -> Just (f2,b3)
