@@ -251,7 +251,7 @@ csv_mndd_write_wseq r_prec nm =
 
 -- * Composite
 
--- | Parse either MND or MNDD data to Wseq, CSV type is decided by header.
+-- | Parse either Mnd or Mndd data to Wseq, Csv type is decided by header.
 csv_midi_parse_wseq_f :: (Read t,Real t,Read n,Real n,Num m, Eq m) => (n -> m) -> T.CSV_Table String -> T.Wseq t (Event m)
 csv_midi_parse_wseq_f cnv (hdr,dat) = do
   case hdr of
@@ -259,7 +259,7 @@ csv_midi_parse_wseq_f cnv (hdr,dat) = do
                  then midi_tseq_to_midi_wseq (mnd_to_tseq (csv_mnd_parse_f cnv (hdr,dat)))
                  else if hdr' == csv_mndd_hdr
                       then mndd_to_wseq (csv_mndd_parse_f cnv (hdr,dat))
-                      else error "csv_midi_read_wseq: not MND or MNDD"
+                      else error "csv_midi_read_wseq: not Mnd or Mndd"
     _ -> error "csv_midi_read_wseq: header?"
 
 csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> T.Wseq t (Event n)
