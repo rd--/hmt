@@ -16,11 +16,11 @@ import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
-import qualified Music.Theory.Array.CSV as CSV {- hmt -}
+import qualified Music.Theory.Array.Csv as Csv {- hmt -}
 import qualified Music.Theory.Directory as Directory {- hmt -}
 import qualified Music.Theory.Either as Either {- hmt -}
 import qualified Music.Theory.Function as Function {- hmt -}
-import qualified Music.Theory.IO as IO {- hmt -}
+import qualified Music.Theory.Io as Io {- hmt -}
 import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Read as T {- hmt -}
@@ -260,7 +260,7 @@ parse_scl nm s =
                in scale_verify_err scl
       _ -> error "parse"
 
--- * IO
+-- * Io
 
 -- | Read the environment variable @SCALA_SCL_DIR@, which is a
 -- sequence of directories used to locate scala files on.
@@ -301,7 +301,7 @@ scl_resolve_name nm =
 scl_load :: String -> IO Scale
 scl_load nm = do
   fn <- scl_resolve_name nm
-  s <- IO.read_file_iso_8859_1 fn
+  s <- Io.read_file_iso_8859_1 fn
   return (parse_scl (takeBaseName nm) s)
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
@@ -331,7 +331,7 @@ scl_load_db = do
   r <- mapM scl_load_dir dir
   return (concat r)
 
--- * PP
+-- * Pp
 
 -- | <http://www.huygens-fokker.org/docs/scalesdir.txt>
 scales_dir_txt_tbl :: [Scale] -> [[String]]
@@ -344,7 +344,7 @@ scales_dir_txt_tbl =
 -- > db <- scl_load_db
 -- > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
 scales_dir_txt_csv :: [Scale] -> String
-scales_dir_txt_csv db = CSV.csv_table_pp id CSV.def_csv_opt (Nothing,scales_dir_txt_tbl db)
+scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_txt_tbl db)
 
 -- | Simple plain-text display of scale data.
 --
@@ -394,7 +394,7 @@ scale_wr fn = writeFile fn . unlines . scale_pp
 scale_wr_dir :: FilePath -> Scale -> IO ()
 scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 
--- * DIST
+-- * Dist
 
 -- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
 --
@@ -415,7 +415,7 @@ load_dist_file nm = do
 load_dist_file_ln :: FilePath -> IO [String]
 load_dist_file_ln = fmap lines . load_dist_file
 
--- * QUERY
+-- * Query
 
 -- | Is scale just-intonation (ie. are all pitches ratios)
 scl_is_ji :: Scale -> Bool

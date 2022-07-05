@@ -1,11 +1,11 @@
-{- | Functions for reading midi note data (MND) from CSV files.
+{- | Functions for reading midi note data (Mnd) from Csv files.
 
 This is /not/ a generic text midi notation.
-The required columns are documented at `MND` and `MNDD`.
+The required columns are documented at `Mnd` and `Mndd`.
 The defined commands are @on@ and @off@, but others may be present.
 Non-integral note number and key velocity data are allowed.
 -}
-module Music.Theory.Array.CSV.Midi.MND where
+module Music.Theory.Array.Csv.Midi.Mnd where
 
 import Data.Function {- base -}
 import Data.List {- base -}
@@ -13,10 +13,11 @@ import Data.Maybe {- base -}
 
 import Data.List.Split {- split -}
 
-import qualified Music.Theory.Array.CSV as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
-import qualified Music.Theory.Read as T {- hmt -}
-import qualified Music.Theory.Show as T {- hmt -}
+import qualified Music.Theory.Array.Csv as T {- hmt-base -}
+import qualified Music.Theory.Math as T {- hmt-base -}
+import qualified Music.Theory.Read as T {- hmt-base -}
+import qualified Music.Theory.Show as T {- hmt-base -}
+
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
 -- * Param ; Sound.SC3.Server.Param
@@ -35,7 +36,7 @@ param_pp (c1,c2) k =
     let f (lhs,rhs) = concat [lhs,[c2],T.double_pp k rhs]
     in intercalate [c1] . map f
 
--- * MND
+-- * Mnd
 
 -- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
 data_value_pp :: Real t => Int -> t -> String
@@ -61,9 +62,9 @@ note and velocity data is (0-127), channel is (0-15), param are ;-separated key:
 > all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
 > csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
 -}
-type MND t n = (t,String,n,n,Channel,Param)
+type Mnd t n = (t,String,n,n,Channel,Param)
 
-csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MND t m]
+csv_mnd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.Csv_Table String -> [Mnd t m]
 csv_mnd_parse_f cnv (hdr,dat) =
     let err x = error ("csv_mnd_read: " ++ x)
         f m = case m of
@@ -79,24 +80,24 @@ csv_mnd_parse_f cnv (hdr,dat) =
          Just hdr' -> if hdr' == csv_mnd_hdr then map f dat else err "header?"
          Nothing -> err "no header?"
 
-csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MND t n]
+csv_mnd_parse :: (Read t,Real t,Read n,Real n) => T.Csv_Table String -> [Mnd t n]
 csv_mnd_parse = csv_mnd_parse_f id
 
-load_csv :: FilePath -> IO (T.CSV_Table String)
-load_csv = T.csv_table_read (True,',',False,T.CSV_No_Align) id
+load_csv :: FilePath -> IO (T.Csv_Table String)
+load_csv = T.csv_table_read (True,',',False,T.Csv_No_Align) id
 
 -- | Midi note data.
 --
 -- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
 -- > let fn = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
--- > m <- csv_mnd_read fn :: IO [MND Double Int]
+-- > m <- csv_mnd_read fn :: IO [Mnd Double Int]
 -- > length m -- 1800 17655
 -- > csv_mnd_write 4 "/tmp/t.csv" m
-csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MND t n]
+csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [Mnd t n]
 csv_mnd_read = fmap csv_mnd_parse . load_csv
 
 -- | Writer.
-csv_mnd_write :: (Real t,Real n) => Int -> FilePath -> [MND t n] -> IO ()
+csv_mnd_write :: (Real t,Real n) => Int -> FilePath -> [Mnd t n] -> IO ()
 csv_mnd_write r_prec nm =
     let un_node (st,msg,mnn,vel,ch,pm) =
             [T.real_pp r_prec st
@@ -108,7 +109,7 @@ csv_mnd_write r_prec nm =
         with_hdr dat = (Just csv_mnd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
--- * MND Seq forms
+-- * Mnd Seq forms
 
 -- | (p0=midi-note,p1=velocity,channel,param)
 type Event n = (n,n,Channel,Param)
@@ -149,7 +150,7 @@ midi_wseq_to_midi_tseq :: (Num t,Ord t) => T.Wseq t x -> T.Tseq t (T.Begin_End x
 midi_wseq_to_midi_tseq = T.wseq_begin_end
 
 -- | Ignores non on/off messages.
-mnd_to_tseq :: Num n => [MND t n] -> T.Tseq t (T.Begin_End (Event n))
+mnd_to_tseq :: Num n => [Mnd t n] -> T.Tseq t (T.Begin_End (Event n))
 mnd_to_tseq =
     let mk_node (st,msg,mnn,vel,ch,pm) =
             case msg of
@@ -170,7 +171,7 @@ csv_mnd_write_tseq r_prec nm sq =
                     T.End (n,_,c,p) -> (t,"off",n,0,c,p)
     in csv_mnd_write r_prec nm (map f sq)
 
--- * MNDD (simplifies cases where overlaps on the same channel are allowed).
+-- * Mndd (simplifies cases where overlaps on the same channel are allowed).
 
 -- | Message should be @note@ for note data.
 csv_mndd_hdr :: [String]
@@ -181,17 +182,17 @@ csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 -- The command is a string, @note@ is standard, other commands may be present.
 --
 -- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
-type MNDD t n = (t,t,String,n,n,Channel,Param)
+type Mndd t n = (t,t,String,n,n,Channel,Param)
 
 -- | Compare sequence is: start-time,channel-number,note-number,velocity,duration,param.
-mndd_compare :: (Ord t,Ord n) => MNDD t n -> MNDD t n -> Ordering
+mndd_compare :: (Ord t,Ord n) => Mndd t n -> Mndd t n -> Ordering
 mndd_compare x1 x2 =
   case (x1,x2) of
     ((t1,d1,"note",n1,v1,c1,p1),(t2,d2,"note",n2,v2,c2,p2)) ->
       compare (t1,c1,n1,v1,d1,p1) (t2,c2,n2,v2,d2,p2)
     _ -> compare x1 x2
 
-csv_mndd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.CSV_Table String -> [MNDD t m]
+csv_mndd_parse_f :: (Read t,Real t,Read n,Real n) => (n -> m) -> T.Csv_Table String -> [Mndd t m]
 csv_mndd_parse_f cnv (hdr,dat) =
     let err x = error ("csv_mndd_read: " ++ x)
         f m =
@@ -209,16 +210,16 @@ csv_mndd_parse_f cnv (hdr,dat) =
          Just hdr' -> if hdr' == csv_mndd_hdr then map f dat else err "header?"
          Nothing -> err "no header?"
 
--- | Pars midi note/duration data from CSV table.
-csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> [MNDD t n]
+-- | Pars midi note/duration data from Csv table.
+csv_mndd_parse :: (Read t,Real t,Read n,Real n) => T.Csv_Table String -> [Mndd t n]
 csv_mndd_parse = csv_mndd_parse_f id
 
 -- | 'csv_mndd_parse' of 'load_csv'
-csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [MNDD t n]
+csv_mndd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [Mndd t n]
 csv_mndd_read = fmap csv_mndd_parse . load_csv
 
 -- | Writer.
-csv_mndd_write :: (Real t,Real n) => Int -> FilePath -> [MNDD t n] -> IO ()
+csv_mndd_write :: (Real t,Real n) => Int -> FilePath -> [Mndd t n] -> IO ()
 csv_mndd_write r_prec nm =
     let un_node (st,du,msg,mnn,vel,ch,pm) =
             [T.real_pp r_prec st,T.real_pp r_prec du,msg
@@ -228,10 +229,10 @@ csv_mndd_write r_prec nm =
         with_hdr dat = (Just csv_mndd_hdr,dat)
     in T.csv_table_write id T.def_csv_opt nm . with_hdr . map un_node
 
--- * MNDD Seq forms
+-- * Mndd Seq forms
 
 -- | Ignores non note messages.
-mndd_to_wseq :: [MNDD t n] -> T.Wseq t (Event n)
+mndd_to_wseq :: [Mndd t n] -> T.Wseq t (Event n)
 mndd_to_wseq =
     let mk_node (st,du,msg,mnn,vel,ch,pm) =
             case msg of
@@ -252,7 +253,7 @@ csv_mndd_write_wseq r_prec nm =
 -- * Composite
 
 -- | Parse either Mnd or Mndd data to Wseq, Csv type is decided by header.
-csv_midi_parse_wseq_f :: (Read t,Real t,Read n,Real n,Num m, Eq m) => (n -> m) -> T.CSV_Table String -> T.Wseq t (Event m)
+csv_midi_parse_wseq_f :: (Read t,Real t,Read n,Real n,Num m, Eq m) => (n -> m) -> T.Csv_Table String -> T.Wseq t (Event m)
 csv_midi_parse_wseq_f cnv (hdr,dat) = do
   case hdr of
     Just hdr' -> if hdr' == csv_mnd_hdr
@@ -262,7 +263,7 @@ csv_midi_parse_wseq_f cnv (hdr,dat) = do
                       else error "csv_midi_read_wseq: not Mnd or Mndd"
     _ -> error "csv_midi_read_wseq: header?"
 
-csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.CSV_Table String -> T.Wseq t (Event n)
+csv_midi_parse_wseq :: (Read t,Real t,Read n,Real n) => T.Csv_Table String -> T.Wseq t (Event n)
 csv_midi_parse_wseq = csv_midi_parse_wseq_f id
 
 csv_midi_read_wseq :: (Read t,Real t,Read n,Real n) => FilePath -> IO (T.Wseq t (Event n))

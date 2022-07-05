@@ -3,15 +3,16 @@ module Music.Theory.Tuning.Load where
 
 import System.Random {- random -}
 
-import qualified Music.Theory.Array.CSV as T
-import qualified Music.Theory.Pitch as T
+import qualified Music.Theory.Array.Csv as T {- hmt-base -}
+
+import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T
 import qualified Music.Theory.Tuning.Midi as T
 import qualified Music.Theory.Tuning.Scala as T
 import qualified Music.Theory.Tuning.Type as T
 
 -- | Load possibly sparse and possibly one-to-many
--- (midi-note-number,cps-frequency) table from CSV file.
+-- (midi-note-number,cps-frequency) table from Csv file.
 --
 -- > load_cps_tbl "/home/rohan/dr.csv"
 load_cps_tbl :: FilePath -> IO [(T.Midi,Double)]

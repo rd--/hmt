@@ -1,5 +1,5 @@
 -- | Database as [[(key,value)]]
-module Music.Theory.DB.Common where
+module Music.Theory.Db.Common where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
@@ -12,13 +12,13 @@ import qualified Music.Theory.Maybe as T {- hmt-base -}
 
 type Entry k v = (k,v)
 type Record k v = [Entry k v]
-type DB k v = [Record k v]
+type Db k v = [Record k v]
 
 type Key = String
 type Value = String
 type Entry' = Entry Key Value
 type Record' = Record Key Value
-type DB' = DB Key Value
+type Db' = Db Key Value
 
 -- * Record
 
@@ -79,30 +79,30 @@ record_delete_by f k = filter (not . f k . fst)
 record_delete :: Eq k => k -> Record k v -> Record k v
 record_delete = record_delete_by (==)
 
--- * DB
+-- * Db
 
 -- | Preserves order of occurence.
-db_key_set :: Ord k => DB k v -> [k]
+db_key_set :: Ord k => Db k v -> [k]
 db_key_set = nub . map fst . concat
 
-db_lookup_by :: (k -> k -> Bool) -> (v -> v -> Bool) -> k -> v -> DB k v -> [Record k v]
+db_lookup_by :: (k -> k -> Bool) -> (v -> v -> Bool) -> k -> v -> Db k v -> [Record k v]
 db_lookup_by k_cmp v_cmp k v =
     let f = any (v_cmp v) . record_lookup_by k_cmp k
     in filter f
 
-db_lookup :: (Eq k,Eq v) => k -> v -> DB k v -> [Record k v]
+db_lookup :: (Eq k,Eq v) => k -> v -> Db k v -> [Record k v]
 db_lookup = db_lookup_by (==) (==)
 
-db_has_duplicate_keys :: Ord k => DB k v -> Bool
+db_has_duplicate_keys :: Ord k => Db k v -> Bool
 db_has_duplicate_keys = any record_has_duplicate_keys
 
-db_key_histogram :: Ord k => DB k v -> [(k,Int)]
+db_key_histogram :: Ord k => Db k v -> [(k,Int)]
 db_key_histogram db =
     let h = concatMap record_key_histogram db
         f k = (k,maximum (record_lookup k h))
     in map f (db_key_set db)
 
-db_to_table :: Ord k => (Maybe v -> e) -> DB k v -> ([k],[[e]])
+db_to_table :: Ord k => (Maybe v -> e) -> Db k v -> ([k],[[e]])
 db_to_table f db =
     let kh = db_key_histogram db
         hdr = concatMap (\(k,n) -> replicate n k) kh

@@ -44,8 +44,8 @@ Library
                    time
   Default-Language:Haskell2010
   GHC-Options:     -Wall -fwarn-tabs
-  Exposed-modules: Music.Theory.Array.CSV.Midi.MND
-                   Music.Theory.Array.CSV.Midi.SKINI
+  Exposed-modules: Music.Theory.Array.Csv.Midi.Mnd
+                   Music.Theory.Array.Csv.Midi.Skini
                    Music.Theory.Array.Direction
                    Music.Theory.Array.Square
                    Music.Theory.Bjorklund
@@ -53,9 +53,9 @@ Library
                    Music.Theory.Braille
                    Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
-                   Music.Theory.DB.Common
-                   Music.Theory.DB.CSV
-                   Music.Theory.DB.Plain
+                   Music.Theory.Db.Common
+                   Music.Theory.Db.Csv
+                   Music.Theory.Db.Plain
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.ClickTrack
