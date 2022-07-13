@@ -11,7 +11,7 @@ import qualified Music.Theory.Function as T
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Pitch as T
 import qualified Music.Theory.Pitch.Name as T
-import qualified Music.Theory.Tuning.ET as T
+import qualified Music.Theory.Tuning.Et as T
 import qualified Music.Theory.Tuning.Scala as Scala
 import qualified Music.Theory.Tuple as T
 

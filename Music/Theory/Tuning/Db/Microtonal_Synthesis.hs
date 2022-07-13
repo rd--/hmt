@@ -1,5 +1,5 @@
 -- | <http://www.microtonal-synthesis.com/scales.html>
-module Music.Theory.Tuning.DB.Microtonal_Synthesis where
+module Music.Theory.Tuning.Db.Microtonal_Synthesis where
 
 import Music.Theory.Tuning {- hmt -}
 import Music.Theory.Tuning.Type {- hmt -}

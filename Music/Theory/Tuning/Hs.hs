@@ -1,5 +1,5 @@
 -- | Harmonic series
-module Music.Theory.Tuning.HS where
+module Music.Theory.Tuning.Hs where
 
 import Data.List {- base -}
 import Data.Ratio {- base -}

@@ -1,5 +1,5 @@
 -- | Kyle Gann.
-module Music.Theory.Tuning.DB.Gann where
+module Music.Theory.Tuning.Db.Gann where
 
 import Music.Theory.Tuning {- hmt -}
 import Music.Theory.Tuning.Type {- hmt -}

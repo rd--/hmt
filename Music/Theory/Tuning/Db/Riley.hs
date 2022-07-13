@@ -1,5 +1,5 @@
 -- | Terry Riley.
-module Music.Theory.Tuning.DB.Riley where
+module Music.Theory.Tuning.Db.Riley where
 
 import Music.Theory.Tuning.Type {- hmt -}
 

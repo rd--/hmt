@@ -1,5 +1,5 @@
 -- | Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html>
-module Music.Theory.Tuning.EFG where
+module Music.Theory.Tuning.Efg where
 
 import Data.List {- base -}
 
@@ -9,27 +9,27 @@ import qualified Music.Theory.Set.List as T {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 
 -- | Normal form, value with occurences count (ie. exponent in notation above).
-type EFG i = [(i,Int)]
+type Efg i = [(i,Int)]
 
--- | Degree of EFG, ie. sum of exponents.
+-- | Degree of Efg, ie. sum of exponents.
 --
 -- > efg_degree [(3,3),(7,2)] == 3 + 2
-efg_degree :: EFG i -> Int
+efg_degree :: Efg i -> Int
 efg_degree = sum . map snd
 
--- | Number of tones of EFG, ie. product of increment of exponents.
+-- | Number of tones of Efg, ie. product of increment of exponents.
 --
 -- > efg_tones [(3,3),(7,2)] == (3 + 1) * (2 + 1)
-efg_tones :: EFG i -> Int
+efg_tones :: Efg i -> Int
 efg_tones = product . map ((+ 1) . snd)
 
 -- | Collate a genus given as a multiset into standard form, ie. histogram.
 --
 -- > efg_collate [3,3,3,7,7] == [(3,3),(7,2)]
-efg_collate :: Ord i => [i] -> EFG i
+efg_collate :: Ord i => [i] -> Efg i
 efg_collate = T.histogram . sort
 
-{- | Factors of EFG given with co-ordinate of grid location.
+{- | Factors of Efg given with co-ordinate of grid location.
 
 > efg_factors [(3,3)]
 
@@ -41,7 +41,7 @@ efg_collate = T.histogram . sort
 > efg_factors [(3,3),(7,2)] == r
 
 -}
-efg_factors :: EFG i -> [([Int],[i])]
+efg_factors :: Efg i -> [([Int],[i])]
 efg_factors efg =
     let k = map (\(_,n) -> [0 .. n]) efg
         k' = if length efg == 1
@@ -51,7 +51,7 @@ efg_factors efg =
         f ix = (ix,concat (zipWith (\n m -> replicate n (z !! m)) ix [0..]))
     in map f k'
 
-{- | Ratios of EFG, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
+{- | Ratios of Efg, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
 > import Data.List
 > let r = sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
@@ -87,7 +87,7 @@ efg_factors efg =
 > map f (zip [c0,c1,c2] [0,20,40])
 
 -}
-efg_ratios :: Real r => Rational -> EFG r -> [([Int],Rational)]
+efg_ratios :: Real r => Rational -> Efg r -> [([Int],Rational)]
 efg_ratios n =
     let to_r = fold_ratio_to_octave_err . (/ n) . toRational . product
         f (ix,i) = (ix,to_r i)
@@ -102,7 +102,7 @@ efg_ratios n =
 > efg_diagram_set (round,25,4,75) e'
 
 -}
-efg_diagram_set :: (Enum n,Real n) => (Cents -> n,n,n,n) -> [EFG n] -> [(n,n,n,n)]
+efg_diagram_set :: (Enum n,Real n) => (Cents -> n,n,n,n) -> [Efg n] -> [(n,n,n,n)]
 efg_diagram_set (to_f,h,m,k) e =
     let f = (++ [1200]) . sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
         g (c,y) = let y' = y + h

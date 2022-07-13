@@ -1,5 +1,5 @@
 -- | Equal temperament tuning tables.
-module Music.Theory.Tuning.ET where
+module Music.Theory.Tuning.Et where
 
 import Data.List {- base -}
 import Data.List.Split {- split -}
@@ -52,7 +52,7 @@ tbl_24et_k0 zero =
 tbl_24et :: [(Pitch,Double)]
 tbl_24et = tbl_24et_k0 (69,440)
 
--- | Given an @ET@ table (or like) find bounds of frequency.
+-- | Given an @Et@ table (or like) find bounds of frequency.
 --
 -- > import qualified Music.Theory.Tuple as T
 -- > let r = Just (T.t2_map octpc_to_pitch_cps ((3,11),(4,0)))
@@ -62,12 +62,12 @@ bounds_et_table = T.find_bounds True (compare . snd)
 
 -- | 'bounds_et_table' of 'tbl_12et'.
 --
--- > import qualified Music.Theory.Tuning.HS as T
+-- > import qualified Music.Theory.Tuning.Hs as T
 -- > map bounds_12et_tone (T.harmonic_series_cps_n 17 55)
 bounds_12et_tone :: Double -> Maybe ((Pitch,Double),(Pitch,Double))
 bounds_12et_tone = bounds_et_table tbl_12et
 
--- | Tuple indicating nearest 'Pitch' to /frequency/ with @ET@
+-- | Tuple indicating nearest 'Pitch' to /frequency/ with @Et@
 -- frequency, and deviation in hertz and 'Cents'.
 --
 -- (cps,nearest-pitch,cps-of-nearest-pitch,cps-deviation,cents-deviation)
@@ -117,7 +117,7 @@ nearest_12et_tone_k0 zero = nearest_et_table_tone (tbl_12et_k0 zero)
 nearest_24et_tone_k0 :: (Double,Double) -> Double -> HS_R Pitch
 nearest_24et_tone_k0 zero = nearest_et_table_tone (tbl_24et_k0 zero)
 
--- * 72ET
+-- * 72Et
 
 -- | Monzo 72-edo HEWM notation.  The domain is (-9,9).
 -- <http://www.tonalsoft.com/enc/number/72edo.aspx>
@@ -193,20 +193,20 @@ nearest_72et_tone_k0 zero = nearest_et_table_tone (tbl_72et_k0 zero)
 
 -- * Detune
 
--- | 'Pitch' with 12-ET/24-ET tuning deviation given in 'Cents'.
+-- | 'Pitch' with 12-Et/24-Et tuning deviation given in 'Cents'.
 type Pitch_Detune = (Pitch,Cents)
 
 -- | Extract 'Pitch_Detune' from 'HS_R'.
 hsr_to_pitch_detune :: HS_R Pitch -> Pitch_Detune
 hsr_to_pitch_detune (_,p,_,_,c) = (p,c)
 
--- | Nearest 12-ET 'Pitch_Detune' to indicated frequency (hz).
+-- | Nearest 12-Et 'Pitch_Detune' to indicated frequency (hz).
 --
 -- > nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365
 nearest_pitch_detune_12et_k0 :: (Double, Double) -> Double -> Pitch_Detune
 nearest_pitch_detune_12et_k0 zero = hsr_to_pitch_detune . nearest_12et_tone_k0 zero
 
--- | Nearest 24-ET 'Pitch_Detune' to indicated frequency (hz).
+-- | Nearest 24-Et 'Pitch_Detune' to indicated frequency (hz).
 --
 -- > nearest_pitch_detune_24et_k0 (69,440) 452.8929841231365
 nearest_pitch_detune_24et_k0 :: (Double, Double) -> Double -> Pitch_Detune

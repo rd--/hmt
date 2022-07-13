@@ -1,8 +1,8 @@
-{- | Yamaha/DX7
+{- | Yamaha/Dx7
 
 The various Yamaha DX & TX synthesisers have different tuning resolutions.
 
-The "Grey Matter Response E!" tuning tables state the DX7 internally divides the octave into 4096 parts (steps of 0.293 cents).
+The "Grey Matter Response E!" tuning tables state the Dx7 internally divides the octave into 4096 parts (steps of 0.293 cents).
 
 The TX817 manual states a resolution of 768 parts per octave (steps of 1.5625 cents)
 

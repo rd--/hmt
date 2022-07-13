@@ -1,5 +1,5 @@
--- | DB of locally defined tunings, but for ordinary use see "Music.Theory.Tuning.Scala".
-module Music.Theory.Tuning.DB where
+-- | Db of locally defined tunings, but for ordinary use see "Music.Theory.Tuning.Scala".
+module Music.Theory.Tuning.Db where
 
 import Data.List {- base -}
 
@@ -10,11 +10,11 @@ import Music.Theory.Tuning.Gann_1993
 import Music.Theory.Tuning.Polansky_1978
 import Music.Theory.Tuning.Polansky_1985c
 
-import Music.Theory.Tuning.DB.Alves
-import Music.Theory.Tuning.DB.Gann
-import Music.Theory.Tuning.DB.Microtonal_Synthesis
-import Music.Theory.Tuning.DB.Riley
-import Music.Theory.Tuning.DB.Werckmeister
+import Music.Theory.Tuning.Db.Alves
+import Music.Theory.Tuning.Db.Gann
+import Music.Theory.Tuning.Db.Microtonal_Synthesis
+import Music.Theory.Tuning.Db.Riley
+import Music.Theory.Tuning.Db.Werckmeister
 
 -- | (last-name,first-name,title,year,hmt/tuning,scala/name)
 type Named_Tuning = (String,String,String,String,Tuning,String)

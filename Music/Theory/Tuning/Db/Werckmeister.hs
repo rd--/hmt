@@ -1,5 +1,5 @@
 -- | Andreas Werckmeister (1645-1706).
-module Music.Theory.Tuning.DB.Werckmeister where
+module Music.Theory.Tuning.Db.Werckmeister where
 
 import Music.Theory.Tuning {- hmt -}
 import Music.Theory.Tuning.Type {- hmt -}

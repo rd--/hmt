@@ -13,7 +13,7 @@ import qualified Music.Theory.Enum as T {- hmt-base -}
 import qualified Music.Theory.Clef as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.ET as T {- hmt-diagrams -}
+import qualified Music.Theory.Tuning.Et as T {- hmt-diagrams -}
 
 -- | 'fromJust' with error message.
 fromJust_err :: String -> Maybe a -> a

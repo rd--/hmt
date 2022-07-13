@@ -115,18 +115,18 @@ Library
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
                    Music.Theory.Tuning.Anamark
-                   Music.Theory.Tuning.DB
-                   Music.Theory.Tuning.DB.Alves
-                   Music.Theory.Tuning.DB.Gann
-                   Music.Theory.Tuning.DB.Microtonal_Synthesis
-                   Music.Theory.Tuning.DB.Riley
-                   Music.Theory.Tuning.DB.Werckmeister
-                   Music.Theory.Tuning.EFG
-                   Music.Theory.Tuning.ET
+                   Music.Theory.Tuning.Db
+                   Music.Theory.Tuning.Db.Alves
+                   Music.Theory.Tuning.Db.Gann
+                   Music.Theory.Tuning.Db.Microtonal_Synthesis
+                   Music.Theory.Tuning.Db.Riley
+                   Music.Theory.Tuning.Db.Werckmeister
+                   Music.Theory.Tuning.Efg
+                   Music.Theory.Tuning.Et
                    Music.Theory.Tuning.Gann_1993
                    Music.Theory.Tuning.Graph.Euler
                    Music.Theory.Tuning.Graph.ISET
-                   Music.Theory.Tuning.HS
+                   Music.Theory.Tuning.Hs
                    Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Midi
