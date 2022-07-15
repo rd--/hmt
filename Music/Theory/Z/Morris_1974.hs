@@ -2,13 +2,15 @@
 -- /Journal of Music Theory/, 18:364-389, 1974.
 module Music.Theory.Z.Morris_1974 where
 
+import Control.Monad {- base -}
+
 import qualified Control.Monad.Logic as L {- logict -}
 
--- | 'L.msum' '.' 'map' 'return'.
+-- | 'msum' '.' 'map' 'return'.
 --
 -- > L.observeAll (fromList [1..7]) == [1..7]
-fromList :: L.MonadPlus m => [a] -> m a
-fromList = L.msum . map return
+fromList :: MonadPlus m => [a] -> m a
+fromList = msum . map return
 
 -- | Interval from /i/ to /j/ in modulo-/n/.
 --
@@ -21,16 +23,16 @@ int_n n i j = abs ((j - i) `mod` n)
 -- > map (length . L.observeAll . all_interval_m) [4,6,8,10] == [2,4,24,288]
 -- > [0,1,3,2,9,5,10,4,7,11,8,6] `elem` L.observeAll (all_interval_m 12)
 -- > length (L.observeAll (all_interval_m 12)) == 3856
-all_interval_m :: L.MonadLogic m => Int -> m [Int]
+all_interval_m :: (MonadPlus m, L.MonadLogic m) => Int -> m [Int]
 all_interval_m n =
     let recur k p q = -- k = length p, p = pitch-class sequence, q = interval set
             if k == n
             then return (reverse p)
             else do i <- fromList [1 .. n - 1]
-                    L.guard (i `notElem` p)
+                    guard (i `notElem` p)
                     let j:_ = p
                         m = int_n n i j
-                    L.guard (m `notElem` q)
+                    guard (m `notElem` q)
                     recur (k + 1) (i : p) (m : q)
     in recur 1 [0] []
 

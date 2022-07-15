@@ -1,5 +1,6 @@
 module Music.Theory.Tiling.Canon where
 
+import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.List.Split {- split -}
 import Text.Printf {- base -}
@@ -63,7 +64,7 @@ rr_voices = concatMap r_voices
 -- | Retrograde of 'T', the result 'T' is sorted.
 --
 -- > let r = [[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]
--- > in t_retrograde [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
+-- > t_retrograde [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
 t_retrograde :: T -> T
 t_retrograde t =
     let n = maximum (concat t)
@@ -72,15 +73,15 @@ t_retrograde t =
 -- | The normal form of 'T' is the 'min' of /t/ and it's 't_retrograde'.
 --
 -- > let r = [[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]
--- > in t_normal [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
+-- > t_normal [[0,7,14],[1,6,11],[2,3,4],[5,9,13],[8,10,12]] == r
 t_normal :: T -> T
 t_normal t = min t (t_retrograde t)
 
 -- | Derive set of 'R' from 'T'.
 --
--- > let {r = [(21,[0,1,2],[10,8,2,4,7,5,1],[0,1,2,3,5,8,14])]
--- >     ;t = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]}
--- > in r_from_t t == r
+-- > let r = [(21,[0,1,2],[10,8,2,4,7,5,1],[0,1,2,3,5,8,14])]
+-- > let t = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
+-- > r_from_t t == r
 r_from_t :: T -> [R]
 r_from_t t =
     let e = map e_from_seq t
@@ -93,25 +94,25 @@ r_from_t t =
 
 -- | 'msum' '.' 'map' 'return'.
 --
--- > observeAll (fromList [1..7]) == [1..7]
-fromList :: L.MonadPlus m => [a] -> m a
-fromList = L.msum . map return
+-- > L.observeAll (fromList [1..7]) == [1..7]
+fromList :: MonadPlus m => [a] -> m a
+fromList = msum . map return
 
 -- | Search for /perfect/ tilings of the sequence 'S' using
 -- multipliers from /m/ to degree /n/ with /k/ parts.
-perfect_tilings_m :: L.MonadPlus m => [S] -> [Int] -> Int -> Int -> m T
+perfect_tilings_m :: MonadPlus m => [S] -> [Int] -> Int -> Int -> m T
 perfect_tilings_m s m n k =
     let rec p q =
             if length q == k
             then return (sort q)
             else do m' <- fromList m
-                    L.guard (m' `notElem` p)
+                    guard (m' `notElem` p)
                     s' <- fromList s
                     let i = n - (maximum s' * m') - 1
                     o <- fromList [0..i]
                     let s'' = e_to_seq (s',m',o)
                         q' = concat q
-                    L.guard (all (`notElem` q') s'')
+                    guard (all (`notElem` q') s'')
                     rec (m':p) (s'':q)
     in rec [] []
 
@@ -120,14 +121,12 @@ perfect_tilings_m s m n k =
 > perfect_tilings [[0,1]] [1..3] 6 3 == []
 
 > let r = [[[0,7,14],[1,5,9],[2,4,6],[3,8,13],[10,11,12]]]
-> in perfect_tilings [[0,1,2]] [1,2,4,5,7] 15 5 == r
+> perfect_tilings [[0,1,2]] [1,2,4,5,7] 15 5 == r
 
 > length (perfect_tilings [[0,1,2]] [1..12] 15 5) == 1
 
-> let r = [[[0,1],[2,5],[3,7],[4,6]]
->         ,[[0,1],[2,6],[3,5],[4,7]]
->         ,[[0,2],[1,4],[3,7],[5,6]]]
-> in perfect_tilings [[0,1]] [1..4] 8 4 == r
+> let r = [[[0,1],[2,5],[3,7],[4,6]], [[0,1],[2,6],[3,5],[4,7]] ,[[0,2],[1,4],[3,7],[5,6]]]
+> perfect_tilings [[0,1]] [1..4] 8 4 == r
 
 > let r = [[[0,1],[2,5],[3,7],[4,9],[6,8]]
 >         ,[[0,1],[2,7],[3,5],[4,8],[6,9]]
@@ -139,10 +138,10 @@ perfect_tilings_m s m n k =
 Johnson 2004, p.2
 
 > let r = [[0,6,12],[1,8,15],[2,11,20],[3,5,7],[4,9,14],[10,13,16],[17,18,19]]
-> in perfect_tilings [[0,1,2]] [1,2,3,5,6,7,9] 21 7 == [r]
+> perfect_tilings [[0,1,2]] [1,2,3,5,6,7,9] 21 7 == [r]
 
 > let r = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
-> in perfect_tilings [[0,1,2]] [1,2,4,5,7,8,10] 21 7 == [t_retrograde r]
+> perfect_tilings [[0,1,2]] [1,2,4,5,7,8,10] 21 7 == [t_retrograde r]
 
 -}
 perfect_tilings :: [S] -> [Int] -> Int -> Int -> [T]

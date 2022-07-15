@@ -1,6 +1,7 @@
 -- | Graph (fgl) functions.
 module Music.Theory.Graph.FGL where
 
+import Control.Monad {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
@@ -55,26 +56,26 @@ ug_node_set_impl gr nl =
 -- | Node select function, ie. given a graph /g/ and a node /n/ select a set of related nodes from /g/
 type G_Node_Sel_f v e = G.Gr v e -> G.Node -> [G.Node]
 
--- | 'L.msum' '.' 'map' 'return'.
-ml_from_list :: L.MonadLogic m => [t] -> m t
-ml_from_list = L.msum . map return
+-- | 'msum' '.' 'map' 'return'.
+ml_from_list :: MonadPlus m => [t] -> m t
+ml_from_list = msum . map return
 
 -- | Use /sel_f/ of 'G.pre' for directed graphs and 'G.neighbors' for undirected.
-g_hamiltonian_path_ml :: L.MonadLogic m => G_Node_Sel_f v e -> G.Gr v e -> G.Node -> m [G.Node]
+g_hamiltonian_path_ml :: (MonadPlus m, L.MonadLogic m) => G_Node_Sel_f v e -> G.Gr v e -> G.Node -> m [G.Node]
 g_hamiltonian_path_ml sel_f gr =
     let n_deg = g_degree gr
         recur r c =
             if length r == n_deg - 1
             then return (c:r)
             else do i <- ml_from_list (sel_f gr c)
-                    L.guard (i `notElem` r)
+                    guard (i `notElem` r)
                     recur (c:r) i
     in recur []
 
 -- | 'g_hamiltonian_path_ml' of 'G.neighbors' starting at first node.
 --
 -- > map (L.observeAll . ug_hamiltonian_path_ml_0) (g_partition gr)
-ug_hamiltonian_path_ml_0 :: L.MonadLogic m => G.Gr v e -> m [G.Node]
+ug_hamiltonian_path_ml_0 :: (MonadPlus m, L.MonadLogic m) => G.Gr v e -> m [G.Node]
 ug_hamiltonian_path_ml_0 gr = g_hamiltonian_path_ml G.neighbors gr (G.nodes gr !! 0)
 
 -- * G (from edges)
