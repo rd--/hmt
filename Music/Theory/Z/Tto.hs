@@ -1,5 +1,5 @@
 -- | Generalised twelve-tone operations on un-ordered pitch-class sets with arbitrary Z.
-module Music.Theory.Z.TTO where
+module Music.Theory.Z.Tto where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
@@ -10,57 +10,57 @@ import qualified Music.Theory.Parse as Parse {- hmt -}
 
 import Music.Theory.Z {- hmt -}
 
--- * TTO
+-- * Tto
 
 -- | Twelve-tone operator, of the form TMI.
-data TTO t = TTO {tto_T :: t,tto_M :: t,tto_I :: Bool}
+data Tto t = Tto {tto_T :: t,tto_M :: t,tto_I :: Bool}
              deriving (Eq,Show)
 
 -- | T0
-tto_identity :: Num t => TTO t
-tto_identity = TTO 0 1 False
+tto_identity :: Num t => Tto t
+tto_identity = Tto 0 1 False
 
 -- | Pretty printer.  It is an error here is M is not 1 or 5.
-tto_pp :: (Show t,Num t,Eq t) => TTO t -> String
-tto_pp (TTO t m i) =
+tto_pp :: (Show t,Num t,Eq t) => Tto t -> String
+tto_pp (Tto t m i) =
   concat ['T' : show t
          ,if m == 1 then "" else if m == 5 then "M" else error "tto_pp: M?"
          ,if i then "I" else ""]
 
--- | Parser for TTO, requires value for M (ordinarily 5 for 12-tone TTO).
-p_tto :: Integral t => t -> Parse.P (TTO t)
+-- | Parser for Tto, requires value for M (ordinarily 5 for 12-tone Tto).
+p_tto :: Integral t => t -> Parse.P (Tto t)
 p_tto m_mul = do
   _ <- P.char 'T'
   t <- Parse.parse_int
   m <- Parse.is_char 'M'
   i <- Parse.is_char 'I'
   P.eof
-  return (TTO t (if m then m_mul else 1) i)
+  return (Tto t (if m then m_mul else 1) i)
 
 -- | Parser, transposition must be decimal.
 --
 -- > map (tto_pp . tto_parse 5) (words "T5 T3I T11M T9MI") == ["T5","T3I","T11M","T9MI"]
-tto_parse :: Integral i => i -> String -> TTO i
+tto_parse :: Integral i => i -> String -> Tto i
 tto_parse m = either (\e -> error ("tto_parse failed\n" ++ show e)) id . P.parse (p_tto m) ""
 
--- | Set M at TTO.
-tto_M_set :: Integral t => t -> TTO t -> TTO t
-tto_M_set m (TTO t _ i) = TTO t m i
+-- | Set M at Tto.
+tto_M_set :: Integral t => t -> Tto t -> Tto t
+tto_M_set m (Tto t _ i) = Tto t m i
 
 -- * Z
 
--- | The set of all 'TTO', given 'Z'.
+-- | The set of all 'Tto', given 'Z'.
 --
 -- > length (z_tto_univ 5 z12) == 48
 -- > map tto_pp (z_tto_univ 5 z12)
-z_tto_univ :: Integral t => t -> Z t -> [TTO t]
-z_tto_univ m_mul z = [TTO t m i | m <- [1,m_mul], i <- [False,True], t <- z_univ z]
+z_tto_univ :: Integral t => t -> Z t -> [Tto t]
+z_tto_univ m_mul z = [Tto t m i | m <- [1,m_mul], i <- [False,True], t <- z_univ z]
 
--- | Apply TTO to pitch-class.
+-- | Apply Tto to pitch-class.
 --
 -- > map (z_tto_f z12 (tto_parse 5 "T1M")) [0,1,2,3] == [1,6,11,4]
-z_tto_f :: Integral t => Z t -> TTO t -> (t -> t)
-z_tto_f z (TTO t m i) =
+z_tto_f :: Integral t => Z t -> Tto t -> (t -> t)
+z_tto_f z (Tto t m i) =
     let i_f = if i then z_negate z else id
         m_f = if m == 1 then id else z_mul z m
         t_f = if t > 0 then z_add z t else id
@@ -69,18 +69,18 @@ z_tto_f z (TTO t m i) =
 -- | 'nub' of 'sort' of 'z_tto_f'.  (nub because M may be 0).
 --
 -- > z_tto_apply z12 (tto_parse 5 "T1M") [0,1,2,3] == [1,4,6,11]
-z_tto_apply :: Integral t => Z t -> TTO t -> [t] -> [t]
+z_tto_apply :: Integral t => Z t -> Tto t -> [t] -> [t]
 z_tto_apply z o = nub . sort . map (z_tto_f z o)
 
--- | Find 'TTO's that map pc-set /x/ to pc-set /y/ given /m/ and /z/.
+-- | Find 'Tto's that map pc-set /x/ to pc-set /y/ given /m/ and /z/.
 --
 -- > map tto_pp (z_tto_rel 5 z12 [0,1,2,3] [1,4,6,11]) == ["T1M","T4MI"]
-z_tto_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [TTO t]
+z_tto_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [Tto t]
 z_tto_rel m z x y =
   let f o = if z_tto_apply z o x == y then Just o else Nothing
   in mapMaybe f (z_tto_univ m z)
 
--- * PLAIN
+-- * Plain
 
 -- | 'nub' of 'sort' of 'z_mod' of /z/.
 --
@@ -122,7 +122,7 @@ z_tto_mn z n = sort . map (z_mul z n)
 z_tto_m5 :: Integral i => Z i -> [i] -> [i]
 z_tto_m5 z = z_tto_mn z 5
 
--- * SEQUENCE
+-- * Sequence
 
 -- | T-related sets of /p/.
 z_tto_t_related_seq :: Integral i => Z i -> [i] -> [[i]]

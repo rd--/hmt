@@ -11,8 +11,8 @@ import qualified Music.Theory.Set.List as T {- hmt -}
 import qualified Music.Theory.Tuple as T {- hmt -}
 import Music.Theory.Z
 import Music.Theory.Z.Forte_1973
-import Music.Theory.Z.SRO
-import Music.Theory.Z.TTO
+import Music.Theory.Z.Sro
+import Music.Theory.Z.Tto
 
 -- | Cardinality filter
 --
@@ -360,7 +360,7 @@ pci z i p =
 > map tto_pp (rs 5 z12 [0,1,2,3] [6,4,1,11]) == ["T1M","T4MI"]
 
 -}
-rs :: Integral t => t -> Z t -> [t] -> [t] -> [TTO t]
+rs :: Integral t => t -> Z t -> [t] -> [t] -> [Tto t]
 rs m z p q = z_tto_rel m z (T.set p) (T.set q)
 
 {- | Relate segments.
@@ -381,7 +381,7 @@ rs m z p q = z_tto_rel m z (T.set p) (T.set q)
 > rsg 5 z12 [0,1,2,3] [11,6,1,4] == sros "r1T4MI r1RT1M"
 
 -}
-rsg :: Integral i => i -> Z i -> [i] -> [i] -> [SRO i]
+rsg :: Integral i => i -> Z i -> [i] -> [i] -> [Sro i]
 rsg = z_sro_rel
 
 -- | Subsets.
@@ -416,13 +416,13 @@ si_hdr =
     ,"complement"
     ,"multiplication-by-five-transform"]
 
--- | (PCSET,TTO,FORTE-PRIME)
-type SI i = ([i],TTO i,[i])
+-- | (Pcset,Tto,Forte-Prime)
+type Si i = ([i],Tto i,[i])
 
 -- | Calculator for si.
 --
 -- > si_calc [0,5,3,11]
-si_calc :: Integral i => [i] -> (SI i,[i],[Int],SI i,SI i)
+si_calc :: Integral i => [i] -> (Si i,[i],[Int],Si i,Si i)
 si_calc p =
     let n = length p
         p_icv = fromIntegral n : z_icv z12 p
@@ -516,13 +516,13 @@ sra z = map (z_sro_tn_to z 0) . T.rotations
 >>> echo 024579 | pct sro RT4I
 79B024
 
-> sro (Z.SRO 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
+> sro (Z.Sro 0 True 4 False True) [0,2,4,5,7,9] == [7,9,11,0,2,4]
 
 >>> echo 156 | pct sro T4I
 3BA
 
 > sro (Z.sro_parse "T4I") [1,5,6] == [3,11,10]
-> sro (Z.SRO 0 False 4 False True) [1,5,6] == [3,11,10]
+> sro (Z.Sro 0 False 4 False True) [1,5,6] == [3,11,10]
 
 >>> echo 156 | pct sro T4  | pct sro T0I
 732
@@ -535,7 +535,7 @@ sra z = map (z_sro_tn_to z 0) . T.rotations
 > sro (Z.sro_parse "RT4I") [0,2,4,5,7,9] == [7,9,11,0,2,4]
 
 -}
-sro :: Integral i => Z i -> SRO i -> [i] -> [i]
+sro :: Integral i => Z i -> Sro i -> [i] -> [i]
 sro = z_sro_apply
 
 {- | tmatrix

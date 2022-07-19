@@ -98,8 +98,8 @@ interval_semitones (Interval ty qu dir oct) =
 
 -- | Determine 'Interval' between two 'Pitch'es.
 --
--- > interval (Pitch C Sharp 4) (Pitch D Flat 4) == Interval Second Diminished EQ 0
--- > interval (Pitch C Sharp 4) (Pitch E Sharp 5) == Interval Third Major LT 1
+-- > interval (T.Pitch T.C T.Sharp 4) (T.Pitch T.D T.Flat 4) == Interval Second Diminished EQ 0
+-- > interval (T.Pitch T.C T.Sharp 4) (T.Pitch T.E T.Sharp 5) == Interval Third Major LT 1
 interval :: T.Pitch -> T.Pitch -> Interval
 interval p1 p2 =
     let c = compare p1 p2
@@ -109,7 +109,7 @@ interval p1 p2 =
         p2' = T.pitch_to_pc p2
         st = (p2' - p1') `mod` 12
         ty = interval_ty n1 n2
-        (Just qu) = interval_q ty (fromIntegral st)
+        qu = fromMaybe (error "interval?") (interval_q ty (fromIntegral st))
         o_a = if n1 > n2 then -1 else 0
     in case c of
          GT -> (interval p2 p1) { interval_direction = GT }

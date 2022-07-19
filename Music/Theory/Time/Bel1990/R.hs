@@ -30,10 +30,8 @@ import qualified Music.Theory.Show as T
 -- * Bel
 
 -- | Types of 'Par' nodes.
-data Par_Mode = Par_Left | Par_Right
-              | Par_Min | Par_Max
-              | Par_None
-              deriving (Eq,Show)
+data Par_Mode = Par_Left | Par_Right | Par_Min | Par_Max | Par_None
+  deriving (Eq, Show)
 
 -- | The different 'Par' modes are indicated by bracket types.
 par_mode_brackets :: Par_Mode -> (String,String)
@@ -64,15 +62,14 @@ bel_brackets_match (open,close) =
       ('[',']') -> True
       _ -> False
 
--- | Tempo is rational.  The duration of a 'Term' is the reciprocal of
--- the 'Tempo' that is in place at the 'Term'.
+{- | Tempo is rational.
+The duration of a 'Term' is the reciprocal of the 'Tempo' that is in place at the 'Term'.
+-}
 type Tempo = Rational
 
 -- | Terms are the leaf nodes of the temporal structure.
-data Term a = Value a
-            | Rest
-            | Continue
-           deriving (Eq,Show)
+data Term a = Value a | Rest | Continue
+  deriving (Eq,Show)
 
 -- | Value of Term, else Nothing
 term_value :: Term t -> Maybe t
@@ -82,12 +79,13 @@ term_value t =
     _ -> Nothing
 
 -- | Recursive temporal structure.
-data Bel a = Node (Term a) -- ^ Leaf node
-           | Iso (Bel a) -- ^ Isolate
-           | Seq (Bel a) (Bel a) -- ^ Sequence
-           | Par Par_Mode (Bel a) (Bel a) -- ^ Parallel
-           | Mul Tempo -- ^ Tempo multiplier
-           deriving (Eq,Show)
+data Bel a =
+  Node (Term a) -- ^ Leaf node
+  | Iso (Bel a) -- ^ Isolate
+  | Seq (Bel a) (Bel a) -- ^ Sequence
+  | Par Par_Mode (Bel a) (Bel a) -- ^ Parallel
+  | Mul Tempo -- ^ Tempo multiplier
+  deriving (Eq,Show)
 
 -- | Given a Par mode, generate either: 1. an Iso, 2. a Par, 3. a series of nested Par.
 par_of :: Par_Mode -> [Bel a] -> Bel a
@@ -99,7 +97,7 @@ par_of m l =
     e : l' -> Par m e (par_of m l')
 
 {- | Pretty printer for 'Bel', given pretty printer for the term type.
-     Note this does not write nested Par nodes in their simplified form.
+Note this does not write nested Par nodes in their simplified form.
 -}
 bel_pp :: (a -> String) -> Bel a -> String
 bel_pp f b =
@@ -118,13 +116,14 @@ bel_pp f b =
 bel_char_pp :: Bel Char -> String
 bel_char_pp = bel_pp return
 
--- | Analyse a Par node giving (duration,LHS-tempo-*,RHS-tempo-*).
---
--- > par_analyse 1 Par_Left (nseq "cd") (nseq "efg") == (2,1,3/2)
--- > par_analyse 1 Par_Right (nseq "cd") (nseq "efg") == (3,2/3,1)
--- > par_analyse 1 Par_Min (nseq "cd") (nseq "efg") == (2,1,3/2)
--- > par_analyse 1 Par_Max (nseq "cd") (nseq "efg") == (3,2/3,1)
--- > par_analyse 1 Par_None (nseq "cd") (nseq "efg") == (3,1,1)
+{- | Analyse a Par node giving (duration,LHS-tempo-*,RHS-tempo-*).
+
+> par_analyse 1 Par_Left (nseq "cd") (nseq "efg") == (2,1,3/2)
+> par_analyse 1 Par_Right (nseq "cd") (nseq "efg") == (3,2/3,1)
+> par_analyse 1 Par_Min (nseq "cd") (nseq "efg") == (2,1,3/2)
+> par_analyse 1 Par_Max (nseq "cd") (nseq "efg") == (3,2/3,1)
+> par_analyse 1 Par_None (nseq "cd") (nseq "efg") == (3,1,1)
+-}
 par_analyse :: Tempo -> Par_Mode -> Bel a -> Bel a -> (Rational,Rational,Rational)
 par_analyse t m p q =
     let (_,d_p) = bel_tdur t p
@@ -164,14 +163,17 @@ bel_dur t = snd . bel_tdur t
 -- | Time point.
 type Time = Rational
 
--- | Voices are named as a sequence of left and right directions
--- within nested 'Par' structures.
+{- | Voices are named as a sequence of left and right directions within nested 'Par' structures.
+l is left and r is right.
+-}
 type Voice = [Char]
 
--- | Linear state.  'Time' is the start time of the term, 'Tempo' is
--- the active tempo & therefore the reciprocal of the duration,
--- 'Voice' is the part label.
-type L_St = (Time,Tempo,Voice)
+{- | Linear state.
+'Time' is the start time of the term.
+'Tempo' is the active tempo & therefore the reciprocal of the duration.
+'Voice' is the part label.
+-}
+type L_St = (Time, Tempo, Voice)
 
 -- | Linear term.
 type L_Term a = (L_St,Term a)
@@ -249,10 +251,11 @@ lbel_normalise_multiplier b =
 lbel_normalise :: L_Bel a -> L_Bel a
 lbel_normalise b = lbel_tempo_mul (lbel_normalise_multiplier b) b
 
--- | All leftmost voices are re-written to the last non-left turning point.
---
--- > map voice_normalise ["","l","ll","lll"] == replicate 4 ""
--- > voice_normalise "lllrlrl" == "rlrl"
+{- | All leftmost voices are re-written to the last non-left turning point.
+
+> map voice_normalise ["","l","ll","lll"] == replicate 4 ""
+> voice_normalise "lllrlrl" == "rlrl"
+-}
 voice_normalise :: Voice -> Voice
 voice_normalise = dropWhile (== 'l')
 
@@ -320,10 +323,11 @@ bel_ascii_pr = putStrLn . ('\n' :) . bel_ascii True
 (~>) :: Bel a -> Bel a -> Bel a
 p ~> q = Seq p q
 
--- | 'foldl1' of 'Seq'.
---
--- > lseq [Node Rest] == Node Rest
--- > lseq [Node Rest,Node Continue] == Seq (Node Rest) (Node Continue)
+{- | 'foldl1' of 'Seq'.
+
+> lseq [Node Rest] == Node Rest
+> lseq [Node Rest,Node Continue] == Seq (Node Rest) (Node Continue)
+-}
 lseq :: [Bel a] -> Bel a
 lseq = foldl1 Seq
 
@@ -360,9 +364,10 @@ nrests n = lseq (genericReplicate n rest)
 bel_parse_pp_ident :: String -> Bool
 bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 
--- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
---
--- > bel_ascii_pp "{i{ab,c[d,oh]e,sr{p,qr}},{jk,ghjkj}}"
+{- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
+
+> bel_ascii_pp "{i{ab,c[d,oh]e,sr{p,qr}},{jk,ghjkj}}"
+-}
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
   let p = bel_char_parse s

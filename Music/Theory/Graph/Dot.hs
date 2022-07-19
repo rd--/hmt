@@ -13,7 +13,7 @@ import qualified Music.Theory.Graph.Type as T {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
 
-import qualified Music.Theory.Graph.FGL as T {- hmt -}
+import qualified Music.Theory.Graph.Fgl as T {- hmt -}
 
 -- * Util
 

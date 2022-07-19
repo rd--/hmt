@@ -15,7 +15,7 @@ import qualified Music.Theory.Tuple as T {- hmt-base -}
 
 import qualified Music.Theory.Array.Direction as T {- hmt -}
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
-import qualified Music.Theory.Graph.FGL as T {- hmt -}
+import qualified Music.Theory.Graph.Fgl as T {- hmt -}
 
 gen_graph :: Ord v => [T.Dot_Attr] -> T.Graph_Pp v e -> [T.Edge_Lbl v e] -> [String]
 gen_graph opt pp es = T.fgl_to_udot opt pp (T.g_from_edges_l es)

@@ -1,5 +1,5 @@
 -- | Serial (ordered) pitch-class operations on 'Z'.
-module Music.Theory.Z.SRO where
+module Music.Theory.Z.Sro where
 
 import Data.List {- base -}
 
@@ -11,7 +11,7 @@ import qualified Music.Theory.Parse as Parse {- hmt -}
 import Music.Theory.Z
 
 -- | Serial operator,of the form rRTMI.
-data SRO t = SRO {sro_r :: Int
+data Sro t = Sro {sro_r :: Int
                  ,sro_R :: Bool
                  ,sro_T :: t
                  ,sro_M :: t -- 1 5
@@ -19,16 +19,16 @@ data SRO t = SRO {sro_r :: Int
              deriving (Eq,Show)
 
 -- | Printer in 'rnRTnMI' form.
-sro_pp :: (Show t,Eq t,Num t) => SRO t -> String
-sro_pp (SRO rN r tN m i) =
+sro_pp :: (Show t,Eq t,Num t) => Sro t -> String
+sro_pp (Sro rN r tN m i) =
     concat [if rN /= 0 then 'r' : show rN else ""
            ,if r then "R" else ""
            ,'T' : show tN
            ,if m == 5 then "M" else if m == 1 then "" else error "sro_pp: M?"
            ,if i then "I" else ""]
 
--- | Parser for SRO.
-p_sro :: Integral t => t -> Parse.P (SRO t)
+-- | Parser for Sro.
+p_sro :: Integral t => t -> Parse.P (Sro t)
 p_sro m_mul = do
   let rot = P.option 0 (P.char 'r' >> Parse.parse_int)
   r <- rot
@@ -38,12 +38,12 @@ p_sro m_mul = do
   m <- Parse.is_char 'M'
   i <- Parse.is_char 'I'
   P.eof
-  return (SRO r r' t (if m then m_mul else 1) i)
+  return (Sro r r' t (if m then m_mul else 1) i)
 
 -- | Parse a Morris format serial operator descriptor.
 --
--- > sro_parse 5 "r2RT3MI" == SRO 2 True 3 5 True
-sro_parse :: Integral i => i -> String -> SRO i
+-- > sro_parse 5 "r2RT3MI" == Sro 2 True 3 5 True
+sro_parse :: Integral i => i -> String -> Sro i
 sro_parse m =
     either (\e -> error ("sro_parse failed\n" ++ show e)) id .
     P.parse (p_sro m) ""
@@ -54,46 +54,46 @@ sro_parse m =
 --
 -- > let u = z_sro_univ 3 5 z12
 -- > zip (map sro_pp u) (map (\o -> z_sro_apply z12 o [0,1,3]) u)
-z_sro_univ :: Integral i => Int -> i -> Z i -> [SRO i]
+z_sro_univ :: Integral i => Int -> i -> Z i -> [Sro i]
 z_sro_univ n_rot m_mul z =
-    [SRO r r' t m i |
+    [Sro r r' t m i |
      r <- [0 .. n_rot - 1],
      r' <- [False,True],
      t <- z_univ z,
      m <- [1,m_mul],
      i <- [False,True]]
 
--- | The set of transposition 'SRO's.
-z_sro_Tn :: Integral i => Z i -> [SRO i]
-z_sro_Tn z = [SRO 0 False n 1 False | n <- z_univ z]
+-- | The set of transposition 'Sro's.
+z_sro_Tn :: Integral i => Z i -> [Sro i]
+z_sro_Tn z = [Sro 0 False n 1 False | n <- z_univ z]
 
--- | The set of transposition and inversion 'SRO's.
-z_sro_TnI :: Integral i => Z i -> [SRO i]
+-- | The set of transposition and inversion 'Sro's.
+z_sro_TnI :: Integral i => Z i -> [Sro i]
 z_sro_TnI z =
-    [SRO 0 False n 1 i |
+    [Sro 0 False n 1 i |
      n <- z_univ z,
      i <- [False,True]]
 
--- | The set of retrograde and transposition and inversion 'SRO's.
-z_sro_RTnI :: Integral i => Z i -> [SRO i]
+-- | The set of retrograde and transposition and inversion 'Sro's.
+z_sro_RTnI :: Integral i => Z i -> [Sro i]
 z_sro_RTnI z =
-    [SRO 0 r n 1 i |
+    [Sro 0 r n 1 i |
      r <- [True,False],
      n <- z_univ z,
      i <- [False,True]]
 
--- | The set of transposition, @M@ and inversion 'SRO's.
-z_sro_TnMI :: Integral i => i -> Z i -> [SRO i]
+-- | The set of transposition, @M@ and inversion 'Sro's.
+z_sro_TnMI :: Integral i => i -> Z i -> [Sro i]
 z_sro_TnMI m_mul z =
-    [SRO 0 False n m i |
+    [Sro 0 False n m i |
      n <- z_univ z,
      m <- [1,m_mul],
      i <- [True,False]]
 
--- | The set of retrograde,transposition,@M5@ and inversion 'SRO's.
-z_sro_RTnMI :: Integral i => i -> Z i -> [SRO i]
+-- | The set of retrograde,transposition,@M5@ and inversion 'Sro's.
+z_sro_RTnMI :: Integral i => i -> Z i -> [Sro i]
 z_sro_RTnMI m_mul z =
-    [SRO 0 r n m i |
+    [Sro 0 r n m i |
      r <- [True,False],
      n <- z_univ z,
      m <- [1,m_mul],
@@ -101,25 +101,25 @@ z_sro_RTnMI m_mul z =
 
 -- * Serial operations
 
--- | Apply SRO.
+-- | Apply Sro.
 --
--- > z_sro_apply z12 (SRO 1 True 1 5 False) [0,1,2,3] == [11,6,1,4]
--- > z_sro_apply z12 (SRO 1 False 4 5 True) [0,1,2,3] == [11,6,1,4]
-z_sro_apply :: Integral i => Z i -> SRO i -> [i] -> [i]
-z_sro_apply z (SRO r r' t m i) x =
+-- > z_sro_apply z12 (Sro 1 True 1 5 False) [0,1,2,3] == [11,6,1,4]
+-- > z_sro_apply z12 (Sro 1 False 4 5 True) [0,1,2,3] == [11,6,1,4]
+z_sro_apply :: Integral i => Z i -> Sro i -> [i] -> [i]
+z_sro_apply z (Sro r r' t m i) x =
     let x1 = if i then z_sro_invert z 0 x else x
         x2 = if m == 1 then x1 else z_sro_mn z m x1
         x3 = z_sro_tn z t x2
         x4 = if r' then reverse x3 else x3
     in List.rotate_left r x4
 
--- | Find 'SRO's that map /x/ to /y/ given /m/ and /z/.
+-- | Find 'Sro's that map /x/ to /y/ given /m/ and /z/.
 --
 -- > map sro_pp (z_sro_rel 5 z12 [0,1,2,3] [11,6,1,4]) == ["r1T4MI","r1RT1M"]
-z_sro_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [SRO t]
+z_sro_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [Sro t]
 z_sro_rel m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
 
--- * PLAIN
+-- * Plain
 
 -- | Transpose /p/ by /n/.
 --

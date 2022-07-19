@@ -16,7 +16,7 @@ import qualified Music.Theory.List as T {- hmt-base -}
 import qualified Music.Theory.Tuple as T {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
-import qualified Music.Theory.Graph.FGL as T {- hmt -}
+import qualified Music.Theory.Graph.Fgl as T {- hmt -}
 import qualified Music.Theory.Key as T {- hmt -}
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
 import qualified Music.Theory.Set.List as T {- hmt -}
@@ -24,8 +24,8 @@ import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as T {- hmt -}
 import qualified Music.Theory.Z as T {- hmt -}
 import qualified Music.Theory.Z.Forte_1973 as T {- hmt -}
-import qualified Music.Theory.Z.TTO as T {- hmt -}
-import qualified Music.Theory.Z.SRO as T {- hmt -}
+import qualified Music.Theory.Z.Tto as T {- hmt -}
+import qualified Music.Theory.Z.Sro as T {- hmt -}
 
 -- * Common
 
@@ -90,7 +90,7 @@ combinations2 p = [(i,j) | i <- p, j <- p, i < j]
 set_pp :: Show t => [t] -> String
 set_pp = intercalate "," . map show
 
-tto_rel_to :: Integral t => T.Z t -> [t] -> [t] -> [T.TTO t]
+tto_rel_to :: Integral t => T.Z t -> [t] -> [t] -> [T.Tto t]
 tto_rel_to z p q = T.z_tto_rel 5 z (T.set p) (T.set q)
 
 set_pp_tto_rel :: (Integral t, Show t) => T.Z t -> [t] -> [t] -> String
@@ -202,7 +202,7 @@ p14_eset =
 
 p14_mk_e :: [(Int, Int)] -> [(T.Key,T.Key)]
 p14_mk_e =
-  let pc_to_key m pc = let Just (n,a) = T.pc_to_note_alteration_ks pc in (n,a,m)
+  let pc_to_key m pc = let (n,a) = fromMaybe (error "p14_mk_e?") (T.pc_to_note_alteration_ks pc) in (n,a,m)
       e_lift (lhs,rhs) = (pc_to_key T.Major_Mode lhs,pc_to_key T.Minor_Mode rhs)
   in map e_lift
 
@@ -257,7 +257,7 @@ p14_gen_tonnetz_e n k =
         f _ = error "p14_gen_tonnetz_e"
     in mapMaybe f . T.combinations 2 . p14_gen_tonnetz_n n k
 
--- NEO-RIEMANNIAN TONNETTZ
+-- Neo-Riemannian Tonnettz
 p14_nrt_gr :: [String]
 p14_nrt_gr =
   let e = p14_gen_tonnetz_e 3 [7,9,16] [48]
@@ -425,15 +425,15 @@ p172_g3 =
   let m_set_pp_tto_rel = set_pp_tto_rel T.z12 [0,1,3,7] . m_get p172_nd_map
   in gen_graph_ul [("node:shape","box"),("edge:len","2.0")] m_set_pp_tto_rel p172_nd_e_set
 
--- | 'T.TTO' T/n/.
-tto_tn :: Integral t => t -> T.TTO t
-tto_tn n = T.TTO (T.z_mod T.z12 n) 1 False
+-- | 'T.Tto' T/n/.
+tto_tn :: Integral t => t -> T.Tto t
+tto_tn n = T.Tto (T.z_mod T.z12 n) 1 False
 
--- | 'Z.TTO' T/n/I.
-tto_tni :: Integral t => t -> T.TTO t
-tto_tni n = T.TTO (T.z_mod T.z12 n) 1 True
+-- | 'Z.Tto' T/n/I.
+tto_tni :: Integral t => t -> T.Tto t
+tto_tni n = T.Tto (T.z_mod T.z12 n) 1 True
 
-gen_tto_alt_seq :: Integral t => (t -> T.TTO t,t -> T.TTO t) -> Int -> t -> t -> t -> [T.TTO t]
+gen_tto_alt_seq :: Integral t => (t -> T.Tto t,t -> T.Tto t) -> Int -> t -> t -> t -> [T.Tto t]
 gen_tto_alt_seq (f,g) k n m x =
     let t = map f (take k [x,x + n ..])
         i = map g (take k [x + m,x + m + n ..])
@@ -444,14 +444,14 @@ gen_tto_alt_seq (f,g) k n m x =
 --
 -- > r = ["T0 T5I T3 T8I T6 T11I T9 T2I","T1 T6I T4 T9I T7 T0I T10 T3I"]
 -- > map (unwords . map T.tto_pp . gen_tni_seq 4 3 5) [0,1] == r
-gen_tni_seq :: Integral t => Int -> t -> t -> t -> [T.TTO t]
+gen_tni_seq :: Integral t => Int -> t -> t -> t -> [T.Tto t]
 gen_tni_seq = gen_tto_alt_seq (tto_tn,tto_tni)
 
 -- > putStrLn $ unlines $ map (unwords . map Z.tto_pp) c4
-p172_c4 :: [[T.TTO Int]]
+p172_c4 :: [[T.Tto Int]]
 p172_c4 = map (gen_tni_seq 3 4 9) [0 .. 3] ++ map (gen_tni_seq 2 6 11) [0 .. 5]
 
-tto_seq_edges :: (Show t,Num t,Eq t) => [[T.TTO t]] -> [(String, String)]
+tto_seq_edges :: (Show t,Num t,Eq t) => [[T.Tto t]] -> [(String, String)]
 tto_seq_edges = nub . sort . concatMap (map T.t2_sort . adj_cyc . map T.tto_pp)
 
 p172_g4 :: [String]

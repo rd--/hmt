@@ -21,7 +21,7 @@ import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
-import qualified Music.Theory.Math.OEIS as OEIS {- hmt -}
+import qualified Music.Theory.Math.Oeis as OEIS {- hmt -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Set.List as Set {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}

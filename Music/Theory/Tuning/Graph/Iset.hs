@@ -1,18 +1,18 @@
 -- | Tuning graph with edges determined by interval set.
-module Music.Theory.Tuning.Graph.ISET where
+module Music.Theory.Tuning.Graph.Iset where
 
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Data.Graph.Inductive.Graph as FGL {- fgl -}
-import qualified Data.Graph.Inductive.PatriciaTree as FGL {- fgl -}
+import qualified Data.Graph.Inductive.Graph as Fgl {- fgl -}
+import qualified Data.Graph.Inductive.PatriciaTree as Fgl {- fgl -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt-base -}
 import qualified Music.Theory.List as T {- hmt-base -}
 import qualified Music.Theory.Show as T {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as T {- hmt -}
-import qualified Music.Theory.Graph.FGL as T {- hmt -}
+import qualified Music.Theory.Graph.Fgl as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as Euler {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
@@ -105,17 +105,17 @@ scl_to_dot (iset,k,attr,v_attr) nm = do
   let gr = mk_graph_scl iset sc
   return (g_to_dot k attr v_attr gr)
 
--- * FGL
+-- * Fgl
 
-graph_to_fgl :: G -> FGL.Gr R R
+graph_to_fgl :: G -> Fgl.Gr R R
 graph_to_fgl (v,e) =
   let fgl_v = zip [0..] v
       r_to_v :: R -> Int
       r_to_v x = fromJust (T.reverse_lookup x fgl_v)
       fgl_e = map (\(p,q) -> (r_to_v p,r_to_v q,edj_r (p,q))) e
-  in FGL.mkGraph fgl_v fgl_e
+  in Fgl.mkGraph fgl_v fgl_e
 
-mk_graph_fgl :: [R] -> [R] -> FGL.Gr R R
+mk_graph_fgl :: [R] -> [R] -> Fgl.Gr R R
 mk_graph_fgl iset = graph_to_fgl . mk_graph iset
 
 {-

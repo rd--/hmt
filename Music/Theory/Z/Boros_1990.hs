@@ -15,13 +15,13 @@ import qualified Data.Graph.Inductive.Query.BFS as G {- fgl -}
 import qualified Music.Theory.Array.Text as T
 import qualified Music.Theory.Combinations as T
 import qualified Music.Theory.Graph.Dot as T
-import qualified Music.Theory.Graph.FGL as T
+import qualified Music.Theory.Graph.Fgl as T
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
 import qualified Music.Theory.Tuple as T
 import qualified Music.Theory.Z as T
 import qualified Music.Theory.Z.Forte_1973 as T
-import qualified Music.Theory.Z.TTO as T
+import qualified Music.Theory.Z.Tto as T
 
 -- * Util
 
@@ -39,7 +39,7 @@ elem_by f e = any (f e)
 
 -- * Tto
 
-tto_tni_univ :: Integral i => [T.TTO i]
+tto_tni_univ :: Integral i => [T.Tto i]
 tto_tni_univ = filter ((== 1) . T.tto_M) (T.z_tto_univ 5 T.z12)
 
 all_tn :: Integral i => [i] -> [[i]]
@@ -102,10 +102,10 @@ is_ath p = T.z_forte_prime T.z12 p == ath
 ath_univ :: [Pcset]
 ath_univ = uniq_tni ath
 
--- | Calculate 'T.TTO' of pcset, which must be an instance of 'ath'.
+-- | Calculate 'T.Tto' of pcset, which must be an instance of 'ath'.
 --
--- > ath_tni [1,2,3,7,8,11] == T.TTO 3 1 True
-ath_tni :: Pcset -> T.TTO Pc
+-- > ath_tni [1,2,3,7,8,11] == T.Tto 3 1 True
+ath_tni :: Pcset -> T.Tto Pc
 ath_tni = singular "ath_tni" . filter ((== 1) . T.tto_M) . T.z_tto_rel 5 T.z12 ath
 
 -- | Give label for instance of 'ath', prime forms are written H and inversions h.

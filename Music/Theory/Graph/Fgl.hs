@@ -1,5 +1,5 @@
 -- | Graph (fgl) functions.
-module Music.Theory.Graph.FGL where
+module Music.Theory.Graph.Fgl where
 
 import Control.Monad {- base -}
 import Data.List {- base -}

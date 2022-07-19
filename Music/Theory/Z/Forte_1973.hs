@@ -11,7 +11,7 @@ import qualified Music.Theory.Set.List as S {- hmt -}
 
 import Music.Theory.Unicode {- hmt -}
 import Music.Theory.Z {- hmt -}
-import Music.Theory.Z.SRO {- hmt -}
+import Music.Theory.Z.Sro {- hmt -}
 
 -- * Prime form
 

@@ -11,7 +11,7 @@ import Data.Ratio {- base -}
 import qualified Music.Theory.List as List
 import Music.Theory.Z
 import qualified Music.Theory.Z.Forte_1973 as Forte
-import qualified Music.Theory.Z.SRO as SRO
+import qualified Music.Theory.Z.Sro as Sro
 
 type Z12 = Int8
 
@@ -20,7 +20,7 @@ type Z12 = Int8
 -- > map inv_sym (Forte.scs_n 2) == [True,True,True,True,True,True]
 -- > map (fromEnum.inv_sym) (Forte.scs_n 3) == [1,0,0,0,0,1,0,0,1,1,0,1]
 inv_sym :: [Z12] -> Bool
-inv_sym x = x `elem` map (\i -> sort (SRO.z_sro_tn z12 i (SRO.z_sro_invert z12 0 x))) [0..11]
+inv_sym x = x `elem` map (\i -> sort (Sro.z_sro_tn z12 i (Sro.z_sro_invert z12 0 x))) [0..11]
 
 -- | If /p/ is not 'inv_sym' then @(p,invert 0 p)@ else 'Nothing'.
 --
@@ -30,7 +30,7 @@ sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
     if inv_sym p
     then Nothing
-    else Just (p,Forte.z_t_prime z12 (SRO.z_sro_invert z12 0 p))
+    else Just (p,Forte.z_t_prime z12 (Sro.z_sro_invert z12 0 p))
 
 -- | Transpositional equivalence variant of Forte's 'sc_table'.  The
 -- inversionally related classes are distinguished by labels @A@ and
@@ -80,7 +80,7 @@ t_scs_n n = filter ((== n) . genericLength) t_scs
 -- > t_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4]]
 -- > t_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6]]
 t_subsets :: [Z12] -> [Z12] -> [[Z12]]
-t_subsets x a = filter (`List.is_subset` x) (map sort (SRO.z_sro_t_related z12 a))
+t_subsets x a = filter (`List.is_subset` x) (map sort (Sro.z_sro_t_related z12 a))
 
 -- | T\/I-related /q/ that are subsets of /p/.
 --
@@ -88,7 +88,7 @@ t_subsets x a = filter (`List.is_subset` x) (map sort (SRO.z_sro_t_related z12 a
 -- > ti_subsets [0,1,2,3,4] [0,1,4] == [[0,1,4],[0,3,4]]
 -- > ti_subsets [0,2,3,6,7] [0,1,4] == [[2,3,6],[3,6,7]]
 ti_subsets :: [Z12] -> [Z12] -> [[Z12]]
-ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (SRO.z_sro_ti_related z12 a)))
+ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (Sro.z_sro_ti_related z12 a)))
 
 -- | Trivial run length encoder.
 --

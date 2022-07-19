@@ -11,7 +11,7 @@ import Data.Word {- base -}
 
 import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Z as Z {- hmt -}
-import qualified Music.Theory.Z.SRO as SRO {- hmt -}
+import qualified Music.Theory.Z.Sro as Sro {- hmt -}
 
 -- | Coding.
 type Code = Word64
@@ -79,7 +79,7 @@ set_to_bit_array z p =
 -- | 'bit_array_to_code' of 'set_to_bit_array'.
 --
 -- > set_to_code 12 [0,2,3,5] == 2880
--- > map (set_to_code 12) (SRO.z_sro_ti_related (flip mod 12) [0,2,3,5])
+-- > map (set_to_code 12) (Sro.z_sro_ti_related (flip mod 12) [0,2,3,5])
 set_to_code :: Integral i => i -> [i] -> Code
 set_to_code z = bit_array_to_code . set_to_bit_array z
 
@@ -92,7 +92,7 @@ bit_array_is_prime a =
         p = bit_array_to_set a
         n = length a
         z = Z.Z n
-        u = maximum (map (set_to_code n) (SRO.z_sro_ti_related z p))
+        u = maximum (map (set_to_code n) (Sro.z_sro_ti_related z p))
     in c == u
 
 -- | The augmentation rule adds @1@ in each empty slot at end of array.
@@ -163,6 +163,6 @@ set_decode z n =
 -- > Music.Theory.Z.Rahn_1980.rahn_prime Z.z12 [0,1,3,6,8,9] == [0,2,3,6,7,9]
 set_encode_prime :: Integral i => Z.Z i -> [i] -> [i]
 set_encode_prime z s =
-    let t = map (\x -> SRO.z_sro_tn z x s) (Z.z_univ z)
-        c = t ++ map (SRO.z_sro_invert z 0) t
+    let t = map (\x -> Sro.z_sro_tn z x s) (Z.z_univ z)
+        c = t ++ map (Sro.z_sro_invert z 0) t
     in set_decode (fromIntegral (Z.z_modulus z)) (minimum (map set_encode c))

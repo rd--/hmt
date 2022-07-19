@@ -70,7 +70,7 @@ Library
                    Music.Theory.Gamelan
                    Music.Theory.Graph.Deacon_1934
                    Music.Theory.Graph.Dot
-                   Music.Theory.Graph.FGL
+                   Music.Theory.Graph.Fgl
                    Music.Theory.Graph.Johnson_2014
                    Music.Theory.Instrument.Choir
                    Music.Theory.Instrument.Names
@@ -80,9 +80,9 @@ Library
                    Music.Theory.Interval.Spelling
                    Music.Theory.Key
                    Music.Theory.List.Logic
-                   Music.Theory.Math.Convert.FX
+                   Music.Theory.Math.Convert.Fx
                    Music.Theory.Math.Nichomachus
-                   Music.Theory.Math.OEIS
+                   Music.Theory.Math.Oeis
                    Music.Theory.Math.Prime
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
@@ -125,7 +125,7 @@ Library
                    Music.Theory.Tuning.Et
                    Music.Theory.Tuning.Gann_1993
                    Music.Theory.Tuning.Graph.Euler
-                   Music.Theory.Tuning.Graph.ISET
+                   Music.Theory.Tuning.Graph.Iset
                    Music.Theory.Tuning.Hs
                    Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Meyer_1929
@@ -139,7 +139,7 @@ Library
                    Music.Theory.Tuning.Scala
                    Music.Theory.Tuning.Scala.Functions
                    Music.Theory.Tuning.Scala.Interval
-                   Music.Theory.Tuning.Scala.KBM
+                   Music.Theory.Tuning.Scala.Kbm
                    Music.Theory.Tuning.Scala.Meta
                    Music.Theory.Tuning.Scala.Mode
                    Music.Theory.Tuning.Sethares_1994
@@ -162,8 +162,8 @@ Library
                    Music.Theory.Z.Morris_1987.Parse
                    Music.Theory.Z.Rahn_1980
                    Music.Theory.Z.Read_1978
-                   Music.Theory.Z.TTO
-                   Music.Theory.Z.SRO
+                   Music.Theory.Z.Tto
+                   Music.Theory.Z.Sro
 
 Source-Repository  head
   Type:            git

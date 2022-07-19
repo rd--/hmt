@@ -67,8 +67,8 @@ key_parallel (n,a,m) = (n,a,mode_parallel m)
 -- | Transposition of 'Key'.
 key_transpose :: Key -> Int -> Key
 key_transpose (n,a,m) x =
-    let Just pc = T.note_alteration_to_pc (n,a)
-        Just (n',a') = T.pc_to_note_alteration_ks ((pc + x) `mod` 12)
+    let pc = fromMaybe (error "key_transpose?") (T.note_alteration_to_pc (n,a))
+        (n',a') = fromMaybe (error "key_transpose?") (T.pc_to_note_alteration_ks ((pc + x) `mod` 12))
     in (n',a',m)
 
 -- | Relative key (ie. 'mode_parallel' with the same number of and type of alterations.

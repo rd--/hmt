@@ -1,5 +1,5 @@
 -- | The On-Line Encyclopedia of Integer Sequences, <http://oeis.org/>
-module Music.Theory.Math.OEIS where
+module Music.Theory.Math.Oeis where
 
 import Data.Bits {- base -}
 import Data.Char {- base -}
