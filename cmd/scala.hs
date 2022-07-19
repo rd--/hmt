@@ -9,15 +9,15 @@ import qualified Music.Theory.List as T {- hmt-base -}
 import qualified Music.Theory.Read as T {- hmt-base -}
 import qualified Music.Theory.Show as T {- hmt-base -}
 
-import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
+import qualified Music.Theory.Array.Csv.Midi.Mnd as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.ET as T {- hmt -}
+import qualified Music.Theory.Tuning.Et as T {- hmt -}
 import qualified Music.Theory.Tuning.Midi as T {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
-import qualified Music.Theory.Tuning.Scala.KBM as KBM {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Kbm as Kbm {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Functions as Functions {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
@@ -88,7 +88,7 @@ stat_by_name lm nm = do
 rng_enum :: Enum t => (t,t) -> [t]
 rng_enum (l,r) = [l .. r]
 
-cps_tbl :: String -> T.MNN_CPS_Table -> (T.Midi,T.Midi) -> IO ()
+cps_tbl :: String -> T.Mnn_Cps_Table -> (T.Midi,T.Midi) -> IO ()
 cps_tbl fmt tbl mnn_rng = do
   let cps_pp = T.double_pp 2
       cents_pp = T.double_pp 1
@@ -200,10 +200,10 @@ intnam_search txt = do
 kbm_tbl :: String -> String -> String -> IO ()
 kbm_tbl ty scl_nm kbm_nm = do
   scl <- Scala.scl_load scl_nm
-  kbm <- KBM.kbm_load kbm_nm
+  kbm <- Kbm.kbm_load kbm_nm
   let tbl = case ty of
-        "cps" -> KBM.kbm_cps_tbl kbm scl
-        "fmidi" -> KBM.kbm_fmidi_tbl kbm scl
+        "cps" -> Kbm.kbm_cps_tbl kbm scl
+        "fmidi" -> Kbm.kbm_fmidi_tbl kbm scl
         _ -> error "kbm_tbl: unknown type"
       fmt (i,j) = printf "%d,%.4f" i j
       txt = unlines (map fmt tbl)

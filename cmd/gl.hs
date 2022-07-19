@@ -15,30 +15,30 @@ import Graphics.UI.GLUT {- GLUT -}
 
 import qualified Data.IntMap.Strict as Map {- containers -}
 
-import qualified Data.CG.Minus.Geometry.OFF as OFF {- hcg-minus -}
-import Data.CG.Minus.Plain {- hcg-minus -}
+import qualified Data.Cg.Minus.Geometry.Off as Off {- hcg-minus -}
+import Data.Cg.Minus.Plain {- hcg-minus -}
 
-import qualified Sound.SC3.Data.Geometry.OBJ as OBJ {- hsc3-data -}
+import qualified Sound.Sc3.Data.Geometry.Obj as Obj {- hsc3-data -}
 
 import qualified Music.Theory.Graph.Type as T {- hmt-base -}
 import qualified Music.Theory.Opt as Opt {- hmt-base -}
 
--- * GEOMETRY
+-- * Geometry
 
 type R = GLfloat
 
--- * GR/OBJ-OFF
+-- * Gr/Obj-Off
 
-type GR = T.LBL (V4 R) ()
+type GR = T.Lbl (V4 R) ()
 
 f64_to_r :: Double -> R
 f64_to_r = realToFrac
 
--- | If OBJ file has no edges and if CH is true then make edges for all adjacent vertices.
+-- | If Obj file has no edges and if CH is true then make edges for all adjacent vertices.
 --   If CH is true and there are edges, CH is ignored, allowing mixed sets to be loaded by setting CH.
 obj_load :: Bool -> FilePath -> IO GR
 obj_load ch fn = do
-  (v,e) <- OBJ.obj_load_lbl_ fn
+  (v,e) <- Obj.obj_load_lbl_ fn
   let f (i,(x,y,z)) = (i,(f64_to_r x,f64_to_r y,f64_to_r z,0))
   case (ch,null e) of
     (True,True) -> return (map f v,zip (map (\i -> (i,i + 1)) [0 .. length v - 2]) (repeat ()))
@@ -48,13 +48,13 @@ obj_load ch fn = do
 off_load :: FilePath -> IO GR
 off_load =
   let f (x,y,z) = (x,y,z,0)
-  in fmap OFF.off_graph . OFF.off_load_either (f,id)
+  in fmap Off.off_graph . Off.off_load_either (f,id)
 
 obj_off_load :: Bool -> FilePath -> IO GR
 obj_off_load ch fn =
   case takeExtension fn of
     ".obj" -> obj_load ch fn
-    ".off" -> if ch then error "CH AT OFF?" else off_load fn
+    ".off" -> if ch then error "CH AT Off?" else off_load fn
     _ -> error "obj_off_load: EXT?"
 
 gr_to_vsq :: GR -> [V4 R]
@@ -72,12 +72,12 @@ gr_load_set (ch,nrm) fn = do
   let c = (if nrm then v4_linlin_set (-1,1) else id) (concat v)
   return (chunksOf 16 c)  -- does sending vertices in chunks help?
 
--- * IOREF
+-- * Ioref
 
 withIORef :: IORef a -> (a -> IO ()) -> IO ()
 withIORef s f = readIORef s >>= f
 
--- * STATE
+-- * State
 
 -- | (zoom,rotation-(x,y,z),translation-(x,y,z),osd,prj)
 type State = (R,V3 R,V3 R,Bool,(String,V4 R -> V3 R))
@@ -120,7 +120,7 @@ set_prj_f p (s,r,t,o,_) = (s,r,t,o,p)
 set_prj :: IORef State -> (String,V4 R -> V3 R) -> IO ()
 set_prj s p = modifyIORef s (set_prj_f p)
 
--- * GL
+-- * Gl
 
 {-
 gl_with_time :: String -> IO x -> IO ()
@@ -225,11 +225,11 @@ timer_f dly = do
 gl_gr_obj :: (Bool,Bool) -> GLsizei -> Timeout -> [FilePath] -> IO ()
 gl_gr_obj opt sz dly fn = do
   ln <- gr_load_set opt fn
-  _ <- initialize "GR-OBJ-OFF" []
+  _ <- initialize "Gr-Obj-Off" []
   initialDisplayMode $= [RGBAMode,DoubleBuffered]
   initialWindowSize $= Size sz sz
   initialWindowPosition $= Position 0 0
-  _ <- createWindow "GL"
+  _ <- createWindow "Gl"
   gl_init
   s <- newIORef state_0
   displayCallback $= withIORef s (gl_draw ln)
@@ -242,7 +242,7 @@ cli_usg = ["obj-gr [opt] file-name..."]
 
 cli_opt :: [Opt.OptUsr]
 cli_opt =
-  [("chain","False","bool","OBJ is vertex sequence")
+  [("chain","False","bool","Obj is vertex sequence")
   ,("delay","100","int","timer delay (ms)")
   ,("normalise","False","bool","normalise vertex data to (-1,1)")
   ,("size","400","int","window size (px)")]

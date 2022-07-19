@@ -1,17 +1,17 @@
 import System.Environment {- base -}
 
-import qualified Sound.SC3.Data.Geometry.OBJ as OBJ {- hsc3-data -}
+import qualified Sound.Sc3.Data.Geometry.Obj as Obj {- hsc3-data -}
 
 cli_obj_to_v3_graph :: FilePath -> IO ()
 cli_obj_to_v3_graph obj_fn = do
-  g <- OBJ.obj_load_lbl_ obj_fn
+  g <- Obj.obj_load_lbl_ obj_fn
   putStrLn (show g)
 
 cli_v3_graph_to_obj :: Int -> FilePath -> IO ()
 cli_v3_graph_to_obj prec hs_fn = do
   txt <- readFile hs_fn
   let g = read txt
-  OBJ.obj_store_lbl_ prec "/dev/stdout" g
+  Obj.obj_store_lbl_ prec "/dev/stdout" g
 
 cli_obj_help :: [String]
 cli_obj_help =

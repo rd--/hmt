@@ -5,7 +5,7 @@ import System.Environment {- base -}
 import Music.Theory.Z {- hmt -}
 import Music.Theory.Z.Drape_1999 {- hmt -}
 import Music.Theory.Z.Forte_1973 {- hmt -}
-import Music.Theory.Z.SRO {- hmt -}
+import Music.Theory.Z.Sro {- hmt -}
 
 type Z12 = Int8
 
