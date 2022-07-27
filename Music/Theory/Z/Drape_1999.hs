@@ -427,7 +427,7 @@ si_calc p =
     let n = length p
         p_icv = fromIntegral n : z_icv z12 p
         gen_si x = let x_f = z_forte_prime z12 x
-                       x_o:_ = rs 5 z12 x_f x
+                       x_o = head (rs 5 z12 x_f x)
                    in (nub (sort x),x_o,x_f)
     in (gen_si p,p_icv,tics z12 p,gen_si (z_complement z12 p),gen_si (map (z_mul z12 5) p))
 

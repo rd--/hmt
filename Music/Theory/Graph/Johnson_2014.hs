@@ -407,7 +407,7 @@ p172_set_pp = set_pp . m_get p172_nd_map
 -- > (length c0,length c1) == (48,48)
 p172_all_cyc :: ([[Int]], [[Int]])
 p172_all_cyc =
-    let [a,b] = T.g_partition p172_gr
+    let (a, b) = T.firstSecond (T.g_partition p172_gr)
     in (L.observeAll (T.ug_hamiltonian_path_ml_0 a)
        ,L.observeAll (T.ug_hamiltonian_path_ml_0 b))
 

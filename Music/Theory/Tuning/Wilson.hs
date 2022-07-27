@@ -296,7 +296,7 @@ mos_seq :: (Ord b, Integral b) => b -> b -> [[b]]
 mos_seq p g =
   let step_f (i,j) = concatMap (\x -> if x == i + j then [i,j] else [x])
       recur_f x l = if null x then [l] else l : recur_f (tail x) (step_f (head x) l)
-      (i0,j0):r = mos p g
+      ((i0,j0), r) = List.headTail (mos p g)
   in recur_f r [i0,j0]
 
 mos_cell_pp :: (Integral i,Show i) => i -> String
@@ -375,27 +375,27 @@ r_normalise :: [Rational] -> [Rational]
 r_normalise = nub . sortOn Tuning.fold_ratio_to_octave_err
 
 -- | (ratio,multiplier,steps)
-type M_GEN = (Rational,Rational,Int)
+type M_Gen = (Rational,Rational,Int)
 
-m_gen_unfold :: M_GEN -> [Rational]
+m_gen_unfold :: M_Gen -> [Rational]
 m_gen_unfold (r,m,n) = take n (iterate (* m) r)
 
-m_gen_to_r :: [M_GEN] -> [Rational]
+m_gen_to_r :: [M_Gen] -> [Rational]
 m_gen_to_r = r_normalise . concatMap m_gen_unfold
 
 -- * M3-Gen
 
 -- | (ratio,M3-steps)
-type M3_GEN = (Rational,Int)
+type M3_Gen = (Rational,Int)
 
-m3_to_m :: M3_GEN -> M_GEN
+m3_to_m :: M3_Gen -> M_Gen
 m3_to_m (r,n) = (r,3,n)
 
 -- > map m3_gen_unfold [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
-m3_gen_unfold :: M3_GEN -> [Rational]
+m3_gen_unfold :: M3_Gen -> [Rational]
 m3_gen_unfold = m_gen_unfold . m3_to_m
 
-m3_gen_to_r :: [M3_GEN] -> [Rational]
+m3_gen_to_r :: [M3_Gen] -> [Rational]
 m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
 
 -- * Scala
@@ -417,10 +417,10 @@ ew_scl_find_r r =
 
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 
-ew_1357_3_gen :: [M3_GEN]
+ew_1357_3_gen :: [M3_Gen]
 ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 
-{- | P.3 7-limit {SCALA=NIL}
+{- | P.3 7-limit {Scala=nil}
 
 > db <- Scala.scl_load_db
 > ew_scl_find_r (1 : ew_1357_3_r) db
@@ -433,7 +433,7 @@ ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" (1 : ew_135
 
 -- * <http://anaphoria.com/earlylattices12.pdf>
 
-{- | P.7 11-limit {SCALA=NIL}
+{- | P.7 11-limit {Scala=nil}
 
 > ew_scl_find_r ew_el12_7_r db
 -}
@@ -443,7 +443,7 @@ ew_el12_7_r = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,
 ew_el12_7_scl :: Scala.Scale
 ew_el12_7_scl = r_to_scale "ew_el12_7" "EW, earlylattices12.pdf, P.7" ew_el12_7_r
 
-{- | P.9 7-limit {SCALA=wilson_class}
+{- | P.9 7-limit {Scala=wilson_class}
 
 > ew_scl_find_r ew_el12_9_r db
 -}
@@ -453,7 +453,7 @@ ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
 --ew_el12_9_scl :: Scala.Scale
 --ew_el12_9_scl = r_to_scale "ew_el12_9" "EW, earlylattices12.pdf, P.9" ew_el12_9_r
 
-{- | P.12 11-limit {SCALA=NIL}
+{- | P.12 11-limit {Scala=nil}
 
 > ew_scl_find_r ew_el12_12_r db
 -}
@@ -465,7 +465,7 @@ ew_el12_12_scl = r_to_scale "ew_el12_12" "EW, earlylattices12.pdf, P.12" ew_el12
 
 -- * <http://anaphoria.com/earlylattices22.pdf>
 
-{- | P.2 11-limit {SCALA=wilson_l4}
+{- | P.2 11-limit {Scala=wilson_l4}
 
 > ew_scl_find_r ew_el22_2_r db
 -}
@@ -474,7 +474,7 @@ ew_el22_2_r =
   [1,7*7/3,3*7/5,5/(3*3),1/7,7/3,3/5,5,5*7/(3*3*3),1/3,7*7/(3*3)
   ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,3*3/5,7/(3*5),5*7/(3*3)]
 
-{- | P.3 11-limit {SCALA=wilson_l5}
+{- | P.3 11-limit {Scala=wilson_l5}
 
 > ew_scl_find_r ew_el22_3_r db
 -}
@@ -483,7 +483,7 @@ ew_el22_3_r =
   [1,7*7/3,7*11/(3*3),3/11,1/7,7/3,3/5,5,7/11,1/3,7*7/(3*3)
   ,7/5,5*7/3,3,7/(3*3),1/5,5/3,3/7,7,11/3,7/(3*5),5*7/(3*3)]
 
-{- | P.4 11-limit {SCALA=wilson_l3}
+{- | P.4 11-limit {Scala=wilson_l3}
 
 > ew_scl_find_r ew_el22_4_r db
 -}
@@ -492,7 +492,7 @@ ew_el22_4_r =
   [1,3*11,3*7/5,5*7,3*3,7/3,3/5,5,7/11,3*7,11
   ,7/5,5*7/3,3,7/(3*3),1/5,3*5*7,3*3*3,7,3*3/5,3*5,3*7/11]
 
-{- | P.5 11-limit {SCALA=wilson_l1}
+{- | P.5 11-limit {Scala=wilson_l1}
 
 > ew_scl_find_r ew_el22_5_r db
 -}
@@ -501,7 +501,7 @@ ew_el22_5_r =
   [1,3*11,3*7/5,5*7,3*3,7/3,7*11,5,3*5*11,3*7,11
   ,7/5,3*7*11/5,3,3*3*11,7*11/3,3*11/5,5*11,7,3*7*11,3*5,7*11/5]
 
-{- | P.6 11-limit {SCALA=wilson_l2}
+{- | P.6 11-limit {Scala=wilson_l2}
 
 > ew_scl_find_r ew_el22_6_r db
 -}
@@ -516,13 +516,13 @@ ew_diamond_mk :: [Integer] -> [Rational]
 ew_diamond_mk u = r_normalise [x % y | x <- u, y <- u]
 
 -- > m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
-ew_diamond_12_gen :: [M3_GEN]
+ew_diamond_12_gen :: [M3_Gen]
 ew_diamond_12_gen =
   [(1/(3^.2),5),(5/(3^.2),3),(7/(3^.2),3),(11/(3^.2),3)
   ,(1/5,3),(1/7,3),(1/11,3)
   ,(5/7,1),(5/11,1),(7/5,1),(7/11,1),(11/5,1),(11/7,1)]
 
-{- | P.7 & P.12 11-limit {SCALA=partch_29}
+{- | P.7 & P.12 11-limit {Scala=partch_29}
 
 1,3,5,7,9,11 diamond
 
@@ -531,7 +531,7 @@ ew_diamond_12_gen =
 ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
-{- | P.10 & P.13 13-limit {SCALA=novaro15}
+{- | P.10 & P.13 13-limit {Scala=novaro15}
 
 1,3,5,7,9,11,13,15 diamond
 
@@ -571,7 +571,7 @@ hel_r (p,q) =
   let i_to_r = scanl (*) 1
   in [i_to_r p,i_to_r q,r_normalise (concat [i_to_r p,i_to_r q])]
 
-{- | P.12 {SCALA=NIL}
+{- | P.12 {Scala=nil}
 
 22-tone 23-limit Evangalina tuning (2001)
 
@@ -606,7 +606,7 @@ she_div_r =
 she_mul_r :: [Rational] -> [Rational]
 she_mul_r r = [x * y | x <- r,y <- r,x <= y]
 
-{- | she = Stellate Hexany Expansions, P.10 {SCALA=stelhex1,stelhex2,stelhex5,stelhex6}
+{- | she = Stellate Hexany Expansions, P.10 {Scala=stelhex1,stelhex2,stelhex5,stelhex6}
 
 > she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
 > mapM (flip ew_scl_find_r db . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
@@ -704,7 +704,7 @@ meru_7_direct = OEIS.a001687
 
 -- * <http://anaphoria.com/mos.pdf>
 
-{- | P.13, tanabe {SCALA=chin_7}
+{- | P.13, tanabe {Scala=chin_7}
 
 > ew_scl_find_r ew_mos_13_tanabe_r db
 -}
@@ -724,7 +724,7 @@ ew_novarotreediamond_1 =
       i = List.rotations i_0
   in (i,map i_to_r i)
 
-{- | P.1 {SCALA=NIL}
+{- | P.1 {Scala=nil}
 
 23-tone 7-limit (2004)
 
@@ -738,7 +738,7 @@ ew_novarotreediamond_1_scl = r_to_scale "ew_novarotreediamond_1" "EW, novavotree
 
 -- * <http://anaphoria.com/Pelogflute.pdf>
 
-{- | P.2 {SCALA=NIL}
+{- | P.2 {Scala=nil}
 
 9-tone Pelog cycle (1988)
 
@@ -763,7 +763,7 @@ xen1_fig4 = ((NIL,(2,5),(5,12),(3,7)),5)
 
 -- * <http://anaphoria.com/xen3b.pdf>
 
--- | P.3 Turkisk Baglama Scale {11-limit, SCALA=NIL}
+-- | P.3 Turkisk Baglama Scale {11-limit, Scala=nil}
 ew_xen3b_3_gen :: [(Rational,Int)]
 ew_xen3b_3_gen = [(1/(3^.6),12),(1/11,2),(5/3,3)]
 
@@ -808,7 +808,7 @@ xen3b_13_r = map (List.drop_last . scanl (*) 1) xen3b_13_i
 
 17,31,41 lattices from XEN3B (1975)
 -}
-ew_xen3b_apx_gen :: [(Int,[M3_GEN])]
+ew_xen3b_apx_gen :: [(Int,[M3_Gen])]
 ew_xen3b_apx_gen =
   [(17,[(1/729,12)
        ,(5/3,3)
@@ -835,10 +835,10 @@ ew_xen3b_apx_r =
 
 -- * <http://anaphoria.com/xen456.pdf>
 
-ew_xen456_7_gen :: [M3_GEN]
+ew_xen456_7_gen :: [M3_Gen]
 ew_xen456_7_gen = [(25/24,4),(5/3,4),(4/3,4),(16/15,4),(32/25,3)]
 
-{- P.7 {SCALA=wilson1}
+{- P.7 {Scala=wilson1}
 
 19-tone "A Scale for Scott" (1976)
 
@@ -847,7 +847,7 @@ ew_xen456_7_gen = [(25/24,4),(5/3,4),(4/3,4),(16/15,4),(32/25,3)]
 ew_xen456_7_r :: [Rational]
 ew_xen456_7_r = m3_gen_to_r ew_xen456_7_gen
 
-ew_xen456_9_gen :: [M3_GEN]
+ew_xen456_9_gen :: [M3_Gen]
 ew_xen456_9_gen =
   [(1/(3^.3),4)
   ,(1/(5*(3^.2)),3)
@@ -856,7 +856,7 @@ ew_xen456_9_gen =
   ,(5/(11*3),4)
   ,(7/11,2)]
 
-{- | P.9 {SCALA=NIL ; SCALA:ROT=wilson11}
+{- | P.9 {Scala=nil ; Scala:Rot=wilson11}
 
 19-tone scale for the Clavichord-19 (1976)
 
@@ -875,7 +875,7 @@ ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
 {- | <http://wilsonarchives.blogspot.com/2010/10/scale-for-rod-poole.html>
 
-13-limit 22-tone scale {SCALA=nil}
+13-limit 22-tone scale {Scala=nil}
 
 > ew_scl_find_r ew_poole_r db
 -}
@@ -889,7 +889,7 @@ ew_poole_scl = r_to_scale "ew_poole" "EW, 2010/10/scale-for-rod-poole.html" ew_p
 
 {- | <http://wilsonarchives.blogspot.com/2014/05/an-11-limit-centaur-implied-in-wilson.html>
 
-11-limit 17-tone scale {SCALA=wilcent17}
+11-limit 17-tone scale {Scala=wilcent17}
 
 > ew_scl_find_r ew_centaur17_r db
 -}
@@ -898,7 +898,7 @@ ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(
 
 {- | <http://wilsonarchives.blogspot.com/2018/03/an-unusual-22-tone-7-limit-tuning.html>
 
-7-limit 22-tone scale {SCALA=nil}
+7-limit 22-tone scale {Scala=nil}
 
 > ew_scl_find_r ew_two_22_7_r db
 -}

@@ -432,7 +432,7 @@ dseq_coalesce = seq_coalesce
 -- > dseq_coalesce' (==) d == r
 dseq_coalesce' :: Num t => (a -> a -> Bool) -> Dseq t a -> Dseq t a
 dseq_coalesce' eq =
-    let f l = let (t,e:_) = unzip l in (sum t,e)
+    let f l = let (t,e) = unzip l in (sum t,head e)
     in map f . groupBy (eq `on` snd)
 
 iseq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> Iseq t a -> Iseq t a

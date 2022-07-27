@@ -140,10 +140,10 @@ is_integer = all isDigit
 
 parse_modenam_entry :: [String] -> Mode
 parse_modenam_entry w =
-    let (n0:n,c) = span (Function.predicate_or is_non_implicit_degree is_integer) w
-    in case non_implicit_degree n0 of
-         Nothing -> (0,map read (n0:n),unwords c)
-         Just d -> (d,map read n,unwords c)
+    let (n,c) = span (Function.predicate_or is_non_implicit_degree is_integer) w
+    in case non_implicit_degree (n !! 0) of
+         Nothing -> (0,map read n,unwords c)
+         Just d -> (d,map read (tail n),unwords c)
 
 -- | Lines ending with @\@ continue to next line.
 join_long_lines :: [String] -> [String]
@@ -165,13 +165,14 @@ parse_modenam l =
         in if n == length m then (n,x,m) else error "parse_modenam"
       _ -> error "parse_modenam"
 
--- * IO
+-- * Io
 
--- | 'parse_modenam' of 'Scala.load_dist_file' of @modenam.par@.
---
--- > mn <- load_modenam
--- > let (n,x,m) = mn
--- > n == 2933 && x == 15 && length m == n -- Scala 2.42p
+{- | 'parse_modenam' of 'Scala.load_dist_file' of @modenam.par@.
+
+> mn <- load_modenam
+> let (n,x,m) = mn
+> (n, x, length m) == (3087,15,3087) -- Scala 2.64p
+-}
 load_modenam :: IO ModeNam
 load_modenam = do
   l <- Scala.load_dist_file_ln "modenam.par"

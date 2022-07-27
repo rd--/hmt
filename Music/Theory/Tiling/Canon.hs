@@ -38,16 +38,17 @@ type E = (S,Int,Int)
 e_to_seq :: E -> [Int]
 e_to_seq (s,m,o) = map ((+ o) . (* m)) s
 
--- | Infer 'E' from sequence.
---
--- > e_from_seq [1,5,11] == ([0,2,5],2,1)
--- > e_from_seq [4,7] == ([0,1],3,4)
--- > e_from_seq [2] == ([0],1,2)
+{- | Infer 'E' from sequence.
+
+> e_from_seq [1,5,11] == ([0,2,5],2,1)
+> e_from_seq [4,7] == ([0,1],3,4)
+> e_from_seq [2] == ([0],1,2)
+-}
 e_from_seq :: [Int] -> E
 e_from_seq p =
-    let i:_ = p
+    let i = head p
         q = map (+ negate i) p
-        _:r = q
+        r = tail q
         n = if null r then 1 else foldl1 gcd r
     in (map (`div` n) q,n,i)
 
@@ -77,17 +78,18 @@ t_retrograde t =
 t_normal :: T -> T
 t_normal t = min t (t_retrograde t)
 
--- | Derive set of 'R' from 'T'.
---
--- > let r = [(21,[0,1,2],[10,8,2,4,7,5,1],[0,1,2,3,5,8,14])]
--- > let t = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
--- > r_from_t t == r
+{- | Derive set of 'R' from 'T'.
+
+> let r = [(21,[0,1,2],[10,8,2,4,7,5,1],[0,1,2,3,5,8,14])]
+> let t = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
+> r_from_t t == r
+-}
 r_from_t :: T -> [R]
 r_from_t t =
     let e = map e_from_seq t
         n = maximum (concat t) + 1
         t3_1 (i,_,_) = i
-        f z = let (s:_,m,o) = unzip3 z in (n,s,m,o)
+        f z = let (s,m,o) = unzip3 z in (n,head s,m,o)
     in map f (T.group_on t3_1 e)
 
 -- * Construction

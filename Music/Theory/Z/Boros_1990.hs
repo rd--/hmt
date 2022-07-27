@@ -222,7 +222,7 @@ fig_2 =
      n = G.labNodes g
      n' = filter ((== 2) . G.deg g . fst) n
      c = T.combinations (2::Int) n'
-     p = map (\[lhs,rhs] -> G.esp (fst lhs) (fst rhs) g) c
+     p = map (\l -> let (lhs,rhs) = T.firstSecond l in G.esp (fst lhs) (fst rhs) g) c
      p' = filter (not . null) p
  in map (mapMaybe (`lookup` n)) p'
 

@@ -2,7 +2,7 @@
 
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
-This module succesfully parses all scales in v.90 of the scale library.
+This module succesfully parses all scales in v.91 of the scale library.
 
 -}
 module Music.Theory.Tuning.Scala where
@@ -306,10 +306,9 @@ scl_load nm = do
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
-> db <- scl_load_dir_fn "/home/rohan/data/scala/90/scl"
-> length db == 5104 -- v.90
+> db <- scl_load_dir_fn "/home/rohan/data/scala/91/scl"
+> length db == 5176 -- v.91
 > map (\(fn,s) -> (takeFileName fn,scale_name s)) db
-
 -}
 scl_load_dir_fn :: FilePath -> IO [(FilePath,Scale)]
 scl_load_dir_fn d = do
@@ -398,7 +397,7 @@ scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 
 -- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
 --
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22-pc64-linux"
+-- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22"
 dist_get_dir :: IO String
 dist_get_dir = getEnv "SCALA_DIST_DIR"
 
@@ -408,10 +407,11 @@ load_dist_file nm = do
   d <- dist_get_dir
   readFile (d </> nm)
 
--- | 'fmap' 'lines' 'load_dist_file'
---
--- > s <- load_dist_file_ln "intnam.par"
--- > length s == 533 -- Scala 2.42p
+{- | 'fmap' 'lines' 'load_dist_file'
+
+> s <- load_dist_file_ln "intnam.par"
+> length s == 565 -- Scala 2.46d
+-}
 load_dist_file_ln :: FilePath -> IO [String]
 load_dist_file_ln = fmap lines . load_dist_file
 

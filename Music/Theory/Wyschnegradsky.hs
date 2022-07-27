@@ -161,7 +161,7 @@ u3_vec_text_rw =
 u3_vec_ix :: Num n => ([[n]],[[n]])
 u3_vec_ix =
     let f (p,q) = [parse_vec Nothing 0 p,parse_vec Nothing 0 q]
-        [c,r] = transpose (map f u3_vec_text_rw)
+        (c,r) = List.firstSecond (transpose (map f u3_vec_text_rw))
     in (c,r)
 
 -- | Radial indices (ie. each /ray/ as an index sequence).
