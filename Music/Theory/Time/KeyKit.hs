@@ -15,6 +15,8 @@ import Data.List {- base -}
 
 import qualified Data.List.Ordered as O {- data-ordlist -}
 
+import qualified Music.Theory.Time.Seq as Seq {- hmt -}
+
 -- * Time
 
 type Time = Rational
@@ -167,3 +169,22 @@ phrase_phrase_map f (Phrase n l) =
 
 phrase_map :: Ord u => (Note t -> Phrase u) -> Phrase t -> Phrase u
 phrase_map f (Phrase n l) = Phrase (sort (concatMap phrase_notes (map f n))) l
+
+-- * Seq
+
+phrase_to_wseq :: Phrase t -> Seq.Wseq Time t
+phrase_to_wseq (Phrase n _) =
+  let f (Note tm dur e) = ((tm, dur), e)
+  in map f n
+
+useq_to_phrase :: Seq.Useq Time t -> Phrase t
+useq_to_phrase = dseq_to_phrase . Seq.useq_to_dseq
+
+dseq_to_phrase :: Seq.Dseq Time t -> Phrase t
+dseq_to_phrase = wseq_to_phrase . Seq.dseq_to_wseq 0
+
+wseq_to_phrase :: Seq.Wseq Time t -> Phrase t
+wseq_to_phrase sq =
+  let f ((t, d), e) = Note t d e
+  in Phrase (map f sq) (Seq.wseq_dur sq)
+
