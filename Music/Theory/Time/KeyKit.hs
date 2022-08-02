@@ -1,6 +1,6 @@
 {- | A sequence structure, courtesy <https://github.com/nosuchtim/keykit>.
 
-A /note/ has a time, a duration and a value (called an entry below).
+A /note/ has a time, a duration and a value.
 A /phrase/ is a time-ascending sequence of notes and a /length/.
 The length of a phrase is independent it's contents.
 The sequence operator, /phrase_append/, sums phrase lengths.
@@ -24,7 +24,7 @@ type Length = Time
 -- * Note
 
 data Note t =
-  Note { note_time :: Time, note_duration :: Duration, note_entry :: t }
+  Note { note_time :: Time, note_duration :: Duration, note_value :: t }
   deriving (Eq, Ord, Show)
 
 note_shift_time :: Time -> Note t -> Note t
@@ -49,8 +49,8 @@ data Phrase t =
   Phrase { phrase_notes :: [Note t], phrase_length :: Length }
   deriving (Eq, Ord, Show)
 
-phrase_entry_map :: (t -> u) -> Phrase t -> Phrase u
-phrase_entry_map f (Phrase n l) = Phrase (map (note_map f) n) l
+phrase_value_map :: (t -> u) -> Phrase t -> Phrase u
+phrase_value_map f (Phrase n l) = Phrase (map (note_map f) n) l
 
 phrase_note_map :: (Note t -> Note u) -> Phrase t -> Phrase u
 phrase_note_map f (Phrase n l) = Phrase (map f n) l
@@ -161,5 +161,5 @@ phrase_reverse (Phrase n l) =
 
 phrase_shuffle :: Phrase t -> [Int] -> Phrase t
 phrase_shuffle (Phrase n l) p =
-  let f (Note t d _) i = Note t d (note_entry (n !! (i - 1)))
+  let f (Note t d _) i = Note t d (note_value (n !! (i - 1)))
   in Phrase (zipWith f n p) l
