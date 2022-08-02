@@ -78,8 +78,8 @@ phrase_at (Phrase n _) k =
 phrase_time_at :: Phrase t -> Int -> Time
 phrase_time_at (Phrase n _) k = note_time (n !! (k - 1))
 
-phrase_delete_at :: Phrase t -> Int -> Phrase t
-phrase_delete_at (Phrase n l) k =
+phrase_clear_at :: Phrase t -> Int -> Phrase t
+phrase_clear_at (Phrase n l) k =
   let remove_ix ix list = let (p,q) = splitAt ix list in p ++ tail q
   in Phrase (remove_ix (k - 1) n) l
 
@@ -118,6 +118,12 @@ phrase_select_region p r = phrase_select p (note_start_in_region r)
 phrase_clear_region :: Phrase t -> (Time, Time) -> Phrase t
 phrase_clear_region p r = phrase_select p (not . note_start_in_region r)
 
+phrase_select_indices :: Phrase t -> (Int, Int) -> Phrase t
+phrase_select_indices (Phrase n l) (i, j) = Phrase (take (j - i + 1) (drop (i - 1) n)) l
+
+phrase_clear_indices :: Phrase t -> (Int, Int) -> Phrase t
+phrase_clear_indices (Phrase n l) (i, j) = Phrase (take (i - 1) n ++ drop j n) l
+
 phrase_shift :: Phrase t -> Time -> Phrase t
 phrase_shift (Phrase n l) t = Phrase (map (note_shift_time t) n) l
 
@@ -125,6 +131,12 @@ phrase_extract_region :: Phrase t -> (Time, Time) -> Phrase t
 phrase_extract_region p (t1, t2) =
   let p' = phrase_select_region p (t1, t2)
   in phrase_set_length (phrase_shift p' (0 - t1)) (t2 - t1)
+
+phrase_delete_region :: Ord t => Phrase t -> (Time, Time) -> Phrase t
+phrase_delete_region p (t1, t2) =
+  phrase_append
+  (phrase_extract_region p (0, t1))
+  (phrase_extract_region p (t2, phrase_length p))
 
 phrase_separate :: Phrase t -> Time -> (Phrase t, Phrase t)
 phrase_separate p t =
