@@ -2,9 +2,9 @@
 
 A /note/ has a time, a duration and a value.
 A /phrase/ is a time-ascending sequence of notes and a /length/.
-The length of a phrase is independent it's contents.
+The length of a phrase is independent of the contents.
 The sequence operator, /phrase_append/, sums phrase lengths.
-The the parallel operator, /phrase_merge/, selects the longer length.
+The parallel operator, /phrase_merge/, selects the longer length.
 
 Operations are ordinarily on phrases, notes are operated on indirectly.
 The phrase indexing operation, /phrase_at/ returns a phrase of degree one.
@@ -39,29 +39,12 @@ note_start_in_region (t1, t2) (Note t _ _) = t >= t1 && t < t2
 note_entirely_in_region :: (Time, Time) -> Note t -> Bool
 note_entirely_in_region (t1, t2) (Note t d _) = t >= t1 && (t + d) < t2
 
-note_map :: (t -> u) -> Note t -> Note u
-note_map f (Note t d e) = Note t d (f e)
-
 -- * Phrase
 
 -- | It is an un-checked invariant that the note list is in ascending order.
 data Phrase t =
   Phrase { phrase_notes :: [Note t], phrase_length :: Length }
   deriving (Eq, Ord, Show)
-
-phrase_value_map :: (t -> u) -> Phrase t -> Phrase u
-phrase_value_map f (Phrase n l) = Phrase (map (note_map f) n) l
-
-phrase_note_map :: (Note t -> Note u) -> Phrase t -> Phrase u
-phrase_note_map f (Phrase n l) = Phrase (map f n) l
-
-phrase_phrase_map :: Ord u => (Phrase t -> Phrase u) -> Phrase t -> Phrase u
-phrase_phrase_map f (Phrase n l) =
-  let g (Note t d e) = f (Phrase [Note t d e] (t + d))
-  in Phrase (sort (concatMap phrase_notes (map g n))) l
-
-phrase_map :: Ord u => (Note t -> Phrase u) -> Phrase t -> Phrase u
-phrase_map f (Phrase n l) = Phrase (sort (concatMap phrase_notes (map f n))) l
 
 phrase_set_length :: Phrase t -> Length -> Phrase t
 phrase_set_length (Phrase n _) l = Phrase n l
@@ -136,19 +119,13 @@ phrase_clear_region p r = phrase_select p (not . note_start_in_region r)
 phrase_shift :: Phrase t -> Time -> Phrase t
 phrase_shift (Phrase n l) t = Phrase (map (note_shift_time t) n) l
 
-phrase_trim :: Phrase t -> Phrase t
-phrase_trim p =
-  let t = phrase_start_time p
-      p' = phrase_shift p (0 - t)
-  in phrase_set_length p' (phrase_duration p')
-
 phrase_extract_region :: Phrase t -> (Time, Time) -> Phrase t
 phrase_extract_region p (t1, t2) =
   let p' = phrase_select_region p (t1, t2)
   in phrase_set_length (phrase_shift p' (0 - t1)) (t2 - t1)
 
-phrase_cut :: Phrase t -> Time -> (Phrase t, Phrase t)
-phrase_cut p t =
+phrase_separate :: Phrase t -> Time -> (Phrase t, Phrase t)
+phrase_separate p t =
   let (p1, p2) = phrase_partition p (note_start_in_region (0, t))
       p1' = phrase_set_length p1 t
       p2' = phrase_set_length (phrase_shift p2 (0 - t)) (phrase_length p - t)
@@ -163,3 +140,30 @@ phrase_shuffle :: Phrase t -> [Int] -> Phrase t
 phrase_shuffle (Phrase n l) p =
   let f (Note t d _) i = Note t d (note_value (n !! (i - 1)))
   in Phrase (zipWith f n p) l
+
+phrase_truncate :: Phrase t -> Phrase t
+phrase_truncate p = phrase_set_length p (phrase_end_time p)
+
+phrase_trim :: Phrase t -> Phrase t
+phrase_trim p =
+  let t = phrase_start_time p
+  in phrase_truncate (phrase_shift p (0 - t))
+
+-- * Functor
+
+note_map :: (t -> u) -> Note t -> Note u
+note_map f (Note t d e) = Note t d (f e)
+
+phrase_value_map :: (t -> u) -> Phrase t -> Phrase u
+phrase_value_map f (Phrase n l) = Phrase (map (note_map f) n) l
+
+phrase_note_map :: (Note t -> Note u) -> Phrase t -> Phrase u
+phrase_note_map f (Phrase n l) = Phrase (map f n) l
+
+phrase_phrase_map :: Ord u => (Phrase t -> Phrase u) -> Phrase t -> Phrase u
+phrase_phrase_map f (Phrase n l) =
+  let g (Note t d e) = f (Phrase [Note t d e] (t + d))
+  in Phrase (sort (concatMap phrase_notes (map g n))) l
+
+phrase_map :: Ord u => (Note t -> Phrase u) -> Phrase t -> Phrase u
+phrase_map f (Phrase n l) = Phrase (sort (concatMap phrase_notes (map f n))) l
