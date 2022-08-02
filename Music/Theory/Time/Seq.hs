@@ -50,6 +50,11 @@ type Tseq t a = [(t,a)]
 -- Overlaps exist where the same relation is '>'.
 type Wseq t a = [((t,t),a)]
 
+-- | Event sequence.
+-- /t/ is a triple of /start-time/, /duration/ and /length/.
+-- /length/ isn't necessarily the time to the next event, though ordinarily it should not be greater than that interval.
+type Eseq t a = [((t,t,t),a)]
+
 -- * Zip
 
 -- | Construct 'Pseq'.
@@ -221,6 +226,10 @@ wseq_merge = O.mergeBy (compare `on` (fst . fst))
 -- | Merge set considering both start times & durations.
 wseq_merge_set :: Ord t => [Wseq t a] -> Wseq t a
 wseq_merge_set = T.merge_set_by w_compare
+
+-- | Merge considering only start times.
+eseq_merge :: Ord t => Eseq t a -> Eseq t a -> Eseq t a
+eseq_merge = O.mergeBy (compare `on` (T.t3_fst . fst))
 
 -- * Lookup
 
@@ -971,6 +980,9 @@ wseq_to_dseq empty sq =
     in case sq of
          ((st,_),_):_ -> if st > 0 then (st,empty) : r else r
          [] -> error "wseq_to_dseq"
+
+eseq_to_wseq :: Eseq t a -> Wseq t a
+eseq_to_wseq = let f ((t, d, _), e) = ((t, d), e) in map f
 
 -- * Measures
 
