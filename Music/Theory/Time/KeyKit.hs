@@ -1,5 +1,3 @@
-{-# Language DeriveFunctor #-}
-
 -- | <https://github.com/nosuchtim/keykit>
 module Music.Theory.Time.KeyKit where
 
@@ -13,7 +11,7 @@ type Length = Time
 
 data Note t =
   Note { note_time :: Time, note_duration :: Duration, note_entry :: t }
-  deriving (Eq, Ord, Show, Functor)
+  deriving (Eq, Ord, Show)
 
 note_shift_time :: Time -> Note t -> Note t
 note_shift_time k (Note t d e) = Note (t + k) d e
@@ -27,13 +25,16 @@ note_start_in_region (t1, t2) (Note t _ _) = t >= t1 && t < t2
 note_entirely_in_region :: (Time, Time) -> Note t -> Bool
 note_entirely_in_region (t1, t2) (Note t d _) = t >= t1 && (t + d) < t2
 
+note_map :: (t -> u) -> Note t -> Note u
+note_map f (Note t d e) = Note t d (f e)
+
 -- | It is an un-checked invariant that the note list is in ascending order.
 data Phrase t =
   Phrase { phrase_notes :: [Note t], phrase_length :: Length }
-  deriving (Eq, Ord, Show, Functor)
+  deriving (Eq, Ord, Show)
 
 phrase_entry_map :: (t -> u) -> Phrase t -> Phrase u
-phrase_entry_map = fmap
+phrase_entry_map f (Phrase n l) = Phrase (map (note_map f) n) l
 
 phrase_note_map :: (Note t -> Note u) -> Phrase t -> Phrase u
 phrase_note_map f (Phrase n l) = Phrase (map f n) l
