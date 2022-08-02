@@ -1,13 +1,27 @@
--- | <https://github.com/nosuchtim/keykit>
+{- | A sequence structure, courtesy <https://github.com/nosuchtim/keykit>.
+
+A /note/ has a time, a duration and a value (called an entry below).
+A /phrase/ is a time-ascending sequence of notes and a /length/.
+The length of a phrase is independent it's contents.
+The sequence operator, /phrase_append/, sums phrase lengths.
+The the parallel operator, /phrase_merge/, selects the longer length.
+
+Operations are ordinarily on phrases, notes are operated on indirectly.
+The phrase indexing operation, /phrase_at/ returns a phrase of degree one.
+-}
 module Music.Theory.Time.KeyKit where
 
 import Data.List {- base -}
 
 import qualified Data.List.Ordered as O {- data-ordlist -}
 
+-- * Time
+
 type Time = Rational
 type Duration = Time
 type Length = Time
+
+-- * Note
 
 data Note t =
   Note { note_time :: Time, note_duration :: Duration, note_entry :: t }
@@ -27,6 +41,8 @@ note_entirely_in_region (t1, t2) (Note t d _) = t >= t1 && (t + d) < t2
 
 note_map :: (t -> u) -> Note t -> Note u
 note_map f (Note t d e) = Note t d (f e)
+
+-- * Phrase
 
 -- | It is an un-checked invariant that the note list is in ascending order.
 data Phrase t =
@@ -134,7 +150,9 @@ phrase_extract_region p (t1, t2) =
 phrase_cut :: Phrase t -> Time -> (Phrase t, Phrase t)
 phrase_cut p t =
   let (p1, p2) = phrase_partition p (note_start_in_region (0, t))
-  in (phrase_set_length p1 t, phrase_set_length (phrase_shift p2 (0 - t)) (phrase_length p - t))
+      p1' = phrase_set_length p1 t
+      p2' = phrase_set_length (phrase_shift p2 (0 - t)) (phrase_length p - t)
+  in (p1', p2')
 
 phrase_reverse :: Phrase t -> Phrase t
 phrase_reverse (Phrase n l) =
