@@ -34,18 +34,19 @@ type Iseq t a = [(t,a)]
 
 -- | Pattern sequence.
 -- The duration is a triple of /logical/, /sounding/ and /forward/ durations.
--- Ie. the time it conceptually takes, the time it actually takes, and the time to the next event.
+-- These indicate the time the value conceptually takes, the time it actually takes, and the time to the next event.
+-- If the sequence does not begin at time zero there must be an /empty/ value for /a/.
 type Pseq t a = [((t,t,t),a)]
 
 -- | Time-point sequence.
--- /t/ is the start-time of the value.
+-- /t/ is the start time of the value.
 -- To express holes /a/ must have an /empty/ value.
 -- Duration can be encoded at /a/, or if implicit /a/ must include an end of sequence value.
 type Tseq t a = [(t,a)]
 
 -- | Window sequence.
 -- /t/ is a duple of /start-time/ and /duration/.
--- Holes exist where @st(n) + du(n)@ '<' @st(n+1)@.
+-- Holes exist where /start-time(n) + duration(n) < start-time(n + 1)/.
 -- Overlaps exist where the same relation is '>'.
 type Wseq t a = [((t,t),a)]
 
@@ -253,8 +254,9 @@ tseq_lookup_active_def def = tseq_lookup_active_by_def def compare
 -- * Lseq
 
 -- | Iterpolation type enumeration.
-data Interpolation_T = None | Linear
-                     deriving (Eq,Enum,Show)
+data Interpolation_T =
+  None | Linear
+  deriving (Eq,Enum,Show)
 
 -- | Variant of 'Tseq' where nodes have an 'Intepolation_T' value.
 type Lseq t a = Tseq (t,Interpolation_T) a
@@ -619,10 +621,11 @@ wseq_remove_overlap_rw_1 eq_f dur_fn ((t,d),a) sq =
 > sq_rw == [((0,1),'a'),((1,2),'a'),((3,1),'a')]
 > wseq_has_overlaps (==) sq_rw == False
 
-> import qualified Music.Theory.Array.CSV.Midi.MND as T {- hmt -}
+> import qualified Music.Theory.Array.Csv.Midi.Mnd as T {- hmt -}
 > let csv_fn = "/home/rohan/uc/the-center-is-between-us/visitants/csv/midi/air.B.1.csv"
 > sq <- T.csv_midi_read_wseq csv_fn :: IO (Wseq Double (T.Event Double))
-
+> length sq == 186
+> length (wseq_remove_overlaps_rw (==) id sq) == 183
 -}
 wseq_remove_overlaps_rw :: (Ord t,Num t) => (e -> e -> Bool) -> (t -> t) -> Wseq t e -> Wseq t e
 wseq_remove_overlaps_rw eq_f dur_fn =
