@@ -10,7 +10,7 @@ Author:            Rohan Drape
 Maintainer:        rd@rohandrape.net
 Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
-Tested-With:       GHC == 8.10.7
+Tested-With:       GHC == 9.2.4
 Build-Type:        Simple
 
 Data-files:        README.md
@@ -110,6 +110,7 @@ Library
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time.Bel1990.R
+                   Music.Theory.Time.KeyKit
                    Music.Theory.Time.Seq
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning
