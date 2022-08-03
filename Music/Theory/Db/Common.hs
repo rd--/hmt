@@ -111,21 +111,21 @@ db_to_table f db =
 
 -- * Collating duplicate keys.
 
-record_collate' :: Eq k => (k,[v]) -> Record k v -> Record k [v]
-record_collate' (k,v) r =
+record_collate_from :: Eq k => (k,[v]) -> Record k v -> Record k [v]
+record_collate_from (k,v) r =
     case r of
       [] -> [(k,reverse v)]
       (k',v'):r' ->
           if k == k'
-          then record_collate' (k,v' : v) r'
-          else (k,reverse v) : record_collate' (k',[v']) r'
+          then record_collate_from (k,v' : v) r'
+          else (k,reverse v) : record_collate_from (k',[v']) r'
 
 -- | Collate adjacent entries of existing sequence with equal key.
 record_collate :: Eq k => Record k v -> Record k [v]
 record_collate r =
     case r of
       [] -> error "record_collate: nil"
-      (k,v):r' -> record_collate' (k,[v]) r'
+      (k,v):r' -> record_collate_from (k,[v]) r'
 
 record_uncollate :: Record k [v] -> Record k v
 record_uncollate = concatMap (\(k,v) -> zip (repeat k) v)

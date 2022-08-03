@@ -53,6 +53,7 @@ Library
                    Music.Theory.Braille
                    Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
+                   Music.Theory.Db.Cli
                    Music.Theory.Db.Common
                    Music.Theory.Db.Csv
                    Music.Theory.Db.Plain
@@ -138,6 +139,7 @@ Library
                    Music.Theory.Tuning.Polansky_1990
                    Music.Theory.Tuning.Rosenboom_1979
                    Music.Theory.Tuning.Scala
+                   Music.Theory.Tuning.Scala.Cli
                    Music.Theory.Tuning.Scala.Functions
                    Music.Theory.Tuning.Scala.Interval
                    Music.Theory.Tuning.Scala.Kbm
@@ -155,6 +157,7 @@ Library
                    Music.Theory.Z.Castren_1994
                    Music.Theory.Z.Clough_1979
                    Music.Theory.Z.Drape_1999
+                   Music.Theory.Z.Drape_1999.Cli
                    Music.Theory.Z.Forte_1973
                    Music.Theory.Z.Lewin_1980
                    Music.Theory.Z.Literature
