@@ -13,11 +13,11 @@ all_embeddings_m p q =
             if n == q_n
             then return (reverse k)
             else do (m,c) <- msum (map return p')
-                    let k0:_ = k
-                        c':_ = q'
+                    let k0 = head k
+                        c' = head q'
                     guard (c == c' && (null k || m > k0))
-                    let _:p'' = p'
-                        _:q'' = q'
+                    let p'' = tail p'
+                        q'' = tail q'
                     recur p'' q'' (n + 1) (m : k)
     in recur (zip [0..] p) q 0 []
 

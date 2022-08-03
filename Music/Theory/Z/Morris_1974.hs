@@ -30,7 +30,7 @@ all_interval_m n =
             then return (reverse p)
             else do i <- fromList [1 .. n - 1]
                     guard (i `notElem` p)
-                    let j:_ = p
+                    let j = head p
                         m = int_n n i j
                     guard (m `notElem` q)
                     recur (k + 1) (i : p) (m : q)
