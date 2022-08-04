@@ -113,6 +113,7 @@ Library
                    Music.Theory.Tiling.Johnson_2009
                    Music.Theory.Time.Bel1990.R
                    Music.Theory.Time.KeyKit
+                   Music.Theory.Time.KeyKit.Basic
                    Music.Theory.Time.Seq
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning
