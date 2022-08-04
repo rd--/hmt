@@ -29,6 +29,8 @@ dynamic_mark_t_parse_ci =
 > let r = [0,6,17,28,39,50,61,72,83,94,105,116,127]
 > mapMaybe dynamic_mark_midi [Niente .. Fffff] == r
 
+> mapMaybe dynamic_mark_midi [Pp .. Ff] == [39,50,61,72,83,94]
+
 > map dynamic_mark_midi [Fp,Sf,Sfp,Sfpp,Sfz,Sffz] == replicate 6 Nothing
 -}
 dynamic_mark_midi :: (Num n,Enum n) => Dynamic_Mark -> Maybe n

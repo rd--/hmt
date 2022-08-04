@@ -110,7 +110,7 @@ sum_dur_err y0 y1 =
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2
 
--- | Standard divisions (from 0 to 256).  MusicXML allows @-1@ as a division (for @long@).
+-- | Standard divisions (from 0 to 256).  MusicXml allows @-1@ as a division (for @long@).
 divisions_set :: [Division]
 divisions_set = [0,1,2,4,8,16,32,64,128,256]
 
@@ -137,9 +137,9 @@ duration_beam_count (Duration x _ _) =
         bc = whole_note_division_to_beam_count x
     in fromMaybe err bc
 
--- * MusicXML
+-- * MusicXml
 
--- | Table giving @MusicXML@ types for divisions.
+-- | Table giving MusicXml types for divisions.
 division_musicxml_tbl :: [(Division,String)]
 division_musicxml_tbl =
     let nm = ["long","breve","whole","half","quarter","eighth"
@@ -215,20 +215,38 @@ duration_recip_pp (Duration x d m) =
 
 -- * Letter
 
-whole_note_division_letter_pp :: Division -> Maybe Char
-whole_note_division_letter_pp x =
-    let t = [(16,'s'),(8,'e'),(4,'q'),(2,'h'),(1,'w')]
-    in lookup x t
+-- | Names for note divisions.
+whole_note_division_name_tbl :: [(Division, String)]
+whole_note_division_name_tbl =
+  [(64,"sixtyfourth") -- hemidemisemiquaver
+  ,(32,"thirtysecond") -- demisemiquaver
+  ,(16,"sixteenth") -- semiquaver
+  ,(8,"eighth") -- quaver
+  ,(4,"quarter") -- crotchet
+  ,(2,"half") -- minim
+  ,(1,"whole") -- semibreve
+  ,(0,"breve")
+  ,(-1,"longa")
+  ,(-2,"maxima")]
 
--- > mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1] == ["q","h'","e''"]
--- > duration_letter_pp
+whole_note_division_name :: Division -> Maybe String
+whole_note_division_name = flip lookup whole_note_division_name_tbl
+
+whole_note_division_letter_tbl :: [(Division, Char)]
+whole_note_division_letter_tbl = map (\(d,n) -> (d,head n)) whole_note_division_name_tbl
+
+  -- > mapMaybe whole_note_division_letter_pp [-2, -1, 0, 1, 2, 4, 8, 16, 32] == "mlbwhqest"
+whole_note_division_letter_pp :: Division -> Maybe Char
+whole_note_division_letter_pp = flip lookup (tail whole_note_division_letter_tbl)
+
+-- > mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1] == ["q","h.","e.."]
+-- > mapMaybe duration_letter_pp [Duration 4 1 (2/3)]
 duration_letter_pp :: Duration -> Maybe String
 duration_letter_pp (Duration x d m) =
-    let d' = genericReplicate d '\''
+    let d' = genericReplicate d '.'
         m' = case (numerator m,denominator m) of
                (1,1) -> ""
-               (1,i) -> '/' : show i
-               (i,j) -> '*' : show i ++ "/" ++ show j
+               (i,j) -> '/' : show i ++ ":" ++ show j
     in case whole_note_division_letter_pp x of
          Just x' -> Just (x' : d' ++ m')
          _ -> Nothing
