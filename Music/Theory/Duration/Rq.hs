@@ -218,22 +218,22 @@ rq_can_notate k x =
                Just t -> map (rq_un_tuplet t) x
     in all (rq_is_cmn k) x'
 
--- * TIME
+-- * Time
 
--- | Duration in seconds of Rq given ppm
+-- | Duration in seconds of Rq given qpm
 --
---   ppm = pulses-per-minute, rq = rational-quarter-note
+--   qpm = pulses-per-minute, rq = rational-quarter-note
 --
--- > map (\sd -> rq_to_seconds_ppm (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
--- > map (rq_to_seconds_ppm 90) [1,2,3,4] == [2/3,1 + 1/3,2,2 + 2/3]
--- > map (rq_to_seconds_ppm 90) [0::Rq,1,1 + 1/2,1 + 3/4,1 + 7/8,2]
-rq_to_seconds_ppm :: Fractional a => a -> a -> a
-rq_to_seconds_ppm ppm rq = rq * (60 / ppm)
+-- > map (\sd -> rq_to_seconds_qpm (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
+-- > map (rq_to_seconds_qpm 90) [1,2,3,4] == [2/3,1 + 1/3,2,2 + 2/3]
+-- > map (rq_to_seconds_qpm 90) [0::Rq,1,1 + 1/2,1 + 3/4,1 + 7/8,2] == [0,2/3,1,7/6,5/4,4/3]
+rq_to_seconds_qpm :: Fractional a => a -> a -> a
+rq_to_seconds_qpm qpm rq = rq * (60 / qpm)
 
--- | PPM given that /rq/ has duration /x/, ie. inverse of 'rq_to_seconds'
+-- | Qpm given that /rq/ has duration /x/, ie. inverse of 'rq_to_seconds_qpm'
 --
--- > map (rq_to_ppm 1) [0.4,0.5,0.8,1,1.5,2] == [150,120,75,60,40,30]
--- > map (\ppm -> rq_to_seconds ppm 1) [150,120,75,60,40,30] == [0.4,0.5,0.8,1,1.5,2]
-rq_to_ppm :: Fractional a => a -> a -> a
-rq_to_ppm rq x = (rq / x) * 60
+-- > map (rq_to_qpm 1) [0.4,0.5,0.8,1,1.5,2] == [150,120,75,60,40,30]
+-- > map (\qpm -> rq_to_seconds_qpm qpm 1) [150,120,75,60,40,30] == [0.4,0.5,0.8,1,1.5,2]
+rq_to_qpm :: Fractional a => a -> a -> a
+rq_to_qpm rq x = (rq / x) * 60
 

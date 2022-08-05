@@ -12,11 +12,12 @@ type Division = Integer
 type Dots = Int
 
 -- | Common music notation durational model
-data Duration = Duration {division :: Division -- ^ division of whole note
-                         ,dots :: Int -- ^ number of dots
-                         ,multiplier :: Rational -- ^ tuplet modifier
-                         }
-                deriving (Eq,Show)
+data Duration =
+  Duration
+  {division :: Division -- ^ division of whole note
+  ,dots :: Int -- ^ number of dots
+  ,multiplier :: Rational} -- ^ tuplet modifier
+  deriving (Eq,Show)
 
 -- | Are multipliers equal?
 duration_meq :: Duration -> Duration -> Bool
@@ -110,17 +111,23 @@ sum_dur_err y0 y1 =
         err = error ("sum_dur': " ++ show (y0,y1))
     in fromMaybe err y2
 
--- | Standard divisions (from 0 to 256).  MusicXml allows @-1@ as a division (for @long@).
-divisions_set :: [Division]
-divisions_set = [0,1,2,4,8,16,32,64,128,256]
+{- | Standard divisions (from 1 to 256).
+MusicXml allows 0 for breve and -1 for long.
+Negative divisors can represent any number of longer durations, -2 be a breve, -4 a long, -8 a maximus, &etc.
+-}
+divisions_std_set :: [Division]
+divisions_std_set = [1,2,4,8,16,32,64,128,256]
 
--- | Durations set derived from 'divisions_set' with up to /k/ dots.  Multiplier of @1@.
+divisions_musicxml_set :: [Division]
+divisions_musicxml_set = -1 : 0 : divisions_std_set
+
+-- | Durations set derived from 'divisions_std_set' with up to /k/ dots.  Multiplier of @1@.
 duration_set :: Dots -> [Duration]
-duration_set k = [Duration dv dt 1 | dv <- divisions_set, dt <- [0..k]]
+duration_set k = [Duration dv dt 1 | dv <- divisions_std_set, dt <- [0..k]]
 
 -- | Table of number of beams at notated division.
 beam_count_tbl :: [(Division,Int)]
-beam_count_tbl = zip (-1 : divisions_set) [0,0,0,0,0,1,2,3,4,5,6]
+beam_count_tbl = zip divisions_musicxml_set [0,0,0,0,0,1,2,3,4,5,6]
 
 -- | Lookup 'beam_count_tbl'.
 --
@@ -144,7 +151,7 @@ division_musicxml_tbl :: [(Division,String)]
 division_musicxml_tbl =
     let nm = ["long","breve","whole","half","quarter","eighth"
              ,"16th","32nd","64th","128th","256th"]
-    in zip (-1 : divisions_set) nm
+    in zip divisions_musicxml_set nm
 
 -- | Lookup 'division_musicxml_tbl'.
 --
@@ -199,11 +206,10 @@ duration_to_lilypond_type (Duration dv d _) =
 <http://humdrum.org/Humdrum/representations/recip.rep.html>
 
 > let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
-> in map duration_recip_pp d == ["0","1","2","4","8","16","32"]
+> map duration_recip_pp d == ["0","1","2","4","8","16","32"]
 
 > let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
-> in map duration_recip_pp d == ["3.","4.","6."]
-
+> map duration_recip_pp d == ["3.","4.","6."]
 -}
 duration_recip_pp :: Duration -> String
 duration_recip_pp (Duration x d m) =
@@ -215,7 +221,9 @@ duration_recip_pp (Duration x d m) =
 
 -- * Letter
 
--- | Names for note divisions.
+{- | Names for note divisions.
+Starting from 1/32 these names haev uniqe initial letters that can be used for concise notation.
+-}
 whole_note_division_name_tbl :: [(Division, String)]
 whole_note_division_name_tbl =
   [(64,"sixtyfourth") -- hemidemisemiquaver
@@ -240,7 +248,7 @@ whole_note_division_letter_pp :: Division -> Maybe Char
 whole_note_division_letter_pp = flip lookup (tail whole_note_division_letter_tbl)
 
 -- > mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1] == ["q","h.","e.."]
--- > mapMaybe duration_letter_pp [Duration 4 1 (2/3)]
+-- > mapMaybe duration_letter_pp [Duration 4 1 (2/3)] == ["q./2:3"]
 duration_letter_pp :: Duration -> Maybe String
 duration_letter_pp (Duration x d m) =
     let d' = genericReplicate d '.'

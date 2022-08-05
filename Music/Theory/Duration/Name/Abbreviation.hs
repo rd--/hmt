@@ -1,4 +1,4 @@
--- | Abbreviated names for 'Duration' values when written as literals.
+-- | Abbreviated names for 'Duration' values when written as Haskell literals.
 -- There are /letter/ names where 'w' is 'whole_note' and so on, and
 -- /numerical/ names where '_4' is 'quarter_note' and so on.  In both
 -- cases a @'@ extension means a @dot@ so that 'e''' is a double

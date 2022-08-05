@@ -47,7 +47,7 @@ mp_lookup_err sq (m,p) =
 mp_compare :: (Measure,Pulse) -> (Measure,Pulse) -> Ordering
 mp_compare = List.two_stage_compare (compare `on` fst) (compare `on` snd)
 
--- * CT
+-- * Ct
 
 {- | Latch measures (ie. make measures contiguous, hold previous value).
      Arguments are the number of measures and the default (intial) value.
@@ -116,17 +116,17 @@ ct_tempo_at :: T.Lseq T.Rq T.Rq -> T.Rq -> Rational
 ct_tempo_at = T.lseq_lookup_err compare
 
 -- | Types of nodes.
-data CT_Node = CT_Mark T.Rq -- ^ The start of a measure with a rehearsal mark.
-             | CT_Start T.Rq -- ^ The start of a regular measure.
-             | CT_Normal T.Rq -- ^ A regular pulse.
-             | CT_Edge T.Rq -- ^ The start of a pulse group within a measure.
-             | CT_Pre T.Rq -- ^ A regular pulse in a measure prior to a rehearsal mark.
-             | CT_End -- ^ The end of the track.
+data Ct_Node = Ct_Mark T.Rq -- ^ The start of a measure with a rehearsal mark.
+             | Ct_Start T.Rq -- ^ The start of a regular measure.
+             | Ct_Normal T.Rq -- ^ A regular pulse.
+             | Ct_Edge T.Rq -- ^ The start of a pulse group within a measure.
+             | Ct_Pre T.Rq -- ^ A regular pulse in a measure prior to a rehearsal mark.
+             | Ct_End -- ^ The end of the track.
                deriving (Eq,Show)
 
 -- | Lead-in of @(pulse,tempo,count)@.
-ct_leadin :: (T.Rq,Double,Int) -> T.Dseq Double CT_Node
-ct_leadin (du,tm,n) = replicate n (realToFrac du * (60 / tm),CT_Normal du)
+ct_leadin :: (T.Rq,Double,Int) -> T.Dseq Double Ct_Node
+ct_leadin (du,tm,n) = replicate n (realToFrac du * (60 / tm),Ct_Normal du)
 
 -- | Prepend initial element to start of list.
 --
@@ -137,49 +137,51 @@ delay1 l =
       [] -> error "delay1: []"
       e:_ -> e : l
 
-{- | Generate CT measure.
+{- | Generate Ct measure.
      Calculates durations of events considering only the tempo at the start of the event.
      To be correct it should consider the tempo envelope through the event.
 -}
-ct_measure:: T.Lseq T.Rq T.Rq -> ([T.Rq],Maybe Char,Maybe (),[[T.Rq]]) -> [(Rational,CT_Node)]
+ct_measure:: T.Lseq T.Rq T.Rq -> ([T.Rq],Maybe Char,Maybe (),[[T.Rq]]) -> [(Rational,Ct_Node)]
 ct_measure sq (mrq,mk,pr,dv) =
     let dv' = concatMap (zip [1::Int ..]) dv
         f (p,rq,(g,du)) =
             let nm = if p == 1
                      then case mk of
-                            Nothing -> CT_Start du
-                            Just _ -> CT_Mark du
+                            Nothing -> Ct_Start du
+                            Just _ -> Ct_Mark du
                      else if pr == Just ()
-                          then CT_Pre du
-                          else if g == 1 then CT_Edge du else CT_Normal du
+                          then Ct_Pre du
+                          else if g == 1 then Ct_Edge du else Ct_Normal du
             in (du * (60 / ct_tempo_at sq rq),nm)
     in map f (zip3 [1::Int ..] mrq dv')
 
 -- | Click track definition.
-data CT = CT {ct_len :: Int
-             ,ct_ts :: [(Measure,T.Rational_Time_Signature)]
-             ,ct_mark :: [(Measure,Char)]
-             ,ct_tempo :: T.Lseq (Measure,Pulse) T.Rq
-             ,ct_count :: (T.Rq,Int)}
-          deriving Show
+data Ct =
+  Ct
+  {ct_len :: Int
+  ,ct_ts :: [(Measure,T.Rational_Time_Signature)]
+  ,ct_mark :: [(Measure,Char)]
+  ,ct_tempo :: T.Lseq (Measure,Pulse) T.Rq
+  ,ct_count :: (T.Rq,Int)}
+  deriving Show
 
 -- | Initial tempo, if given.
-ct_tempo0 :: CT -> Maybe T.Rq
+ct_tempo0 :: Ct -> Maybe T.Rq
 ct_tempo0 ct =
     case ct_tempo ct of
       (((1,1),_),n):_ -> Just n
       _ -> Nothing
 
 -- | Erroring variant.
-ct_tempo0_err :: CT -> T.Rq
+ct_tempo0_err :: Ct -> T.Rq
 ct_tempo0_err = fromMaybe (error "ct_tempo0") . ct_tempo0
 
--- > import Music.Theory.Duration.CT
+-- > import Music.Theory.Duration.Ct
 -- > import Music.Theory.Time.Seq
 -- > let ct = CT 2 [(1,[(3,8),(2,4)])] [(1,'a')] [(((1,1),T.None),60)] undefined
 -- > ct_measures ct
-ct_measures :: CT -> [T.Dseq Rational CT_Node]
-ct_measures (CT n ts mk tm _) =
+ct_measures :: Ct -> [T.Dseq Rational Ct_Node]
+ct_measures (Ct n ts mk tm _) =
     let f msg sq = let (m,v) = unzip sq
                    in if m == [1 .. n]
                       then v
@@ -191,10 +193,10 @@ ct_measures (CT n ts mk tm _) =
               (f "dv" (ct_dv_seq n ts))
     in map (ct_measure (ct_tempo_lseq_rq (ct_mdv_seq n ts) tm)) msr
 
-ct_dseq' :: CT -> T.Dseq Rational CT_Node
+ct_dseq' :: Ct -> T.Dseq Rational Ct_Node
 ct_dseq' = concat . ct_measures
 
-ct_dseq :: CT -> T.Dseq Double CT_Node
+ct_dseq :: Ct -> T.Dseq Double Ct_Node
 ct_dseq = T.dseq_tmap fromRational . ct_dseq'
 
 -- * Indirect
