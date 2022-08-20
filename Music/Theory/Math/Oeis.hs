@@ -6,6 +6,8 @@ import Data.Char {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
+import qualified Data.Set as Set {- containers -}
+
 import qualified Data.MemoCombinators as Memo {- data-memocombinators -}
 
 import qualified Music.Theory.Math as Math {- hmt-base -}
@@ -551,6 +553,29 @@ a(n) = a(n-1) + a(n-5); a(0) = ... = a(4) = 1.
 a003520 :: Num n => [n]
 a003520 = 1 : 1 : 1 : 1 : 1 : zipWith (+) a003520 (drop 4 a003520)
 
+{- | <http://oeis.org/A003462>
+
+a(n) = (3^n - 1)/2. (Formerly M3463)
+
+[0, 1, 4, 13, 40, 121, 364, 1093, 3280, 9841, 29524, 88573, 265720, 797161, 2391484, 7174453] `isPrefixOf` a003462
+-}
+a003462 :: [Integer]
+a003462 = iterate ((+ 1) . (* 3)) 0
+
+a003462_n :: Integer -> Integer
+a003462_n = (`div` 2) . (subtract 1) . (3 ^)
+
+{- | <http://oeis.org/A003586>
+
+3-smooth numbers: numbers of the form 2^i*3^j with i, j >= 0
+
+[1, 2, 3, 4, 6, 8, 9, 12, 16, 18, 24, 27, 32, 36, 48, 54, 64, 72, 81, 96, 108, 128, 144, 162] `isPrefixOf` a003586
+-}
+a003586 :: [Integer]
+a003586 =
+  let smooth s = let (x, s') = Set.deleteFindMin s in x : smooth (Set.insert (3 * x) (Set.insert (2 * x) s'))
+  in  smooth (Set.singleton 1)
+
 {- | <https://oeis.org/A003849>
 
 The infinite Fibonacci word (start with 0, apply 0->01, 1->0, take limit).
@@ -946,6 +971,18 @@ a034968 :: Integral n => [n]
 a034968 =
   let f i s n = if n == 0 then s else f (i + 1) (s + rem n i) (quot n i)
   in map (f 2 0) [0 ..]
+
+{- | <https://oeis.org/A036562>
+
+a(n) = 4^(n+1) + 3*2^n + 1
+
+[1, 8, 23, 77, 281, 1073, 4193, 16577, 65921, 262913, 1050113, 4197377, 16783361, 67121153] `isPrefixOf` a036562
+-}
+a036562 :: [Integer]
+a036562 = 1 : map a036562_n [0..]
+
+a036562_n :: Integer -> Integer
+a036562_n n = 4^(n+1) + 3*2^n + 1
 
 {- | <http://oeis.org/A046042>
 
