@@ -954,6 +954,21 @@ a030308 =
          _ -> error "A030308"
    in iterate f [0]
 
+{- | <https://oeis.org/A033622>
+
+Good sequence of increments for Shell sort (best on big values).
+
+[1, 5, 19, 41, 109, 209, 505, 929, 2161, 3905, 8929, 16001, 36289, 64769, 146305, 260609, 587521] `isPrefixOf` a033622
+-}
+a033622 :: [Integer]
+a033622 = map a033622_n [0..]
+
+a033622_n :: Integer -> Integer
+a033622_n n =
+  if even n
+  then 9 * 2 ^ n - 9 * 2 ^ ( n `div` 2) + 1
+  else 8 * 2 ^ n - 6 * 2 ^ ((n + 1 )`div` 2) + 1
+
 {- | <http://oeis.org/A033812>
 
 The Loh-Shu 3 X 3 magic square, lexicographically largest variant when read by columns.
