@@ -931,6 +931,17 @@ tseq_to_wseq dur_f sq =
               Nothing -> T.d_dx t
     in wseq_zip t d a
 
+{- | Translate Tseq to Wseq using inter-offset times, up to indicated total duration, as element durations.
+
+> let r = [((0,1),'a'),((1,2),'b'),((3,3),'c'),((6,2),'d'),((8,3),'e')]
+> tseq_to_wseq_iot 11 (zip [0,1,3,6,8] "abcde") == r
+-}
+tseq_to_wseq_iot :: Num t => t -> Tseq t a -> Wseq t a
+tseq_to_wseq_iot total_dur sq =
+  let (t, e) = unzip sq
+      d = zipWith (-) (tail t ++ [total_dur]) t
+  in zip (zip t d) e
+
 -- | Tseq to Iseq.
 --
 -- > tseq_to_iseq (zip [0,1,3,6,8,9] "abcde|") == zip [0,1,2,3,2,1] "abcde|"
