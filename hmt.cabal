@@ -86,6 +86,7 @@ Library
                    Music.Theory.Math.Nichomachus
                    Music.Theory.Math.Oeis
                    Music.Theory.Math.Prime
+                   Music.Theory.Math.Prime.List
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Morris_1980
