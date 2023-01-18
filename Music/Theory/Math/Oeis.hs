@@ -197,7 +197,7 @@ Lower Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi), where phi = (1+
 
 > [1,3,4,6,8,9,11,12,14,16,17,19,21,22,24,25,27,29,30,32,33,35,37,38,40,42] `isPrefixOf` a000201
 
-> import Sound.SC3.Plot {- hsc3-plot -}
+> import Sound.Sc3.Plot {- hsc3-plot -}
 > plot_p1_imp [take 128 a000201 :: [Int]]
 -}
 a000201 :: Integral n => [n]
@@ -465,6 +465,16 @@ a(n) = a(n-2) + a(n-5).
 a001687 :: Num n => [n]
 a001687 = 0 : 1 : 0 : 1 : 0 : zipWith (+) a001687 (drop 3 a001687)
 
+{- | <https://oeis.org/A001844>
+
+Centered square numbers: a(n) = 2*n*(n+1)+1. Sums of two consecutive squares. Also, consider all Pythagorean triples (X, Y, Z=Y+1) ordered by increasing Z; then sequence gives Z values.
+
+> [1,5,13,25,41,61,85,113,145,181,221,265,313,365,421,481,545,613,685,761,841,925,1013,1105,1201,1301] `isPrefixOf` a001844
+> let k = 999 in take k a001844 == zipWith (+) (take k a000290) (tail a000290)
+-}
+a001844 :: Integral n => [n]
+a001844 = map (\n -> 2 * n * (n + 1) + 1) [0..]
+
 {- | <https://oeis.org/A001950>
 
 Upper Wythoff sequence (a Beatty sequence): a(n) = floor(n*phi^2), where phi = (1+sqrt(5))/2
@@ -717,6 +727,23 @@ Number of magic squares of order n composed of the numbers from 1 to n^2, counte
 -}
 a006052 :: Integral n => [n]
 a006052 = [1,0,1,880,275305224]
+
+{- | <http://oeis.org/A006368>
+
+The "amusical permutation" of the nonnegative numbers: a(2n)=3n, a(4n+1)=3n+1, a(4n-1)=3n-1.
+
+> [0,1,3,2,6,4,9,5,12,7,15,8,18,10,21,11,24,13,27,14,30,16,33,17,36,19,39,20,42,22,45,23,48,25] `isPrefixOf` a006368
+> plot_p1_ln [take 100 (a006368 :: [Int])]
+> plot_p1_pt [take 2000 (a006368 :: [Int])]
+-}
+a006368 :: Integral n => [n]
+a006368 =
+  let f n | u' == 0   = 3 * u
+          | otherwise = 3 * v + (v' + 1) `div` 2
+        where (u, u') = divMod n 2; (v, v') = divMod n 4
+  in map f [0..]
+
+-- Reinhard Zumkeller, Apr 18 2012
 
 {- | <http://oeis.org/A006842>
 
@@ -1110,6 +1137,25 @@ a061654 = map a061654_n [0 ..]
 a061654_n :: Integral n => n -> n
 a061654_n n = (3 * 16^n + 2) `div` 5
 
+{- | <http://oeis.org/A064413>
+
+EKG sequence (or ECG sequence): a(1) = 1; a(2) = 2; for n > 2, a(n) = smallest number not already used which shares a factor with a(n-1).
+
+> [1,2,4,6,3,9,12,8,10,5,15,18,14,7,21,24,16,20,22,11,33,27,30,25,35,28,26,13,39,36,32,34,17] `isPrefixOf` a064413
+> plot_p1_ln [take 200 a064413 :: [Int]]
+> plot_p1_pt [take 2000 a064413 :: [Int]]
+-}
+a064413 :: Integral n => [n]
+a064413 =
+  let ekg x zs =
+        let f (y:ys) =
+              if gcd x y > 1
+              then y : ekg y (delete y zs)
+              else f ys
+            f [] = error "?"
+        in f zs
+  in 1 : ekg 2 [2..]
+
 {- | <http://oeis.org/A071996>
 
 a(1) = 0, a(2) = 1, a(n) = a(floor(n/3)) + a(n - floor(n/3)).
@@ -1219,6 +1265,25 @@ a096940_tbl :: Num i => [[i]]
 a096940_tbl =
   let f r = zipWith (+) (0 : r) (r ++ [0])
   in [5] : iterate f [1,5]
+
+{- | http://oeis.org/A098550
+
+The Yellowstone permutation: a(n) = n if n <= 3, otherwise the smallest number not occurring earlier having at least one common factor with a(n-2), but none with a(n-1).
+
+> [1,2,3,4,9,8,15,14,5,6,25,12,35,16,7,10,21,20,27,22,39,11,13,33,26,45,28,51,32,17,18,85,24,55] `isPrefixOf` a098550
+> plot_p1_ln [take 200 (a098550 :: [Int])]
+> plot_p1_pt [take 5000 (a098550 :: [Int])]
+-}
+a098550 :: Integral n => [n]
+a098550 =
+  let f u v ws =
+        let g [] = error "?"
+            g (x:xs) =
+              if gcd x u > 1 && gcd x v == 1
+              then x : f v x (delete x ws)
+              else g xs
+        in g ws
+  in 1 : 2 : 3 : f 2 3 [4 ..]
 
 {- | <http://oeis.org/A105809>
 
