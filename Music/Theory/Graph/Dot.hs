@@ -154,7 +154,7 @@ g_type_to_edge_symbol ty =
 node_pos_attr :: (Show n, Real n) => (n,n) -> Dot_Attr
 node_pos_attr (x,y) = let pp = Show.real_pp_trunc 2 in ("pos",concat [pp x,",",pp y])
 
--- | Edge POS attributes are sets of cubic bezier control points.
+-- | Edge position attributes are sets of cubic bezier control points.
 edge_pos_attr :: Real t => [(t,t)] -> Dot_Attr
 edge_pos_attr pt =
   let r_pp = Show.real_pp_trunc 2
@@ -167,7 +167,7 @@ edge_pos_attr_1 (p1,p2,p3,p4) = edge_pos_attr [p1,p2,p3,p4]
 
 {-
 -- | Vertex position function.
-type POS_FN v = (v -> (Int,Int))
+type Pos_Fn v = (v -> (Int,Int))
 
 g_lift_pos_fn :: (v -> (Int,Int)) -> v -> [Dot_Attr]
 g_lift_pos_fn f v = let (c,r) = f v in [node_pos_attr (c * 100,r * 100)]

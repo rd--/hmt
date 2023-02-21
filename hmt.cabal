@@ -24,7 +24,6 @@ Library
                    bytestring,
                    colour,
                    containers,
-                   data-memocombinators,
                    data-ordlist,
                    directory,
                    fgl,
@@ -84,9 +83,6 @@ Library
                    Music.Theory.List.Logic
                    Music.Theory.Math.Convert.Fx
                    Music.Theory.Math.Nichomachus
-                   Music.Theory.Math.Oeis
-                   Music.Theory.Math.Prime
-                   Music.Theory.Math.Prime.List
                    Music.Theory.Meter.Barlow_1987
                    Music.Theory.Metric.Buchler_1998
                    Music.Theory.Metric.Morris_1980
