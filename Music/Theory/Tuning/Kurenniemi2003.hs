@@ -44,13 +44,15 @@ kToMidi f0 k = Pitch.cps_to_midi (kToHz f0 k)
 kToPitch :: Double -> Integer -> Pitch.Pitch
 kToPitch f0 k = Pitch.midi_to_pitch Pitch.pc_spell_ks (kToMidi f0 k)
 
-{-
+{- | Given f0 in Hertz determine name of harmonic k.
+
 > kToName 0.4 1 == "Ab-6"
 > kToName c1 1 == "C1"
 -}
 kToName :: Double -> Integer -> String
 kToName f0 k = Pitch.pitch_pp_iso (kToPitch f0 k)
 
+-- | Name of k given f0 of C1.
 kC1 :: Integer -> String
 kC1 = kToName (Pitch.octpc_to_cps (1::Integer, 0))
 
@@ -98,7 +100,8 @@ linlin (sl, sr) (dl, dr) n =
         a = dl - (m * sl)
     in n * m + a
 
-{-
+{- | A more exact measure of majorness / minorness, the M-index
+
 > mIndex [4, 5, 6] == -0.22047079493414568
 > mIndex [5, 6, 8] == -0.23681136625736124
 > mIndex [6, 8, 10] == -0.3333333333333332
