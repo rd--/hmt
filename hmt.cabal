@@ -134,6 +134,7 @@ Library
                    Music.Theory.Tuning.Graph.Iset
                    Music.Theory.Tuning.Hs
                    Music.Theory.Tuning.Load
+                   Music.Theory.Tuning.Kurenniemi2003
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Midi
                    Music.Theory.Tuning.Partch

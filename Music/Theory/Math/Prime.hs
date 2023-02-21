@@ -231,4 +231,3 @@ prime_factors_pp_sup_ol ol =
                 n = length x
             in if n == 1 then mk x0 else mk x0 ++ Unicode.int_show_superscript n
   in intercalate [Unicode.middle_dot] . map f . group
-

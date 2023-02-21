@@ -1085,6 +1085,15 @@ Triangle read by rows, denominator of fractions of a variant of the Farey series
 a049456 :: Integral n => [n]
 a049456 = map snd (concat Math.stern_brocot_tree_lhs)
 
+{- | <https://oeis.org/A051037>
+
+5-smooth numbers, i.e., numbers whose prime divisors are all <= 5.
+
+[1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20, 24, 25, 27, 30, 32, 36, 40, 45, 48, 50, 54, 60, 64, 72] `isPrefixOf` a051037
+-}
+a051037 :: Integral n => [n]
+a051037 = map (`div` 30) a143207
+
 {- | <http://oeis.org/A053121>
 
 Catalan triangle (with 0's) read by rows.
@@ -1461,6 +1470,19 @@ a126976 =
   ,18,20,22,21,17,13
   ,25,29,10,09,26,12
   ,36,05,33,04,02,31]
+
+{- | <https://oeis.org/A143207>
+
+Numbers with distinct prime factors 2, 3, and 5.
+
+> [30, 60, 90, 120, 150, 180, 240, 270, 300, 360, 450, 480, 540, 600, 720, 750, 810, 900, 960] `isPrefixOf` a143207
+-}
+a143207 :: Integral n => [n]
+a143207 =
+  let f s =
+        let (m, s') = Set.deleteFindMin s
+        in m : f (Set.insert (2 * m) (Set.insert (3 * m) (Set.insert (5 * m) s')))
+  in f (Set.singleton (2 * 3 * 5))
 
 {- | <https://oeis.org/A212804>
 
