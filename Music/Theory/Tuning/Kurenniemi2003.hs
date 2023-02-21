@@ -1,5 +1,3 @@
-{-# Language FlexibleInstances #-}
-
 -- | Erkki Kurenniemi. Chords, scales, and divisor lattices (2003) <https://beige.org/projects/dimi/CSDL2.pdf>
 module Music.Theory.Tuning.Kurenniemi2003 where
 
@@ -141,17 +139,14 @@ nthMultiplicity f i =
   let p = nthPrime i
   in genericLength (filter (== p) (Primes.primeFactors f))
 
-{- | Class for division operator that answers a Rational. -}
-class DivideRational n where divideRational :: n -> n -> Rational
-instance DivideRational Int where divideRational i j = (fromIntegral i % fromIntegral j)
-instance DivideRational Integer where divideRational = (%)
-instance DivideRational (Ratio Integer) where divideRational = (/)
+rationalDividesImmediately :: Rational -> Rational -> Bool
+rationalDividesImmediately i j =
+  let r = i / j
+  in denominator r == 1 && Primes.isPrime (numerator r)
 
 {- | i/j is prime
 
 > length [(i, j) | i <- divisors 60, j <- divisors 60, i < j, dividesImmediately j i] == 20
 -}
-dividesImmediately :: DivideRational n => n -> n -> Bool
-dividesImmediately i j =
-  let r = i `divideRational` j
-  in denominator r == 1 && Primes.isPrime (numerator r)
+dividesImmediately :: Integer -> Integer -> Bool
+dividesImmediately i j = rationalDividesImmediately (i % 1) (j % 1)
