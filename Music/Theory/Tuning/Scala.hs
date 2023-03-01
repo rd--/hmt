@@ -16,16 +16,17 @@ import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
 
-import qualified Music.Theory.Array.Csv as Csv {- hmt -}
-import qualified Music.Theory.Directory as Directory {- hmt -}
-import qualified Music.Theory.Either as Either {- hmt -}
-import qualified Music.Theory.Function as Function {- hmt -}
-import qualified Music.Theory.Io as Io {- hmt -}
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Math.Prime as Prime {- hmt -}
-import qualified Music.Theory.Read as T {- hmt -}
-import qualified Music.Theory.Show as T {- hmt -}
-import qualified Music.Theory.String as T {- hmt -}
+import qualified Music.Theory.Array.Csv as Csv {- hmt-base -}
+import qualified Music.Theory.Directory as Directory {- hmt-base -}
+import qualified Music.Theory.Either as Either {- hmt-base -}
+import qualified Music.Theory.Function as Function {- hmt-base -}
+import qualified Music.Theory.Io as Io {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
+import qualified Music.Theory.Read as T {- hmt-base -}
+import qualified Music.Theory.Show as T {- hmt-base -}
+import qualified Music.Theory.String as T {- hmt-base -}
+
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
@@ -265,7 +266,7 @@ parse_scl nm s =
 -- | Read the environment variable @SCALA_SCL_DIR@, which is a
 -- sequence of directories used to locate scala files on.
 --
--- > setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/90/scl"
+-- > setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/91/scl"
 scl_get_dir :: IO [FilePath]
 scl_get_dir = fmap splitSearchPath (getEnv "SCALA_SCL_DIR")
 
@@ -446,7 +447,7 @@ scl_cdiff_abs_sum_1 pp c scl =
     [] -> error "scl_cdiff_abs_sum_1"
     (n,d,r):_ -> (n,map pp d,r)
 
-{- | Sort DB into ascending order of sum of absolute of differences to scale given in cents.
+{- | Sort Db into ascending order of sum of absolute of differences to scale given in cents.
      Scales are sorted and all rotations are considered.
 
 > db <- scl_load_db
