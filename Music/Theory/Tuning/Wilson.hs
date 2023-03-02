@@ -163,12 +163,17 @@ r_seq_factors = nub . sort . concatMap (uncurry (++) . Prime.rational_prime_fact
 
 r_seq_normalize :: [Rational] -> [Rational]
 r_seq_normalize r =
-  let r0:_ = r
-      r' = map (Tuning.fold_ratio_to_octave_err . (/ r0)) r
-  in sort r'
+  case r of
+    [] -> error "r_seq_normalize"
+    r0:_ ->
+      let r' = map (Tuning.fold_ratio_to_octave_err . (/ r0)) r
+      in sort r'
 
 r_seq_rotations :: [Rational] -> [[Rational]]
 r_seq_rotations = map r_seq_normalize . List.rotations
+
+r_seq_inverse :: [Rational] -> [Rational]
+r_seq_inverse = r_seq_normalize . map recip
 
 -- * Table
 
@@ -426,6 +431,11 @@ ew_scl_find_r_eq r =
 ew_scl_find_r_rot :: [Rational] -> [Scala.Scale] -> [String]
 ew_scl_find_r_rot r db = concatMap (\s -> ew_scl_find_r_eq s db) (r_seq_rotations r)
 
+ew_scl_find_r_rot_inv :: [Rational] -> [Scala.Scale] -> [String]
+ew_scl_find_r_rot_inv r db =
+  let u = r_seq_rotations r ++ r_seq_rotations (r_seq_inverse r)
+  in concatMap (\s -> ew_scl_find_r_eq s db) u
+
 -- * <http://anaphoria.com/1-3-5-7-9Genus.pdf>
 
 ew_1357_3_gen :: [M3_Gen]
@@ -653,7 +663,7 @@ meru_1 k = zipWith (flip (Safe.atDef 0)) [0..] (reverse (meru_k k))
 meru_1_direct :: Num n => [n]
 meru_1_direct = tail OEIS.a000045
 
--- | Meru 2 = META-PELOG
+-- | Meru 2 = Meta-Pelog
 --
 -- > map (sum . meru_2) [1 .. 14] == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
 meru_2 :: Num n => Int -> [n]
@@ -663,7 +673,7 @@ meru_2 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 2
 meru_2_direct :: Num n => [n]
 meru_2_direct = OEIS.a000930
 
--- | meru_3 = META-SLENDRO
+-- | meru_3 = Meta-Slendro
 meru_3 :: Num n => Int -> [[n]]
 meru_3 k =
   let f t = zipWith (flip (Safe.atDef 0)) [0,2..] t
