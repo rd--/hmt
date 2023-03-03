@@ -1,4 +1,4 @@
--- | Scala DB meta-data.
+-- | Scala Db meta-data.
 module Music.Theory.Tuning.Scala.Meta where
 
 -- | Just-intonation (ie. all rational) scales, collected by author.
@@ -6,14 +6,14 @@ scl_ji_au :: [(String,[String])]
 scl_ji_au =
   [("Alves, Bill",words "alves_12 alves_22 alves_pelog alves alves_slendro")
   ,("Archytas"
-   ,["arch_chrom","arch_chromc2" -- "archchro" NON-JI
+   ,["arch_chrom","arch_chromc2" -- "archchro" Non-Ji
     ,"arch_dor"
     ,"arch_enh","arch_enh2","arch_enh3","arch_enhp"
     ,"arch_enht","arch_enht2","arch_enht3","arch_enht4","arch_enht5","arch_enht6","arch_enht7"
     ,"arch_mult"
     ,"arch_ptol","arch_ptol2"
     ,"arch_sept"
-    -- "archytas7" "archytas12","archytas12sync" NON-JI
+    -- "archytas7" "archytas12","archytas12sync" Non-Ji
     ])
   ,("Barlow, Clarence",words "barlow_13 barlow_17")
   ,("Boethius",words "boeth_chrom boeth_enh")
@@ -52,28 +52,43 @@ scl_ji_au =
    ,["dekany-cs"
     ,"grady11"
     ,"grady_14"
+    ,"grady_beebalm"
     ,"grady_centaur"
+    ,"grady_centaura"
     ,"grady_centaur17"
-    ,"grady_centaur19"])
+    ,"grady_centaur19"
+    -- ,"grady_mirror-meta-pelog7" -- Non-Ji
+    -- ,"grady_mirror-meta-pelog9" -- Non-Ji
+    -- ,"grady_mirror-meta-pelog20" -- Non-Ji
+    -- ,"grady_mirror-meta-slendro12" -- Non-Ji
+    -- ,"grady_mirror-meta-slendro17" -- Non-Ji
+    ,"wilson-grady_1-3-5-7-9-doubledekany"
+    ,"wilson-grady_metamavila7"
+    ,"wilson-grady_metamavila9"
+    ,"wilson-grady_metamavila16"
+    ,"wilson-grady_metaptolemy7"
+    ,"wilson-grady_metaptolemy10"
+    ,"wilson-grady_metaptolemy17"
+    ])
   ,("Hahn, Paul",words "duohex hahn_7 hahn9 hahnmaxr indian-hahn") -- hahn_g mean14a
   ,("Harrison, Lou"
-   ,["dudon_slendro_matrix" -- NON-UNIQ
+   ,["dudon_slendro_matrix" -- Non-Uniq
     ,"harrison_5"
     ,"harrison_5_1"
-    ,"harrison_5_3" -- NON-STEP
-    ,"harrison_5_4" -- NON-STEP
-    ,"harrison_8" -- NON-STEP
+    ,"harrison_5_3" -- Non-Step
+    ,"harrison_5_4" -- Non-Step
+    ,"harrison_8" -- Non-Step
     ,"harrison_15"
     ,"harrison_16"
     ,"harrison_bill"
     ,"harrison_cinna"
     ,"harrison_diat"
     ,"harrison_handel"
-    ,"harrison_kyai" -- NON-STEP
+    ,"harrison_kyai" -- Non-Step
     ,"harrison_mid"
     ,"harrison_mid2"
     ,"harrison_mix2"
-    ,"harrison_mix3" -- NON-STEP
+    ,"harrison_mix3" -- Non-Step
     ,"harrison_mix4"
     ,"harrison_slye"
     ,"harrison_songs"
@@ -81,12 +96,12 @@ scl_ji_au =
     ,"hirajoshi2"
     ,"korea_5"
     ,"olympos"
-    ,"pelog_jc" -- STRICT SONGS
-    ,"pelog_laras" -- NON-STEP
+    ,"pelog_jc" -- Strict Songs
+    ,"pelog_laras" -- Non-Step
     ,"prime_5"
     ,"slendro5_1","slendro5_2"
     ,"slendro_7_1","slendro_7_2","slendro_7_3","slendro_7_4"
-    -- "slendro_laras" -- NON-OCT
+    -- "slendro_laras" -- Non-Oct
     ,"tranh"])
   ,("Johnston, Ben"
    ,["johnston"
@@ -134,21 +149,25 @@ scl_ji_au =
     ,"ptolemy_tree"])
   ,("Pythagoras"
    ,["pyth_7a","pyth_12","pyth_12s","pyth_17","pyth_17s","pyth_22","pyth_27","pyth_chrom"
-    -- "pyth_31" "pyth_sev" "pyth_third" NOT-JI
+    -- "pyth_31" "pyth_sev" "pyth_third" Not-Ji
     ])
   ,("Riley, Terry",words "riley_albion riley_rosary")
   ,("Smith, Gene Ward",["smithgw_15highschool1","smithgw_15highschool2","smithgw_18","smithgw_19highschool1","smithgw_19highschool2","smithgw_21","smithgw_22highschool","smithgw_58","smithgw_9","smithgw_ball","smithgw_ball2","smithgw_circu","smithgw_decab","smithgw_decac","smithgw_decad","smithgw_diff13","smithgw_dwarf6_7","smithgw_ennon13","smithgw_ennon15","smithgw_ennon28","smithgw_ennon43","smithgw_euclid3","smithgw_glamma","smithgw_glumma","smithgw_gm","smithgw_hahn12","smithgw_hahn15","smithgw_hahn16","smithgw_hahn19","smithgw_hahn22","smithgw_indianred","smithgw_majraj1","smithgw_majraj2","smithgw_majraj3","smithgw_majsyn1","smithgw_majsyn2","smithgw_majsyn3","smithgw_meandin","smithgw_meanred","smithgw_mir22","smithgw_monzoblock37","smithgw_orw18r","smithgw_pel1","smithgw_pel3","smithgw_pris","smithgw_prisa","smithgw_ragasyn1","smithgw_ratwell","smithgw_rectoo","smithgw_red72_11geo","smithgw_red72_11pro","smithgw_sc19","smithgw_scj22a","smithgw_scj22b","smithgw_scj22c","smithgw_smalldi11","smithgw_smalldi19a","smithgw_smalldi19b","smithgw_smalldi19c","smithgw_star","smithgw_star2","smithgw_syndia2","smithgw_syndia3","smithgw_syndia4","smithgw_syndia6","smithgw_well1","smithgw_wiz28","smithgw_wiz34","smithgw_wiz38"])
-  ,("Tenney, James",words "mund45 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
+  ,("Tenney, James"
+   ,words "mund45 mundeuc45 schis41 tenney_8 tenney_11 tenn41a tenn41b tenn41c")
   ,("Wilson, Erv"
    ,["chin_7"
+    ,"cluster6d"
     ,"ckring9"
     ,"diamond7-13"
     ,"dodeceny","dorian_diat2inv","hypol_diatinv"
     ,"dkring3"
     ,"efg33357","efg3335711","efg35711"
+    ,"eikohole1" -- eikohole2 eikohole4 eikohole5 eikohole6
     ,"eikosany"
     ,"erlich9"
     ,"harm6","harm8","harm9","harm14","harm15"
+    ,"hexany1", "hexany10", "hexany11", "hexany12", "hexany13"
     ,"hexany_union"
     ,"indian-magrama"
     ,"malkauns"
@@ -177,7 +196,7 @@ scl_ji_au =
     ,"wilson_duo"
     ,"wilson_enh","wilson_enh2"
     ,"wilson_facet"
-    -- ,"wilson_gh1","wilson_gh2","wilson_gh11","wilson_gh50" -- NON-JI
+    -- ,"wilson_gh1","wilson_gh2","wilson_gh11","wilson_gh50" -- Non-Ji
     ,"wilson_hebdome1"
     ,"wilson_hexflank"
     ,"wilson_hypenh"

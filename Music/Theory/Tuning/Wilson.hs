@@ -231,7 +231,11 @@ ew_gr_udot (lc_m,attr,v_pp) =
                   Nothing -> ("sfdp",const Nothing)
                   Just (lc,primes_l) -> ("neato",Just . ew_gr_r_pos lc primes_l)
   in Dot.lbl_to_udot
-     ([("graph:layout",e),("node:shape","plain")] ++ attr) -- ("graph:K","0.6") ("edge:len","1.0")
+     ([("graph:layout",e)
+      ,("graph:bgcolor","transparent")
+      ,("node:shape","plain")] -- ("graph:K","0.6") ("edge:len","1.0")
+       ++ attr
+     )
      (\(_,v) -> List.mcons (p_f v) [("label",v_pp v)]
      ,const [])
 
