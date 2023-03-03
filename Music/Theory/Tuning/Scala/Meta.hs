@@ -4,7 +4,8 @@ module Music.Theory.Tuning.Scala.Meta where
 -- | Just-intonation (ie. all rational) scales, collected by author.
 scl_ji_au :: [(String,[String])]
 scl_ji_au =
-  [("Alves, Bill",words "alves_12 alves_22 alves_pelog alves alves_slendro")
+  [("Alves, Bill"
+   ,words "alves_12 alves_22 alves_pelog alves alves_slendro")
   ,("Archytas"
    ,["arch_chrom","arch_chromc2" -- "archchro" Non-Ji
     ,"arch_dor"
@@ -15,8 +16,10 @@ scl_ji_au =
     ,"arch_sept"
     -- "archytas7" "archytas12","archytas12sync" Non-Ji
     ])
-  ,("Barlow, Clarence",words "barlow_13 barlow_17")
-  ,("Boethius",words "boeth_chrom boeth_enh")
+  ,("Barlow, Clarence"
+   ,words "barlow_13 barlow_17")
+  ,("Boethius"
+   ,words "boeth_chrom boeth_enh")
   ,("Burt, Warren",
      concat [map (\n -> "burt" ++ show n) [1::Int .. 20]
             ,words "burt_fibo burt_fibo23 burt_forks burt_primes"])
@@ -44,10 +47,16 @@ scl_ji_au =
     ,"prod7d"
     ,"prodq13"
     ,"slen_pel_jc"])
-  ,("Didymus", words "didy_chrom didy_chrom1 didy_chrom2 didy_chrom3 didy_diat didy_enh didy_enh2")
-  ,("Eratosthenes",words "eratos_chrom eratos_diat eratos_enh")
-  ,("Euler, Leonhard",words "euler euler_diat euler_enh euler_gm")
-  ,("Gann, Kyle",words "gann_arcana gann_charingcross gann_cinderella gann_custer gann_fractured gann_fugitive gann_ghost gann_love gann_new_aunts gann_revisited gann_sitting gann_solitaire gann_suntune gann_super gann_things gann_wolfe hulen_33")
+  ,("Didymus"
+   , words "didy_chrom didy_chrom1 didy_chrom2 didy_chrom3 didy_diat didy_enh didy_enh2")
+  ,("Eratosthenes"
+   ,words "eratos_chrom eratos_diat eratos_enh")
+  ,("Erlich, Paul" --   erlich1 erlich2 erlich3 erlich4 erlich5 erlich7 erlich8 erlich10a erlich12 erlich_bppe erlich_bppm erlichpump -- Non-Ji
+   ,words "blackjack_r blackjack_r2 cassmagoctrod erlich10coh erlich10s1 erlich10s2 erlich10 erlich11s1 erlich11s2 erlich11 erlich13 erlich6 erlich9 erlich_bpf erlich_bpp2 erlich_bpp jioct12 pipedum_14 pipedum_14a pipedum_15 pipedum_15b pipedum_15c pipedum_15d pipedum_15e pipedum_16 pipedum_17 pipedum_17a pipedum_18 pipedum_18a pipedum_18b pipedum_19e pipedum_19f pipedum_19g pipedum_20 pipedum_21 pipedum_22 pipedum_22b pipedum_22b2 pipedum_22c pipedum_22d pipedum_22e pipedum_22f pipedum_22g pipedum_22h pipedum_22i pipedum_26 pipedum_27 pipedum_27a pipedum_27b pipedum_27c pipedum_27d pipedum_27e pipedum_27f pipedum_27g pipedum_27h pipedum_27i pipedum_41 pipedum_46c")
+  ,("Euler, Leonhard"
+   ,words "euler euler_diat euler_enh euler_gm")
+  ,("Gann, Kyle"
+   ,words "gann_arcana gann_charingcross gann_cinderella gann_custer gann_fractured gann_fugitive gann_ghost gann_love gann_new_aunts gann_revisited gann_sitting gann_solitaire gann_suntune gann_super gann_things gann_wolfe hulen_33")
   ,("Grady, Kraig"
    ,["dekany-cs"
     ,"grady11"
@@ -207,9 +216,12 @@ scl_ji_au =
 
 {-
 import Music.Theory.Tuning.Scala
-db <- scl_load_db
-nm = concatMap snd scl_ji_au
+db <- scl_load_db_dir
+nm = nub (sort (concatMap snd scl_ji_au))
+length nm == 440
 scl = filter (\x -> scale_name x `elem` nm) db
+length scl == 440
+nm \\ map scale_name scl
 non_ji = filter (not . scl_is_ji) scl
 map scale_name non_ji
 -}

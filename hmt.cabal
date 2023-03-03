@@ -143,6 +143,7 @@ Library
                    Music.Theory.Tuning.Scala.Cli
                    Music.Theory.Tuning.Scala.Functions
                    Music.Theory.Tuning.Scala.Interval
+                   Music.Theory.Tuning.Scala.Json
                    Music.Theory.Tuning.Scala.Kbm
                    Music.Theory.Tuning.Scala.Meta
                    Music.Theory.Tuning.Scala.Mode

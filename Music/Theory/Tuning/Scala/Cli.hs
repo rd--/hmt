@@ -30,7 +30,7 @@ type R = Double
 
 db_stat :: IO ()
 db_stat = do
-  db <- Scala.scl_load_db
+  db <- Scala.scl_load_db_path
   let po = filter (== Just (Right 2)) (map Scala.scale_octave db)
       uf = filter Scala.is_scale_uniform db
       r = ["# entries        : " ++ show (length db)
@@ -41,7 +41,7 @@ db_stat = do
 -- > db_summarise (Just 15) (Just 65)
 db_summarise :: Maybe Int -> Maybe Int -> IO ()
 db_summarise nm_lim dsc_lim = do
-  db <- Scala.scl_load_db
+  db <- Scala.scl_load_db_path
   let nm_seq = map Scala.scale_name db
       nm_max = maybe (maximum (map length nm_seq)) id nm_lim
       dsc_seq = map Scala.scale_description db
@@ -52,8 +52,10 @@ db_summarise nm_lim dsc_lim = do
 env :: IO ()
 env = do
   scl_dir <- Scala.scl_get_dir
+  scl_path <- Scala.scl_get_path
   dist_dir <- getEnv "SCALA_DIST_DIR"
-  putStrLn ("SCALA_SCL_DIR = " ++ if null scl_dir then "NOT SET" else intercalate ":" scl_dir)
+  putStrLn ("SCALA_SCL_DIR = " ++ if null scl_dir then "NOT SET" else scl_dir)
+  putStrLn ("SCALA_SCL_PATH = " ++ if null scl_path then "NOT SET" else intercalate ":" scl_path)
   putStrLn ("SCALA_DIST_DIR = " ++ if null dist_dir then "NOT SET" else dist_dir)
 
 cut :: Maybe Int -> [a] -> [a]
@@ -70,7 +72,7 @@ search (load_f,descr_f,stat_f) (ci,lm) txt = do
 -- > search_scale (True,Nothing) ["xenakis"]
 -- > search_scale (True,Just 75) ["lamonte","young"]
 search_scale :: (Bool,Maybe Int) -> [String] -> IO ()
-search_scale = search (Scala.scl_load_db,Scala.scale_description,Scala.scale_stat)
+search_scale = search (Scala.scl_load_db_path,Scala.scale_description,Scala.scale_stat)
 
 -- > search_mode (True,Nothing) ["xenakis"]
 search_mode :: (Bool,Maybe Int) -> [String] -> IO ()
@@ -79,7 +81,7 @@ search_mode = search (fmap Mode.modenam_modes Mode.load_modenam,Mode.mode_descri
 -- > stat_all Nothing
 stat_all :: Maybe Int -> IO ()
 stat_all character_limit = do
-  db <- Scala.scl_load_db
+  db <- Scala.scl_load_db_path
   mapM_ (putStrLn . unlines . map (cut character_limit) . Scala.scale_stat) db
 
 -- > stat_by_name Nothing "young-lm_piano"
