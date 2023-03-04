@@ -6,6 +6,7 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
 import Music.Theory.List {- hmt-base -}
+import Music.Theory.Math.Prime {- hmt-base -}
 
 import Music.Theory.Tuning.Scala {- hmt -}
 
@@ -13,14 +14,20 @@ type Name = String
 type Description = String
 type JiTuning = (Name, Description, [Integer], Maybe Rational, Maybe [Int])
 
-float64_integer_limit :: Integer
-float64_integer_limit = (2 ^ (53::Integer)) - 1
+float64_integer_max :: Integer
+float64_integer_max = (2 ^ (53::Integer)) - 1
 
 ji_tuning_name :: JiTuning -> Name
 ji_tuning_name (x, _, _, _, _) = x
 
 ji_tuning_requires_large_integer :: JiTuning -> Bool
-ji_tuning_requires_large_integer (_, _, i, _, _) = any (\x -> x >= float64_integer_limit) i
+ji_tuning_requires_large_integer (_, _, i, _, _) = any (\x -> x >= float64_integer_max) i
+
+ji_tuning_degree :: JiTuning -> Int
+ji_tuning_degree (_, _, x, _, _) = length x
+
+ji_tuning_limit :: JiTuning -> Integer
+ji_tuning_limit (_, _, x, _, _) = maximum (concatMap prime_factors x)
 
 rational_to_integer :: Rational -> Integer
 rational_to_integer r =
@@ -59,6 +66,8 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
        ",\n"
        [e "name" (q nm)
        ,e "description" (q dsc)
+       ,e "degree" (show (length iseq))
+       ,e "limit" (show (maximum (concatMap prime_factors iseq)))
        ,e "tuning" (i iseq)
        ]
      ,maybe "" (\x -> ",\n" ++ e "octave" (i [numerator x, denominator x])) oct

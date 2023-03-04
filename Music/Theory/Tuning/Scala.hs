@@ -385,17 +385,19 @@ scales_dir_txt_tbl =
   let f s = [scale_name s,show (scale_degree s),scale_description s]
   in map f
 
--- | Format 'scales_dir_txt_tbl' as Csv file.
---
--- > db <- scl_load_db_dir
--- > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
+{- | Format 'scales_dir_txt_tbl' as Csv file.
+
+> db <- scl_load_db_dir
+> writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
+-}
 scales_dir_txt_csv :: [Scale] -> String
 scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_txt_tbl db)
 
--- | Simple plain-text display of scale data.
---
--- > db <- scl_load_db_dir
--- > writeFile "/tmp/scl.txt" (unlines (intercalate [""] (map scale_stat db)))
+{- | Simple plain-text display of scale data.
+
+> db <- scl_load_db_dir
+> writeFile "/tmp/scl.txt" (unlines (intercalate [""] (map scale_stat db)))
+-}
 scale_stat :: Scale -> [String]
 scale_stat s =
     let p = scale_pitches s
@@ -420,11 +422,12 @@ pitch_pp p =
       Left c -> show c
       Right r -> show (numerator r) ++ "/" ++ show (denominator r)
 
--- | Pretty print 'Scale' in @Scala@ format.
---
--- > scl <- scl_load "et19"
--- > scl <- scl_load "young-lm_piano"
--- > putStr $ unlines $ scale_pp scl
+{- | Pretty print 'Scale' in @Scala@ format.
+
+> scl <- scl_load "et19"
+> scl <- scl_load "young-lm_piano"
+> putStr $ unlines $ scale_pp scl
+-}
 scale_pp :: Scale -> [String]
 scale_pp (nm,dsc,k,p) =
     ["! " ++ nm ++ ".scl"
@@ -516,8 +519,15 @@ scale_cmp_ji cmp x scl =
     Nothing -> False
     Just r -> cmp x r
 
--- | Find scale(s) that are 'scale_cmp_ji' to /x/.
---   Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
+{- | Find scale(s) that are 'scale_cmp_ji' to /x/.
+Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
+
+> db <- scl_load_db_dir
+> let inv = (++ [2]) . nub . sort . map (T.fold_ratio_to_octave_err . recip)
+> let cmp p q = p == q || p == inv q
+> scl_find_ji cmp [1, 6/5, 4/3, 8/5, 16/9, 2] db
+
+-}
 scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
 scl_find_ji cmp x = filter (scale_cmp_ji cmp x)
 
