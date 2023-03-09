@@ -55,7 +55,9 @@ pt_set_normalise_sym x =
 
 -- * Lattice Design
 
--- | /k/-unit co-ordinates for /k/-lattice.
+{- | /k/-unit co-ordinates for /k/-lattice.
+The coordinates are given as (x, y) for the unit vector.
+-}
 type Lattice_Design n = (Int,[V2 n])
 
 -- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]

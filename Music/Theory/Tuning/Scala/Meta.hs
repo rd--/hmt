@@ -224,4 +224,9 @@ length scl == 440
 nm \\ map scale_name scl
 non_ji = filter (not . scl_is_ji) scl
 map scale_name non_ji
+
+import Sound.Osc.Type.Json.Micro as Json {- hosc-json -}
+s <- readFile "/home/rohan/sw/hmt/data/json/scala-meta-au.js"
+value_to_assoc_list value_to_string_list (Json.decode_str s) == scl_ji_au
+
 -}
