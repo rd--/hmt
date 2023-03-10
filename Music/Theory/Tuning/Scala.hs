@@ -201,7 +201,7 @@ scale_ratios_u scl =
 
 -- | Erroring variant of 'scale_ratios_u.
 scale_ratios_req :: Scale -> [Rational]
-scale_ratios_req = fromMaybe (error "scale_ratios_req") . scale_ratios_u
+scale_ratios_req scl = fromMaybe (error ("scale_ratios_req: " ++ scale_name scl)) (scale_ratios_u scl)
 
 {- | Are scales equal ('==') at degree and tuning data.
 
@@ -323,7 +323,7 @@ scl_derive_filename nm = do
 -- > scl_resolve_name "/home/rohan/data/scala/90/scl/unknown-tuning.scl"
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
-    let ex_f x = if x then return nm else error "scl_resolve_name: file does not exist"
+    let ex_f x = if x then return nm else error ("scl_resolve_name: file does not exist: " ++ nm)
     in if isAbsolute nm && takeExtension nm == ".scl"
        then doesFileExist nm >>= ex_f
        else scl_derive_filename nm

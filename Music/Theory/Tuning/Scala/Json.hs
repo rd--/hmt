@@ -61,7 +61,8 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
       e x y = '\t' : q x ++ ": " ++ y
       i x = "[\n\t\t" ++ intercalate ",\n\t\t" (map show x) ++ "\n\t]"
   in concat
-     ["{\n"
+     [q nm
+     ,": {\n"
      ,intercalate
        ",\n"
        [e "name" (q nm)
@@ -87,7 +88,7 @@ write_ji_tuning_db fn = do
   let ji = map scale_ji_tuning (filter scl_is_ji db)
       lm = filter (not . ji_tuning_requires_large_integer) ji
       e = map ji_tuning_json lm
-  writeFile fn ("[\n" ++ intercalate ",\n" e ++ "\n]")
+  writeFile fn ("{\n" ++ intercalate ",\n" e ++ "\n}")
 
 {-
 db <- scl_load_db_dir -- v.91
