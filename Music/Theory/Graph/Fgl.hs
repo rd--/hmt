@@ -13,6 +13,7 @@ import qualified Data.Graph.Inductive.PatriciaTree as G {- fgl -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
+import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
@@ -173,3 +174,11 @@ pathTree (Just ct,g)
 makeLeaf           :: G.Context a b -> G.Context a b
 makeLeaf (p,n,a,_) = (p', n, a, [])
     where p' = filter (\(_,n') -> n' /= n) p
+
+-- * Dot
+
+fgl_to_dot :: G.Graph gr => T.Graph_Type -> [T.Dot_Meta_Attr] -> T.Graph_Pp v e -> gr v e -> [String]
+fgl_to_dot typ opt pp gr = T.lbl_to_dot typ opt pp (fgl_to_lbl gr)
+
+fgl_to_udot :: G.Graph gr => [T.Dot_Meta_Attr] -> T.Graph_Pp v e -> gr v e -> [String]
+fgl_to_udot opt pp gr = T.lbl_to_udot opt pp (fgl_to_lbl gr)
