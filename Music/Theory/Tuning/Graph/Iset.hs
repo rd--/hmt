@@ -86,6 +86,7 @@ g_to_dot :: Int -> [(String,String)] -> (R -> [(String,String)]) -> G -> [String
 g_to_dot k attr v_attr (_,e_set) =
   let opt =
         [("graph:layout","neato")
+        ,("graph:bgcolor","transparent")
         ,("node:shape","plaintext")
         ,("node:fontsize","10")
         ,("node:fontname","century schoolbook")
