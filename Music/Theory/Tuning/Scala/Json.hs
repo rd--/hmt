@@ -102,14 +102,16 @@ scale_json :: Scale -> String
 scale_json (nm,dsc,k,p) =
   let q x = '"' : quote x ++ ['"']
       a x = "[" ++ intercalate ", " x ++ "]"
-      e f x y = "\t\t" ++ q x ++ ": " ++ f y
+      e f x y = "\t" ++ q x ++ ": " ++ f y
   in unlines
      ["\t" ++ q nm ++ ": {"
-     ,e q "name" nm
-     ,e q "description" dsc
-     ,e id "degree" (show k)
-     ,e a "pitches" (map pitch_json (drop_last p))
-     ,e id "octave" (pitch_json (last p))
+     ,"\t" ++ intercalate
+       ",\n\t"
+       [e q "name" nm
+       ,e q "description" dsc
+       ,e id "degree" (show k)
+       ,e a "pitches" (map pitch_json (drop_last p))
+       ,e id "octave" (pitch_json (last p))]
      ,"\t}"]
 
 {- | Write Scala database to Json.
