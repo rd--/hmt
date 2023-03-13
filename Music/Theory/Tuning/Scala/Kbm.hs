@@ -50,11 +50,11 @@ kbm_is_linear (sz,_,_,_,_o,_) = sz == 0 -- && o == 0
 
 {- | Given kbm and midi-note-number lookup (octave,scale-degree).
 
-> k <- kbm_load_dist "example.kbm" -- 12-tone scale
-> k <- kbm_load_dist "a440.kbm" -- linear
-> k <- kbm_load_dist "white.kbm" -- 7-tone scale on white notes
-> k <- kbm_load_dist "black.kbm" -- 5-tone scale on black notes
-> k <- kbm_load_dist "128.kbm"
+> k <- kbm_load_dist "example" -- 12-tone scale
+> k <- kbm_load_dist "a440" -- linear
+> k <- kbm_load_dist "white" -- 7-tone scale on white notes
+> k <- kbm_load_dist "black" -- 5-tone scale on black notes
+> k <- kbm_load_dist "128"
 
 > map (kbm_lookup k) [48 .. 72]
 
@@ -69,9 +69,10 @@ kbm_lookup kbm mnn =
                 (oct,ix) = ((mnn - mC) `divMod` sz)
             in fmap (\dgr -> (oct,dgr)) (m !! ix)
 
--- | Return the triple (mF,kbm_lookup k mF,f).  The lookup for mF is not-nil by definition.
---
--- > kbm_lookup_mF k
+{- | Return the triple (mF,kbm_lookup k mF,f).  The lookup for mF is not-nil by definition.
+
+> kbm_lookup_mF k
+-}
 kbm_lookup_mF :: Kbm -> (Int,(Int,Int),Double)
 kbm_lookup_mF k@(_,_,_,(mF,f),_,_) =
   case kbm_lookup k mF of
@@ -137,7 +138,7 @@ kbm_load_dist_dir_fn = Scala.dist_get_dir >>= kbm_load_dir_fn
 
 {- | Pretty-printer for scala .kbm file.
 
-> m <- kbm_load_dist "7.kbm"
+> m <- kbm_load_dist "7"
 > kbm_parse (kbm_format m) == m
 > putStrLn $ kbm_pp m
 -}
@@ -185,7 +186,7 @@ kbm_mC_freq :: Kbm -> Scala.Scale -> Double
 kbm_mC_freq (sz,(_m0,_mN),mC,(mF,f),_o,m) scl =
   let dist_k = (mF - mC) `mod` sz
       dgr = fromMaybe (error "kbm_mC_freq") (m !! dist_k)
-      c = Scala.scale_cents scl !! dgr
+      c = Scala.scale_cents True scl !! dgr
   in Tuning.cps_shift_cents f (- c)
 
 -- | Given Kbm and SCL calculate fractional midi note-numbers for each key.
@@ -195,7 +196,7 @@ kbm_fmidi_tbl kbm scl =
       mC_freq = kbm_mC_freq kbm scl
       mC_fmidi = Pitch.cps_to_fmidi mC_freq
       key_seq = kbm_oct_key_seq kbm
-      c = Scala.scale_cents scl
+      c = Scala.scale_cents True scl
       oct_cents = c !! o
       oct_key_to_cents (oct,key) = maybe 0 (c !!) (m !! key) + (fromIntegral oct * oct_cents)
   in map (\(mnn,oct_key) -> (mnn,mC_fmidi + (oct_key_to_cents oct_key / 100.0))) key_seq

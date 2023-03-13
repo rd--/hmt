@@ -37,7 +37,7 @@ rational_to_integer r =
 
 scale_ji_tuning :: Scale -> JiTuning
 scale_ji_tuning scl =
-  let (r, o) = separate_last (scale_ratios_req scl)
+  let (r, o) = separate_last (scale_ratios_req True scl)
       d = map denominator r
       m = foldr1 lcm d % 1
       s = map (rational_to_integer . (* m)) r
@@ -78,7 +78,7 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
 {- | Write Ji subset of Scala database to Json.
 Pitches are stored as sorted sequences of integers.
 Ratios are recovered by dividing each integer by the first (lowest).
-Scales where the octave is not 2:1 store it as an array [numerator, denominator].
+Scales where the octave is not 2:1 store it as an [numerator, denominator] two-vector.
 
 > write_ji_tuning_db "/home/rohan/sw/hmt/data/json/scala-ji-tuning.json"
 -}
@@ -90,11 +90,45 @@ write_ji_tuning_db fn = do
       e = map ji_tuning_json lm
   writeFile fn ("{\n" ++ intercalate ",\n" e ++ "\n}")
 
+-- | Cents are written as numbers, ratios as [numerator, denominator] two-vectors.
+pitch_json :: Pitch -> String
+pitch_json p =
+    case p of
+      Left c -> show c
+      Right r -> concat ["[", show (numerator r), ", ", show (denominator r), "]"]
+
+-- | Format Scale as Json string.  Pitches are written as a string.
+scale_json :: Scale -> String
+scale_json (nm,dsc,k,p) =
+  let q x = '"' : quote x ++ ['"']
+      a x = "[" ++ intercalate ", " x ++ "]"
+      e f x y = "\t\t" ++ q x ++ ": " ++ f y
+  in unlines
+     ["\t" ++ q nm ++ ": {"
+     ,e q "name" nm
+     ,e q "description" dsc
+     ,e id "degree" (show k)
+     ,e a "pitches" (map pitch_json (drop_last p))
+     ,e id "octave" (pitch_json (last p))
+     ,"\t}"]
+
+{- | Write Scala database to Json.
+
+> write_scala_db_json "/home/rohan/sw/hmt/data/json/scala-db.json"
+-}
+write_scala_db_json :: FilePath -> IO ()
+write_scala_db_json fn = do
+  db <- scl_load_db_dir
+  writeFile fn ("{\n" ++ intercalate "\t,\n" (map scale_json db) ++ "}")
+
 {-
+
 db <- scl_load_db_dir -- v.91
 length db == 5176
+
 ji = map scale_ji_tuning (filter scl_is_ji db)
 length ji == 2729
 lm = filter ji_tuning_requires_large_integer ji
 length lm == 63
+
 -}

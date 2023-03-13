@@ -22,11 +22,12 @@ import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 -- | R = Rational
 type R = Rational
 
--- | Flip a ratio in (1,2) and multiply by 2.
---
--- > import Data.Ratio {- base -}
--- > map r_flip [5%4,3%2,7%4] == [8%5,4%3,8%7]
--- > map r_flip [3/2,5/4,7/4] == [4/3,8/5,8/7]
+{- | Flip a ratio in (1,2) and multiply by 2.
+
+> import Data.Ratio {- base -}
+> map r_flip [5%4,3%2,7%4] == [8%5,4%3,8%7]
+> map r_flip [3/2,5/4,7/4] == [4/3,8/5,8/7]
+-}
 r_flip :: R -> R
 r_flip n = if n < 1 || n > 2 then error "r_flip" else 1 / n * 2
 
@@ -34,9 +35,10 @@ r_flip n = if n < 1 || n > 2 then error "r_flip" else 1 / n * 2
 r_nrm :: R -> R
 r_nrm = T.ratio_interval_class_by id
 
--- | The folded interval from p to q.
---
--- > r_rel (1,3/2) == 4/3
+{- | The folded interval from p to q.
+
+> r_rel (1,3/2) == 4/3
+-}
 r_rel :: (R,R) -> R
 r_rel (p,q) = T.fold_ratio_to_octave_err (p / q)
 
@@ -94,10 +96,10 @@ g_to_dot k attr v_attr (_,e_set) =
      ,\(_,e) -> [("label",T.rational_pp e)])
      (map (\e -> (e,edj_r e)) e_set)
 
--- * SCALA
+-- * Scala
 
 mk_graph_scl :: [R] -> Scala.Scale -> G
-mk_graph_scl iset = mk_graph iset . rem_oct . Scala.scale_ratios_req
+mk_graph_scl iset = mk_graph iset . rem_oct . Scala.scale_ratios_req True
 
 scl_to_dot :: ([R], Int, [(String, String)], R -> [(String, String)]) -> String -> IO [String]
 scl_to_dot (iset,k,attr,v_attr) nm = do

@@ -75,7 +75,7 @@ pitch_representations =
                       Right _ -> (l,r + 1)
     in foldl f (0,0)
 
--- | If scale is uniform, give type.
+-- | If all pitches are uniform, give type.
 uniform_pitch_type :: [Pitch] -> Maybe Pitch_Type
 uniform_pitch_type p =
     case pitch_representations p of
@@ -83,7 +83,7 @@ uniform_pitch_type p =
       (_,0) -> Just Pitch_Cents
       _ -> Nothing
 
--- | The predominant type of the pitches for 'Scale'.
+-- | The predominant type of a list of pitches.
 pitch_type_predominant :: [Pitch] -> Pitch_Type
 pitch_type_predominant p =
     let (c,r) = pitch_representations p
@@ -109,19 +109,27 @@ scale_description (_,d,_,_) = d
 scale_degree :: Scale -> Int
 scale_degree (_,_,n,_) = n
 
--- | The 'Pitch'es at 'Scale'.
-scale_pitches :: Scale -> [Pitch]
-scale_pitches (_,_,_,p) = p
+-- | The 'Pitch'es at 'Scale', either including or excluding the octave.
+scale_pitches :: Bool -> Scale -> [Pitch]
+scale_pitches includingOctave (_,_,_,p) = if includingOctave then p else List.drop_last p
+
+-- | The 'Pitch'es at 'Scale', excluding the octave.
+scale_pitches_excluding_octave :: Scale -> [Pitch]
+scale_pitches_excluding_octave = scale_pitches False
+
+-- | The 'Pitch'es at 'Scale', including the octave.
+scale_pitches_including_octave :: Scale -> [Pitch]
+scale_pitches_including_octave = scale_pitches True
 
 {- | Scales generally do not have a ratio of 1:1 or a cents of 0, but sometimes do.
 This predicate is used by functions that prepend (or not) a zero.
 
 > db <- scl_load_db_dir
-> length (filter scale_has_zero db) == 56
+> length (filter scale_has_zero db) == 55
 > map scale_name (filter scale_has_zero db)
 -}
 scale_has_zero :: Scale -> Bool
-scale_has_zero = any pitch_is_zero . scale_pitches
+scale_has_zero = any pitch_is_zero . scale_pitches_excluding_octave
 
 -- | Is 'Pitch' outside of the standard octave (ie. cents 0-1200 and ratios 1-2)
 pitch_non_oct :: Pitch -> Bool
@@ -157,13 +165,13 @@ perfect_octave s =
     Just (Left 1200.0) -> True
     _ -> False
 
--- | Are all pitches of the same type.
+-- | Are all pitches, excluding the octave, of the same type.
 is_scale_uniform :: Scale -> Bool
-is_scale_uniform = isJust . uniform_pitch_type . scale_pitches
+is_scale_uniform = isJust . uniform_pitch_type . scale_pitches_excluding_octave
 
--- | Are the pitches in ascending sequence.
+-- | Are the pitches, excluding the octave, in ascending sequence.
 is_scale_ascending :: Scale -> Bool
-is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches
+is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches_excluding_octave
 
 -- | Make scale pitches uniform, conforming to the most predominant pitch type.
 scale_uniform :: Epsilon -> Scale -> Scale
@@ -172,36 +180,52 @@ scale_uniform epsilon (nm,d,n,p) =
       Pitch_Cents -> (nm,d,n,map (Left . pitch_cents) p)
       Pitch_Ratio -> (nm,d,n,map (Right . pitch_ratio epsilon) p)
 
--- | Scale as list of 'T.Cents' (ie. 'pitch_cents') with @0@ prefix (if scale does not have 0).
-scale_cents :: Scale -> [T.Cents]
-scale_cents s =
-  let c = map pitch_cents (scale_pitches s)
+-- | Scale as list of 'T.Cents' (ie. 'pitch_cents') with @0@ prefix (if scale does not have 0), either including or excluding octave.
+scale_cents :: Bool -> Scale -> [T.Cents]
+scale_cents includingOctave s =
+  let c = map pitch_cents (scale_pitches includingOctave s)
   in if scale_has_zero s then c else 0 : c
 
 -- | 'map' 'round' of 'scale_cents'.
-scale_cents_i :: Scale -> [T.Cents_I]
-scale_cents_i = map round . scale_cents
+scale_cents_i :: Bool -> Scale -> [T.Cents_I]
+scale_cents_i includingOctave = map round . scale_cents includingOctave
 
--- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix.
-scale_ratios :: Epsilon -> Scale -> [Rational]
-scale_ratios epsilon s =
-  let r = map (pitch_ratio epsilon) (scale_pitches s)
+-- | Scale cents, including octave.
+scale_cents_including_octave :: Scale -> [T.Cents]
+scale_cents_including_octave = scale_cents True
+
+-- | 'map' 'round' of 'scale_cents'.
+scale_cents_including_octave_i :: Scale -> [T.Cents_I]
+scale_cents_including_octave_i = scale_cents_i True
+
+-- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix (if scale does not have 1) and either including or excluding octave.
+scale_ratios :: Bool -> Epsilon -> Scale -> [Rational]
+scale_ratios includingOctave epsilon s =
+  let r = map (pitch_ratio epsilon) (scale_pitches includingOctave s)
   in if scale_has_zero s then r else 1 : r
 
 -- | Require that 'Scale' be uniformly of 'Ratio's.
-scale_ratios_u :: Scale -> Maybe [Rational]
-scale_ratios_u scl =
-  let err = error "scale_ratios_u?"
-      p = scale_pitches scl
-  in case uniform_pitch_type p of
-       Just Pitch_Ratio ->
-         let r = map (fromMaybe err . Either.from_right) p
-         in Just (if scale_has_zero scl then r else 1 : r)
-       _ -> Nothing
+scale_ratios_u :: Bool -> Scale -> Maybe [Rational]
+scale_ratios_u includingOctave scl =
+  if scl_is_ji scl
+  then let r = map (fromMaybe (error "scale_ratios_u?") . Either.from_right) (scale_pitches includingOctave scl)
+       in Just (if scale_has_zero scl then r else 1 : r)
+  else Nothing
 
 -- | Erroring variant of 'scale_ratios_u.
-scale_ratios_req :: Scale -> [Rational]
-scale_ratios_req scl = fromMaybe (error ("scale_ratios_req: " ++ scale_name scl)) (scale_ratios_u scl)
+scale_ratios_req :: Bool -> Scale -> [Rational]
+scale_ratios_req includingOctave scl = fromMaybe (error ("scale_ratios_req: " ++ scale_name scl)) (scale_ratios_u includingOctave scl)
+
+-- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix (if scale does not have 1) and excluding octave.
+scale_ratios_excluding_octave :: Epsilon -> Scale -> [Rational]
+scale_ratios_excluding_octave = scale_ratios False
+
+scale_ratios_excluding_octave_u :: Scale -> Maybe [Rational]
+scale_ratios_excluding_octave_u = scale_ratios_u False
+
+-- | Erroring variant of 'scale_ratios_excluding_octave_u.
+scale_ratios_excluding_octave_req :: Scale -> [Rational]
+scale_ratios_excluding_octave_req = scale_ratios_req False
 
 {- | Are scales equal ('==') at degree and tuning data.
 
@@ -264,7 +288,7 @@ parse_pitch :: String -> Pitch
 parse_pitch p =
     if '.' `elem` p
     then Left (T.read_fractional_allow_trailing_point_err p)
-    else Right (T.read_ratio_with_div_err p)
+    else Right (T.read_ratio_with_div_err False p)
 
 -- | Pitch lines may contain commentary.
 parse_pitch_ln :: String -> Pitch
@@ -331,8 +355,8 @@ scl_resolve_name nm =
 -- | Load @.scl@ file, runs 'scl_resolve_name'.
 --
 -- > s <- scl_load "xenakis_chrom"
--- > pitch_representations (scale_pitches s) == (6,1)
--- > scale_ratios 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53,2]
+-- > pitch_representations (scale_pitches_excluding_octave s) == (6,0)
+-- > scale_ratios_excluding_octave 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53]
 scl_load :: String -> IO Scale
 scl_load nm = do
   fn <- scl_resolve_name nm
@@ -369,7 +393,7 @@ scl_load_db_dir = do
 
 > db_dir <- scl_load_db_dir
 > db_path <- scl_load_db_path
-> (length db_dir, length db_path)
+> (length db_dir, length db_path) == (5176,5194)
 -}
 scl_load_db_path :: IO [Scale]
 scl_load_db_path = do
@@ -400,7 +424,7 @@ scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_
 -}
 scale_stat :: Scale -> [String]
 scale_stat s =
-    let p = scale_pitches s
+    let p = scale_pitches_excluding_octave s
         u_ty = uniform_pitch_type p
         n_ty = let p_ty = pitch_type_predominant p
                    (p_i,p_j) = pitch_representations p
@@ -409,10 +433,10 @@ scale_stat s =
        ,"description : " ++ scale_description s
        ,"degree      : " ++ show (scale_degree s)
        ,"type        : " ++ maybe n_ty show u_ty
-       ,"perfect-oct : " ++ show (perfect_octave s)
-       ,"cents-i     : " ++ show (scale_cents_i s)
-       ,if u_ty == Just Pitch_Ratio
-        then "ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req s))
+       ,"octave      : " ++ pitch_pp (scale_octave_err s)
+       ,"cents-i     : " ++ show (scale_cents_i False s)
+       ,if scl_is_ji s
+        then "ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req False s))
         else ""]
 
 -- | Pretty print 'Pitch' in @Scala@ format.
@@ -467,25 +491,25 @@ load_dist_file_ln = fmap lines . load_dist_file
 
 -- * Query
 
--- | Is scale just-intonation (ie. are all pitches ratios)
+-- | Is scale just-intonation (ie. are all pitches ratios, including the octave)
 scl_is_ji :: Scale -> Bool
-scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches
+scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches_including_octave
 
--- | Calculate limit for JI scale (ie. largest prime factor)
+-- | Calculate limit for JI scale (ie. largest prime factor), including octave.
 scl_ji_limit :: Scale -> Integer
-scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . scale_ratios_req
+scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . scale_ratios_req True
 
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
 scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]
 scl_cdiff_abs_sum c scl =
-  let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents scl))))
+  let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents_including_octave scl))))
       ndiff x i = let d = zipWith (-) c x in (sum (map abs d),d,i)
   in sort (zipWith ndiff r [0..])
 
 {- | Variant selecting only nearest and with post-processing function.
 
 > scl <- scl_load "holder"
-> scale_cents_i scl
+> scale_cents_including_octave_i scl
 > c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
 > (_,r,_) = scl_cdiff_abs_sum_1 round c scl
 > r == [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
@@ -515,7 +539,7 @@ scl_db_query_cdiff_asc pp db c =
 -- | Is /x/ the same scale as /scl/ under /cmp/.
 scale_cmp_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
 scale_cmp_ji cmp x scl =
-  case scale_ratios_u scl of
+  case scale_ratios_excluding_octave_u scl of
     Nothing -> False
     Just r -> cmp x r
 
@@ -525,7 +549,7 @@ Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons c
 > db <- scl_load_db_dir
 > let inv = (++ [2]) . nub . sort . map (T.fold_ratio_to_octave_err . recip)
 > let cmp p q = p == q || p == inv q
-> scl_find_ji cmp [1, 6/5, 4/3, 8/5, 16/9, 2] db
+> scl_find_ji cmp [1, 6/5, 4/3, 8/5, 16/9, 2] db -- prime_5
 
 -}
 scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
@@ -542,7 +566,7 @@ If 'Scale' is uniformly rational, 'T.Tuning' is rational, else it is in 'T.Cents
 > let tn = map scale_to_tuning db
 > let t59 = filter (\t -> T.tn_limit t == Just 59) tn
 > length t59 == 15
-> tn_scl_rat t = T.tn_ratios_err t ++ [T.tn_octave_ratio 0.1 t]
+> tn_scl_rat t = T.tn_ratios_err t
 > concatMap (\t -> scl_find_ji (==) (tn_scl_rat t) db) t59 == s59
 -}
 scale_to_tuning :: Scale -> T.Tuning

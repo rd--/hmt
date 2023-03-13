@@ -259,7 +259,7 @@ scala_cli arg = do
     ["intervals","list",'r':_,nm] -> Functions.intervals_list_ratios nm
     ["intervals","matrix",'c':_,k,nm] -> Functions.intervals_matrix_cents (read k) nm
     ["intervals","matrix",'r':_,nm] -> Functions.intervals_matrix_ratios nm
-    "intnam":"lookup":r_sq -> intnam_lookup (map T.read_ratio_with_div_err r_sq)
+    "intnam":"lookup":r_sq -> intnam_lookup (map (T.read_ratio_with_div_err False) r_sq)
     ["intnam","search",txt] -> intnam_search txt
     ["kbm","table",ty,scl_nm,kbm_nm] -> kbm_tbl ty scl_nm kbm_nm
     ["midi-table",typ,"d12",scl_nm,c,k] -> midi_tbl_tuning_d12 typ (scl_nm,read c,read k)
