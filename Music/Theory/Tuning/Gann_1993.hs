@@ -47,7 +47,7 @@ lmy_wtp_univ =
                             ,(lmy_wtp_ratio_to_pc_err p
                              ,lmy_wtp_ratio_to_pc_err q))
                   else Nothing
-    in mapMaybe f (T.all_pairs lmy_wtp_r lmy_wtp_r)
+    in mapMaybe f (T.all_pairs_lc lmy_wtp_r lmy_wtp_r)
 
 {- | Collated and sorted 'lmy_wtp_univ'.
 

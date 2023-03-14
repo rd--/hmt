@@ -537,9 +537,9 @@ scl_db_query_cdiff_asc pp db c =
   in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl,scl)) db_n)
 
 -- | Is /x/ the same scale as /scl/ under /cmp/.
-scale_cmp_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
-scale_cmp_ji cmp x scl =
-  case scale_ratios_excluding_octave_u scl of
+scale_cmp_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
+scale_cmp_ji includingOctave cmp x scl =
+  case scale_ratios_u includingOctave scl of
     Nothing -> False
     Just r -> cmp x r
 
@@ -547,13 +547,13 @@ scale_cmp_ji cmp x scl =
 Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
 
 > db <- scl_load_db_dir
-> let inv = (++ [2]) . nub . sort . map (T.fold_ratio_to_octave_err . recip)
+> let inv = nub . sort . map (T.fold_ratio_to_octave_err . recip)
 > let cmp p q = p == q || p == inv q
-> scl_find_ji cmp [1, 6/5, 4/3, 8/5, 16/9, 2] db -- prime_5
+> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
 
 -}
-scl_find_ji :: ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
-scl_find_ji cmp x = filter (scale_cmp_ji cmp x)
+scl_find_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
+scl_find_ji includingOctave cmp x = filter (scale_cmp_ji includingOctave cmp x)
 
 -- * Tuning
 

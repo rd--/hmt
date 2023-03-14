@@ -420,19 +420,27 @@ m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
 
 -- * Scala
 
+-- | Ratios here have initial 1 and no octave, at Scala they do not have inital 1 and do have octave.
+r_to_scala_r :: [Rational] -> [Rational]
+r_to_scala_r r =
+  let r' = map Tuning.fold_ratio_to_octave_err r
+  in if head r' /= 1 || last r' == 1
+     then error "r_to_scala_r?"
+     else r'
+
 r_to_scale :: String -> String -> [Rational] -> Scala.Scale
 r_to_scale nm dsc r =
-  let r' = map Tuning.fold_ratio_to_octave_err (tail r) ++ [2]
-  in if r !! 0 /= 1 || not (List.is_ascending r')
+  let r' = r_to_scala_r r
+  in if not (List.is_ascending r')
      then error "r_to_scale?"
      else (nm,dsc,length r,map Right r')
 
 ew_scl_find_r_eq :: [Rational] -> [Scala.Scale] -> [String]
 ew_scl_find_r_eq r =
-  let r' = map Tuning.fold_ratio_to_octave_err r
+  let r' = r_to_scala_r r
   in if head r' /= 1
      then error "ew_scl_find_r_eq?: r'0 /= 1"
-     else map Scala.scale_name . Scala.scl_find_ji (==) (r' ++ [2])
+     else map Scala.scale_name . Scala.scl_find_ji False (==) r'
 
 ew_scl_find_r_rot :: [Rational] -> [Scala.Scale] -> [String]
 ew_scl_find_r_rot r db = concatMap (\s -> ew_scl_find_r_eq s db) (r_seq_rotations r)
@@ -449,7 +457,7 @@ ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 
 {- | P.3 7-limit {Scala=nil}
 
-> db <- Scala.scl_load_db
+> db <- Scala.scl_load_db_dir
 > ew_scl_find_r_rot (1 : ew_1357_3_r) db == []
 -}
 ew_1357_3_r :: [Rational]
@@ -482,7 +490,7 @@ ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
 
 {- | P.12 11-limit {Scala=nil}
 
-> ew_scl_find_r_rot ew_el12_12_r db == []
+> ew_scl_fin_dr_rot ew_el12_12_r db == []
 -}
 ew_el12_12_r :: [Rational]
 ew_el12_12_r = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]

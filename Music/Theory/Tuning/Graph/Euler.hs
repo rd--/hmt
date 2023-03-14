@@ -6,12 +6,13 @@ module Music.Theory.Tuning.Graph.Euler where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.Function as T {- hmt -}
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.Function as T {- hmt-base -}
+import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.Show as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
+
 import qualified Music.Theory.Pitch.Note as T {- hmt -}
-import qualified Music.Theory.Show as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
 
 -- | 'T.fold_ratio_to_octave_err' of '*'.
 rat_mul :: Rational -> Rational -> Rational
@@ -27,18 +28,12 @@ rat_div p q = T.fold_ratio_to_octave_err (p / q)
 tun_seq :: Int -> Rational -> Rational -> [Rational]
 tun_seq n m = take n . iterate (rat_mul m)
 
--- | All possible pairs of elements (/x/,/y/) where /x/ is from /p/ and /y/ from /q/.
---
--- > all_pairs "ab" "cde" == [('a','c'),('a','d'),('a','e'),('b','c'),('b','d'),('b','e')]
-all_pairs :: [t] -> [u] -> [(t,u)]
-all_pairs p q = [(x,y) | x <- p, y <- q]
-
 -- | Give all pairs from (l2,l1) and (l3,l2) that are at interval ratios r1 and r2 respectively.
 euler_align_rat :: T.T2 Rational -> T.T3 [Rational] -> T.T2 [T.T2 Rational]
 euler_align_rat (r1,r2) (l1,l2,l3) =
     let f r (p,q) = rat_mul p r == q
-    in (filter (f r1) (all_pairs l2 l1)
-       ,filter (f r2) (all_pairs l3 l2))
+    in (filter (f r1) (T.all_pairs_lc l2 l1)
+       ,filter (f r2) (T.all_pairs_lc l3 l2))
 
 -- | Pretty printer for pitch class (UNICODE).
 --

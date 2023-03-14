@@ -37,7 +37,12 @@
 	],
 	"Barlow, Clarence": [
 		"barlow_13",
-		"barlow_17"
+		"barlow_17",
+		"duodene",
+		"de_caus",
+		"efg33355",
+		"euler",
+		"mersen_s1"
 	],
 	"Boethius": [
 		"boeth_chrom",
@@ -278,13 +283,15 @@
 		"tranh"
 	],
 	"Johnston, Ben": [
+		"harm8",
 		"johnston",
 		"johnston_21",
 		"johnston_22",
 		"johnston_25",
 		"johnston_81",
 		"johnston_6-qt",
-		"johnston_6-qt_row"
+		"johnston_6-qt_row",
+		"sub8"
 	],
 	"Kepler, Johannes": [
 		"kepler1",
