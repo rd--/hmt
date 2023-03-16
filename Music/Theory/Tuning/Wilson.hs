@@ -12,6 +12,7 @@ import qualified Safe {- safe -}
 
 import qualified Music.Theory.Array.Text as Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
+import Music.Theory.Geometry.Vector {- hmt-base -}
 import qualified Music.Theory.Graph.Type as Graph {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math as Math {- hmt-base -}
@@ -26,20 +27,6 @@ import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Set.List as Set {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
-
--- * Geom (see "Data.CG.Minus.Plain")
-
-type V2 n = (n,n)
-v2_map :: (t -> u) -> V2 t -> V2 u
-v2_map f (a,b) = (f a,f b)
-v2_zip :: (a -> b -> c) -> V2 a -> V2 b -> V2 c
-v2_zip f (i,j) (p,q) = (f i p,f j q)
-v2_add :: Num n => V2 n -> V2 n -> V2 n
-v2_add = v2_zip (+)
-v2_sum :: Num n => [V2 n] -> V2 n
-v2_sum = foldl v2_add (0,0)
-v2_scale :: Num n => n -> V2 n -> V2 n
-v2_scale n = v2_map (* n)
 
 -- * Pt Set
 
