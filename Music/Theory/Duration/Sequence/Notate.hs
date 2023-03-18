@@ -177,9 +177,12 @@ rqt_split_sum d x =
       Just (i,_,k) ->
           case k of
             Nothing -> Just (splitAt (length i) x)
-            Just (p,q) -> let (s,(_,z):t) = splitAt (length i - 1) x
-                          in Just (s ++ [(p,True)]
-                                  ,(q,z) : t)
+            Just (p,q) ->
+              case splitAt (length i - 1) x of
+                (s,(_,z):t) ->
+                  Just (s ++ [(p,True)]
+                       ,(q,z) : t)
+                _ -> error "rqt_split_sum"
       Nothing -> Nothing
 
 {- | Separate 'Rq_Tied' values in sequences summing to 'Rq' values.

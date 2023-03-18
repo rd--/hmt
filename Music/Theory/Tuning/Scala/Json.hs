@@ -5,6 +5,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
+import qualified Music.Theory.Json as Json {- hmt-base -}
 import Music.Theory.List {- hmt-base -}
 import Music.Theory.Math.Prime {- hmt-base -}
 
@@ -55,25 +56,19 @@ quote =
   let f x = if x `elem` ['"', '\\'] then ['\\', x] else [x]
   in concatMap f
 
-ji_tuning_json :: JiTuning -> String
+ji_tuning_json :: JiTuning -> Json.Association
 ji_tuning_json (nm, dsc, iseq, oct, sq) =
-  let q x = '"' : quote x ++ ['"']
-      e x y = '\t' : q x ++ ": " ++ y
-      i x = "[\n\t\t" ++ intercalate ",\n\t\t" (map show x) ++ "\n\t]"
-  in concat
-     [q nm
-     ,": {\n"
-     ,intercalate
-       ",\n"
-       [e "name" (q nm)
-       ,e "description" (q dsc)
-       ,e "degree" (show (length iseq))
-       ,e "limit" (show (maximum (concatMap prime_factors iseq)))
-       ,e "tuning" (i iseq)
-       ]
-     ,maybe "" (\x -> ",\n" ++ e "octave" (i [numerator x, denominator x])) oct
-     ,maybe "" (\x -> ",\n" ++ e "sequence" (i x)) sq
-     ,"\n}"]
+  let integerArray = Json.array . map Json.integer
+      intArray = Json.array . map Json.int
+  in (nm
+      ,Json.object ([
+          ("name", Json.string nm)
+          ,("description", Json.string dsc)
+          ,("degree", Json.int (length iseq))
+          ,("limit", Json.integer (maximum (concatMap prime_factors iseq)))
+          ,("tuning", integerArray iseq)] ++ catMaybes [
+                       fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
+                       ,fmap (\x -> ("sequence", intArray x)) sq]))
 
 {- | Write Ji subset of Scala database to Json.
 Pitches are stored as sorted sequences of integers.
@@ -88,31 +83,34 @@ write_ji_tuning_db fn = do
   let ji = map scale_ji_tuning (filter scl_is_ji db)
       lm = filter (not . ji_tuning_requires_large_integer) ji
       e = map ji_tuning_json lm
-  writeFile fn ("{\n" ++ intercalate ",\n" e ++ "\n}")
+  Json.writeFile fn (Json.object e)
+
+pitch_can_be_json :: Pitch -> Bool
+pitch_can_be_json p =
+    case p of
+      Left _ -> True
+      Right r -> all Json.isSafeInteger [numerator r, denominator r]
 
 -- | Cents are written as numbers, ratios as [numerator, denominator] two-vectors.
-pitch_json :: Pitch -> String
+pitch_json :: Pitch -> Json.Value
 pitch_json p =
     case p of
-      Left c -> show c
-      Right r -> concat ["[", show (numerator r), ", ", show (denominator r), "]"]
+      Left c -> Json.double c
+      Right r -> Json.array (map Json.integer [numerator r, denominator r])
+
+scale_can_be_json :: Scale -> Bool
+scale_can_be_json (_, _, _, p) = all pitch_can_be_json p
 
 -- | Format Scale as Json string.  Pitches are written as a string.
-scale_json :: Scale -> String
+scale_json :: Scale -> Json.Association
 scale_json (nm,dsc,k,p) =
-  let q x = '"' : quote x ++ ['"']
-      a x = "[" ++ intercalate ", " x ++ "]"
-      e f x y = "\t" ++ q x ++ ": " ++ f y
-  in unlines
-     ["\t" ++ q nm ++ ": {"
-     ,"\t" ++ intercalate
-       ",\n\t"
-       [e q "name" nm
-       ,e q "description" dsc
-       ,e id "degree" (show k)
-       ,e a "pitches" (map pitch_json (drop_last p))
-       ,e id "octave" (pitch_json (last p))]
-     ,"\t}"]
+  (nm
+  ,Json.object [
+      ("name", Json.string nm)
+      ,("description", Json.string dsc)
+      ,("degree", Json.int k)
+      ,("pitches", Json.array (map pitch_json (drop_last p)))
+      ,("octave", pitch_json (last p))])
 
 {- | Write Scala database to Json.
 
@@ -121,12 +119,14 @@ scale_json (nm,dsc,k,p) =
 write_scala_db_json :: FilePath -> IO ()
 write_scala_db_json fn = do
   db <- scl_load_db_dir
-  writeFile fn ("{\n" ++ intercalate "\t,\n" (map scale_json db) ++ "}")
+  Json.writeFile fn (Json.object (map scale_json (filter scale_can_be_json db)))
 
 {-
 
 db <- scl_load_db_dir -- v.91
 length db == 5176
+
+filter (not . scale_can_be_json) db
 
 ji = map scale_ji_tuning (filter scl_is_ji db)
 length ji == 2729
