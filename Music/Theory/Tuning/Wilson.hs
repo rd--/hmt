@@ -10,9 +10,10 @@ import Text.Printf {- base -}
 
 import qualified Safe {- safe -}
 
+import Music.Theory.Geometry.Vector {- hmt-base -}
+
 import qualified Music.Theory.Array.Text as Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
-import Music.Theory.Geometry.Vector {- hmt-base -}
 import qualified Music.Theory.Graph.Type as Graph {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math as Math {- hmt-base -}
