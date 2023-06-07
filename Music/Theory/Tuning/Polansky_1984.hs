@@ -31,11 +31,12 @@ k_madukentir = [268.5,242,243,230,221]
 k_surak :: Fractional n => [n]
 k_surak = [206,231.5,238.5,265,264.5]
 
--- | The set of /K/ slendro tunings.
---
--- > map length k_set == replicate (length k_set) 5
--- > minimum (concat k_set) == 206
--- > maximum (concat k_set) == 268.5
+{- | The set of /K/ slendro tunings.
+
+> map length k_set == replicate (length k_set) 5
+> minimum (concat k_set) == 206
+> maximum (concat k_set) == 268.5
+-}
 k_set :: Fractional n => [[n]]
 k_set = [k_manisrenga
         ,k_kanjutmesem

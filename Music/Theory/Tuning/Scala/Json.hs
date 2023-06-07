@@ -89,7 +89,7 @@ pitch_can_be_json :: Pitch -> Bool
 pitch_can_be_json p =
     case p of
       Left _ -> True
-      Right r -> all Json.isSafeInteger [numerator r, denominator r]
+      Right r -> all Json.isSafeIntegral [numerator r, denominator r]
 
 -- | Cents are written as numbers, ratios as [numerator, denominator] two-vectors.
 pitch_json :: Pitch -> Json.Value

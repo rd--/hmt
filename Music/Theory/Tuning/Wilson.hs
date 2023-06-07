@@ -264,43 +264,69 @@ zz_seq k_seq = zz_recur k_seq [(0,1),(1,1)]
 
 -- * Mos
 
--- > gen_coprime 12 == [1,5]
--- > gen_coprime 49 == [1..24] \\ [7,14,21]
-gen_coprime :: Integral a => a -> [a]
-gen_coprime x = filter (\y -> gcd y x == 1) [1 .. (x `div` 2)]
+are_coprime :: Integral i => i -> i -> Bool
+are_coprime x y = gcd x y == 1
 
--- > mos_2 12 5 == (5,7)
+{- | List of numbers that are co-prime to x (includes 1 but not x)
+
+> gen_coprime 12 == [1,5]
+> gen_coprime 49 == [1..24] \\ [7,14,21]
+-}
+gen_coprime :: Integral a => a -> [a]
+gen_coprime x = filter (are_coprime x)  [1 .. (x `div` 2)]
+
+{- | p = period, g = generator
+
+> mos_2 12 5 == (5,7)
+-}
 mos_2 :: Num n => n -> n -> (n,n)
 mos_2 p g = (g,p - g)
 
--- | Divide MOS, keeps retained value on same side
---
--- > mos_step (5,7) == (5,2)
--- > mos_step (5,2) == (3,2)
--- > mos_step (3,2) == (1,2)
+{- | Divide Mos, keep retained value on same side.
+
+> mos_step (5,7) == (5,2)
+> mos_step (5,2) == (3,2)
+> mos_step (3,2) == (1,2)
+-}
 mos_step :: (Ord a, Num a) => (a, a) -> (a, a)
 mos_step (i,j) = if i < j then (i,j - i) else (i - j,j)
 
--- > mos_unfold (5,7)  == [(5,7),(5,2),(3,2),(1,2)]
--- > mos_unfold (41,17) == [(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
+{- | Given an interval pair, generate the subsequent pairs ending at (1,2).
+
+> mos_unfold (5,7)  == [(5,7),(5,2),(3,2),(1,2)]
+> mos_unfold (41,17) == [(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
+-}
 mos_unfold :: (Ord b, Num b) => (b, b) -> [(b, b)]
 mos_unfold x =
   let y = mos_step x
-  in if Tuple.t2_sum y == 3 then [x,y] else x : mos_unfold y
+  in if Tuple.t2_sum y <= 3 then [x,y] else x : mos_unfold y
+
+{- | Mos. p = period, g = generator.  This omits the two trivial cases ([p], and [1*p])
+
+> mos 12 5 == [(5,7),(5,2),(3,2),(1,2)]
+> mos 41 17 == [(17,24),(17,7),(10,7),(3,7),(3,4),(3,1),(2,1)]
+> mos 49 22 == [(22,27),(22,5),(17,5),(12,5),(7,5),(2,5),(2,3),(2,1)]
+> mos 49 27 == map (\(i, j) -> (j, i)) (mos 49 22)
+-}
+mos :: (Ord b, Num b) => b -> b -> [(b, b)]
+mos p g = mos_unfold (mos_2 p g)
 
 mos_verify :: Integral a => a -> a -> Bool
 mos_verify p g =
   let x = if g > (p `div` 2) then p `mod` g else g
   in x `elem` gen_coprime p
 
--- > mos 12 5 == [(5,7),(5,2),(3,2),(1,2)]
-mos :: (Ord b, Integral b) => b -> b -> [(b, b)]
-mos p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos?"
+mos_verified :: (Ord b, Integral b) => b -> b -> [(b, b)]
+mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos?"
 
--- > mos_seq 12 5 == [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
--- > mos_seq 41 17 !! 4 == [3,3,4,3,4,3,3,4,3,4,3,4]
--- > map length (mos_seq 49 27) == [2,3,5,7,9,11,20,29]
-mos_seq :: (Ord b, Integral b) => b -> b -> [[b]]
+{- | Mos. p = period, g = generator
+
+> mos_seq 12 5 == [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
+> map length (mos_seq 12 5) == [2,3,5,7]
+> mos_seq 41 17 !! 4 == [3,3,4,3,4,3,3,4,3,4,3,4]
+> map length (mos_seq 49 27) == [2,3,5,7,9,11,20,29]
+-}
+mos_seq :: (Ord b, Num b) => b -> b -> [[b]]
 mos_seq p g =
   let step_f (i,j) = concatMap (\x -> if x == i + j then [i,j] else [x])
       recur_f x l = if null x then [l] else l : recur_f (tail x) (step_f (head x) l)
@@ -316,7 +342,24 @@ mos_row_pp = concatMap mos_cell_pp
 mos_tbl_pp :: (Integral i,Show i) => [[i]] -> [String]
 mos_tbl_pp = map mos_row_pp
 
--- > mos_tbl_wr (mos_seq 49 27)
+{- | Pretty print Mos sequence table (mono-space font)
+
+>>> mos_tbl_wr (mos_seq 12 5)
+5----7------
+5----5----2-
+3--2-3--2-2-
+12-2-12-2-2-
+
+>>> mos_tbl_wr (mos_seq 49 27)
+27-------------------------22--------------------
+5----22--------------------22--------------------
+5----5----17---------------5----17---------------
+5----5----5----12----------5----5----12----------
+5----5----5----5----7------5----5----5----7------
+5----5----5----5----5----2-5----5----5----5----2-
+3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-
+12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-
+-}
 mos_tbl_wr :: (Integral i,Show i) => [[i]] -> IO ()
 mos_tbl_wr = putStrLn . unlines . mos_tbl_pp
 
@@ -372,7 +415,7 @@ sbt_node_elem (dv,l,m,r) =
 sbt_dot :: [Sbt_Node] -> [String]
 sbt_dot n =
   let e = map sbt_node_to_edge n
-  in concat [["graph {","node [shape=plain]"],e,["}"]]
+  in concat [["graph {","graph [bgcolor=transparent]","node [shape=plain]"],e,["}"]]
 
 -- * M-Gen
 

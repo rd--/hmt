@@ -33,7 +33,7 @@ dr_tuning_oct =
 dr_tuning :: [Rational]
 dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1,2,4] dr_tuning_oct)
 
--- | Actual scale, in CPS.
+-- | Actual scale, in Cps.
 --
 -- > let r = [52,69,76,83,92,104,119,138,156,166,185,208,234,260,277,286,311,332,363]
 -- > map round dr_scale == r
