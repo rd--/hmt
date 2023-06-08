@@ -15,12 +15,11 @@ import Data.List {- base -}
 
 import qualified Data.List.Ordered as O {- data-ordlist -}
 
+import Music.Theory.Time {- hmt -}
 import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 
 -- * Time
 
-type Time = Rational
-type Duration = Time
 type Length = Time
 
 -- * Note

@@ -6,11 +6,12 @@ import Data.List {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
-import qualified Music.Theory.Array.Text as T {- hmt-base -}
-import qualified Music.Theory.Function as T {- hmt-base -}
-import qualified Music.Theory.List as T {- hmt-base -}
-import qualified Music.Theory.Read as T {- hmt-base -}
-import qualified Music.Theory.Show as T {- hmt-base -}
+import qualified Music.Theory.Array.Text as Array.Text {- hmt-base -}
+import qualified Music.Theory.Function as Function {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import Music.Theory.Math (R) {- hmt-base -}
+import qualified Music.Theory.Read as Read {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
 
 import qualified Music.Theory.Array.Csv.Midi.Mnd as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
@@ -25,8 +26,6 @@ import qualified Music.Theory.Tuning.Scala.Functions as Functions {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
-
-type R = Double
 
 db_stat :: IO ()
 db_stat = do
@@ -66,7 +65,7 @@ search (load_f,descr_f,stat_f) (ci,lm) txt = do
   db <- load_f
   let modify = if ci then map toLower else id
       txt' = map modify txt
-      db' = filter (T.predicate_all (map isInfixOf txt') . modify . descr_f) db
+      db' = filter (Function.predicate_all (map isInfixOf txt') . modify . descr_f) db
   mapM_ (putStrLn . unlines . map (cut lm) . stat_f) db'
 
 -- > search_scale (True,Nothing) ["xenakis"]
@@ -96,9 +95,9 @@ rng_enum (l,r) = [l .. r]
 
 cps_tbl :: String -> T.Mnn_Cps_Table -> (T.Midi,T.Midi) -> IO ()
 cps_tbl fmt tbl mnn_rng = do
-  let cps_pp = T.double_pp 2
-      cents_pp = T.double_pp 1
-      gen_t i = (i,T.midi_to_pitch_ks i,T.lookup_err i tbl)
+  let cps_pp = Show.double_pp 2
+      cents_pp = Show.double_pp 1
+      gen_t i = (i,T.midi_to_pitch_ks i,List.lookup_err i tbl)
       t_pp (i,p,cps) =
           let ref = T.midi_to_cps i
               (_,nr,nr_cps,_,_) = T.nearest_12et_tone_k0 (69,440) cps
@@ -110,7 +109,7 @@ cps_tbl fmt tbl mnn_rng = do
             ,"REF CPS","REF ET12","CENTS-/+"]
       dat = map (t_pp . gen_t) (rng_enum mnn_rng)
       ln = case fmt of
-             "md" -> T.table_pp T.table_opt_simple (hdr : dat)
+             "md" -> Array.Text.table_pp Array.Text.table_opt_simple (hdr : dat)
              "csv" -> map (intercalate ",") dat
              _ -> error "cps_tbl: fmt?"
   putStr (unlines ln)
@@ -194,7 +193,7 @@ ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
 intnam_lookup :: [Rational] -> IO ()
 intnam_lookup r_sq = do
   let f db r = let nm = maybe "*Unknown*" snd (Interval.intnam_search_ratio db r)
-               in concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
+               in concat [Show.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
   db <- Interval.load_intnam
   mapM_ (putStrLn . f db) r_sq
 
@@ -202,7 +201,7 @@ intnam_lookup r_sq = do
 intnam_search :: String -> IO ()
 intnam_search txt = do
   db <- Interval.load_intnam
-  let f (r,nm) = concat [T.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
+  let f (r,nm) = concat [Show.ratio_pp r," = ",nm," = ",ratio_cents_pp r]
   mapM_ (putStrLn . f) (Interval.intnam_search_description_ci db txt)
 
 kbm_tbl :: String -> String -> String -> IO ()
@@ -219,8 +218,8 @@ kbm_tbl ty scl_nm kbm_nm = do
 
 -- * Main
 
-help :: [String]
-help =
+scala_cli_help :: [String]
+scala_cli_help =
     ["cps-tbl md|csv cps name:string f0:real mnn0:int gamut:int mnn-l:int mnn-r:int"
     ,"cps-tbl md|csv d12 name:string cents:real mnn:int mnn-l:int mnn-r:int"
     ,"csv-mnd-retune d12 name:string cents:real mnn:int input-file output-file"
@@ -240,11 +239,11 @@ help =
     ,"  lm:int = line character limit"]
 
 nil_or_read :: Read a => String -> Maybe a
-nil_or_read s = if s == "nil" then Nothing else Just (T.read_err s)
+nil_or_read s = if s == "nil" then Nothing else Just (Read.read_err s)
 
 scala_cli :: [String] -> IO ()
 scala_cli arg = do
-  let usage = putStrLn (unlines help)
+  let usage = putStrLn (unlines scala_cli_help)
   case arg of
     ["cps-tbl",fmt,"cps",nm,f0,k,n,l,r] -> cps_tbl_cps fmt (nm,read f0,read k,read n) (read l,read r)
     ["cps-tbl",fmt,"d12",nm,c,k,l,r] -> cps_tbl_d12 fmt (nm,read c,read k) (read l,read r)
@@ -259,7 +258,7 @@ scala_cli arg = do
     ["intervals","list",'r':_,nm] -> Functions.intervals_list_ratios nm
     ["intervals","matrix",'c':_,k,nm] -> Functions.intervals_matrix_cents (read k) nm
     ["intervals","matrix",'r':_,nm] -> Functions.intervals_matrix_ratios nm
-    "intnam":"lookup":r_sq -> intnam_lookup (map (T.read_ratio_with_div_err False) r_sq)
+    "intnam":"lookup":r_sq -> intnam_lookup (map (Read.read_ratio_with_div_err False) r_sq)
     ["intnam","search",txt] -> intnam_search txt
     ["kbm","table",ty,scl_nm,kbm_nm] -> kbm_tbl ty scl_nm kbm_nm
     ["midi-table",typ,"d12",scl_nm,c,k] -> midi_tbl_tuning_d12 typ (scl_nm,read c,read k)

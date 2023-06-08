@@ -10,8 +10,8 @@ import Music.Theory.Z.Sro {- hmt -}
 
 type Z12 = Int8
 
-help :: [String]
-help =
+pct_cli_help :: [String]
+pct_cli_help =
     ["pct ess pcset"
     ,"pct fl -c cset"
     ,"pct frg pcset"
@@ -108,4 +108,4 @@ pct_cli arg = do
     ["tmatrix",p] -> putStr (tmatrix_cmd p)
     ["trs",p] -> interact_ln (trs_cmd (trs z12) p)
     ["trs","-m",p] -> interact_ln (trs_cmd (trs_m z12) p)
-    _ -> putStrLn (unlines help)
+    _ -> putStrLn (unlines pct_cli_help)

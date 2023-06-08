@@ -13,7 +13,7 @@ import Music.Theory.Duration {- hmt -}
 -- | Rational Quarter-Note
 type Rq = Rational
 
-{- | Table mapping tuple Rq values to Durations.
+{- | Table mapping tuplet Rq values to Durations.
      Only has cases where the duration can be expressed without a tie.
      Currently has entries for 3-,5-,6- and 7-tuplets.
 

@@ -23,9 +23,11 @@ import Data.Ratio {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
 
-import qualified Music.Theory.List as T
-import qualified Music.Theory.Parse as T
-import qualified Music.Theory.Show as T
+import qualified Music.Theory.List as List {- hmt-base -}
+import Music.Theory.Parse (P) {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
+
+import Music.Theory.Time {- hmt -}
 
 -- * Bel
 
@@ -62,11 +64,6 @@ bel_brackets_match (open,close) =
       ('[',']') -> True
       _ -> False
 
-{- | Tempo is rational.
-The duration of a 'Term' is the reciprocal of the 'Tempo' that is in place at the 'Term'.
--}
-type Tempo = Rational
-
 -- | Terms are the leaf nodes of the temporal structure.
 data Term a = Value a | Rest | Continue
   deriving (Eq,Show)
@@ -78,7 +75,9 @@ term_value t =
     Value x -> Just x
     _ -> Nothing
 
--- | Recursive temporal structure.
+{- | Recursive temporal structure.
+The duration of a 'Term' is the reciprocal of the 'Tempo' that is in place at the 'Term'.
+-}
 data Bel a =
   Node (Term a) -- ^ Leaf node
   | Iso (Bel a) -- ^ Isolate
@@ -105,12 +104,12 @@ bel_pp f b =
       Node Rest -> "-"
       Node Continue -> "_"
       Node (Value c) -> f c
-      Iso b' -> T.bracket_l ("{","}") (bel_pp f b')
+      Iso b' -> List.bracket_l ("{","}") (bel_pp f b')
       Seq p q -> concat [bel_pp f p,bel_pp f q]
       Par m p q ->
           let pq = concat [bel_pp f p,",",bel_pp f q]
-          in T.bracket_l (par_mode_brackets m) pq
-      Mul n -> concat ["*",T.rational_pp n]
+          in List.bracket_l (par_mode_brackets m) pq
+      Mul n -> concat ["*",Show.rational_pp n]
 
 -- | 'bel_pp' of 'return'.
 bel_char_pp :: Bel Char -> String
@@ -159,9 +158,6 @@ bel_dur :: Tempo -> Bel a -> Rational
 bel_dur t = snd . bel_tdur t
 
 -- * Linearisation
-
--- | Time point.
-type Time = Rational
 
 {- | Voices are named as a sequence of left and right directions within nested 'Par' structures.
 l is left and r is right.
@@ -227,7 +223,7 @@ bel_linearise l_st b =
 
 -- | Merge two ascending 'L_Bel'.
 lbel_merge :: L_Bel a -> L_Bel a -> L_Bel a
-lbel_merge = T.merge_on lterm_time
+lbel_merge = List.merge_on lterm_time
 
 -- | Set of unique 'Tempo' at 'L_Bel'.
 lbel_tempi :: L_Bel a -> [Tempo]
@@ -273,7 +269,7 @@ lbel_voices =
 -- | The duration of 'L_Bel'.
 lbel_duration :: L_Bel a -> Time
 lbel_duration b =
-    let l = last (T.group_on lterm_time b)
+    let l = last (List.group_on lterm_time b)
     in maximum (map (\((st,tm,_),_) -> st + recip tm) l)
 
 -- | Locate an 'L_Term' that is active at the indicated 'Time' and in
@@ -371,7 +367,7 @@ bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
   let p = bel_char_parse s
-  putStrLn (concat ["\nBel(R): \"",bel_char_pp p,"\", Dur: ",T.rational_pp (bel_dur 1 p),""])
+  putStrLn (concat ["\nBel(R): \"",bel_char_pp p,"\", Dur: ",Show.rational_pp (bel_dur 1 p),""])
   bel_ascii_pr p
 
 -- * Parsing
@@ -379,49 +375,49 @@ bel_ascii_pp s = do
 -- | Parse 'Rest' 'Term'.
 --
 -- > P.parse p_rest "" "-"
-p_rest :: T.P (Term a)
+p_rest :: P (Term a)
 p_rest = fmap (const Rest) (P.char '-')
 
 -- | Parse 'Rest' 'Term'.
 --
 -- > P.parse p_nrests "" "3"
-p_nrests :: T.P (Bel a)
+p_nrests :: P (Bel a)
 p_nrests = fmap nrests p_non_negative_integer
 
 -- | Parse 'Continue' 'Term'.
 --
 -- > P.parse p_continue "" "_"
-p_continue :: T.P (Term a)
+p_continue :: P (Term a)
 p_continue = fmap (const Continue) (P.char '_')
 
 -- | Parse 'Char' 'Value' 'Term'.
 --
 -- > P.parse p_char_value "" "a"
-p_char_value :: T.P (Term Char)
+p_char_value :: P (Term Char)
 p_char_value = fmap Value P.lower
 
 -- | Parse 'Char' 'Term'.
 --
 -- > P.parse (P.many1 p_char_term) "" "-_a"
-p_char_term :: T.P (Term Char)
+p_char_term :: P (Term Char)
 p_char_term = P.choice [p_rest,p_continue,p_char_value]
 
 -- | Parse 'Char' 'Node'.
 --
 -- > P.parse (P.many1 p_char_node) "" "-_a"
-p_char_node :: T.P (Bel Char)
+p_char_node :: P (Bel Char)
 p_char_node = fmap Node p_char_term
 
 -- | Parse non-negative 'Integer'.
 --
 -- > P.parse p_non_negative_integer "" "3"
-p_non_negative_integer :: T.P Integer
+p_non_negative_integer :: P Integer
 p_non_negative_integer = fmap read (P.many1 P.digit)
 
 -- | Parse non-negative 'Rational'.
 --
 -- > P.parse (p_non_negative_rational `P.sepBy` (P.char ',')) "" "3%5,2/3"
-p_non_negative_rational :: T.P Rational
+p_non_negative_rational :: P Rational
 p_non_negative_rational = do
   n <- p_non_negative_integer
   _ <- P.oneOf "%/"
@@ -432,7 +428,7 @@ p_non_negative_rational = do
 --
 -- > P.parse p_non_negative_double "" "3.5"
 -- > P.parse (p_non_negative_double `P.sepBy` (P.char ',')) "" "3.5,7.2,1.0"
-p_non_negative_double :: T.P Double
+p_non_negative_double :: P Double
 p_non_negative_double = do
   a <- P.many1 P.digit
   _ <- P.char '.'
@@ -442,7 +438,7 @@ p_non_negative_double = do
 -- | Parse non-negative number as 'Rational'.
 --
 -- > P.parse (p_non_negative_number `P.sepBy` (P.char ',')) "" "7%2,3.5,3"
-p_non_negative_number :: T.P Rational
+p_non_negative_number :: P Rational
 p_non_negative_number =
     P.choice [P.try p_non_negative_rational
              ,P.try (fmap toRational p_non_negative_double)
@@ -451,7 +447,7 @@ p_non_negative_number =
 -- | Parse 'Mul'.
 --
 -- > P.parse (P.many1 p_mul) "" "/3*3/2"
-p_mul :: T.P (Bel a)
+p_mul :: P (Bel a)
 p_mul = do
   op <- P.oneOf "*/"
   n <- p_non_negative_number
@@ -462,7 +458,7 @@ p_mul = do
   return (Mul n')
 
 -- | Given parser for 'Bel' /a/, generate 'Iso' parser.
-p_iso :: T.P (Bel a) -> T.P (Bel a)
+p_iso :: P (Bel a) -> P (Bel a)
 p_iso f = do
   open <- P.oneOf "{(["
   iso <- P.many1 f
@@ -473,17 +469,17 @@ p_iso f = do
 -- | 'p_iso' of 'p_char_bel'.
 --
 -- > P.parse p_char_iso "" "{abcde}"
-p_char_iso :: T.P (Bel Char)
+p_char_iso :: P (Bel Char)
 p_char_iso = p_iso p_char_bel
 
 -- | Given parser for 'Bel' /a/, generate 'Par' parser.
-p_par :: T.P (Bel a) -> T.P (Bel a)
+p_par :: P (Bel a) -> P (Bel a)
 p_par f = do
   tilde <- P.optionMaybe (P.char '~')
   open <- P.oneOf "{(["
   items <- P.sepBy (P.many1 f) (P.char ',')
   close <- P.oneOf "})]"
-  let m = par_mode_kind (T.mcons tilde [open], [close])
+  let m = par_mode_kind (List.mcons tilde [open], [close])
   return (par_of m (map lseq items))
 
 {- | 'p_par' of 'p_char_bel'.
@@ -492,13 +488,13 @@ p_par f = do
 > p "{ab,{c,de}}" == p "{ab,c,de}"
 > p "{ab,~(c,de)}"
 -}
-p_char_par :: T.P (Bel Char)
+p_char_par :: P (Bel Char)
 p_char_par = p_par p_char_bel
 
 -- | Parse 'Bel' 'Char'.
 --
 -- > P.parse (P.many1 p_char_bel) "" "-_a*3"
-p_char_bel :: T.P (Bel Char)
+p_char_bel :: P (Bel Char)
 p_char_bel = P.choice [P.try p_char_par,p_char_iso,p_mul,p_nrests,p_char_node]
 
 -- | Run parser for 'Bel' of 'Char'.

@@ -4,7 +4,9 @@ module Music.Theory.Z.Clough_1979 where
 
 import Data.List {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+
+import Music.Theory.Z {- hmt -}
 
 -- | Shift sequence so the initial value is zero.
 --
@@ -19,13 +21,13 @@ transpose_to_zero p =
 --
 -- > map dpcset_to_chord [[0,1],[0,2,4],[2,3,4,5,6]] == [[1,6],[2,2,3],[1,1,1,1,3]]
 dpcset_to_chord :: Integral n => [n] -> [n]
-dpcset_to_chord = T.d_dx . (++ [7]) . transpose_to_zero . nub . sort
+dpcset_to_chord = List.d_dx . (++ [7]) . transpose_to_zero . nub . sort
 
 -- | Inverse of 'dpcset_to_chord'.
 --
 -- > map chord_to_dpcset [[1,6],[2,2,3]] == [[0,1],[0,2,4]]
 chord_to_dpcset :: Integral n => [n] -> [n]
-chord_to_dpcset = T.dropRight 1 . T.dx_d 0
+chord_to_dpcset = List.dropRight 1 . List.dx_d 0
 
 -- | Complement, ie. in relation to 'z7_univ'.
 --
@@ -56,8 +58,8 @@ is_chord = (== 7) . sum
 -- > iv [2,2,3] == [0,2,1]
 iv :: Integral n => [n] -> [n]
 iv p =
-    let h = T.generic_histogram p
-        f n = T.lookup_def n 0 h
+    let h = List.generic_histogram p
+        f n = List.lookup_def n 0 h
     in map f [1,2,3]
 
 -- | Comparison function for 'inv'.
@@ -66,14 +68,14 @@ inf_cmp p q =
     if null p && null q
     then EQ
     else case compare (last p) (last q) of
-           EQ -> inf_cmp (T.dropRight 1 p) (T.dropRight 1 q)
+           EQ -> inf_cmp (List.dropRight 1 p) (List.dropRight 1 q)
            r -> r
 
 -- | Interval normal form.
 --
 -- > map inf [[2,2,3],[1,2,4],[2,1,4]] == [[2,2,3],[1,2,4],[2,1,4]]
 inf :: Integral n => [n] -> [n]
-inf = maximumBy inf_cmp . T.rotations
+inf = maximumBy inf_cmp . List.rotations
 
 -- | Inverse of chord (retrograde).
 --
@@ -88,7 +90,7 @@ invert = reverse
 complement :: Integral n => [n] -> [n]
 complement = inf . dpcset_to_chord . dpcset_complement . chord_to_dpcset
 
--- | Z7 pitch sequence to Z7 interval sequence, ie. 'mod7' of 'T.d_dx'.
+-- | Z7 pitch sequence to Z7 interval sequence, ie. 'mod7' of 'List.d_dx'.
 --
 -- > map iseq (permutations [0,1,2]) == [[1,1],[6,2],[6,6],[1,5],[5,1],[2,6]]
 -- > map iseq (permutations [0,1,3]) == [[1,2],[6,3],[5,6],[2,4],[4,1],[3,5]]
@@ -96,13 +98,9 @@ complement = inf . dpcset_to_chord . dpcset_complement . chord_to_dpcset
 -- > map iseq (permutations [0,1,4]) == [[1,3],[6,4],[4,6],[3,3],[3,1],[4,4]]
 -- > map iseq (permutations [0,2,4]) == [[2,2],[5,4],[5,5],[2,3],[3,2],[4,5]]
 iseq :: Integral n => [n] -> [n]
-iseq = map mod7 . T.d_dx
+iseq = map mod7 . List.d_dx
 
 -- * Z
-
--- | Is /n/ in (0,/m/ - 1).
-is_z_n :: Integral n => n -> n -> Bool
-is_z_n m n = n >= 0 && n < m
 
 -- | Z /m/ universe, ie [0 .. m-1].
 z_n_univ :: Integral n => n -> [n]

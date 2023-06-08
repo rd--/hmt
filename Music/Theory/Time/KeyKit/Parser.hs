@@ -4,13 +4,11 @@ module Music.Theory.Time.KeyKit.Parser where
 import Data.Maybe {- base -}
 import Text.Printf {- base -}
 
+import Music.Theory.Parse {- hmt -}
+
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as String {- parsec -}
 
 -- * Parser setup
-
--- | A 'Char' parser with no user state.
-type P a = String.GenParser Char () a
 
 -- | Run parser and return either an error string or an answer.
 kk_parse_either :: P t -> String -> Either String t

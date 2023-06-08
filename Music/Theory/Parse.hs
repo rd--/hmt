@@ -4,10 +4,10 @@ module Music.Theory.Parse where
 import Data.Maybe {- base -}
 
 import qualified Text.Parsec as P {- parsec -}
-import qualified Text.Parsec.String as P {- parsec -}
+import qualified Text.Parsec.String as String {- parsec -}
 
--- | A 'Char' parser.
-type P a = P.GenParser Char () a
+-- | A 'Char' parser with no user state.
+type P a = String.GenParser Char () a
 
 -- | Boolean 'P' for given 'Char'.
 is_char :: Char -> P Bool
