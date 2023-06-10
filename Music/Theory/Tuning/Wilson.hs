@@ -197,11 +197,11 @@ tbl_wr del = putStr . unlines . Text.table_pp (False,True,False," ",False) . tbl
 
 -- * Graph
 
--- | (maybe (maybe lattice-design, maybe primes),gr-attr,vertex-pp)
-type Ew_Gr_Opt = (Maybe (Lattice_Design Rational,Maybe [Integer]),[Dot.Dot_Meta_Attr],Rational -> String)
+-- | (maybe (maybe lattice-design, maybe primes),gr-attr,vertex-pp,edge-attr)
+type Ew_Gr_Opt = (Maybe (Lattice_Design Rational,Maybe [Integer]),[Dot.Dot_Meta_Attr],Rational -> String, (Rational, Rational) -> [(String,String)])
 
 ew_gr_opt_pos :: Ew_Gr_Opt -> Bool
-ew_gr_opt_pos (lc_m,_,_) = isJust lc_m
+ew_gr_opt_pos (lc_m,_,_,_) = isJust lc_m
 
 -- > map (ew_gr_r_pos ew_lc_std (Just [3,5,31])) [3,5,31]
 ew_gr_r_pos :: Lattice_Design Rational -> Maybe [Integer] -> Rational -> Dot.Dot_Attr
@@ -216,7 +216,7 @@ ew_gr_r_pos (k,lc) primes_l =
 
 -- | 'Dot.lbl_to_udot' add position attribute if a 'Lattice_Design' is given.
 ew_gr_udot :: Ew_Gr_Opt -> Graph.Lbl Rational () -> [String]
-ew_gr_udot (lc_m,attr,v_pp) =
+ew_gr_udot (lc_m,attr,v_pp,e_attr) gr =
   let (e,p_f) = case lc_m of
                   Nothing -> ("sfdp",const Nothing)
                   Just (lc,primes_l) -> ("neato",Just . ew_gr_r_pos lc primes_l)
@@ -227,7 +227,8 @@ ew_gr_udot (lc_m,attr,v_pp) =
        ++ attr
      )
      (\(_,v) -> List.mcons (p_f v) [("label",v_pp v)]
-     ,const [])
+     ,\((v1,v2),_) -> e_attr (Graph.v_label_err gr v1, Graph.v_label_err gr v2))
+     gr
 
 -- | 'writeFile' of 'ew_gr_udot'
 ew_gr_udot_wr :: Ew_Gr_Opt -> FilePath -> Graph.Lbl Rational () -> IO ()
@@ -578,10 +579,15 @@ ew_el22_6_r =
 
 -- * <http://anaphoria.com/diamond.pdf>
 
+{-
+> ew_diamond_mk [1, 3, 5, 7, 9, 11] == [1/1,3/11,11/5,5/9,9/1,1/7,7/3,3/5,11/9,5/1,7/11,9/7,1/3,11/1,7/5,5/7,1/11,3/1,7/9,11/7,1/5,9/11,5/3,3/7,7/1,1/9,9/5,5/11,11/3]
+-}
 ew_diamond_mk :: [Integer] -> [Rational]
 ew_diamond_mk u = r_normalise [x % y | x <- u, y <- u]
 
--- > m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
+{-
+> m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
+-}
 ew_diamond_12_gen :: [M3_Gen]
 ew_diamond_12_gen =
   [(1/(3^.2),5),(5/(3^.2),3),(7/(3^.2),3),(11/(3^.2),3)
@@ -653,13 +659,19 @@ ew_hel_12_scl = r_to_scale "ew_hel_12" "EW, hel.pdf, P.12" ew_hel_12_r
 
 -- * <http://anaphoria.com/HexanyStellatesExpansions.pdf>
 
--- > she_div "ABCD" == [["BCD","A"],["ACD","B"],["ABD","C"],["ABC","D"]]
+{- | Pair each element with it's complement.
+
+> she_div "abcd" == [["bcd","a"],["acd","b"],["abd","c"],["abc","d"]]
+-}
 she_div :: Eq a => [a] -> [[[a]]]
 she_div x =
   let f = (== [1,length x - 1]) . sort . map length
   in map (sortOn (Down . length)) (filter f (Set.partitions x))
 
--- > she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
+{- | Product of complement divided by element.
+
+> she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
+-}
 she_div_r :: [Rational] -> [Rational]
 she_div_r =
   let f x =
@@ -668,7 +680,10 @@ she_div_r =
           _ -> error "she_div?"
   in map f . she_div
 
--- > she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
+{- | All two element products.
+
+> she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
+-}
 she_mul_r :: [Rational] -> [Rational]
 she_mul_r r = [x * y | x <- r,y <- r,x <= y]
 
