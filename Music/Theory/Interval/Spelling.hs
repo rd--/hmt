@@ -3,11 +3,15 @@ module Music.Theory.Interval.Spelling where
 
 import Music.Theory.Interval
 
--- | Simplest spelling for semitone intervals.  This is ambiguous for
--- @6@ which could be either /aug.4/ or /dim.5/.
---
--- > i_to_interval 6 == Interval Fourth Augmented LT 0
--- > map i_to_interval [0..11]
+{- | Simplest spelling for semitone intervals.
+This is ambiguous for @6@ which could be either /aug.4/ or /dim.5/.
+
+>>> i_to_interval 6 == Interval Fourth Augmented LT 0
+True
+
+>>> map (interval_type . i_to_interval) [0..11]
+[Unison,Second,Second,Third,Third,Fourth,Fourth,Fifth,Sixth,Sixth,Seventh,Seventh]
+-}
 i_to_interval :: Int -> Interval
 i_to_interval x =
     let iv ty qu = Interval ty qu LT 0
@@ -26,11 +30,15 @@ i_to_interval x =
          11 -> iv Seventh Major
          _ -> error ("i_to_interval: " ++ show x)
 
--- | Perform some interval simplifications.  For non-tonal music some
--- spellings are poor, ie. (f,g#).
---
--- > interval_simplify (Interval Second Augmented LT 0) == Interval Third Minor LT 0
--- > interval_simplify (Interval Seventh Augmented GT 0) == Interval Unison Perfect GT 1
+{- | Perform some interval simplifications.
+For non-tonal music some spellings are poor, ie. (f,g#).
+
+>>> interval_simplify (Interval Second Augmented LT 0) == Interval Third Minor LT 0
+True
+
+>>> interval_simplify (Interval Seventh Augmented GT 0) == Interval Unison Perfect GT 1
+True
+-}
 interval_simplify :: Interval -> Interval
 interval_simplify x =
     let (Interval ty qu d o) = x

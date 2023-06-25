@@ -140,3 +140,4 @@ Reprinted by Faber and Faber, 1998.
 {0,1,4,6,7,9}  6-Z50(12)    31 (2,2,4,2,3,2)
 
 -}
+module Music.Theory.Z.Carter where

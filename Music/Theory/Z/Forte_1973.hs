@@ -100,15 +100,17 @@ z_icv z s =
         k = map (`lookup` j) [1 .. z_modulus z `div` 2]
     in map (fromMaybe 0) k
 
--- * BIP Metric
+-- * Bip Metric
 
--- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\"
+{- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\"
 -- /JMT/ 17/2 (1973):234-272
---
--- >>> bip 0t95728e3416
--- 11223344556
---
--- > z_bip z12 [0,10,9,5,7,2,8,11,3,4,1,6] == [1,1,2,2,3,3,4,4,5,5,6]
+
+> bip 0t95728e3416
+11223344556
+
+>>> z_bip z12 [0,10,9,5,7,2,8,11,3,4,1,6]
+[1,1,2,2,3,3,4,4,5,5,6]
+-}
 z_bip :: Integral i => Z i -> [i] -> [i]
 z_bip z = sort . map (z_ic z . z_mod z) . T.d_dx
 

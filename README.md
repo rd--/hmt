@@ -24,3 +24,11 @@ related:
 [scala](http://rohandrape.net/?t=hmt&e=md/scala.md)
 
 © [rohan drape](http://rohandrape.net/), 2006-2023, [gpl](http://gnu.org/copyleft/).
+
+* * *
+
+```
+$ doctest Music/Theory/
+Examples: 290  Tried: 290  Errors: 0  Failures: 0
+$
+```

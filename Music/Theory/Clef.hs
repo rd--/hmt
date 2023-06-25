@@ -13,11 +13,14 @@ data Clef i = Clef {clef_t :: Clef_Type
                    ,clef_octave :: i}
               deriving (Eq,Ord,Show)
 
--- | Give clef range as a 'Pitch' pair indicating the notes below and
--- above the staff.
---
--- > map clef_range [Treble,Bass] == [Just (d4,g5),Just (f2,b3)]
--- > clef_range Percussion == Nothing
+{- | Give clef range as a 'Pitch' pair indicating the notes below and above the staff.
+
+>>> map clef_range [Treble,Bass] == [Just (d4,g5),Just (f2,b3)]
+True
+
+>>> clef_range Percussion
+Nothing
+-}
 clef_range :: Clef_Type -> Maybe (Pitch,Pitch)
 clef_range c =
     case c of
@@ -27,9 +30,11 @@ clef_range c =
       Treble -> Just (d4,g5)
       Percussion -> Nothing
 
--- | Suggest a 'Clef' given a 'Pitch'.
---
--- > map clef_suggest [c2,c4] == [Clef Bass (-1),Clef Treble 0]
+{- | Suggest a 'Clef' given a 'Pitch'.
+
+>>> map clef_suggest [c2,c4] == [Clef Bass (-1),Clef Treble 0]
+True
+-}
 clef_suggest :: Integral i => Pitch -> Clef i
 clef_suggest p | p < f1 = Clef Bass (-2)
                | p < f2 = Clef Bass (-1)

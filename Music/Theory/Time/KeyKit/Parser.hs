@@ -56,7 +56,11 @@ kk_char_to_note_number c = fromMaybe (error "kk_char_to_note_number?") (lookup c
 kk_char_to_alteration :: Char -> Int
 kk_char_to_alteration c = fromMaybe (error "kk_char_to_alteration?") (lookup c (zip "+-" [1, -1]))
 
--- > map kk_note_number_to_name [0 .. 11]
+{- | Note number to name
+
+>>> map kk_note_number_to_name [0 .. 11]
+["c","c+","d","e-","e","f","f+","g","a-","a","b-","b"]
+-}
 kk_note_number_to_name :: Int -> String
 kk_note_number_to_name k = fromMaybe (error "kk_note_number_to_name?") (lookup k (zip [0..] (words "c c+ d e- e f f+ g a- a b- b")))
 
@@ -103,8 +107,9 @@ kk_empty_contextual_rest n = kk_empty_contextual_note {kk_contextual_note_durati
 
 {- | If t is set and is at the end time of the previous note print a preceding comma, else print t annotation.
 
-> c = kk_empty_contextual_note {kk_contextual_note_number = Just 0, kk_contextual_time = Just 96}
-> map (\t -> kk_contextual_note_pp (t, c)) [0, 96] == ["ct96",", c"]
+>>> let c = kk_empty_contextual_note {kk_contextual_note_number = Just 0, kk_contextual_note_time = Just 96}
+>>> map (\t -> kk_contextual_note_pp (t, c)) [0, 96]
+["ct96",", c"]
 -}
 kk_contextual_note_pp :: (Int, Kk_Contextual_Note) -> String
 kk_contextual_note_pp (t', Kk_Contextual_Note n o v d c t) =
@@ -220,28 +225,52 @@ kk_recontextualise_phrase p =
 
 {- | Read KeyKit phrase constant.
 
-> let rw = (\p -> (kk_phrase_pp p, kk_phrase_length p)) . kk_phrase_read
-> rw "c" == ("c3v63d96c1t0",96)
-> rw "c, r" == ("c3v63d96c1t0",192)
-> rw "c, r, c3, r, p60" == ("c3v63d96c1t0 c3v63d96c1t192 c3v63d96c1t384",480)
-> rw "c, e, g" == ("c3v63d96c1t0 e3v63d96c1t96 g3v63d96c1t192",288)
-> rw "c2" == rw "co2"
+>>> let rw = (\p -> (kk_phrase_pp p, kk_phrase_length p)) . kk_phrase_read
+>>> rw "c"
+("c3v63d96c1t0",96)
+
+>>> rw "c, r"
+("c3v63d96c1t0",192)
+
+>>> rw "c, r, c3, r, p60"
+("c3v63d96c1t0 c3v63d96c1t192 c3v63d96c1t384",480)
+
+>>> rw "c, e, g"
+("c3v63d96c1t0 e3v63d96c1t96 g3v63d96c1t192",288)
+
+>>> rw "c2" == rw "co2"
+True
 -}
 kk_phrase_read :: String -> Kk_Phrase
 kk_phrase_read = kk_decontextualise_phrase . kk_parse kk_contextual_phrase_p
 
 {- | Re-contextualise and print phrase.
 
-> rw = kk_phrase_print . kk_phrase_read
-> rw_id i = rw i == i
-> rw_id "c"
-> rw_id "c e g"
-> rw_id "c , e , g"
-> rw_id "c e g , c f a , c e g , c e- g"
-> rw_id "c , e , g c4t384"
-> rw "c, r, c3, r, p60" == "c ct192 ct384"
-> rw "c , e , g c4t288" == "c , e , g , c4"
-> rw "c r" == "c" -- ?
+>>> rw = kk_phrase_print . kk_phrase_read
+>>> rw_id i = rw i == i
+>>> rw_id "c"
+True
+
+>>> rw_id "c e g"
+True
+
+>>> rw_id "c , e , g"
+True
+
+>>> rw_id "c e g , c f a , c e g , c e- g"
+True
+
+>>> rw_id "c , e , g c4t384"
+True
+
+>>> rw "c, r, c3, r, p60"
+"c ct192 ct384"
+
+>>> rw "c , e , g c4t288"
+"c , e , g , c4"
+
+>>> rw "c r" -- ?
+"c"
 -}
 kk_phrase_print :: Kk_Phrase -> String
 kk_phrase_print = unwords . map kk_contextual_note_pp . kk_recontextualise_phrase

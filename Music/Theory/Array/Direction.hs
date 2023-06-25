@@ -19,8 +19,8 @@ type Vec n = V2 n
 
 {- | Segment 'Vec' into a sequence of unit steps.
 
-> let r = [[(0,0)],[(0,1)],[(0,1),(-1,0)],[(0,1),(0,1),(0,1),(-1,0),(-1,0)]]
-> map segment_vec [(0,0),(0,1),(-1,1),(-2,3)] == r
+>>> map segment_vec [(0,0),(0,1),(-1,1),(-2,3)]
+[[(0,0)],[(0,1)],[(0,1),(-1,0)],[(0,1),(0,1),(0,1),(-1,0),(-1,0)]]
 -}
 segment_vec :: Integral n => Vec n -> [Vec n]
 segment_vec v =
@@ -52,12 +52,19 @@ direction_char_to_vector_tbl =
     ,('S',(0,1)),('W',(-1,0)),('E',(1,0)),('N',(0,-1))
     ,('D',(0,1)),('L',(-1,0)),('R',(1,0)),('U',(0,-1))]
 
--- > map direction_char_to_vector "LU"
+{- | Letter to vector
+
+>>> map direction_char_to_vector "LU"
+[(-1,0),(0,-1)]
+-}
 direction_char_to_vector :: Num n => Direction_C -> Vec n
 direction_char_to_vector d = fromMaybe (error "dir?") $ lookup d direction_char_to_vector_tbl
 
--- > let r = [(0,-1),(0,1),(-1,0),(1,0),(-1,-1),(1,1),(-2,0),(-1,-1)]
--- > map direction_to_vector (words "U D L R UL DR LL LU") == r
+{- | Direction to vector
+
+>>> map direction_to_vector (words "U D L R UL DR LL LU")
+[(0,-1),(0,1),(-1,0),(1,0),(-1,-1),(1,1),(-2,0),(-1,-1)]
+-}
 direction_to_vector :: Num n => [Direction_C] -> Vec n
 direction_to_vector = v2_sum . map direction_char_to_vector
 

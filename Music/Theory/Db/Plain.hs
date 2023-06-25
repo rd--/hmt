@@ -22,7 +22,11 @@ type Db = [Record]
 sep_plain :: Sep
 sep_plain = (['\n','\n'],['\n'],": ")
 
--- > record_parse (";","=") "F=f/rec;E=au;C=A;K=P;K=Q"
+{- | Parse record
+
+>>> record_parse (";","=") "F=f/rec;E=au;C=A;K=P;K=Q"
+[("F",["f/rec"]),("E",["au"]),("C",["A"]),("K",["P","Q"])]
+-}
 record_parse :: (String,String) -> String -> Record
 record_parse (fs,es) = T.collate_adjacent . mapMaybe (T.separate_at es) . Split.splitOn fs
 
@@ -53,7 +57,11 @@ db_sort k = T.sort_by_n_stage_on (map record_lookup_at k)
 db_load_utf8 :: Sep -> FilePath -> IO [Record]
 db_load_utf8 sep = fmap (db_parse sep) . Io.read_file_utf8
 
--- > record_pp (";","=") [("F","f/rec.au"),("C","A")]
+{- | Pretty print record
+
+>>> record_pp (";","=") [("F",["f/rec.au"]),("C",["A"])]
+"F=f/rec.au;C=A"
+-}
 record_pp :: (String,String) -> Record -> String
 record_pp (fs,es) = intercalate fs . map (\(k,v) -> k ++ es ++ v) . T.uncollate
 

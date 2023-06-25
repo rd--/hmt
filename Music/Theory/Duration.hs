@@ -129,15 +129,19 @@ duration_set k = [Duration dv dt 1 | dv <- divisions_std_set, dt <- [0..k]]
 beam_count_tbl :: [(Division,Int)]
 beam_count_tbl = zip divisions_musicxml_set [0,0,0,0,0,1,2,3,4,5,6]
 
--- | Lookup 'beam_count_tbl'.
---
--- > whole_note_division_to_beam_count 32 == Just 3
+{- | Lookup 'beam_count_tbl'.
+
+>>> whole_note_division_to_beam_count 32
+Just 3
+-}
 whole_note_division_to_beam_count :: Division -> Maybe Int
 whole_note_division_to_beam_count x = lookup x beam_count_tbl
 
--- | Calculate number of beams at 'Duration'.
---
--- > map duration_beam_count [Duration 2 0 1,Duration 16 0 1] == [0,2]
+{- | Calculate number of beams at 'Duration'.
+
+>>> map duration_beam_count [Duration 2 0 1,Duration 16 0 1]
+[0,2]
+-}
 duration_beam_count :: Duration -> Int
 duration_beam_count (Duration x _ _) =
     let err = error "duration_beam_count"
@@ -153,17 +157,20 @@ division_musicxml_tbl =
              ,"16th","32nd","64th","128th","256th"]
     in zip divisions_musicxml_set nm
 
--- | Lookup 'division_musicxml_tbl'.
---
--- > map whole_note_division_to_musicxml_type [2,4] == ["half","quarter"]
+{- | Lookup 'division_musicxml_tbl'.
+
+>>> map whole_note_division_to_musicxml_type [2,4]
+["half","quarter"]
+-}
 whole_note_division_to_musicxml_type :: Division -> String
 whole_note_division_to_musicxml_type x =
     T.lookup_err_msg "division_musicxml_tbl" x division_musicxml_tbl
 
--- | Variant of 'whole_note_division_to_musicxml_type' extracting
--- 'division' from 'Duration', dots & multipler are ignored.
---
--- > duration_to_musicxml_type (Duration 4 0 1) == "quarter"
+{- | Variant of 'whole_note_division_to_musicxml_type' extracting 'division' from 'Duration', dots & multipler are ignored.
+
+>>> duration_to_musicxml_type (Duration 4 0 1)
+"quarter"
+-}
 duration_to_musicxml_type :: Duration -> String
 duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
 
@@ -173,16 +180,20 @@ duration_to_musicxml_type = whole_note_division_to_musicxml_type . division
 division_unicode_tbl :: [(Integer,Char)]
 division_unicode_tbl = zip [0,1,2,4,8,16,32,64,128,256] "𝅜𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅥𝅲"
 
--- | Lookup 'division_unicode_tbl'.
---
--- > map whole_note_division_to_unicode_symbol [1,2,4,8] == "𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮"
+{- | Lookup 'division_unicode_tbl'.
+
+>>> map whole_note_division_to_unicode_symbol [1,2,4,8] == "𝅝𝅗𝅥𝅘𝅥𝅘𝅥𝅮"
+True
+-}
 whole_note_division_to_unicode_symbol :: Division -> Char
 whole_note_division_to_unicode_symbol x =
     T.lookup_err_msg "division_unicode_tbl" x division_unicode_tbl
 
--- | Give Unicode string for 'Duration'. The duration multiplier is /not/ written.
---
--- > map duration_to_unicode [Duration 1 2 1,Duration 4 1 1] == ["𝅝𝅭𝅭","𝅘𝅥𝅭"]
+{- | Give Unicode string for 'Duration'. The duration multiplier is /not/ written.
+
+>>> map duration_to_unicode [Duration 1 2 1,Duration 4 1 1] == ["𝅝𝅭𝅭","𝅘𝅥𝅭"]
+True
+-}
 duration_to_unicode :: Duration -> String
 duration_to_unicode (Duration dv d _) =
     let dv' = whole_note_division_to_unicode_symbol dv
@@ -190,10 +201,12 @@ duration_to_unicode (Duration dv d _) =
 
 -- * Lilypond
 
--- | Give /Lilypond/ notation for 'Duration'.
--- Note that the duration multiplier is /not/ written.
---
--- > map duration_to_lilypond_type [Duration 2 0 1,Duration 4 1 1] == ["2","4."]
+{- | Give /Lilypond/ notation for 'Duration'.
+Note that the duration multiplier is /not/ written.
+
+>>> map duration_to_lilypond_type [Duration 2 0 1,Duration 4 1 1]
+["2","4."]
+-}
 duration_to_lilypond_type :: Duration -> String
 duration_to_lilypond_type (Duration dv d _) =
     let dv' = if dv == 0 then "\\breve" else show dv
@@ -205,11 +218,13 @@ duration_to_lilypond_type (Duration dv d _) =
 
 <http://humdrum.org/Humdrum/representations/recip.rep.html>
 
-> let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
-> map duration_recip_pp d == ["0","1","2","4","8","16","32"]
+>>> let d = map (\z -> Duration z 0 1) [0,1,2,4,8,16,32]
+>>> map duration_recip_pp d
+["0","1","2","4","8","16","32"]
 
-> let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
-> map duration_recip_pp d == ["3.","4.","6."]
+>>> let d = [Duration 1 1 (1/3),Duration 4 1 1,Duration 4 1 (2/3)]
+>>> map duration_recip_pp d
+["3.","4.","6."]
 -}
 duration_recip_pp :: Duration -> String
 duration_recip_pp (Duration x d m) =
@@ -243,12 +258,22 @@ whole_note_division_name = flip lookup whole_note_division_name_tbl
 whole_note_division_letter_tbl :: [(Division, Char)]
 whole_note_division_letter_tbl = map (\(d,n) -> (d,head n)) whole_note_division_name_tbl
 
-  -- > mapMaybe whole_note_division_letter_pp [-2, -1, 0, 1, 2, 4, 8, 16, 32] == "mlbwhqest"
+{- | Letter names for note divisions.
+
+>>> mapMaybe whole_note_division_letter_pp [-2, -1, 0, 1, 2, 4, 8, 16, 32]
+"mlbwhqest"
+-}
 whole_note_division_letter_pp :: Division -> Maybe Char
 whole_note_division_letter_pp = flip lookup (tail whole_note_division_letter_tbl)
 
--- > mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1] == ["q","h.","e.."]
--- > mapMaybe duration_letter_pp [Duration 4 1 (2/3)] == ["q./2:3"]
+{- | Letter names for durations.
+
+>>> mapMaybe duration_letter_pp [Duration 4 0 1,Duration 2 1 1,Duration 8 2 1]
+["q","h.","e.."]
+
+>>> mapMaybe duration_letter_pp [Duration 4 1 (2/3)]
+["q./2:3"]
+-}
 duration_letter_pp :: Duration -> Maybe String
 duration_letter_pp (Duration x d m) =
     let d' = genericReplicate d '.'

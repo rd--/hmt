@@ -23,18 +23,24 @@ import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
-import qualified Music.Theory.Math.Oeis as OEIS {- hmt -}
+import qualified Music.Theory.Math.Oeis as Oeis {- hmt -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt -}
 import qualified Music.Theory.Set.List as Set {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
+-- $setup
+-- >>> db <- Scala.scl_load_db_dir
+
 -- * Pt Set
 
 {- | Normalise set of points to lie in (-1,-1) - (1,1), scaling symetrically about (0,0)
 
-> pt_set_normalise_sym [(40,0),(0,40),(13,11),(-8,4)] == [(1,0),(0,1),(0.325,0.275),(-0.2,0.1)]
-> pt_set_normalise_sym [(-10,0),(1,10)] == [(-1,0),(0.1,1)]
+>>> pt_set_normalise_sym [(40,0),(0,40),(13,11),(-8,4)]
+[(1.0,0.0),(0.0,1.0),(0.325,0.275),(-0.2,0.1)]
+
+>>> pt_set_normalise_sym [(-10,0),(1,10)]
+[(-1.0,0.0),(0.1,1.0)]
 -}
 pt_set_normalise_sym :: (Fractional n,Ord n) => [V2 n] -> [V2 n]
 pt_set_normalise_sym x =
@@ -83,15 +89,19 @@ lc_pos_del ix (k,x) = (k - 1,List.remove_ix ix x)
 lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Design n -> Lattice_Position -> V2 n
 lc_pos_to_pt (_,lc) (_,x) = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
 
--- | White-space pretty printer for Lattice_Position.
---
--- > pos_pp_ws (3,[0,-2,1]) == "  0 -2  1"
+{- | White-space pretty printer for Lattice_Position.
+
+>>> pos_pp_ws (3,[0,-2,1])
+"  0 -2  1"
+-}
 pos_pp_ws :: Lattice_Position -> String
 pos_pp_ws = let f x = printf "%3d" x in concatMap f . snd
 
--- | Given Lattice_Factors [X,Y,Z..] and Lattice_Position [x,y,z..], calculate the indicated ratio.
---
--- > lat_res (2,[3,5]) (2,[-5,2]) == (5 * 5) / (3 * 3 * 3 * 3 * 3)
+{- | Given Lattice_Factors [X,Y,Z..] and Lattice_Position [x,y,z..], calculate the indicated ratio.
+
+>>> lat_res (2,[3,5]) (2,[-5,2]) == (5 * 5) / (3 * 3 * 3 * 3 * 3)
+True
+-}
 lat_res :: Integral i => Lattice_Factors i -> Lattice_Position -> Ratio i
 lat_res (_,p) (_,q) =
   let f i j = case compare j 0 of
@@ -117,9 +127,11 @@ rat_lift_1 f = uncurry (%) . f . Math.rational_nd
 rat_to_ratio :: Rat -> Rational
 rat_to_ratio (n,d) = n % d
 
--- | Mediant, ie. n1+n2/d1+d2
---
--- > rat_mediant (0,1) (1,2) == (1,3)
+{- | Mediant, ie. n1+n2/d1+d2
+
+>>> rat_mediant (0,1) (1,2)
+(1,3)
+-}
 rat_mediant :: Rat -> Rat -> Rat
 rat_mediant (n1,d1) (n2,d2) = (n1 + n2,d1 + d2)
 
@@ -129,9 +141,11 @@ rat_pp (n,d) = concat [show n,"/",show d]
 
 -- * Rational
 
--- | Lifted 'rat_rem_oct'.
---
--- > map ew_r_rem_oct [256/243,7/5,1/7] == [1/243,7/5,1/7]
+{- | Lifted 'rat_rem_oct'.
+
+>>> map r_rem_oct [256/243,7/5,1/7] == [1/243,7/5,1/7]
+True
+-}
 r_rem_oct :: Rational -> Rational
 r_rem_oct = rat_lift_1 rat_rem_oct
 
@@ -139,15 +153,19 @@ r_rem_oct = rat_lift_1 rat_rem_oct
 r_verify_oct :: Rational -> Rational
 r_verify_oct i = if i >= 1 && i < 2 then i else error (show ("r_verify_oct?",i))
 
--- | Find limit of set of ratios, ie. largest factor in either numerator or denominator.
---
--- > r_seq_limit [1] == 1
+{- | Find limit of set of ratios, ie. largest factor in either numerator or denominator.
+
+>>> r_seq_limit [1]
+1
+-}
 r_seq_limit :: [Rational] -> Integer
 r_seq_limit = maximum . map Prime.rational_prime_limit
 
--- | Find factors of set of ratios, ie. the union of all factor in both numerator & denominator.
---
--- > r_seq_factors [1/3,5/7,9/8,13,27,31] == [2,3,5,7,13,31]
+{- | Find factors of set of ratios, ie. the union of all factor in both numerator & denominator.
+
+>>> r_seq_factors [1/3,5/7,9/8,13,27,31]
+[2,3,5,7,13,31]
+-}
 r_seq_factors :: [Rational] -> [Integer]
 r_seq_factors = nub . sort . concatMap (uncurry (++) . Prime.rational_prime_factors)
 
@@ -167,9 +185,11 @@ r_seq_inverse = r_seq_normalize . map recip
 
 -- * Table
 
--- | Vector of prime-factors up to /limit/.
---
--- > map (rat_fact_lm 11) [3,5,7,2/11] == [(5,[0,1,0,0,0]),(5,[0,0,1,0,0]),(5,[0,0,0,1,0]),(5,[1,0,0,0,-1])]
+{- | Vector of prime-factors up to /limit/.
+
+>>> map (rat_fact_lm 11) [3,5,7,2/11]
+[(5,[0,1,0,0,0]),(5,[0,0,1,0,0]),(5,[0,0,0,1,0]),(5,[1,0,0,0,-1])]
+-}
 rat_fact_lm :: Integer -> Rational -> Lattice_Position
 rat_fact_lm lm =
   let k = fromMaybe 1 (Prime.prime_k lm) + 1
@@ -190,8 +210,11 @@ tbl_txt del lm_z rs =
                       ,Show.real_pp_unicode 2 h]
   in map (intersperse "=" . f) (zip5 [0::Int ..] scl rs cs hs)
 
--- > tbl_wr False [1,7/6,5/4,4/3,3/2]
--- > tbl_wr True [1,3,1/5,15/31]
+{- | Table write
+
+> tbl_wr False [1,7/6,5/4,4/3,3/2]
+> tbl_wr True [1,3,1/5,15/31]
+-}
 tbl_wr :: Bool -> [Rational] -> IO ()
 tbl_wr del = putStr . unlines . Text.table_pp (False,True,False," ",False) . tbl_txt del 31
 
@@ -203,7 +226,11 @@ type Ew_Gr_Opt = (Maybe (Lattice_Design Rational,Maybe [Integer]),[Dot.Dot_Meta_
 ew_gr_opt_pos :: Ew_Gr_Opt -> Bool
 ew_gr_opt_pos (lc_m,_,_,_) = isJust lc_m
 
--- > map (ew_gr_r_pos ew_lc_std (Just [3,5,31])) [3,5,31]
+{- | Position attributes
+
+>>> map (ew_gr_r_pos ew_lc_std (Just [3,5,31])) [3,5,31]
+[("pos","160,0"),("pos","0,160"),("pos","32,24")]
+-}
 ew_gr_r_pos :: Lattice_Design Rational -> Maybe [Integer] -> Rational -> Dot.Dot_Attr
 ew_gr_r_pos (k,lc) primes_l =
   let f m (x,y) = (m * x,m * y)
@@ -244,7 +271,11 @@ ew_gr_udot_wr_svg opt fn gr = do
 zz_seq_1 :: (Eq n,Num n) => Int -> (n,n) -> (n,n) -> [(n,n)]
 zz_seq_1 k (p,q) (n,d) = if k == 0 then [(n,d)] else (n,d) : zz_seq_1 (k - 1) (p,q) (n+p,d+q)
 
--- > zz_next 3 [(0,1),(1,1)] == [(1,1),(1,2),(1,3),(1,4)]
+{- | Zig-zag next
+
+>>> zz_next 3 [(0,1),(1,1)]
+[(1,1),(1,2),(1,3),(1,4)]
+-}
 zz_next :: (Eq n, Num n) => Int -> [(n,n)] -> [(n,n)]
 zz_next k p =
   case reverse p of
@@ -257,9 +288,17 @@ zz_recur k_seq p =
     [] -> []
     k:k_rem -> let r = zz_next k p in r : zz_recur k_rem r
 
--- > zz_seq [3,9,2,2,4,6,2,1,1,3]
--- > zz_seq [2,4,2,158]
--- > zz_seq [1,1,4,2,1,3,1,6,2]
+{- | Zig-zag sequence
+
+>>> zz_seq [3,9,2,2,4,6,2,1,1,3]
+[[(1,1),(1,2),(1,3),(1,4)],[(1,4),(2,7),(3,10),(4,13),(5,16),(6,19),(7,22),(8,25),(9,28),(10,31)],[(10,31),(19,59),(28,87)],[(28,87),(47,146),(66,205)],[(66,205),(113,351),(160,497),(207,643),(254,789)],[(254,789),(461,1432),(668,2075),(875,2718),(1082,3361),(1289,4004),(1496,4647)],[(1496,4647),(2785,8651),(4074,12655)],[(4074,12655),(6859,21306)],[(6859,21306),(10933,33961)],[(10933,33961),(17792,55267),(24651,76573),(31510,97879)]]
+
+>>> zz_seq [2,4,2,158]
+[[(1,1),(1,2),(1,3)],[(1,3),(2,5),(3,7),(4,9),(5,11)],[(5,11),(9,20),(13,29)],[(13,29),(22,49),(31,69),(40,89),(49,109),(58,129),(67,149),(76,169),(85,189),(94,209),(103,229),(112,249),(121,269),(130,289),(139,309),(148,329),(157,349),(166,369),(175,389),(184,409),(193,429),(202,449),(211,469),(220,489),(229,509),(238,529),(247,549),(256,569),(265,589),(274,609),(283,629),(292,649),(301,669),(310,689),(319,709),(328,729),(337,749),(346,769),(355,789),(364,809),(373,829),(382,849),(391,869),(400,889),(409,909),(418,929),(427,949),(436,969),(445,989),(454,1009),(463,1029),(472,1049),(481,1069),(490,1089),(499,1109),(508,1129),(517,1149),(526,1169),(535,1189),(544,1209),(553,1229),(562,1249),(571,1269),(580,1289),(589,1309),(598,1329),(607,1349),(616,1369),(625,1389),(634,1409),(643,1429),(652,1449),(661,1469),(670,1489),(679,1509),(688,1529),(697,1549),(706,1569),(715,1589),(724,1609),(733,1629),(742,1649),(751,1669),(760,1689),(769,1709),(778,1729),(787,1749),(796,1769),(805,1789),(814,1809),(823,1829),(832,1849),(841,1869),(850,1889),(859,1909),(868,1929),(877,1949),(886,1969),(895,1989),(904,2009),(913,2029),(922,2049),(931,2069),(940,2089),(949,2109),(958,2129),(967,2149),(976,2169),(985,2189),(994,2209),(1003,2229),(1012,2249),(1021,2269),(1030,2289),(1039,2309),(1048,2329),(1057,2349),(1066,2369),(1075,2389),(1084,2409),(1093,2429),(1102,2449),(1111,2469),(1120,2489),(1129,2509),(1138,2529),(1147,2549),(1156,2569),(1165,2589),(1174,2609),(1183,2629),(1192,2649),(1201,2669),(1210,2689),(1219,2709),(1228,2729),(1237,2749),(1246,2769),(1255,2789),(1264,2809),(1273,2829),(1282,2849),(1291,2869),(1300,2889),(1309,2909),(1318,2929),(1327,2949),(1336,2969),(1345,2989),(1354,3009),(1363,3029),(1372,3049),(1381,3069),(1390,3089),(1399,3109),(1408,3129),(1417,3149),(1426,3169),(1435,3189)]]
+
+>>> zz_seq [1,1,4,2,1,3,1,6,2]
+[[(1,1),(1,2)],[(1,2),(2,3)],[(2,3),(3,5),(4,7),(5,9),(6,11)],[(6,11),(11,20),(16,29)],[(16,29),(27,49)],[(27,49),(43,78),(59,107),(75,136)],[(75,136),(134,243)],[(134,243),(209,379),(284,515),(359,651),(434,787),(509,923),(584,1059)],[(584,1059),(1093,1982),(1602,2905)]]
+-}
 zz_seq :: (Eq n, Num n) => [Int] -> [[(n, n)]]
 zz_seq k_seq = zz_recur k_seq [(0,1),(1,1)]
 
@@ -270,32 +309,44 @@ are_coprime x y = gcd x y == 1
 
 {- | List of numbers that are co-prime to x (includes 1 but not x)
 
-> gen_coprime 12 == [1,5]
-> gen_coprime 49 == [1..24] \\ [7,14,21]
+>>> gen_coprime 12
+[1,5]
+
+>>> gen_coprime 49 == [1..24] \\ [7,14,21]
+True
 -}
 gen_coprime :: Integral a => a -> [a]
 gen_coprime x = filter (are_coprime x)  [1 .. (x `div` 2)]
 
 {- | p = period, g = generator
 
-> mos_2 12 5 == (5,7)
+>>> mos_2 12 5
+(5,7)
 -}
 mos_2 :: Num n => n -> n -> (n,n)
 mos_2 p g = (g,p - g)
 
 {- | Divide Mos, keep retained value on same side.
 
-> mos_step (5,7) == (5,2)
-> mos_step (5,2) == (3,2)
-> mos_step (3,2) == (1,2)
+>>> mos_step (5,7)
+(5,2)
+
+>>> mos_step (5,2)
+(3,2)
+
+>>> mos_step (3,2)
+(1,2)
 -}
 mos_step :: (Ord a, Num a) => (a, a) -> (a, a)
 mos_step (i,j) = if i < j then (i,j - i) else (i - j,j)
 
 {- | Given an interval pair, generate the subsequent pairs ending at (1,2).
 
-> mos_unfold (5,7)  == [(5,7),(5,2),(3,2),(1,2)]
-> mos_unfold (41,17) == [(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
+>>> mos_unfold (5,7)
+[(5,7),(5,2),(3,2),(1,2)]
+
+>>> mos_unfold (41,17)
+[(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
 -}
 mos_unfold :: (Ord b, Num b) => (b, b) -> [(b, b)]
 mos_unfold x =
@@ -304,10 +355,17 @@ mos_unfold x =
 
 {- | Mos. p = period, g = generator.  This omits the two trivial cases ([p], and [1*p])
 
-> mos 12 5 == [(5,7),(5,2),(3,2),(1,2)]
-> mos 41 17 == [(17,24),(17,7),(10,7),(3,7),(3,4),(3,1),(2,1)]
-> mos 49 22 == [(22,27),(22,5),(17,5),(12,5),(7,5),(2,5),(2,3),(2,1)]
-> mos 49 27 == map (\(i, j) -> (j, i)) (mos 49 22)
+>>> mos 12 5
+[(5,7),(5,2),(3,2),(1,2)]
+
+>>> mos 41 17
+[(17,24),(17,7),(10,7),(3,7),(3,4),(3,1),(2,1)]
+
+>>> mos 49 22
+[(22,27),(22,5),(17,5),(12,5),(7,5),(2,5),(2,3),(2,1)]
+
+>>> mos 49 27 == map (\(i, j) -> (j, i)) (mos 49 22)
+True
 -}
 mos :: (Ord b, Num b) => b -> b -> [(b, b)]
 mos p g = mos_unfold (mos_2 p g)
@@ -322,10 +380,17 @@ mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos
 
 {- | Mos. p = period, g = generator
 
-> mos_seq 12 5 == [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
-> map length (mos_seq 12 5) == [2,3,5,7]
-> mos_seq 41 17 !! 4 == [3,3,4,3,4,3,3,4,3,4,3,4]
-> map length (mos_seq 49 27) == [2,3,5,7,9,11,20,29]
+>>> mos_seq 12 5
+[[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
+
+>>> map length (mos_seq 12 5)
+[2,3,5,7]
+
+>>> mos_seq 41 17 !! 4
+[3,3,4,3,4,3,3,4,3,4,3,4]
+
+>>> map length (mos_seq 49 27)
+[2,3,5,7,9,11,20,29]
 -}
 mos_seq :: (Ord b, Num b) => b -> b -> [[b]]
 mos_seq p g =
@@ -340,27 +405,17 @@ mos_cell_pp x = let s = show x in s ++ genericReplicate (x - genericLength s) '-
 mos_row_pp :: (Integral i,Show i) => [i] -> String
 mos_row_pp = concatMap mos_cell_pp
 
+{- | Pretty print Mos sequence table (mono-space font)
+
+>>> mos_tbl_pp (mos_seq 12 5)
+["5----7------","5----5----2-","3--2-3--2-2-","12-2-12-2-2-"]
+
+>>> mos_tbl_pp (mos_seq 49 27)
+["27-------------------------22--------------------","5----22--------------------22--------------------","5----5----17---------------5----17---------------","5----5----5----12----------5----5----12----------","5----5----5----5----7------5----5----5----7------","5----5----5----5----5----2-5----5----5----5----2-","3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-","12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-"]
+-}
 mos_tbl_pp :: (Integral i,Show i) => [[i]] -> [String]
 mos_tbl_pp = map mos_row_pp
 
-{- | Pretty print Mos sequence table (mono-space font)
-
->>> mos_tbl_wr (mos_seq 12 5)
-5----7------
-5----5----2-
-3--2-3--2-2-
-12-2-12-2-2-
-
->>> mos_tbl_wr (mos_seq 49 27)
-27-------------------------22--------------------
-5----22--------------------22--------------------
-5----5----17---------------5----17---------------
-5----5----5----12----------5----5----12----------
-5----5----5----5----7------5----5----5----7------
-5----5----5----5----5----2-5----5----5----5----2-
-3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-
-12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-
--}
 mos_tbl_wr :: (Integral i,Show i) => [[i]] -> IO ()
 mos_tbl_wr = putStrLn . unlines . mos_tbl_pp
 
@@ -489,8 +544,8 @@ ew_1357_3_gen = [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
 
 {- | P.3 7-limit {Scala=nil}
 
-> db <- Scala.scl_load_db_dir
-> ew_scl_find_r_rot (1 : ew_1357_3_r) db == []
+>>> ew_scl_find_r_rot (1 : ew_1357_3_r) db
+[]
 -}
 ew_1357_3_r :: [Rational]
 ew_1357_3_r = r_normalise (concatMap m3_gen_unfold ew_1357_3_gen)
@@ -502,7 +557,8 @@ ew_1357_3_scl = r_to_scale "ew_1357_3" "EW, 1-3-5-7-9Genus.pdf, P.3" (1 : ew_135
 
 {- | P.7 11-limit {Scala=nil}
 
-> ew_scl_find_r_rot ew_el12_7_r db == []
+>>> ew_scl_find_r_rot ew_el12_7_r db
+[]
 -}
 ew_el12_7_r :: [Rational]
 ew_el12_7_r = [1,5/(7*11),1/7,7*11,7*11*11/5,11,5/7,1/11,7*11*11,1/(7*11),11*11,7*11/5]
@@ -512,7 +568,8 @@ ew_el12_7_scl = r_to_scale "ew_el12_7" "EW, earlylattices12.pdf, P.7" ew_el12_7_
 
 {- | P.9 7-limit {Scala=wilson_class}
 
-> ew_scl_find_r_eq ew_el12_9_r db == ["wilson_class"]
+>>> ew_scl_find_r_eq ew_el12_9_r db
+["wilson_class"]
 -}
 ew_el12_9_r :: [Rational]
 ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
@@ -522,7 +579,8 @@ ew_el12_9_r = [1,5*5/3,7/(5*5),7/3,5,1/3,7/5,5*7/3,1/5,5/3,7,7/(3*5)]
 
 {- | P.12 11-limit {Scala=nil}
 
-> ew_scl_fin_dr_rot ew_el12_12_r db == []
+>>> ew_scl_find_r_rot ew_el12_12_r db
+[]
 -}
 ew_el12_12_r :: [Rational]
 ew_el12_12_r = [1,3*3*5/11,3/11,7/3,5,7/11,3*5/11,5*7/3,7/(3*3),5*7/11,7/(3*11),3*5]
@@ -534,7 +592,8 @@ ew_el12_12_scl = r_to_scale "ew_el12_12" "EW, earlylattices12.pdf, P.12" ew_el12
 
 {- | P.2 11-limit {Scala=wilson_l4}
 
-> ew_scl_find_r_eq ew_el22_2_r db == ["wilson_l4"]
+>>> ew_scl_find_r_eq ew_el22_2_r db
+["wilson_l4"]
 -}
 ew_el22_2_r :: [Rational]
 ew_el22_2_r =
@@ -543,7 +602,8 @@ ew_el22_2_r =
 
 {- | P.3 11-limit {Scala=wilson_l5}
 
-> ew_scl_find_r_eq ew_el22_3_r db == ["wilson_l5"]
+>>> ew_scl_find_r_eq ew_el22_3_r db
+["wilson_l5"]
 -}
 ew_el22_3_r :: [Rational]
 ew_el22_3_r =
@@ -552,7 +612,8 @@ ew_el22_3_r =
 
 {- | P.4 11-limit {Scala=wilson_l3}
 
-> ew_scl_find_r_eq ew_el22_4_r db == ["wilson_l3"]
+>>> ew_scl_find_r_eq ew_el22_4_r db
+["wilson_l3"]
 -}
 ew_el22_4_r :: [Rational]
 ew_el22_4_r =
@@ -561,7 +622,8 @@ ew_el22_4_r =
 
 {- | P.5 11-limit {Scala=wilson_l1}
 
-> ew_scl_find_r_eq ew_el22_5_r db == ["wilson_l1"]
+>>> ew_scl_find_r_eq ew_el22_5_r db
+["wilson_l1"]
 -}
 ew_el22_5_r :: [Rational]
 ew_el22_5_r =
@@ -570,7 +632,8 @@ ew_el22_5_r =
 
 {- | P.6 11-limit {Scala=wilson_l2}
 
-> ew_scl_find_r_eq ew_el22_6_r db == ["wilson_l2"]
+>>> ew_scl_find_r_eq ew_el22_6_r db
+["wilson_l2"]
 -}
 ew_el22_6_r :: [Rational]
 ew_el22_6_r =
@@ -579,14 +642,18 @@ ew_el22_6_r =
 
 -- * <http://anaphoria.com/diamond.pdf>
 
-{-
-> ew_diamond_mk [1, 3, 5, 7, 9, 11] == [1/1,3/11,11/5,5/9,9/1,1/7,7/3,3/5,11/9,5/1,7/11,9/7,1/3,11/1,7/5,5/7,1/11,3/1,7/9,11/7,1/5,9/11,5/3,3/7,7/1,1/9,9/5,5/11,11/3]
+{- | Diamond
+
+>>> ew_diamond_mk [1, 3, 5, 7, 9, 11] == [1/1,3/11,11/5,5/9,9/1,1/7,7/3,3/5,11/9,5/1,7/11,9/7,1/3,11/1,7/5,5/7,1/11,3/1,7/9,11/7,1/5,9/11,5/3,3/7,7/1,1/9,9/5,5/11,11/3]
+True
 -}
 ew_diamond_mk :: [Integer] -> [Rational]
 ew_diamond_mk u = r_normalise [x % y | x <- u, y <- u]
 
-{-
-> m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
+{- Diamond 12
+
+>>> m3_gen_to_r ew_diamond_12_gen == ew_diamond_12_r
+True
 -}
 ew_diamond_12_gen :: [M3_Gen]
 ew_diamond_12_gen =
@@ -598,7 +665,8 @@ ew_diamond_12_gen =
 
 1,3,5,7,9,11 diamond
 
-> ew_scl_find_r_eq ew_diamond_12_r db == ["partch_29"]
+>>> ew_scl_find_r_eq ew_diamond_12_r db
+["partch_29"]
 -}
 ew_diamond_12_r :: [Rational]
 ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
@@ -607,7 +675,8 @@ ew_diamond_12_r = ew_diamond_mk [1,3,5,7,9,11]
 
 1,3,5,7,9,11,13,15 diamond
 
-> ew_scl_find_r_eq ew_diamond_13_r db == ["novaro15"]
+>>> ew_scl_find_r_eq ew_diamond_13_r db
+["novaro15"]
 -}
 ew_diamond_13_r :: [Rational]
 ew_diamond_13_r = ew_diamond_mk [1,3,5,7,9,11,13,15]
@@ -647,7 +716,8 @@ hel_r (p,q) =
 
 22-tone 23-limit Evangalina tuning (2001)
 
-> ew_scl_find_r_rot ew_hel_12_r db == []
+>>> ew_scl_find_r_rot ew_hel_12_r db
+[]
 -}
 ew_hel_12_r :: [Rational]
 ew_hel_12_r =
@@ -661,7 +731,8 @@ ew_hel_12_scl = r_to_scale "ew_hel_12" "EW, hel.pdf, P.12" ew_hel_12_r
 
 {- | Pair each element with it's complement.
 
-> she_div "abcd" == [["bcd","a"],["acd","b"],["abd","c"],["abc","d"]]
+>>> she_div "abcd"
+[["bcd","a"],["acd","b"],["abd","c"],["abc","d"]]
 -}
 she_div :: Eq a => [a] -> [[[a]]]
 she_div x =
@@ -670,7 +741,8 @@ she_div x =
 
 {- | Product of complement divided by element.
 
-> she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
+>>> she_div_r [1,3,5,7] == [105,35/3,21/5,15/7]
+True
 -}
 she_div_r :: [Rational] -> [Rational]
 she_div_r =
@@ -682,24 +754,36 @@ she_div_r =
 
 {- | All two element products.
 
-> she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
+>>> she_mul_r [1,3,5,7] == [1,3,5,7,9,15,21,25,35,49]
+True
 -}
 she_mul_r :: [Rational] -> [Rational]
 she_mul_r r = [x * y | x <- r,y <- r,x <= y]
 
 {- | she = Stellate Hexany Expansions, P.10 {Scala=stelhex1,stelhex2,stelhex5,stelhex6, Scala.Rot=dkring3}
 
-> she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
-> map (flip ew_scl_find_r_eq db . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]] == [["stelhex1"],["stelhex2"],["stelhex5"],["stelhex6"]]
-> ew_scl_find_r_rot (she [1,3,7,9]) db == ["stelhex5","dkring3"]
-> ew_scl_find_r_rot (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) db == []
+>>> she [1,3,5,7] == [1,21/20,15/14,35/32,9/8,5/4,21/16,35/24,3/2,49/32,25/16,105/64,7/4,15/8]
+True
+
+>>> map (flip ew_scl_find_r_eq db . she) [[1,3,5,7],[1,3,5,9],[1,3,7,9],[1,3,5,11]]
+[["stelhex1"],["stelhex2"],["stelhex5"],["stelhex6"]]
+
+>>> ew_scl_find_r_rot (she [1,3,7,9]) db
+["stelhex5","dkring3"]
+
+>>> ew_scl_find_r_rot (she [1,(5*7)/(3*3),1/(3 * 5),1/3]) db
+[]
 -}
 she :: [Rational] -> [Rational]
 she r = nub (sort (map Tuning.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
 
 -- * <http://anaphoria.com/meru.pdf>
 
--- > map (every_nth "abcdef") [1..3] == ["abcdef","ace","ad"]
+{- | Every nth
+
+>>> map (every_nth "abcdef") [1..3]
+["abcdef","ace","ad"]
+-}
 every_nth :: [t] -> Int -> [t]
 every_nth l k =
   case l of
@@ -711,27 +795,41 @@ meru =
   let f xs = zipWith (+) (0 : xs) (xs ++ [0])
   in iterate f [1]
 
--- > meru_k 13
+{- | Meru k
+
+>>> meru_k 13
+[[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1],[1,5,10,10,5,1],[1,6,15,20,15,6,1],[1,7,21,35,35,21,7,1],[1,8,28,56,70,56,28,8,1],[1,9,36,84,126,126,84,36,9,1],[1,10,45,120,210,252,210,120,45,10,1],[1,11,55,165,330,462,462,330,165,55,11,1],[1,12,66,220,495,792,924,792,495,220,66,12,1]]
+-}
 meru_k :: Num n => Int -> [[n]]
 meru_k k = take k meru
 
--- > map (sum . meru_1) [1 .. 13] == [1,1,2,3,5,8,13,21,34,55,89,144,233]
+{- | Meru 1
+
+>>> map (sum . meru_1) [1 .. 13]
+[1,1,2,3,5,8,13,21,34,55,89,144,233]
+-}
 meru_1 :: Num n => Int -> [n]
 meru_1 k = zipWith (flip (Safe.atDef 0)) [0..] (reverse (meru_k k))
 
 -- > take 13 meru_1_direct == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1_direct :: Num n => [n]
-meru_1_direct = tail OEIS.a000045
+meru_1_direct = tail Oeis.a000045
 
--- | Meru 2 = Meta-Pelog
---
--- > map (sum . meru_2) [1 .. 14] == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+{- | Meru 2 = Meta-Pelog
+
+>>> map (sum . meru_2) [1 .. 14]
+[1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+-}
 meru_2 :: Num n => Int -> [n]
 meru_2 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 2)
 
--- > take 14 meru_2_direct == [1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+{- | Meru 2 (direct)
+
+>>> take 14 meru_2_direct
+[1,1,1,2,3,4,6,9,13,19,28,41,60,88]
+-}
 meru_2_direct :: Num n => [n]
-meru_2_direct = OEIS.a000930
+meru_2_direct = Oeis.a000930
 
 -- | meru_3 = Meta-Slendro
 meru_3 :: Num n => Int -> [[n]]
@@ -747,7 +845,7 @@ meru_3_seq k = concatMap meru_3 [1 .. k]
 
 -- > take 26 meru_3_direct == [1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265,351,465]
 meru_3_direct :: Num n => [n]
-meru_3_direct = drop 3 OEIS.a000931
+meru_3_direct = drop 3 Oeis.a000931
 
 -- > map (sum . meru_4) [1 .. 13] == [1,1,1,1,2,3,4,5,7,10,14,19,26]
 meru_4 :: Num n => Int -> [n]
@@ -755,7 +853,7 @@ meru_4 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 3
 
 -- > take 31 meru_4_direct == map (sum . meru_4) [1 .. 31]
 meru_4_direct :: Num n => [n]
-meru_4_direct = tail OEIS.a003269
+meru_4_direct = tail Oeis.a003269
 
 -- > map meru_5 [1..4]
 meru_5 :: Num n => Int -> [[n]]
@@ -770,7 +868,7 @@ meru_5_seq k = concatMap meru_5 [1 .. k]
 
 -- > take 39 meru_5_direct == map sum (meru_5_seq 13)
 meru_5_direct :: Num n => [n]
-meru_5_direct = OEIS.a017817
+meru_5_direct = Oeis.a017817
 
 -- > map (sum . meru_6) [1 .. 21] == [1,1,1,1,1,2,3,4,5,6,8,11,15,20,26,34,45,60,80,106,140]
 meru_6 :: Num n => Int -> [n]
@@ -778,11 +876,11 @@ meru_6 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 4
 
 -- > take 21 meru_6_direct == map (sum . meru_6) [1 .. 21]
 meru_6_direct :: Num n => [n]
-meru_6_direct = OEIS.a003520
+meru_6_direct = Oeis.a003520
 
 -- > take 26 meru_7_direct == [0,1,0,1,0,1,1,1,2,1,3,2,4,4,5,7,7,11,11,16,18,23,29,34,45,52]
 meru_7_direct :: Num n => [n]
-meru_7_direct = OEIS.a001687
+meru_7_direct = Oeis.a001687
 
 -- * <http://anaphoria.com/mos.pdf>
 
@@ -847,7 +945,8 @@ xen1_fig4 = ((Nil,(2,5),(5,12),(3,7)),5)
 
 {- | P.3 Turkisk Baglama Scale {11-limit, Scala=nil}
 
-> ew_scl_find_r_rot ew_xen3b_3_r db == []
+>>> ew_scl_find_r_rot ew_xen3b_3_r db
+[]
 -}
 ew_xen3b_3_gen :: [(Rational,Int)]
 ew_xen3b_3_gen = [(1/(3^.6),12),(1/11,2),(5/3,3)]
@@ -869,13 +968,20 @@ xen3b_9_i =
 
 {- | P.9 {Scala: 5=nil 7=ptolemy_idiat 12=nil 19=wilson2 31=wilson_31} {Scala.Rot: 5=malkauns, 7=indian-magrama,ptolemy 12=malcolme}
 
-> map (flip ew_scl_find_r_eq db) xen3b_9_r == [[],["ptolemy_idiat"],[],["wilson2"],["wilson_31"]]
-> mapM ew_scl_find_r_rot xen3b_9_r db == [["malkauns"],["ptolemy_idiat","indian-magrama","ptolemy"],["malcolme"],["wilson2"],["wilson_31"]]
+>>> map (flip ew_scl_find_r_eq db) xen3b_9_r
+[[],["ptolemy_idiat"],[],["wilson2"],["wilson_31"]]
+
+>>> mapM ew_scl_find_r_rot xen3b_9_r db
+[["malkauns"],["ptolemy_idiat","indian-magrama","ptolemy"],["malcolme"],["wilson2"],["wilson_31"]]
 -}
 xen3b_9_r :: [[Rational]]
 xen3b_9_r = map (List.drop_last . scanl (*) 1) xen3b_9_i
 
--- > map length xen3b_13_i == [5,7,12,17,22]
+{- | Xen 3b 13
+
+>>> map length xen3b_13_i
+[5,7,12,17,22]
+-}
 xen3b_13_i :: [[Rational]]
 xen3b_13_i =
   [[7/6,                           8/7,                     9/8,                     7/6,                           8/7]
@@ -886,8 +992,11 @@ xen3b_13_i =
 
 {- | P.13 {Scala: 5=slendro5_2 7=ptolemy_diat2 12=nil 17=nil 22=wilson7_4}
 
-> map (flip ew_scl_find_r_eq db) xen3b_13_r == [["slendro5_2"],["ptolemy_diat2"],[],[],["wilson7_4"]]
-> mapM ew_scl_find_r_rot xen3b_13_r db == [["slendro5_2","slendro5_1","slendro_7_4"],["ptolemy_diat2","tritriad14"],[],[],["wilson7_4"]]
+>>> map (flip ew_scl_find_r_eq db) xen3b_13_r
+[["slendro5_2"],["ptolemy_diat2"],[],[],["wilson7_4"]]
+
+>>> mapM ew_scl_find_r_rot xen3b_13_r db
+[["slendro5_2","slendro5_1","slendro_7_4"],["ptolemy_diat2","tritriad14"],[],[],["wilson7_4"]]
 -}
 xen3b_13_r :: [[Rational]]
 xen3b_13_r = map (List.drop_last . scanl (*) 1) xen3b_13_i
@@ -950,7 +1059,8 @@ ew_xen456_9_gen =
 
 19-tone scale for the Clavichord-19 (1976)
 
-> ew_scl_find_r_rot ew_xen456_9_r db == ["wilson11"]
+>>> ew_scl_find_r_rot ew_xen456_9_r db
+["wilson11"]
 -}
 ew_xen456_9_r :: [Rational]
 ew_xen456_9_r = m3_gen_to_r ew_xen456_9_gen
@@ -964,7 +1074,8 @@ ew_xen456_9_scl = r_to_scale "ew_xen456_9" "EW, xen456.pdf, P.9" ew_xen456_9_r
 
 13-limit 22-tone scale {Scala=nil}
 
-> ew_scl_find_r_rot ew_poole_r db == []
+>>> ew_scl_find_r_rot ew_poole_r db
+[]
 -}
 ew_poole_r :: [Rational]
 ew_poole_r =
@@ -978,7 +1089,8 @@ ew_poole_scl = r_to_scale "ew_poole" "EW, 2010/10/scale-for-rod-poole.html" ew_p
 
 11-limit 17-tone scale {Scala=wilcent17}
 
-> ew_scl_find_r_eq ew_centaur17_r db == ["wilcent17"]
+>>> ew_scl_find_r_eq ew_centaur17_r db
+["wilcent17"]
 -}
 ew_centaur17_r :: [Rational]
 ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(3*3*3),5/3,7,11/3,3*5]
@@ -987,7 +1099,8 @@ ew_centaur17_r = [1,11/(3*7),11/5,3*3,7/3,11/(3*3),5,1/3,11,11/(3*5),3,11/7,11/(
 
 7-limit 22-tone scale {Scala=nil}
 
-> ew_scl_find_r_rot ew_two_22_7_r db == []
+>>> ew_scl_find_r_rot ew_two_22_7_r db
+[]
 -}
 ew_two_22_7_r :: [Rational]
 ew_two_22_7_r =

@@ -124,9 +124,11 @@ data Pitch = Pitch {pitch_octave :: Octave
                    ,pitch_degree :: Degree}
              deriving (Eq,Ord,Show)
 
--- | Octaves are written as repeated @-@ or @+@, degrees are printed ordinarily.
---
--- > map pitch_pp_ascii (zipWith Pitch [-2 .. 2] [1 .. 5]) == ["--1","-2","3","+4","++5"]
+{- | Octaves are written as repeated @-@ or @+@, degrees are printed ordinarily.
+
+>>> map pitch_pp_ascii (zipWith Pitch [-2 .. 2] [1 .. 5])
+["--1","-2","3","+4","++5"]
+-}
 pitch_pp_ascii :: Pitch -> String
 pitch_pp_ascii (Pitch o d) =
     let d' = intToDigit (fromIntegral d)
@@ -163,9 +165,11 @@ note_range_elem scl p1@(Pitch o1 _d1) p2@(Pitch o2 _d2) =
   let univ = [Note scl (Pitch o d) | o <- [o1 .. o2], d <- scale_degrees scl]
   in filter (\n -> note_pitch n >= p1 && note_pitch n <= p2) univ
 
--- | Ascending sequence of 'Note' from /n1/ to /n2/ inclusive.
---
--- > note_gamut_elem (Note Slendro (Pitch 0 5)) (Note Slendro (Pitch 1 2))
+{- | Ascending sequence of 'Note' from /n1/ to /n2/ inclusive.
+
+>>> map (pitch_degree . note_pitch) (note_gamut_elem (Note Slendro (Pitch 0 5)) (Note Slendro (Pitch 1 2)))
+[5,6,1,2]
+-}
 note_gamut_elem :: Note -> Note -> [Note]
 note_gamut_elem (Note s1 p1) (Note s2 p2) =
   if s1 /= s2
@@ -341,20 +345,26 @@ instrument_gamut =
     let f p = (head p,last p)
     in fmap f . instrument_pitches
 
--- | Pelog has seven degrees, numbered one to seven.
---   Slendro has five degrees, numbered one to six excluding four.
---
--- > map scale_degrees [Pelog,Slendro] == [[1,2,3,4,5,6,7],[1,2,3,5,6]]
+{- | Pelog has seven degrees, numbered one to seven.
+Slendro has five degrees, numbered one to six excluding four.
+
+>>> map scale_degrees [Pelog,Slendro]
+[[1,2,3,4,5,6,7],[1,2,3,5,6]]
+-}
 scale_degrees :: Scale -> [Degree]
 scale_degrees s =
     case s of
       Pelog -> [1..7]
       Slendro -> [1,2,3,5,6]
 
--- | Zero based index of scale degree, or Nothing.
---
--- > degree_index Slendro 4 == Nothing
--- > degree_index Pelog 4 == Just 3
+{- | Zero based index of scale degree, or Nothing.
+
+>>> degree_index Slendro 4
+Nothing
+
+>>> degree_index Pelog 4
+Just 3
+-}
 degree_index :: Scale -> Degree -> Maybe Int
 degree_index s d = elemIndex d (scale_degrees s)
 

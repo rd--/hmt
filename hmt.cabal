@@ -117,6 +117,7 @@ Library
                    Music.Theory.Tuning.Db.Microtonal_Synthesis
                    Music.Theory.Tuning.Db.Riley
                    Music.Theory.Tuning.Db.Werckmeister
+                   Music.Theory.Tuning.Dx7
                    Music.Theory.Tuning.Efg
                    Music.Theory.Tuning.Et
                    Music.Theory.Tuning.Gann_1993

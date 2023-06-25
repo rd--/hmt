@@ -59,9 +59,11 @@ voice_rng_safe = voice_rng voice_rng_tbl_safe
 in_range_inclusive :: Ord a => a -> (a,a) -> Bool
 in_range_inclusive p (l,r) = p >= l && p <= r
 
--- | Is /p/ in range for /v/, (/std/ & /safe/).
---
--- > map (in_voice_rng T.c4) [Bass .. Soprano]
+{- | Is /p/ in range for /v/, (/std/ & /safe/).
+
+>>> map (in_voice_rng T.c4) [Bass .. Soprano]
+[(True,True),(True,True),(True,True),(True,True)]
+-}
 in_voice_rng :: T.Pitch -> Voice -> (Bool,Bool)
 in_voice_rng p v =
     (in_range_inclusive p (voice_rng_std v)
@@ -100,21 +102,27 @@ type Part = (Voice,Int)
 ch_satb_seq :: Int -> [Part]
 ch_satb_seq k = [(vc,n) | vc <- satb, n <- [1..k]]
 
--- | 'ch_satb_seq' grouped in parts.
---
--- > map (map part_nm) (ch_parts 8)
+{- | 'ch_satb_seq' grouped in parts.
+
+>>> map (map part_nm) (ch_parts 4)
+[["S1","S2","S3","S4"],["A1","A2","A3","A4"],["T1","T2","T3","T4"],["B1","B2","B3","B4"]]
+-}
 ch_parts :: Int -> [[Part]]
 ch_parts k = chunksOf k (ch_satb_seq k)
 
--- | Abreviated name for part.
---
--- > part_nm (Soprano,1) == "S1"
+{- | Abreviated name for part.
+
+>>> part_nm (Soprano,1)
+"S1"
+-}
 part_nm :: Part -> String
 part_nm (v,n) = voice_abbrev v : show n
 
--- | /k/ SATB choirs, grouped by choir.
---
--- > k_ch_groups 2
+{- | /k/ SATB choirs, grouped by choir.
+
+>>> k_ch_groups 2
+[[(Soprano,1),(Alto,1),(Tenor,1),(Bass,1)],[(Soprano,2),(Alto,2),(Tenor,2),(Bass,2)]]
+-}
 k_ch_groups :: Int -> [[Part]]
 k_ch_groups k =
     let f n = map (\p -> (p,n)) satb
@@ -124,9 +132,11 @@ k_ch_groups k =
 k_ch_groups' :: Int -> [Part]
 k_ch_groups' = concat . k_ch_groups
 
--- | Two /k/ part SATB choirs in score order.
---
--- > map part_nm (concat (dbl_ch_parts 8))
+{- | Two /k/ part SATB choirs in score order.
+
+>>> map part_nm (concat (dbl_ch_parts 4))
+["S1","S2","A1","A2","T1","T2","B1","B2","S3","S4","A3","A4","T3","T4","B3","B4"]
+-}
 dbl_ch_parts :: Int -> [[Part]]
 dbl_ch_parts k =
     let v = satb
