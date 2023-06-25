@@ -57,9 +57,10 @@ csv_mnd_hdr = ["time","on/off","note","velocity","channel","param"]
 The command is a string, @on@ and @off@ are standard, other commands may be present.
 note and velocity data is (0-127), channel is (0-15), param are ;-separated key:string=value:float.
 
-> unwords csv_mnd_hdr == "time on/off note velocity channel param"
+>>> unwords csv_mnd_hdr
+"time on/off note velocity channel param"
 
-> all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
+> let all_notes_off = zipWith (\t k -> (t,"off",k,0,0,[])) [0.0,0.01 ..] [0 .. 127]
 > csv_mnd_write 4 "/home/rohan/sw/hmt/data/csv/mnd/all-notes-off.csv" all_notes_off
 -}
 type Mnd t n = (t,String,n,n,Channel,Param)
@@ -86,13 +87,15 @@ csv_mnd_parse = csv_mnd_parse_f id
 load_csv :: FilePath -> IO (T.Csv_Table String)
 load_csv = T.csv_table_read (True,',',False,T.Csv_No_Align) id
 
--- | Midi note data.
---
--- > let fn = "/home/rohan/cvs/uc/uc-26/daily-practice/2014-08-13.1.csv"
--- > let fn = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
--- > m <- csv_mnd_read fn :: IO [Mnd Double Int]
--- > length m -- 1800 17655
--- > csv_mnd_write 4 "/tmp/t.csv" m
+{- | Midi note data.
+
+>>> let fileName = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
+>>> mnd <- csv_mnd_read fileName :: IO [Mnd Double Int]
+>>> length mnd
+1800
+
+> csv_mnd_write 4 "/tmp/t.csv" mnd
+-}
 csv_mnd_read :: (Read t,Real t,Read n,Real n) => FilePath -> IO [Mnd t n]
 csv_mnd_read = fmap csv_mnd_parse . load_csv
 
@@ -177,11 +180,13 @@ csv_mnd_write_tseq r_prec nm sq =
 csv_mndd_hdr :: [String]
 csv_mndd_hdr = ["time","duration","message","note","velocity","channel","param"]
 
--- | Midi note/duration data.
--- The type parameters are to allow for fractional note & velocity values.
--- The command is a string, @note@ is standard, other commands may be present.
---
--- > unwords csv_mndd_hdr == "time duration message note velocity channel param"
+{- | Midi note/duration data.
+The type parameters are to allow for fractional note & velocity values.
+The command is a string, @note@ is standard, other commands may be present.
+
+>>> unwords csv_mndd_hdr
+"time duration message note velocity channel param"
+-}
 type Mndd t n = (t,t,String,n,n,Channel,Param)
 
 -- | Compare sequence is: start-time,channel-number,note-number,velocity,duration,param.

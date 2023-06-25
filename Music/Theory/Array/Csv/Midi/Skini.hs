@@ -50,8 +50,14 @@ skini_pp_csv k (msg,t,ch,d1,d2) =
   let f = T.data_value_pp k
   in intercalate "," [msg,time_pp k t,show ch,f d1,f d2]
 
--- > let fn = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
--- > m <- T.csv_mnd_read_tseq fn :: IO (T.Tseq Double (T.Begin_End (T.Event Int)))
--- > skini_write_csv 4 "/tmp/t.skini" (midi_tseq_to_skini_seq m)
+{- | Write Skini
+
+>>> let fileName = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
+>>> mnd <- T.csv_mnd_read_tseq fileName :: IO (T.Tseq Double (T.Begin_End (T.Event Int)))
+>>> length mnd
+1800
+
+> skini_write_csv 4 "/tmp/t.skini" (midi_tseq_to_skini_seq mnd)
+-}
 skini_write_csv :: (Real t,Real n) => Int -> FilePath -> [Skini t n] -> IO ()
 skini_write_csv k fn = writeFile fn . unlines . map (skini_pp_csv k)
