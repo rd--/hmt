@@ -1,6 +1,7 @@
--- | Symetric Group S4 as related to the composition \"Nomos Alpha\"
--- by Iannis Xenakis.  In particular in relation to the discussion in
--- \"Towards a Philosophy of Music\", /Formalized Music/ pp. 219 -- 221
+{- | Symetric Group S4 as related to the composition \"Nomos Alpha\"
+ by Iannis Xenakis.  In particular in relation to the discussion in
+ \"Towards a Philosophy of Music\", /Formalized Music/ pp. 219 -- 221
+-}
 module Music.Theory.Xenakis.S4 where
 
 import Data.List {- base -}
@@ -11,21 +12,24 @@ import qualified Music.Theory.Permutations as T
 
 -- * S4 notation
 
--- | 'Label's for elements of the symmetric group P4.
+{- | 'Label's for elements of the symmetric group P4. -}
 data Label = A|B|C|D|D2|E|E2|G|G2|I|L|L2
            | Q1|Q2|Q3|Q4|Q5|Q6|Q7|Q8|Q9|Q10|Q11|Q12
              deriving (Eq,Ord,Enum,Bounded,Show)
 
--- | Initial half of 'Seq' (ie. #4).  The complete 'Seq' is formed by
--- appending the 'complement' of the 'Half_Seq'.
+{- | Initial half of 'Seq' (ie. #4).
+The complete 'Seq' is formed by appending the 'complement' of the 'Half_Seq'.
+-}
 type Half_Seq = [Int]
 
--- | Complete sequence (ie. #8).
+{- | Complete sequence (ie. #8). -}
 type Seq = [Int]
 
--- | Complement of a 'Half_Seq'.
---
--- > map complement [[4,1,3,2],[6,7,8,5]] == [[8,5,7,6],[2,3,4,1]]
+{- | Complement of a 'Half_Seq'.
+
+>>> map complement [[4,1,3,2],[6,7,8,5]]
+[[8,5,7,6],[2,3,4,1]]
+-}
 complement :: Half_Seq -> Half_Seq
 complement x =
     case sort x of
@@ -33,17 +37,25 @@ complement x =
       [5,6,7,8] -> map (+ (-4)) x
       _ -> error "complement"
 
--- | Form 'Seq' from 'Half_Seq'.
---
--- > full_seq [3,2,4,1] == [3,2,4,1,7,6,8,5]
--- > label_of (full_seq [3,2,4,1]) == G2
--- > label_of (full_seq [1,4,2,3]) == L
+{- | Form 'Seq' from 'Half_Seq'.
+
+>>> full_seq [3,2,4,1]
+[3,2,4,1,7,6,8,5]
+
+>>> label_of (full_seq [3,2,4,1])
+G2
+
+>>> label_of (full_seq [1,4,2,3])
+L
+-}
 full_seq :: Half_Seq -> Seq
 full_seq x = x ++ complement x
 
--- | Lower 'Half_Seq', ie. 'complement' or 'id'.
---
--- > map lower [[4,1,3,2],[6,7,8,5]] == [[4,1,3,2],[2,3,4,1]]
+{- | Lower 'Half_Seq', ie. 'complement' or 'id'.
+
+>>> map lower [[4,1,3,2],[6,7,8,5]]
+[[4,1,3,2],[2,3,4,1]]
+-}
 lower :: Half_Seq -> Half_Seq
 lower x =
     case sort x of
@@ -51,11 +63,17 @@ lower x =
       [5,6,7,8] -> complement x
       _ -> error (show ("lower",x))
 
--- | Application of 'Label' /p/ on /q/.
---
--- > l_on Q1 I == Q1
--- > l_on D Q12 == Q4
--- > [l_on L L,l_on E D,l_on D E] == [L2,C,B]
+{- | Application of 'Label' /p/ on /q/.
+
+>>> l_on Q1 I
+Q1
+
+>>> l_on D Q12
+Q4
+
+>>> [l_on L L,l_on E D,l_on D E]
+[L2,C,B]
+-}
 l_on :: Label -> Label -> Label
 l_on p q =
     let p' = seq_of p
@@ -104,36 +122,48 @@ The article also omits the 5 after 5,1 in the sequence below.
 fib_proc :: (a -> a -> a) -> a -> a -> [a]
 fib_proc f p q = let r = f p q in p : fib_proc f q r
 
--- | 'Seq' of 'Label', inverse of 'label_of'.
---
--- > seq_of Q1 == [8,7,5,6,4,3,1,2]
+{- | 'Seq' of 'Label', inverse of 'label_of'.
+
+>>> seq_of Q1
+[8,7,5,6,4,3,1,2]
+-}
 seq_of :: Label -> Seq
 seq_of i = fromMaybe (error "seq_of") (lookup i viii_6b)
 
--- | 'Half_Seq' of 'Label', ie. 'half_seq' '.' 'seq_of'.
---
--- > half_seq_of Q1 == [8,7,5,6]
+{- | 'Half_Seq' of 'Label', ie. 'half_seq' '.' 'seq_of'.
+
+>>> half_seq_of Q1
+[8,7,5,6]
+-}
 half_seq_of :: Label -> Seq
 half_seq_of = half_seq . seq_of
 
--- | 'Half_Seq' of 'Seq', ie. 'take' @4@.
---
--- > complement (half_seq (seq_of Q7)) == [3,4,2,1]
+{- | 'Half_Seq' of 'Seq', ie. 'take' @4@.
+
+>>> complement (half_seq (seq_of Q7))
+[3,4,2,1]
+-}
 half_seq :: Seq -> Half_Seq
 half_seq = take 4
 
--- | 'Label' of 'Seq', inverse of 'seq_of'.
---
--- > label_of [8,7,5,6,4,3,1,2] == Q1
--- > label_of (seq_of Q4) == Q4
+{- | 'Label' of 'Seq', inverse of 'seq_of'.
+
+>>> label_of [8,7,5,6,4,3,1,2]
+Q1
+
+>>> label_of (seq_of Q4)
+Q4
+-}
 label_of :: Seq -> Label
 label_of i =
     let err = error ("label_of: " ++ show i)
     in fromMaybe err (T.reverse_lookup i viii_6b)
 
--- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
---
--- > complementary [4,2,1,3] [8,6,5,7] == True
+{- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
+
+>>> complementary [4,2,1,3] [8,6,5,7]
+True
+-}
 complementary :: Half_Seq -> Half_Seq -> Bool
 complementary p q =
     let c = concat (sort [sort p,sort q])
@@ -141,45 +171,54 @@ complementary p q =
 
 -- * Rel
 
--- | Relation between to 'Half_Seq' values as a
--- /(complementary,permutation)/ pair.
+{- | Relation between to 'Half_Seq' values as a /(complementary,permutation)/ pair. -}
 type Rel = (Bool,T.Permutation)
 
--- | Determine 'Rel' of 'Half_Seq's.
---
--- > relate [1,4,2,3] [1,3,4,2] == (False,[0,3,1,2])
--- > relate [1,4,2,3] [8,5,6,7] == (True,[1,0,2,3])
+{- | Determine 'Rel' of 'Half_Seq's.
+
+>>> relate [1,4,2,3] [1,3,4,2]
+(False,[0,3,1,2])
+
+>>> relate [1,4,2,3] [8,5,6,7]
+(True,[1,0,2,3])
+-}
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
     if complementary p q
     then (True,T.permutation (complement p) q)
     else (False,T.permutation p q)
 
--- | 'Rel' from 'Label' /p/ to /q/.
---
--- > relate_l L L2 == (False,[0,3,1,2])
+{- | 'Rel' from 'Label' /p/ to /q/.
+
+>>> relate_l L L2
+(False,[0,3,1,2])
+-}
 relate_l :: Label -> Label -> Rel
 relate_l p q = relate (half_seq_of p) (half_seq_of q)
 
--- | 'relate' adjacent 'Half_Seq', see also 'relations_l'.
+{- | 'relate' adjacent 'Half_Seq', see also 'relations_l'. -}
 relations :: [Half_Seq] -> [Rel]
 relations p = zipWith relate p (tail p)
 
--- | 'relate' adjacent 'Label's.
---
--- > relations_l [L2,L,A] == [(False,[0,2,3,1]),(False,[2,0,1,3])]
+{- | 'relate' adjacent 'Label's.
+
+>>> relations_l [L2,L,A]
+[(False,[0,2,3,1]),(False,[2,0,1,3])]
+-}
 relations_l :: [Label] -> [Rel]
 relations_l p = zipWith relate_l p (tail p)
 
--- | Apply 'Rel' to 'Half_Seq'.
---
--- > apply_relation (False,[0,3,1,2]) [1,4,2,3] == [1,3,4,2]
+{- | Apply 'Rel' to 'Half_Seq'.
+
+>>> apply_relation (False,[0,3,1,2]) [1,4,2,3]
+[1,3,4,2]
+-}
 apply_relation :: Rel -> Half_Seq -> Half_Seq
 apply_relation (c,p) i =
     let j = T.apply_permutation p i
     in if c then complement j else j
 
--- | Apply sequence of 'Rel' to initial 'Half_Seq'.
+{- | Apply sequence of 'Rel' to initial 'Half_Seq'. -}
 apply_relations :: [Rel] -> Half_Seq -> [Half_Seq]
 apply_relations rs i =
     case rs of
@@ -187,9 +226,11 @@ apply_relations rs i =
       (r:rs') -> let i' = apply_relation r i
                  in i : apply_relations rs' i'
 
--- | Variant of 'apply_relations'.
---
--- > apply_relations_l (relations_l [L2,L,A,Q1]) L2 == [L2,L,A,Q1]
+{- | Variant of 'apply_relations'.
+
+>>> apply_relations_l (relations_l [L2,L,A,Q1]) L2
+[L2,L,A,Q1]
+-}
 apply_relations_l :: [Rel] -> Label -> [Label]
 apply_relations_l rs = map (label_of . full_seq) .
                        apply_relations rs .
@@ -197,14 +238,18 @@ apply_relations_l rs = map (label_of . full_seq) .
 
 -- * Face
 
--- | Enumeration of set of /faces/ of a cube.
+{- | Enumeration of set of /faces/ of a cube. -}
 data Face = F_Back | F_Front | F_Right | F_Left | F_Bottom | F_Top
           deriving (Eq,Enum,Bounded,Ord,Show)
 
--- | Table indicating set of faces of cubes as drawn in Fig. VIII-6 (p.220).
---
--- > lookup [1,4,6,7] faces == Just F_Left
--- > T.reverse_lookup F_Right faces == Just [2,3,5,8]
+{- | Table indicating set of faces of cubes as drawn in Fig. VIII-6 (p.220).
+
+>>> lookup [1,4,6,7] faces
+Just F_Left
+
+>>> T.reverse_lookup F_Right faces
+Just [2,3,5,8]
+-}
 faces :: [([Int],Face)]
 faces =
     [([1,3,6,8],F_Back) -- (I in viii-6)
@@ -216,10 +261,11 @@ faces =
 
 -- * Figures
 
--- | Label sequence of Fig. VIII-6. Hexahedral (Octahedral) Group (p. 220)
---
--- > let r = [I,A,B,C,D,D2,E,E2,G,G2,L,L2,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12]
--- > in viii_6_lseq == r
+{- | Label sequence of Fig. VIII-6. Hexahedral (Octahedral) Group (p. 220)
+
+>>> take 7 viii_6_lseq
+[L2,L,A,Q1,Q7,Q3,Q9]
+-}
 viii_6_lseq :: [Label]
 viii_6_lseq =
     [L2,L,A,Q1,Q7,Q3,Q9
@@ -227,10 +273,11 @@ viii_6_lseq =
     ,E,E2,B,Q4,Q11,Q12,Q6
     ,D,D2,I]
 
--- | Label sequence of Fig. VIII-7 (p.221)
---
--- > let r = [I,A,B,C,D,D2,E,E2,G,G2,L,L2,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12]
--- > in viii_7_lseq == r
+{- | Label sequence of Fig. VIII-7 (p.221)
+
+>>> take 8 viii_7_lseq
+[I,A,B,C,D,D2,E,E2]
+-}
 viii_7_lseq :: [Label]
 viii_7_lseq =
     [I,A,B,C
@@ -240,24 +287,22 @@ viii_7_lseq =
     ,Q5,Q6,Q7,Q8
     ,Q9,Q10,Q11,Q12]
 
--- | Fig. VIII-7 (p.221)
---
--- > map (take 4) (take 4 viii_7) == [[I,A,B,C]
--- >                                 ,[A,I,C,B]
--- >                                 ,[B,C,I,A]
--- >                                 ,[C,B,A,I]]
---
--- > import Music.Theory.Array.MD
---
--- > let t = md_matrix_opt show (\x -> "_" ++ x ++ "_") (head viii_7,head viii_7) viii_7
--- > putStrLn $ unlines $ md_table' t
+{- | Fig. VIII-7 (p.221)
+
+>>> map (take 4) (take 4 viii_7)
+[[I,A,B,C],[A,I,C,B],[B,C,I,A],[C,B,A,I]]
+-}
 viii_7 :: [[Label]]
 viii_7 = map (\i -> map (`l_on` i) viii_7_lseq) viii_7_lseq
 
--- | Label sequence of Fig. VIII-6/b (p.221)
---
--- > length viii_6b_l == length viii_6_l
--- > take 8 viii_6b_l == [I,A,B,C,D2,D,E2,E]
+{- | Label sequence of Fig. VIII-6/b (p.221)
+
+>>> length viii_6b_lseq == length viii_6_lseq
+True
+
+>>> take 8 viii_6b_lseq
+[I,A,B,C,D2,D,E2,E]
+-}
 viii_6b_lseq :: [Label]
 viii_6b_lseq =
     [I,A,B,C
@@ -267,10 +312,14 @@ viii_6b_lseq =
     ,Q8,Q6,Q1,Q5
     ,Q9,Q10,Q4,Q12]
 
--- | Fig. VIII-6/b 'Half_Seq'.
---
--- > viii_6b_p' == map half_seq_of viii_6b_l
--- > nub (map (length . nub) viii_6b_p') == [4]
+{- | Fig. VIII-6/b 'Half_Seq'.
+
+>>> viii_6b_p' == map half_seq_of viii_6b_lseq
+True
+
+>>> nub (map (length . nub) viii_6b_p')
+[4]
+-}
 viii_6b_p' :: [Half_Seq]
 viii_6b_p' =
     [[1,2,3,4]
@@ -300,29 +349,37 @@ viii_6b_p' =
     ,[8,5,6,7]
     ,[5,6,8,7]]
 
--- | Variant of 'viii_6b' with 'Half_Seq'.
+{- | Variant of 'viii_6b' with 'Half_Seq'. -}
 viii_6b' :: [(Label,Half_Seq)]
 viii_6b' = zip viii_6b_lseq viii_6b_p'
 
--- | Fig. VIII-6/b.
---
--- > map (viii_6b !!) [0,8,16] == [(I,[1,2,3,4,5,6,7,8])
--- >                              ,(G2,[3,2,4,1,7,6,8,5])
--- >                              ,(Q8,[6,8,5,7,2,4,1,3])]
+{- | Fig. VIII-6/b.
+
+>>> map (viii_6b !!) [0,8,16]
+[(I,[1,2,3,4,5,6,7,8]),(G2,[3,2,4,1,7,6,8,5]),(Q8,[6,8,5,7,2,4,1,3])]
+-}
 viii_6b :: [(Label,Seq)]
 viii_6b = zip viii_6b_lseq (map full_seq viii_6b_p')
 
--- | The sequence of 'Rel' to give 'viii_6_l' from 'L2'.
---
--- > apply_relations_l viii_6_relations L2 == viii_6_l
--- > length (nub viii_6_relations) == 14
+{- | The sequence of 'Rel' to give 'viii_6_l' from 'L2'.
+
+>>> apply_relations_l viii_6_relations L2 == viii_6_lseq
+True
+
+>>> length (nub viii_6_relations)
+14
+-}
 viii_6_relations :: [Rel]
 viii_6_relations = relations (map half_seq_of viii_6_lseq)
 
--- | The sequence of 'Rel' to give 'viii_6b_l' from 'I'.
---
--- > apply_relations_l viii_6b_relations I == viii_6b_l
--- > length (nub viii_6b_relations) == 10
+{- | The sequence of 'Rel' to give 'viii_6b_l' from 'I'.
+
+>>> apply_relations_l viii_6b_relations I == viii_6b_lseq
+True
+
+>>> length (nub viii_6b_relations)
+10
+-}
 viii_6b_relations :: [Rel]
 viii_6b_relations = relations (map half_seq_of viii_6b_lseq)
 

@@ -6,7 +6,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Text.Read {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
 
 -- | Enumeration of dynamic mark symbols.
 data Dynamic_Mark = Niente
@@ -17,7 +17,8 @@ data Dynamic_Mark = Niente
 
 {- | Case insensitive reader for 'Dynamic_Mark'.
 
-> map dynamic_mark_t_parse_ci (words "pP p Mp F")
+>>> map dynamic_mark_t_parse_ci (words "pP p Mp F")
+[Just Pp,Just P,Just Mp,Just F]
 -}
 dynamic_mark_t_parse_ci :: String -> Maybe Dynamic_Mark
 dynamic_mark_t_parse_ci =
@@ -26,12 +27,14 @@ dynamic_mark_t_parse_ci =
 
 {- | Lookup Midi velocity for 'Dynamic_Mark'.  The range is linear in @0-127@.
 
-> let r = [0,6,17,28,39,50,61,72,83,94,105,116,127]
-> mapMaybe dynamic_mark_midi [Niente .. Fffff] == r
+>>> mapMaybe dynamic_mark_midi [Niente .. Fffff]
+[0,6,17,28,39,50,61,72,83,94,105,116,127]
 
-> mapMaybe dynamic_mark_midi [Pp .. Ff] == [39,50,61,72,83,94]
+>>> mapMaybe dynamic_mark_midi [Pp .. Ff]
+[39,50,61,72,83,94]
 
-> map dynamic_mark_midi [Fp,Sf,Sfp,Sfpp,Sfz,Sffz] == replicate 6 Nothing
+>>> map dynamic_mark_midi [Fp,Sf,Sfp,Sfpp,Sfz,Sffz] == replicate 6 Nothing
+True
 -}
 dynamic_mark_midi :: (Num n,Enum n) => Dynamic_Mark -> Maybe n
 dynamic_mark_midi m =
@@ -44,7 +47,8 @@ dynamic_mark_midi_err = fromMaybe (error "dynamic_mark_midi") . dynamic_mark_mid
 
 {- | Map midi velocity (0-127) to dynamic mark.
 
-> histogram (mapMaybe midi_dynamic_mark [0 .. 127])
+>>> List.histogram (mapMaybe midi_dynamic_mark [0 .. 127])
+[(Niente,1),(Ppppp,12),(Pppp,12),(Ppp,12),(Pp,12),(P,12),(Mp,12),(Mf,12),(F,12),(Ff,12),(Fff,12),(Ffff,7)]
 -}
 midi_dynamic_mark :: (Ord n,Num n,Enum n) => n -> Maybe Dynamic_Mark
 midi_dynamic_mark m =
@@ -53,8 +57,11 @@ midi_dynamic_mark m =
 
 {- | Translate /fixed/ 'Dynamic_Mark's to /db/ amplitude over given /range/.
 
-> mapMaybe (dynamic_mark_db 120) [Niente,P,F,Fffff] == [-120,-70,-40,0]
-> mapMaybe (dynamic_mark_db 60) [Niente,P,F,Fffff] == [-60,-35,-20,0]
+>>> mapMaybe (dynamic_mark_db 120) [Niente,P,F,Fffff]
+[-120.0,-70.0,-40.0,0.0]
+
+>>> mapMaybe (dynamic_mark_db 60) [Niente,P,F,Fffff]
+[-60.0,-35.0,-20.0,0.0]
 -}
 dynamic_mark_db :: Fractional n => n -> Dynamic_Mark -> Maybe n
 dynamic_mark_db r m =
@@ -96,7 +103,8 @@ data Hairpin = Crescendo | Diminuendo | End_Hairpin
 
 {- | The 'Hairpin' implied by a ordered pair of 'Dynamic_Mark's.
 
-> map (implied_hairpin Mf) [Mp,F] == [Just Diminuendo,Just Crescendo]
+>>> map (implied_hairpin Mf) [Mp,F]
+[Just Diminuendo,Just Crescendo]
 -}
 implied_hairpin :: Dynamic_Mark -> Dynamic_Mark -> Maybe Hairpin
 implied_hairpin p q =
@@ -114,8 +122,8 @@ empty_dynamic_node = (Nothing,Nothing)
 
 {- | Calculate a 'Dynamic_Node' sequence from a sequence of 'Dynamic_Mark's.
 
-> let r = [(Just Pp,Just Crescendo), (Just Mp,Just End_Hairpin) ,(Nothing,Just Diminuendo) ,(Just Pp,Just End_Hairpin)]
-> dynamic_sequence [Pp,Mp,Mp,Pp] == r
+>>> dynamic_sequence [Pp,Mp,Mp,Pp]
+[(Just Pp,Just Crescendo),(Just Mp,Just End_Hairpin),(Nothing,Just Diminuendo),(Just Pp,Just End_Hairpin)]
 -}
 dynamic_sequence :: [Dynamic_Mark] -> [Dynamic_Node]
 dynamic_sequence d =
@@ -130,12 +138,12 @@ dynamic_sequence d =
                                        then (j,e) : rec False p'
                                        else (j,k) : rec False p'
                             Just _ -> (j,k) : rec True p'
-    in rec False (zip (T.indicate_repetitions d) h)
+    in rec False (zip (List.indicate_repetitions d) h)
 
 {- | Delete redundant (unaltered) dynamic marks.
 
-> let r = [Just P,Nothing,Nothing,Nothing,Just F]
-> delete_redundant_marks [Just P,Nothing,Just P,Just P,Just F] == r
+>>> delete_redundant_marks [Just P,Nothing,Just P,Just P,Just F]
+[Just P,Nothing,Nothing,Nothing,Just F]
 -}
 delete_redundant_marks :: [Maybe Dynamic_Mark] -> [Maybe Dynamic_Mark]
 delete_redundant_marks =
@@ -148,22 +156,24 @@ delete_redundant_marks =
 {- | Variant of 'dynamic_sequence' for sequences of 'Dynamic_Mark' with holes (ie. rests).
 Runs 'delete_redundant_marks'.
 
-> let r = [Just (Just P,Just Crescendo),Just (Just F,Just End_Hairpin),Nothing,Just (Just P,Nothing)]
-> dynamic_sequence_sets [Just P,Just F,Nothing,Just P] == r
+>>> dynamic_sequence_sets [Just P,Just F,Nothing,Just P]
+[Just (Just P,Just Crescendo),Just (Just F,Just End_Hairpin),Nothing,Just (Just P,Nothing)]
 
-> dynamic_sequence_sets [Just P,Nothing,Just P] == [Just (Just P,Nothing),Nothing,Nothing]
+>>> dynamic_sequence_sets [Just P,Nothing,Just P]
+[Just (Just P,Nothing),Nothing,Nothing]
 -}
 dynamic_sequence_sets :: [Maybe Dynamic_Mark] -> [Maybe Dynamic_Node]
 dynamic_sequence_sets =
     let f l = case l of
                 Nothing:_ -> map (const Nothing) l
                 _ -> map Just (dynamic_sequence (catMaybes l))
-    in concatMap f . T.group_just . delete_redundant_marks
+    in concatMap f . List.group_just . delete_redundant_marks
 
 {- | Apply 'Hairpin' and 'Dynamic_Mark' functions in that order as required by 'Dynamic_Node'.
 
-> let f _ x = show x
-> apply_dynamic_node f f (Nothing,Just Crescendo) undefined
+>>> let f _ x = show x
+>>> apply_dynamic_node f f (Nothing,Just Crescendo) undefined
+"Crescendo"
 -}
 apply_dynamic_node :: (a -> Dynamic_Mark -> a) -> (a -> Hairpin -> a) -> Dynamic_Node -> a -> a
 apply_dynamic_node f g (i,j) m =

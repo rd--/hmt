@@ -7,9 +7,9 @@ module Music.Theory.Meter.Barlow_1987 where
 import Data.List {- base -}
 --import Debug.Trace
 
-import qualified Data.Numbers.Primes as P {- primes -}
+import qualified Data.Numbers.Primes as Primes {- primes -}
 
-import qualified Music.Theory.Math as T {- hmt-base -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
 
 traceShow :: a -> b -> b
 traceShow _ x = x
@@ -128,7 +128,7 @@ lower_psi q z n =
 14
 -}
 reverse_primes :: Integral n => n -> [n]
-reverse_primes n = reverse (genericTake n P.primes)
+reverse_primes n = reverse (genericTake n Primes.primes)
 
 {- | Generate prime stratification for /n/.
 
@@ -365,9 +365,9 @@ True
 -}
 mean_square_product :: Fractional n => [(n,n)] -> n
 mean_square_product x =
-    let f = T.square . uncurry (*)
+    let f = Math.square . uncurry (*)
         n = fromIntegral (length x)
-    in sum (map f x) / T.square n
+    in sum (map f x) / Math.square n
 
 {- | An incorrect attempt at the description in paragraph two of p.58 of the /CMJ/ paper.
 
@@ -424,10 +424,10 @@ metrical_affinity' s1 v1 s2 v2 =
         omega_z _ = lcm (v 1 * omega_u 1) (v 2 * omega_u 2)
         omega_0 = lcm (product (s' 1)) (product (s' 2))
         x0 n i = lower_psi (s' i) (z i) (1 + ((n - 1) `mod_pos_err` omega_z i))
-        x1 n = T.square (product (map (x0 n) [1,2]))
+        x1 n = Math.square (product (map (x0 n) [1,2]))
         x2 = sum (map x1 [1 .. omega_0])
         x3 = 18 * x2 - 2
-        x4 i = T.square (omega_z i - 1)
+        x4 i = Math.square (omega_z i - 1)
         x5 = product (map x4 [1::Integer,2])
         x6 = 7 * omega_0 * x5
         x7 = to_r x3 / to_r x6

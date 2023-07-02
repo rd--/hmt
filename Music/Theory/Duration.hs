@@ -5,8 +5,8 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Ord as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Ord as Ord {- hmt-base -}
 
 type Division = Integer
 type Dots = Int
@@ -63,10 +63,17 @@ sum_dur_undotted m (x0, x1)
 
 {- | Sum dotted divisions, input is required to be sorted.
 
-> sum_dur_dotted 1 (4,1,4,1) == Just (Duration 2 1 1)
-> sum_dur_dotted 1 (4,0,2,1) == Just (Duration 1 0 1)
-> sum_dur_dotted 1 (8,1,4,0) == Just (Duration 4 2 1)
-> sum_dur_dotted 1 (16,0,4,2) == Just (Duration 2 0 1)
+>>> sum_dur_dotted 1 (4,1,4,1) == Just (Duration 2 1 1)
+True
+
+>>> sum_dur_dotted 1 (4,0,2,1) == Just (Duration 1 0 1)
+True
+
+>>> sum_dur_dotted 1 (8,1,4,0) == Just (Duration 4 2 1)
+True
+
+>>> sum_dur_dotted 1 (16,0,4,2) == Just (Duration 2 0 1)
+True
 -}
 sum_dur_dotted :: Rational -> (Division,Dots,Division,Dots) -> Maybe Duration
 sum_dur_dotted m (x0, n0, x1, n1)
@@ -102,7 +109,7 @@ sum_dur y0 y1 =
                          then sum_dur_undotted m0 (division x0, division x1)
                          else sum_dur_dotted m0 (division x0, dots x0
                                                 ,division x1, dots x1)
-    in T.sort_pair_m duration_compare_meq (y0,y1) >>= f
+    in Ord.sort_pair_m duration_compare_meq (y0,y1) >>= f
 
 -- | Erroring variant of 'sum_dur'.
 sum_dur_err :: Duration -> Duration -> Duration
@@ -164,7 +171,7 @@ division_musicxml_tbl =
 -}
 whole_note_division_to_musicxml_type :: Division -> String
 whole_note_division_to_musicxml_type x =
-    T.lookup_err_msg "division_musicxml_tbl" x division_musicxml_tbl
+    List.lookup_err_msg "division_musicxml_tbl" x division_musicxml_tbl
 
 {- | Variant of 'whole_note_division_to_musicxml_type' extracting 'division' from 'Duration', dots & multipler are ignored.
 
@@ -187,7 +194,7 @@ True
 -}
 whole_note_division_to_unicode_symbol :: Division -> Char
 whole_note_division_to_unicode_symbol x =
-    T.lookup_err_msg "division_unicode_tbl" x division_unicode_tbl
+    List.lookup_err_msg "division_unicode_tbl" x division_unicode_tbl
 
 {- | Give Unicode string for 'Duration'. The duration multiplier is /not/ written.
 
