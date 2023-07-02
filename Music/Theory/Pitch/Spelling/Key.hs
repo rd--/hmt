@@ -3,17 +3,16 @@ module Music.Theory.Pitch.Spelling.Key where
 import qualified Music.Theory.Key as Key {- hmt -}
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
-import qualified Music.Theory.Pitch.Spelling.Table as Pitch.Spelling.Table {- hmt -}
 
 pcset_spell_implied_key_f :: Integral i => [i] -> Maybe (Pitch.Spelling i)
 pcset_spell_implied_key_f x =
     case Key.implied_fifths Key.Major_Mode x of
       Nothing -> Nothing
       Just n -> if n == 0
-                then Just Pitch.Spelling.Table.pc_spell_natural
+                then Just Pitch.pc_spell_natural
                 else if n < 0
-                     then Just Pitch.Spelling.Table.pc_spell_flat
-                     else Just Pitch.Spelling.Table.pc_spell_sharp
+                     then Just Pitch.pc_spell_flat
+                     else Just Pitch.pc_spell_sharp
 
 {- | Implied key
 

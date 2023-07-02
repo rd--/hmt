@@ -9,7 +9,6 @@ import qualified Data.List.Split as Split {- split -}
 
 import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
-import qualified Music.Theory.Pitch.Spelling.Table as Spelling {- hmt -}
 
 -- | In a modulo /m/ system, normalise step increments to be either -1
 -- or 1.  Non steps raise an error.
@@ -89,7 +88,7 @@ seq_group c_div r_div s =
 -- | Printer for pitch-class segments.
 iw_pc_pp :: Integral n => String -> [[n]] -> IO ()
 iw_pc_pp sep =
-    let f = Pitch.pitch_pp_opt (False,False) . Pitch.octpc_to_pitch Spelling.pc_spell_ks . (,) 4
+    let f = Pitch.pitch_pp_opt (False,False) . Pitch.octpc_to_pitch Pitch.pc_spell_ks . (,) 4
     in putStrLn . intercalate sep . map (unwords . map f)
 
 -- * U3

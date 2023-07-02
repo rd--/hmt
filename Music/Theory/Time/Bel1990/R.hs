@@ -117,11 +117,20 @@ bel_char_pp = bel_pp return
 
 {- | Analyse a Par node giving (duration,LHS-tempo-*,RHS-tempo-*).
 
-> par_analyse 1 Par_Left (nseq "cd") (nseq "efg") == (2,1,3/2)
-> par_analyse 1 Par_Right (nseq "cd") (nseq "efg") == (3,2/3,1)
-> par_analyse 1 Par_Min (nseq "cd") (nseq "efg") == (2,1,3/2)
-> par_analyse 1 Par_Max (nseq "cd") (nseq "efg") == (3,2/3,1)
-> par_analyse 1 Par_None (nseq "cd") (nseq "efg") == (3,1,1)
+>>> par_analyse 1 Par_Left (nseq "cd") (nseq "efg") == (2,1,3/2)
+True
+
+>>> par_analyse 1 Par_Right (nseq "cd") (nseq "efg") == (3,2/3,1)
+True
+
+>>> par_analyse 1 Par_Min (nseq "cd") (nseq "efg") == (2,1,3/2)
+True
+
+>>> par_analyse 1 Par_Max (nseq "cd") (nseq "efg") == (3,2/3,1)
+True
+
+>>> par_analyse 1 Par_None (nseq "cd") (nseq "efg") == (3,1,1)
+True
 -}
 par_analyse :: Tempo -> Par_Mode -> Bel a -> Bel a -> (Rational,Rational,Rational)
 par_analyse t m p q =
@@ -249,8 +258,11 @@ lbel_normalise b = lbel_tempo_mul (lbel_normalise_multiplier b) b
 
 {- | All leftmost voices are re-written to the last non-left turning point.
 
-> map voice_normalise ["","l","ll","lll"] == replicate 4 ""
-> voice_normalise "lllrlrl" == "rlrl"
+>>> map voice_normalise ["","l","ll","lll"] == replicate 4 ""
+True
+
+>>> voice_normalise "lllrlrl"
+"rlrl"
 -}
 voice_normalise :: Voice -> Voice
 voice_normalise = dropWhile (== 'l')
