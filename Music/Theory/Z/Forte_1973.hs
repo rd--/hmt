@@ -1,5 +1,6 @@
--- | Allen Forte. /The Structure of Atonal Music/.
---   Yale University Press, New Haven, 1973.
+{- | Allen Forte. /The Structure of Atonal Music/.
+Yale University Press, New Haven, 1973.
+-}
 module Music.Theory.Z.Forte_1973 where
 
 import Data.Bifunctor {- base -}
@@ -15,34 +16,40 @@ import Music.Theory.Z.Sro {- hmt -}
 
 -- * Prime form
 
--- | T-related rotations of /p/, ie. all rotations tranposed to be at zero.
---
--- > z_t_rotations z12 [1,2,4] == [[0,1,3],[0,2,11],[0,9,10]]
+{- | T-related rotations of /p/, ie. all rotations tranposed to be at zero.
+
+>>> z_t_rotations z12 [1,2,4]
+[[0,1,3],[0,2,11],[0,9,10]]
+-}
 z_t_rotations :: Integral i => Z i -> [i] -> [[i]]
 z_t_rotations z p =
     let r = T.rotations (sort p)
     in map (z_sro_tn_to z 0) r
 
--- | T\/I-related rotations of /p/.
---
--- > ti_rotations z12 [0,1,3] == [[0,1,3],[0,2,11],[0,9,10],[0,9,11],[0,2,3],[0,1,10]]
+{- | T\/I-related rotations of /p/.
+
+>>> z_ti_rotations z12 [0,1,3]
+[[0,1,3],[0,2,11],[0,9,10],[0,9,11],[0,2,3],[0,1,10]]
+-}
 z_ti_rotations :: Integral i => Z i -> [i] -> [[i]]
 z_ti_rotations z p =
     let q = z_sro_invert z 0 p
         r = T.rotations (sort p) ++ T.rotations (sort q)
     in map (z_sro_tn_to z 0) r
 
--- | Prime form rule requiring comparator, considering 't_rotations'.
+{- | Prime form rule requiring comparator, considering 't_rotations'. -}
 z_t_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
 z_t_cmp_prime z f = T.minimumBy_or [] f . z_t_rotations z
 
--- | Prime form rule requiring comparator, considering 'ti_rotations'.
+{- | Prime form rule requiring comparator, considering 'ti_rotations'. -}
 z_ti_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
 z_ti_cmp_prime z f = T.minimumBy_or [] f . z_ti_rotations z
 
--- | Forte comparison function (rightmost first then leftmost outwards).
---
--- > forte_cmp [0,1,3,6,8,9] [0,2,3,6,7,9] == LT
+{- | Forte comparison function (rightmost first then leftmost outwards).
+
+>>> forte_cmp [0,1,3,6,8,9] [0,2,3,6,7,9]
+LT
+-}
 forte_cmp :: (Ord t) => [t] -> [t] -> Ordering
 forte_cmp p  q  =
     case (p,q) of
@@ -54,12 +61,19 @@ forte_cmp p  q  =
 
 {- | Forte prime form, ie. 'z_ti_cmp_prime' of 'forte_cmp'.
 
-> z_forte_prime z12 [0,1,3,6,8,9] == [0,1,3,6,8,9]
-> z_forte_prime z5 [0,1,4] == [0,1,2]
-> z_forte_prime z5 [0,1,1] -- ERROR
+>>> z_forte_prime z12 [0,1,3,6,8,9]
+[0,1,3,6,8,9]
 
-> S.set (map (z_forte_prime z5) (S.powerset [0..4]))
-> S.set (map (z_forte_prime z7) (S.powerset [0..6]))
+>>> z_forte_prime z5 [0,1,4]
+[0,1,2]
+
+> z_forte_prime z5 [0,1,1] -- error
+
+>>> S.set (map (z_forte_prime z5) (S.powerset [0..4]))
+[[],[0],[0,1],[0,1,2],[0,1,2,3],[0,1,2,3,4],[0,1,3],[0,2]]
+
+>>> S.set (map (z_forte_prime z7) (S.powerset [0..6]))
+[[],[0],[0,1],[0,1,2],[0,1,2,3],[0,1,2,3,4],[0,1,2,3,4,5],[0,1,2,3,4,5,6],[0,1,2,3,5],[0,1,2,4],[0,1,2,4,5],[0,1,3],[0,1,3,4],[0,1,3,5],[0,1,4],[0,2],[0,2,4],[0,3]]
 -}
 z_forte_prime :: Integral i => Z i -> [i] -> [i]
 z_forte_prime z x =
@@ -67,31 +81,44 @@ z_forte_prime z x =
   then error "z_forte_prime: invalid input"
   else z_ti_cmp_prime z forte_cmp x
 
--- | Transpositional equivalence prime form,
---   ie. 'z_t_cmp_prime' of 'forte_cmp'.
---
--- > (z_forte_prime z12 [0,2,3],z_t_prime z12 [0,2,3]) == ([0,1,3],[0,2,3])
+{- | Transpositional equivalence prime form,  ie. 'z_t_cmp_prime' of 'forte_cmp'.
+
+>>> (z_forte_prime z12 [0,2,3],z_t_prime z12 [0,2,3])
+([0,1,3],[0,2,3])
+-}
 z_t_prime :: Integral i => Z i -> [i] -> [i]
 z_t_prime z = z_t_cmp_prime z forte_cmp
 
--- * ICV Metric
+-- * Icv Metric
 
--- | Interval class of interval /i/.
---
--- > map (z_ic z12) [0..12] == [0,1,2,3,4,5,6,5,4,3,2,1,0]
--- > map (z_ic z7) [0..7] == [0,1,2,3,3,2,1,0]
--- > map (z_ic z5) [0..5] == [0,1,2,2,1,0]
--- > map (z_ic z12) [5,6,7] == [5,6,5]
--- > map (z_ic z12) [-13,-1,0,1,13] == [1,1,0,1,1]
+{- | Interval class of interval /i/.
+
+>>> map (z_ic z12) [0..12]
+[0,1,2,3,4,5,6,5,4,3,2,1,0]
+
+>>> map (z_ic z7) [0..7]
+[0,1,2,3,3,2,1,0]
+
+>>> map (z_ic z5) [0..5]
+[0,1,2,2,1,0]
+
+>>> map (z_ic z12) [5,6,7]
+[5,6,5]
+
+>>> map (z_ic z12) [-13,-1,0,1,13]
+[1,1,0,1,1]
+-}
 z_ic :: Integral i => Z i -> i -> i
 z_ic z i =
   let j = z_mod z i
       m = z_modulus z
   in if j <= (m `div` 2) then j else m - j
 
--- | Forte notation for interval class vector.
---
--- > z_icv z12 [0,1,2,4,7,8] == [3,2,2,3,3,2]
+{- | Forte notation for interval class vector.
+
+>>> z_icv z12 [0,1,2,4,7,8]
+[3,2,2,3,3,2]
+-}
 z_icv :: (Integral i, Num n) => Z i -> [i] -> [n]
 z_icv z s =
     let i = map (z_ic z . z_mod z . uncurry (-)) (S.pairs s)
@@ -102,10 +129,9 @@ z_icv z s =
 
 -- * Bip Metric
 
-{- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\"
--- /JMT/ 17/2 (1973):234-272
+{- | Basic interval pattern, see Allen Forte \"The Basic Interval Patterns\" /JMT/ 17/2 (1973):234-272
 
-> bip 0t95728e3416
+> pct bip 0t95728e3416
 11223344556
 
 >>> z_bip z12 [0,10,9,5,7,2,8,11,3,4,1,6]
@@ -116,8 +142,12 @@ z_bip z = sort . map (z_ic z . z_mod z) . T.d_dx
 
 {- | Generate SC universe, though not in order of the Forte table.
 
-> length (z_sc_univ z7) == 18
-> sort (z_sc_univ z12) == sort (map snd sc_table)
+>>> length (z_sc_univ z7)
+18
+
+>>> sort (z_sc_univ z12) == sort (map snd sc_table)
+True
+
 > zipWith (\p q -> (p == q,p,q)) (z_sc_univ z12) (map snd sc_table)
 
 -}
@@ -130,16 +160,18 @@ z_sc_univ z =
 
 -- * Forte Names (Z12)
 
--- | Synonym for 'String'.
-type SC_Name = String
+{- | Synonym for 'String'. -}
+type Sc_Name = String
 
--- | Table of (SC-NAME,PCSET).
-type SC_Table n = [(SC_Name,[n])]
+{- | Table of (SC-NAME,PCSET). -}
+type Sc_Table n = [(Sc_Name,[n])]
 
--- | The Z12 set-class table (Forte prime forms).
---
--- > length sc_table == 224
-sc_table :: Num n => SC_Table n
+{- | The Z12 set-class table (Forte prime forms).
+
+>>> length sc_table
+224
+-}
+sc_table :: Num n => Sc_Table n
 sc_table =
     [("0-1",[])
     ,("1-1",[0])
@@ -366,71 +398,88 @@ sc_table =
     ,("11-1",[0,1,2,3,4,5,6,7,8,9,10])
     ,("12-1",[0,1,2,3,4,5,6,7,8,9,10,11])]
 
--- | Unicode (non-breaking hyphen) variant.
-sc_table_unicode :: Num n => SC_Table n
+{- | Unicode (non-breaking hyphen) variant. -}
+sc_table_unicode :: Num n => Sc_Table n
 sc_table_unicode =
     let f = map (\c -> if c == '-' then non_breaking_hypen else c)
     in map (first f) sc_table
 
--- | Lookup name of prime form of set class.  It is an error for the
--- input not to be a forte prime form.
---
--- > forte_prime_name [0,1,4,6] == ("4-Z15",[0,1,4,6])
-forte_prime_name :: (Num n,Eq n) => [n] -> (SC_Name,[n])
+{- | Lookup name of prime form of set class.
+It is an error for the input not to be a forte prime form.
+
+>>> forte_prime_name [0,1,4,6]
+("4-Z15",[0,1,4,6])
+-}
+forte_prime_name :: (Num n,Eq n) => [n] -> (Sc_Name,[n])
 forte_prime_name p = fromMaybe (error "forte_prime_name") (find (\(_,q) -> p == q) sc_table)
 
--- | Lookup entry for set in table.
-sc_tbl_lookup :: Integral i => SC_Table i -> [i] -> Maybe (SC_Name,[i])
+{- | Lookup entry for set in table. -}
+sc_tbl_lookup :: Integral i => Sc_Table i -> [i] -> Maybe (Sc_Name,[i])
 sc_tbl_lookup tbl p = find (\(_,q) -> z_forte_prime z12 p == q) tbl
 
--- | Erroring variant
-sc_tbl_lookup_err :: Integral i => SC_Table i -> [i] -> (SC_Name,[i])
+{- | Erroring variant -}
+sc_tbl_lookup_err :: Integral i => Sc_Table i -> [i] -> (Sc_Name,[i])
 sc_tbl_lookup_err tbl = fromMaybe (error "sc_tbl_lookup") . sc_tbl_lookup tbl
 
--- | 'fst' of 'sc_tbl_lookup_err'
-sc_name_tbl :: Integral i => SC_Table i -> [i] -> SC_Name
+{- | 'fst' of 'sc_tbl_lookup_err' -}
+sc_name_tbl :: Integral i => Sc_Table i -> [i] -> Sc_Name
 sc_name_tbl tbl = fst . sc_tbl_lookup_err tbl
 
--- | Lookup a set-class name.  The input set is subject to
--- 'forte_prime' of 'z12' before lookup.
---
--- > sc_name [0,2,3,6,7] == "5-Z18"
--- > sc_name [0,1,4,6,7,8] == "6-Z17"
-sc_name :: Integral i => [i] -> SC_Name
+{- | Lookup a set-class name.  The input set is subject to 'forte_prime' of 'z12' before lookup.
+
+>>> sc_name [0,2,3,6,7]
+"5-Z18"
+
+>>> sc_name [0,1,4,6,7,8]
+"6-Z17"
+-}
+sc_name :: Integral i => [i] -> Sc_Name
 sc_name = sc_name_tbl sc_table
 
--- | Long name (ie. with enumeration of prime form).
---
--- > sc_name_long [0,1,4,6,7,8] == "6-Z17[012478]"
-sc_name_long :: Integral i => [i] -> SC_Name
+{- | Long name (ie. with enumeration of prime form).
+
+>>> sc_name_long [0,1,4,6,7,8]
+"6-Z17[012478]"
+-}
+sc_name_long :: Integral i => [i] -> Sc_Name
 sc_name_long p =
     let (nm,p') = sc_tbl_lookup_err sc_table p
     in nm ++ z16_vec_pp p'
 
--- | Unicode (non-breaking hyphen) variant.
-sc_name_unicode :: Integral i => [i] -> SC_Name
+{- | Unicode (non-breaking hyphen) variant. -}
+sc_name_unicode :: Integral i => [i] -> Sc_Name
 sc_name_unicode = sc_name_tbl sc_table_unicode
 
--- | Lookup a set-class given a set-class name.
---
--- > sc "6-Z17" == [0,1,2,4,7,8]
-sc :: Num n => SC_Name -> [n]
+{- | Lookup a set-class given a set-class name.
+
+>>> sc "4-Z15"
+[0,1,4,6]
+
+>>> sc "6-Z17"
+[0,1,2,4,7,8]
+-}
+sc :: Num n => Sc_Name -> [n]
 sc n = snd (fromMaybe (error "sc") (find (\(m,_) -> n == m) sc_table))
 
--- | The set-class table (Forte prime forms), ie. 'snd' of 'sc_table'.
+{- | The set-class table (Forte prime forms), ie. 'snd' of 'sc_table'. -}
 scs :: Num n => [[n]]
 scs = map snd sc_table
 
--- | Cardinality /n/ subset of 'scs'.
---
--- > map (length . scs_n) [1..11] == [1,6,12,29,38,50,38,29,12,6,1]
+{- | Cardinality /n/ subset of 'scs'.
+
+>>> map (length . scs_n) [1..11]
+[1,6,12,29,38,50,38,29,12,6,1]
+-}
 scs_n :: (Integral i, Num n) => i -> [[n]]
 scs_n n = filter ((== n) . genericLength) scs
 
--- | Vector indicating degree of intersection with inversion at each transposition.
---
--- > tics z12 [0,2,4,5,7,9] == [3,2,5,0,5,2,3,4,1,6,1,4]
--- > map (tics z12) scs
+{- | Vector indicating degree of intersection with inversion at each transposition.
+
+>>> tics z12 [0,2,4,5,7,9]
+[3,2,5,0,5,2,3,4,1,6,1,4]
+
+> map (tics z12) scs
+-}
 tics :: Integral i => Z i -> [i] -> [Int]
 tics z p =
     let q = z_sro_t_related z (z_sro_invert z 0 p)
@@ -438,9 +487,11 @@ tics z p =
 
 -- * Z-relation
 
--- | Locate /Z/ relation of set class.
---
--- > fmap sc_name (z_relation_of (sc "7-Z12")) == Just "7-Z36"
+{- | Locate /Z/ relation of set class.
+
+>>> fmap sc_name (z_relation_of (sc "7-Z12"))
+Just "7-Z36"
+-}
 z_relation_of :: Integral i => [i] -> Maybe [i]
 z_relation_of x =
     let n = length x

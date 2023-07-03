@@ -21,7 +21,7 @@ import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
-import qualified Text.Parsec as P {- parsec -}
+import qualified Text.Parsec as Parsec {- parsec -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 import Music.Theory.Parse (P) {- hmt-base -}
@@ -31,11 +31,11 @@ import Music.Theory.Time {- hmt -}
 
 -- * Bel
 
--- | Types of 'Par' nodes.
+{- | Types of 'Par' nodes. -}
 data Par_Mode = Par_Left | Par_Right | Par_Min | Par_Max | Par_None
   deriving (Eq, Show)
 
--- | The different 'Par' modes are indicated by bracket types.
+{- | The different 'Par' modes are indicated by bracket types. -}
 par_mode_brackets :: Par_Mode -> (String,String)
 par_mode_brackets m =
     case m of
@@ -45,7 +45,7 @@ par_mode_brackets m =
       Par_Max -> ("{","}")
       Par_None -> ("[","]")
 
--- | Inverse of par_mode_brackets
+{- | Inverse of par_mode_brackets -}
 par_mode_kind :: (String, String) -> Par_Mode
 par_mode_kind brk =
   case brk of
@@ -64,11 +64,11 @@ bel_brackets_match (open,close) =
       ('[',']') -> True
       _ -> False
 
--- | Terms are the leaf nodes of the temporal structure.
+{- | Terms are the leaf nodes of the temporal structure. -}
 data Term a = Value a | Rest | Continue
   deriving (Eq,Show)
 
--- | Value of Term, else Nothing
+{- | Value of Term, else Nothing -}
 term_value :: Term t -> Maybe t
 term_value t =
   case t of
@@ -86,7 +86,7 @@ data Bel a =
   | Mul Tempo -- ^ Tempo multiplier
   deriving (Eq,Show)
 
--- | Given a Par mode, generate either: 1. an Iso, 2. a Par, 3. a series of nested Par.
+{- | Given a Par mode, generate either: 1. an Iso, 2. a Par, 3. a series of nested Par. -}
 par_of :: Par_Mode -> [Bel a] -> Bel a
 par_of m l =
   case l of
@@ -111,7 +111,7 @@ bel_pp f b =
           in List.bracket_l (par_mode_brackets m) pq
       Mul n -> concat ["*",Show.rational_pp n]
 
--- | 'bel_pp' of 'return'.
+{- | 'bel_pp' of 'return'. -}
 bel_char_pp :: Bel Char -> String
 bel_char_pp = bel_pp return
 
@@ -143,13 +143,13 @@ par_analyse t m p q =
          Par_Max -> let r = max d_p d_q in (r,d_p / r,d_q / r)
          Par_None -> (max d_p d_q,1,1)
 
--- | Duration element of 'par_analyse'.
+{- | Duration element of 'par_analyse'. -}
 par_dur :: Tempo -> Par_Mode -> Bel a -> Bel a -> Rational
 par_dur t m p q =
     let (d,_,_) = par_analyse t m p q
     in d
 
--- | Calculate final tempo and duration of 'Bel'.
+{- | Calculate final tempo and duration of 'Bel'. -}
 bel_tdur :: Tempo -> Bel a -> (Tempo,Rational)
 bel_tdur t b =
     case b of
@@ -162,7 +162,7 @@ bel_tdur t b =
       Par m p q -> (t,par_dur t m p q)
       Mul n -> (t * n,0)
 
--- | 'snd' of 'bel_tdur'.
+{- | 'snd' of 'bel_tdur'. -}
 bel_dur :: Tempo -> Bel a -> Rational
 bel_dur t = snd . bel_tdur t
 
@@ -180,37 +180,37 @@ type Voice = [Char]
 -}
 type L_St = (Time, Tempo, Voice)
 
--- | Linear term.
+{- | Linear term. -}
 type L_Term a = (L_St,Term a)
 
--- | Start time of 'L_Term'.
+{- | Start time of 'L_Term'. -}
 lterm_time :: L_Term a -> Time
 lterm_time ((st,_,_),_) = st
 
--- | Duration of 'L_Term' (reciprocal of tempo).
+{- | Duration of 'L_Term' (reciprocal of tempo). -}
 lterm_duration :: L_Term a -> Time
 lterm_duration ((_,tm,_),_) = 1 / tm
 
--- | End time of 'L_Term'.
+{- | End time of 'L_Term'. -}
 lterm_end_time :: L_Term a -> Time
 lterm_end_time e = lterm_time e + lterm_duration e
 
--- | Voice of 'L_Term'.
+{- | Voice of 'L_Term'. -}
 lterm_voice :: L_Term t -> Voice
 lterm_voice ((_,_,vc),_) = vc
 
--- | Term of L_Term
+{- | Term of L_Term -}
 lterm_term :: L_Term t -> Term t
 lterm_term (_,t) = t
 
--- | Value of Term of L_Term
+{- | Value of Term of L_Term -}
 lterm_value :: L_Term t -> Maybe t
 lterm_value = term_value . lterm_term
 
--- | Linear form of 'Bel', an ascending sequence of 'L_Term'.
+{- | Linear form of 'Bel', an ascending sequence of 'L_Term'. -}
 type L_Bel a = [L_Term a]
 
--- | Linearise 'Bel' given initial 'L_St', ascending by construction.
+{- | Linearise 'Bel' given initial 'L_St', ascending by construction. -}
 bel_linearise :: L_St -> Bel a -> (L_Bel a,L_St)
 bel_linearise l_st b =
     let (st,tm,vc) = l_st
@@ -230,20 +230,20 @@ bel_linearise l_st b =
              in (p' `lbel_merge` q',(st + du,tm,vc))
          Mul n -> ([],(st,tm * n,vc))
 
--- | Merge two ascending 'L_Bel'.
+{- | Merge two ascending 'L_Bel'. -}
 lbel_merge :: L_Bel a -> L_Bel a -> L_Bel a
 lbel_merge = List.merge_on lterm_time
 
--- | Set of unique 'Tempo' at 'L_Bel'.
+{- | Set of unique 'Tempo' at 'L_Bel'. -}
 lbel_tempi :: L_Bel a -> [Tempo]
 lbel_tempi = nub . sort . map (\((_,t,_),_) -> t)
 
--- | Multiply 'Tempo' by /n/, and divide 'Time' by /n/.
+{- | Multiply 'Tempo' by /n/, and divide 'Time' by /n/. -}
 lbel_tempo_mul :: Rational -> L_Bel a -> L_Bel a
 lbel_tempo_mul n = map (\((st,tm,vc),e) -> ((st / n,tm * n,vc),e))
 
 {- | The multiplier that will normalise an L_Bel value.
-     After normalisation all start times and durations are integral.
+After normalisation all start times and durations are integral.
 -}
 lbel_normalise_multiplier :: L_Bel t -> Rational
 lbel_normalise_multiplier b =
@@ -252,7 +252,7 @@ lbel_normalise_multiplier b =
       m = foldl1 lcm (map (numerator . (* n)) t) % 1
   in n / m
 
--- | Calculate and apply L_Bel normalisation multiplier.
+{- | Calculate and apply L_Bel normalisation multiplier. -}
 lbel_normalise :: L_Bel a -> L_Bel a
 lbel_normalise b = lbel_tempo_mul (lbel_normalise_multiplier b) b
 
@@ -267,32 +267,31 @@ True
 voice_normalise :: Voice -> Voice
 voice_normalise = dropWhile (== 'l')
 
--- | '==' 'on' 'voice_normalise'
+{- | '==' 'on' 'voice_normalise' -}
 voice_eq :: Voice -> Voice -> Bool
 voice_eq = (==) `on` voice_normalise
 
--- | Unique 'Voice's at 'L_Bel'.
+{- | Unique 'Voice's at 'L_Bel'. -}
 lbel_voices :: L_Bel a -> [Voice]
 lbel_voices =
     sortOn reverse .
     nub .
     map (\((_,_,v),_) -> voice_normalise v)
 
--- | The duration of 'L_Bel'.
+{- | The duration of 'L_Bel'. -}
 lbel_duration :: L_Bel a -> Time
 lbel_duration b =
     let l = last (List.group_on lterm_time b)
     in maximum (map (\((st,tm,_),_) -> st + recip tm) l)
 
--- | Locate an 'L_Term' that is active at the indicated 'Time' and in
--- the indicated 'Voice'.
+{- | Locate an 'L_Term' that is active at the indicated 'Time' and in the indicated 'Voice'. -}
 lbel_lookup :: (Time,Voice) -> L_Bel a -> Maybe (L_Term a)
 lbel_lookup (st,vc) =
     let f ((st',tm,vc'),_) = (st >= st' && st < st' + (1 / tm)) &&
                              vc `voice_eq` vc'
     in find f
 
--- | Calculate grid (phase diagram) for 'L_Bel'.
+{- | Calculate grid (phase diagram) for 'L_Bel'. -}
 lbel_grid :: L_Bel a -> [[Maybe (Term a)]]
 lbel_grid l =
     let n = lbel_normalise l
@@ -303,14 +302,15 @@ lbel_grid l =
         f vc = map (get vc) [0 .. d - 1]
     in map f v
 
--- | 'lbel_grid' of 'bel_linearise'.
+{- | 'lbel_grid' of 'bel_linearise'. -}
 bel_grid :: Bel a -> [[Maybe (Term a)]]
 bel_grid b =
     let (l,_) = bel_linearise (0,1,[]) b
     in lbel_grid l
 
--- | /Bel/ type phase diagram for 'Bel' of 'Char'.  Optionally print
--- whitespace between columns.
+{- | /Bel/ type phase diagram for 'Bel' of 'Char'.
+Optionally print whitespace between columns.
+-}
 bel_ascii :: Bool -> Bel Char -> String
 bel_ascii opt =
     let f e = case e of
@@ -321,33 +321,36 @@ bel_ascii opt =
         g = if opt then intersperse ' ' else id
     in unlines . map (g . map f) . bel_grid
 
--- | 'putStrLn' of 'bel_ascii'.
+{- | 'putStrLn' of 'bel_ascii'. -}
 bel_ascii_pr :: Bel Char -> IO ()
 bel_ascii_pr = putStrLn . ('\n' :) . bel_ascii True
 
 -- * Combinators
 
--- | Infix form for 'Seq'.
+{- | Infix form for 'Seq'. -}
 (~>) :: Bel a -> Bel a -> Bel a
 p ~> q = Seq p q
 
 {- | 'foldl1' of 'Seq'.
 
-> lseq [Node Rest] == Node Rest
-> lseq [Node Rest,Node Continue] == Seq (Node Rest) (Node Continue)
+>>> lseq [Node Rest]
+Node Rest
+
+>>> lseq [Node Rest,Node Continue]
+Seq (Node Rest) (Node Continue)
 -}
 lseq :: [Bel a] -> Bel a
 lseq = foldl1 Seq
 
--- | 'Node' of 'Value'.
+{- | 'Node' of 'Value'. -}
 node :: a -> Bel a
 node = Node . Value
 
--- | 'lseq' of 'Node'
+{- | 'lseq' of 'Node' -}
 nseq :: [a] -> Bel a
 nseq = lseq . map node
 
--- | Variant of 'nseq' where @_@ is read as 'Continue' and @-@ as 'Rest'.
+{- | Variant of 'nseq' where @_@ is read as 'Continue' and @-@ as 'Rest'. -}
 cseq :: String -> Bel Char
 cseq =
     let f c = case c of
@@ -356,25 +359,37 @@ cseq =
                 _ -> Value c
     in foldl1 Seq . map (Node . f)
 
--- | 'Par' of 'Par_Max', this is the default 'Par_Mode'.
+{- | 'Par' of 'Par_Max', this is the default 'Par_Mode'. -}
 par :: Bel a -> Bel a -> Bel a
 par = Par Par_Max
 
--- | 'Node' of 'Rest'.
+{- | 'Node' of 'Rest'. -}
 rest :: Bel a
 rest = Node Rest
 
--- | 'lseq' of 'replicate' of 'rest'.
+{- | 'lseq' of 'replicate' of 'rest'. -}
 nrests :: Integral n => n -> Bel a
 nrests n = lseq (genericReplicate n rest)
 
--- | Verify that 'bel_char_pp' of 'bel_char_parse' is 'id'.
+{- | Verify that 'bel_char_pp' of 'bel_char_parse' is 'id'. -}
 bel_parse_pp_ident :: String -> Bool
 bel_parse_pp_ident s = bel_char_pp (bel_char_parse s) == s
 
 {- | Run 'bel_char_parse', and print both 'bel_char_pp' and 'bel_ascii'.
 
 > bel_ascii_pp "{i{ab,c[d,oh]e,sr{p,qr}},{jk,ghjkj}}"
+
+@
+Bel(R): "{i{ab,{c[d,oh]e,sr{p,qr}}},{jk,ghjkj}}", Dur: 5/1
+
+i _ a _ _ _ b _ _ _
+    c _ d _     e _
+        o _ h _    
+    s _ r _ p _ _ _
+            q _ r _
+j _ _ _ _ k _ _ _ _
+g _ h _ j _ k _ j _
+@
 -}
 bel_ascii_pp :: String -> IO ()
 bel_ascii_pp s = do
@@ -384,84 +399,108 @@ bel_ascii_pp s = do
 
 -- * Parsing
 
--- | Parse 'Rest' 'Term'.
---
--- > P.parse p_rest "" "-"
-p_rest :: P (Term a)
-p_rest = fmap (const Rest) (P.char '-')
+{- | Parse 'Rest' 'Term'.
 
--- | Parse 'Rest' 'Term'.
---
--- > P.parse p_nrests "" "3"
+>>> Parsec.parse p_rest "" "-"
+Right Rest
+-}
+p_rest :: P (Term a)
+p_rest = fmap (const Rest) (Parsec.char '-')
+
+{- | Parse 'Rest' 'Term'.
+
+>>> Parsec.parse p_nrests "" "3"
+Right (Seq (Seq (Node Rest) (Node Rest)) (Node Rest))
+-}
 p_nrests :: P (Bel a)
 p_nrests = fmap nrests p_non_negative_integer
 
--- | Parse 'Continue' 'Term'.
---
--- > P.parse p_continue "" "_"
+{- | Parse 'Continue' 'Term'.
+
+>>> Parsec.parse p_continue "" "_"
+Right Continue
+-}
 p_continue :: P (Term a)
-p_continue = fmap (const Continue) (P.char '_')
+p_continue = fmap (const Continue) (Parsec.char '_')
 
--- | Parse 'Char' 'Value' 'Term'.
---
--- > P.parse p_char_value "" "a"
+{- | Parse 'Char' 'Value' 'Term'.
+
+>>> Parsec.parse p_char_value "" "a"
+Right (Value 'a')
+-}
 p_char_value :: P (Term Char)
-p_char_value = fmap Value P.lower
+p_char_value = fmap Value Parsec.lower
 
--- | Parse 'Char' 'Term'.
---
--- > P.parse (P.many1 p_char_term) "" "-_a"
+{- | Parse 'Char' 'Term'.
+
+>>> Parsec.parse (Parsec.many1 p_char_term) "" "-_a"
+Right [Rest,Continue,Value 'a']
+-}
 p_char_term :: P (Term Char)
-p_char_term = P.choice [p_rest,p_continue,p_char_value]
+p_char_term = Parsec.choice [p_rest,p_continue,p_char_value]
 
--- | Parse 'Char' 'Node'.
---
--- > P.parse (P.many1 p_char_node) "" "-_a"
+{- | Parse 'Char' 'Node'.
+
+>>> Parsec.parse (Parsec.many1 p_char_node) "" "-_a"
+Right [Node Rest,Node Continue,Node (Value 'a')]
+-}
 p_char_node :: P (Bel Char)
 p_char_node = fmap Node p_char_term
 
--- | Parse non-negative 'Integer'.
---
--- > P.parse p_non_negative_integer "" "3"
-p_non_negative_integer :: P Integer
-p_non_negative_integer = fmap read (P.many1 P.digit)
+{- | Parse non-negative 'Integer'.
 
--- | Parse non-negative 'Rational'.
---
--- > P.parse (p_non_negative_rational `P.sepBy` (P.char ',')) "" "3%5,2/3"
+>>> Parsec.parse p_non_negative_integer "" "3"
+Right 3
+-}
+p_non_negative_integer :: P Integer
+p_non_negative_integer = fmap read (Parsec.many1 Parsec.digit)
+
+{- | Parse non-negative 'Rational'.
+
+>>> Parsec.parse (p_non_negative_rational `Parsec.sepBy` (Parsec.char ',')) "" "3%5,2/3"
+Right [3 % 5,2 % 3]
+-}
 p_non_negative_rational :: P Rational
 p_non_negative_rational = do
   n <- p_non_negative_integer
-  _ <- P.oneOf "%/"
+  _ <- Parsec.oneOf "%/"
   d <- p_non_negative_integer
   return (n % d)
 
--- | Parse non-negative 'Double'.
---
--- > P.parse p_non_negative_double "" "3.5"
--- > P.parse (p_non_negative_double `P.sepBy` (P.char ',')) "" "3.5,7.2,1.0"
+{- | Parse non-negative 'Double'.
+
+>>> Parsec.parse p_non_negative_double "" "3.5"
+Right 3.5
+
+>>> Parsec.parse (p_non_negative_double `Parsec.sepBy` (Parsec.char ',')) "" "3.5,7.2,1.0"
+Right [3.5,7.2,1.0]
+-}
 p_non_negative_double :: P Double
 p_non_negative_double = do
-  a <- P.many1 P.digit
-  _ <- P.char '.'
-  b <- P.many1 P.digit
+  a <- Parsec.many1 Parsec.digit
+  _ <- Parsec.char '.'
+  b <- Parsec.many1 Parsec.digit
   return (read (a ++ "." ++ b))
 
--- | Parse non-negative number as 'Rational'.
---
--- > P.parse (p_non_negative_number `P.sepBy` (P.char ',')) "" "7%2,3.5,3"
+{- | Parse non-negative number as 'Rational'.
+
+>>> Parsec.parse (p_non_negative_number `Parsec.sepBy` (Parsec.char ',')) "" "7%2,3.5,3"
+Right [7 % 2,7 % 2,3 % 1]
+-}
 p_non_negative_number :: P Rational
 p_non_negative_number =
-    P.choice [P.try p_non_negative_rational
-             ,P.try (fmap toRational p_non_negative_double)
-             ,P.try (fmap toRational p_non_negative_integer)]
+    Parsec.choice [Parsec.try p_non_negative_rational
+             ,Parsec.try (fmap toRational p_non_negative_double)
+             ,Parsec.try (fmap toRational p_non_negative_integer)]
 
--- | Parse 'Mul'.
---
--- > P.parse (P.many1 p_mul) "" "/3*3/2"
+{- | Parse 'Mul'.
+
+>>> Parsec.parse (Parsec.many1 p_mul) "" "/3*3/2"
+Right [Mul (1 % 3),Mul (3 % 2)]
+-}
 p_mul :: P (Bel a)
 p_mul = do
-  op <- P.oneOf "*/"
+  op <- Parsec.oneOf "*/"
   n <- p_non_negative_number
   let n' = case op of
              '*' -> n
@@ -469,50 +508,57 @@ p_mul = do
              _ -> error "p_mul"
   return (Mul n')
 
--- | Given parser for 'Bel' /a/, generate 'Iso' parser.
+{- | Given parser for 'Bel' /a/, generate 'Iso' parser. -}
 p_iso :: P (Bel a) -> P (Bel a)
 p_iso f = do
-  open <- P.oneOf "{(["
-  iso <- P.many1 f
-  close <- P.oneOf "})]"
+  open <- Parsec.oneOf "{(["
+  iso <- Parsec.many1 f
+  close <- Parsec.oneOf "})]"
   when (not (bel_brackets_match (open,close))) (error "p_iso: open/close mismatch")
   return (Iso (lseq iso))
 
--- | 'p_iso' of 'p_char_bel'.
---
--- > P.parse p_char_iso "" "{abcde}"
+{- | 'p_iso' of 'p_char_bel'.
+
+>>> Parsec.parse p_char_iso "" "{abcde}"
+Right (Iso (Seq (Seq (Seq (Seq (Node (Value 'a')) (Node (Value 'b'))) (Node (Value 'c'))) (Node (Value 'd'))) (Node (Value 'e'))))
+-}
 p_char_iso :: P (Bel Char)
 p_char_iso = p_iso p_char_bel
 
--- | Given parser for 'Bel' /a/, generate 'Par' parser.
+{- | Given parser for 'Bel' /a/, generate 'Par' parser. -}
 p_par :: P (Bel a) -> P (Bel a)
 p_par f = do
-  tilde <- P.optionMaybe (P.char '~')
-  open <- P.oneOf "{(["
-  items <- P.sepBy (P.many1 f) (P.char ',')
-  close <- P.oneOf "})]"
+  tilde <- Parsec.optionMaybe (Parsec.char '~')
+  open <- Parsec.oneOf "{(["
+  items <- Parsec.sepBy (Parsec.many1 f) (Parsec.char ',')
+  close <- Parsec.oneOf "})]"
   let m = par_mode_kind (List.mcons tilde [open], [close])
   return (par_of m (map lseq items))
 
 {- | 'p_par' of 'p_char_bel'.
 
-> p = P.parse p_char_par ""
-> p "{ab,{c,de}}" == p "{ab,c,de}"
-> p "{ab,~(c,de)}"
+>>> p = Parsec.parse p_char_par ""
+>>> p "{ab,{c,de}}" == p "{ab,c,de}"
+True
+
+>>> p "{ab,~(c,de)}"
+Right (Par Par_Max (Seq (Node (Value 'a')) (Node (Value 'b'))) (Par Par_Right (Node (Value 'c')) (Seq (Node (Value 'd')) (Node (Value 'e')))))
 -}
 p_char_par :: P (Bel Char)
 p_char_par = p_par p_char_bel
 
--- | Parse 'Bel' 'Char'.
---
--- > P.parse (P.many1 p_char_bel) "" "-_a*3"
-p_char_bel :: P (Bel Char)
-p_char_bel = P.choice [P.try p_char_par,p_char_iso,p_mul,p_nrests,p_char_node]
+{- | Parse 'Bel' 'Char'.
 
--- | Run parser for 'Bel' of 'Char'.
+>>> Parsec.parse (Parsec.many1 p_char_bel) "" "-_a*3"
+Right [Node Rest,Node Continue,Node (Value 'a'),Mul (3 % 1)]
+-}
+p_char_bel :: P (Bel Char)
+p_char_bel = Parsec.choice [Parsec.try p_char_par,p_char_iso,p_mul,p_nrests,p_char_node]
+
+{- | Run parser for 'Bel' of 'Char'. -}
 bel_char_parse :: String -> Bel Char
 bel_char_parse s =
     either
     (\e -> error ("bel_parse failed\n" ++ show e))
     lseq
-    (P.parse (P.many1 p_char_bel) "" s)
+    (Parsec.parse (Parsec.many1 p_char_bel) "" s)

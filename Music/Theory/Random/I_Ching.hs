@@ -6,12 +6,12 @@ import Data.Maybe {- base -}
 import Data.Int {- base -}
 import System.Random {- random -}
 
-import qualified Music.Theory.Bits as T {- hmt-base -}
-import qualified Music.Theory.Read as T {- hmt-base -}
-import qualified Music.Theory.Tuple as T {- hmt-base -}
-import qualified Music.Theory.Unicode as T {- hmt-base -}
+import qualified Music.Theory.Bits as Bits {- hmt-base -}
+import qualified Music.Theory.Read as Read {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
+import qualified Music.Theory.Unicode as Unicode {- hmt-base -}
 
--- * LINE
+-- * Line
 
 -- | Line, indicated as sum.
 data Line = L6 | L7 | L8 | L9 deriving (Eq,Show)
@@ -41,7 +41,7 @@ line_from_bit b = if b then L7 else L8
 
 -- | Seven character ASCII string for line.
 line_ascii_pp :: Line -> String
-line_ascii_pp n = maybe (error "line_ascii_pp") T.p5_fifth (lookup n i_ching_chart)
+line_ascii_pp n = maybe (error "line_ascii_pp") Tuple.p5_fifth (lookup n i_ching_chart)
 
 -- | Is line (ie. sum) moving (ie. 6 or 9).
 line_is_moving :: Line -> Bool
@@ -69,7 +69,7 @@ four_coin_sequence =
     ,L7,L8,L8,L8
     ,L8,L8,L8,L8]
 
--- * HEXAGRAM
+-- * Hexagram
 
 -- | Sequence of 6 'Line'.
 type Hexagram = [Line]
@@ -78,9 +78,19 @@ type Hexagram = [Line]
 hexagram_pp :: Hexagram -> String
 hexagram_pp = unlines . reverse . map line_ascii_pp
 
--- | Generate hexagram (ie. sequence of six lines given by sum) using 'four_coin_sequence'.
---
--- > four_coin_gen_hexagram >>= putStrLn . hexagram_pp
+{- | Generate hexagram (ie. sequence of six lines given by sum) using 'four_coin_sequence'.
+
+> four_coin_gen_hexagram >>= putStrLn . hexagram_pp
+
+@
+-------
+---o---
+---o---
+--- ---
+---x---
+--- ---
+@
+-}
 four_coin_gen_hexagram :: IO Hexagram
 four_coin_gen_hexagram = fmap (map (four_coin_sequence !!)) (replicateM 6 (randomRIO (0,15)))
 
@@ -88,19 +98,40 @@ four_coin_gen_hexagram = fmap (map (four_coin_sequence !!)) (replicateM 6 (rando
 hexagram_has_complement :: Hexagram -> Bool
 hexagram_has_complement = any line_is_moving
 
--- | If 'hexagram_has_complement' then derive it.
---
--- > h <- four_coin_gen_hexagram
--- > putStrLn (hexagram_pp h)
--- > maybe (return ()) (putStrLn . hexagram_pp) (hexagram_complement h)
+{- | If 'hexagram_has_complement' then derive it.
+
+> h <- four_coin_gen_hexagram
+> putStrLn (hexagram_pp h)
+
+@
+-------
+--- ---
+---o---
+--- ---
+---o---
+---x---
+@
+
+> maybe (return ()) (putStrLn . hexagram_pp) (hexagram_complement h)
+
+@
+-------
+--- ---
+--- ---
+--- ---
+--- ---
+-------
+-}
 hexagram_complement :: Hexagram -> Maybe Hexagram
 hexagram_complement h =
     let f n = fromMaybe n (line_complement n)
     in if hexagram_has_complement h then Just (map f h) else Nothing
 
--- | Names of hexagrams, in King Wen order (see also data/csv/combinatorics/yijing.csv)
---
--- > length hexagram_names == 64
+{- | Names of hexagrams, in King Wen order (see also data/csv/combinatorics/yijing.csv)
+
+>>> length hexagram_names
+64
+-}
 hexagram_names :: [(String,String)]
 hexagram_names =
     [("乾","qián")
@@ -168,45 +199,73 @@ hexagram_names =
     ,("既濟","jì jì")
     ,("未濟","wèi jì")]
 
--- | Unicode hexagram characters, in King Wen order.
---
--- > import Data.List.Split {- split -}
--- > mapM_ putStrLn (chunksOf 8 hexagram_unicode_sequence)
+{- | Unicode hexagram characters, in King Wen order.
+
+> import Data.List.Split {- split -}
+> mapM_ putStrLn (chunksOf 8 hexagram_unicode_sequence)
+
+@
+䷀䷁䷂䷃䷄䷅䷆䷇
+䷈䷉䷊䷋䷌䷍䷎䷏
+䷐䷑䷒䷓䷔䷕䷖䷗
+䷘䷙䷚䷛䷜䷝䷞䷟
+䷠䷡䷢䷣䷤䷥䷦䷧
+䷨䷩䷪䷫䷬䷭䷮䷯
+䷰䷱䷲䷳䷴䷵䷶䷷
+䷸䷹䷺䷻䷼䷽䷾䷿
+@
+-}
 hexagram_unicode_sequence :: [Char]
-hexagram_unicode_sequence = map (toEnum . fst) T.yijing_tbl
+hexagram_unicode_sequence = map (toEnum . fst) Unicode.yijing_tbl
 
 -- | Binary form of 'Hexagram'.
 hexagram_to_binary :: Hexagram -> Int8
-hexagram_to_binary = T.pack_bitseq . map line_unbroken
+hexagram_to_binary = Bits.pack_bitseq . map line_unbroken
 
 -- | Show binary form.
 hexagram_to_binary_str :: Hexagram -> String
-hexagram_to_binary_str = T.gen_bitseq_pp 6 . hexagram_to_binary
+hexagram_to_binary_str = Bits.gen_bitseq_pp 6 . hexagram_to_binary
 
 -- | Inverse of 'hexagram_to_binary'.
 hexagram_from_binary :: Int8 -> Hexagram
-hexagram_from_binary = map line_from_bit . T.gen_bitseq 6
+hexagram_from_binary = map line_from_bit . Bits.gen_bitseq 6
 
--- | Read binary form.
---
--- > let h = hexagram_from_binary_str "100010"
--- > putStrLn (hexagram_pp h)
--- > hexagram_to_binary_str h == "100010"
+{- | Read binary form.
+
+>>> let h = hexagram_from_binary_str "100010"
+>>> hexagram_to_binary_str h
+"100010"
+
+> putStrLn (hexagram_pp h)
+
+@
+--- ---
+-------
+--- ---
+--- ---
+--- ---
+-------
+@
+-}
 hexagram_from_binary_str :: String -> Hexagram
-hexagram_from_binary_str = hexagram_from_binary . T.read_bin_err
+hexagram_from_binary_str = hexagram_from_binary . Read.read_bin_err
 
--- * TRIGRAM
+-- * Trigram
 
--- | Unicode sequence of trigrams (unicode order).
---
--- > import Data.List {- base -}
--- > putStrLn (intersperse ' ' trigram_unicode_sequence)
+{- | Unicode sequence of trigrams (unicode order).
+
+>>> import Data.List {- base -}
+>>> intersperse ' ' trigram_unicode_sequence == "☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"
+True
+-}
 trigram_unicode_sequence :: [Char]
-trigram_unicode_sequence = map (toEnum . fst) T.bagua_tbl
+trigram_unicode_sequence = map (toEnum . fst) Unicode.bagua_tbl
 
--- | (INDEX,UNICODE,BIT-SEQUENCE,NAME,NAME-TRANSLITERATION,NATURE-IMAGE,DIRECTION,ANIMAL)
---
--- > map (T.read_bin_err . T.p8_third) trigram_chart == [7,6,5,4,3,2,1,0]
+{- | (Index,Unicode,Bit-Sequence,Name,Name-Transliteration,Nature-Image,Direction,Animal)
+
+>>> map (Read.read_bin_err . Tuple.p8_third) trigram_chart
+[7,6,5,4,3,2,1,0]
+-}
 trigram_chart :: [(Int, Char, String, Char, String, Char, String, Char)]
 trigram_chart =
     [(1,'☰',"111",'乾',"qián",'天',"NW",'馬')

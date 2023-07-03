@@ -31,64 +31,84 @@ pco_parse = map fromIntegral . z16_seq_parse
 pco_pp :: [Z12] -> String
 pco_pp = map (toUpper . integral_to_digit)
 
--- > cset_parse "34" == [3,4]
+{- | Cset
+
+>>> cset_parse "34"
+[3,4]
+-}
 cset_parse :: String -> [Int]
 cset_parse = map digitToInt
 
-type CMD = String -> String
+type Cmd = String -> String
 
-mk_cmd :: ([Z12] -> [Z12]) -> CMD
+mk_cmd :: ([Z12] -> [Z12]) -> Cmd
 mk_cmd f = pco_pp . f . pco_parse
 
-mk_cmd_many :: ([Z12] -> [[Z12]]) -> CMD
+mk_cmd_many :: ([Z12] -> [[Z12]]) -> Cmd
 mk_cmd_many f = unlines . map pco_pp . f . pco_parse
 
--- > ess_cmd "0164325" "23A" == unlines ["923507A","2B013A9"]
-ess_cmd :: String -> CMD
+{- | Ess
+
+>>> ess_cmd "0164325" "23A"
+"923507A\n2B013A9\n"
+-}
+ess_cmd :: String -> Cmd
 ess_cmd p = mk_cmd_many (ess z12 (pco_parse p))
 
-z12_sc_name :: [Z12] -> SC_Name
+z12_sc_name :: [Z12] -> Sc_Name
 z12_sc_name = sc_name
 
-fl_c_cmd :: CMD
+fl_c_cmd :: Cmd
 fl_c_cmd = unlines . map z12_sc_name . concatMap scs_n . cset_parse
 
-frg_cmd :: CMD
+frg_cmd :: Cmd
 frg_cmd p =
     let p' = pco_parse p
     in unlines [frg_pp p',ic_cycle_vector_pp (ic_cycle_vector p')]
 
-pi_cmd :: String -> CMD
+pi_cmd :: String -> Cmd
 pi_cmd p = mk_cmd_many (pci z12 (z16_seq_parse p))
 
-scc_cmd :: String -> CMD
+scc_cmd :: String -> Cmd
 scc_cmd p = mk_cmd_many (scc z12 (sc p))
 
-si_cmd :: CMD
+si_cmd :: Cmd
 si_cmd = unlines . si . pco_parse
 
-z12_sc_name_long :: [Z12] -> SC_Name
+z12_sc_name_long :: [Z12] -> Sc_Name
 z12_sc_name_long = sc_name_long
 
--- > spsc_cmd ["4-11","4-12"] == "5-26[02458]\n"
+{- | Spsc
+
+>>> spsc_cmd ["4-11","4-12"]
+"5-26[02458]\n"
+-}
 spsc_cmd :: [String] -> String
 spsc_cmd = unlines . map z12_sc_name_long . spsc z12 . map sc
 
-sra_cmd :: CMD
+sra_cmd :: Cmd
 sra_cmd = mk_cmd_many (sra z12)
 
-sro_cmd :: String -> CMD
+sro_cmd :: String -> Cmd
 sro_cmd o = mk_cmd (sro z12 (sro_parse 5 o))
 
--- > putStrLn $ tmatrix_cmd "1258"
-tmatrix_cmd :: CMD
+{- | T-matrix
+
+>>> tmatrix_cmd "1258"
+"1258\n0147\n9A14\n67A1\n"
+-}
+tmatrix_cmd :: Cmd
 tmatrix_cmd = mk_cmd_many (tmatrix z12)
 
--- > putStrLn $ trs_cmd (trs z12) "024579" "642"
-trs_cmd :: ([Z12] -> [Z12] -> [[Z12]]) -> String -> CMD
+{- | Trs
+
+>>> trs_cmd (trs z12) "024579" "642"
+"6421B9\nB97642\n531642\n642753\n"
+-}
+trs_cmd :: ([Z12] -> [Z12] -> [[Z12]]) -> String -> Cmd
 trs_cmd f p = mk_cmd_many (f (pco_parse p))
 
-interact_ln :: CMD -> IO ()
+interact_ln :: Cmd -> IO ()
 interact_ln f = interact (unlines . map f . lines)
 
 pct_cli :: [String] -> IO ()

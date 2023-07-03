@@ -13,7 +13,7 @@ module Music.Theory.Time.KeyKit where
 
 import Data.List {- base -}
 
-import qualified Data.List.Ordered as O {- data-ordlist -}
+import qualified Data.List.Ordered {- data-ordlist -}
 
 import Music.Theory.Time {- hmt -}
 import qualified Music.Theory.Time.Seq as Seq {- hmt -}
@@ -104,21 +104,21 @@ phrase_at_put :: Ord t => Phrase t -> Int -> Phrase t -> Phrase t
 phrase_at_put (Phrase n1 l1) k (Phrase n2 _) =
   let nt = n1 !! (k - 1)
       remove_ix ix list = let (p,q) = splitAt ix list in p ++ tail q
-  in Phrase (O.merge (remove_ix (k - 1) n1) (map (note_shift_time (note_start_time nt)) n2)) l1
+  in Phrase (Data.List.Ordered.merge (remove_ix (k - 1) n1) (map (note_shift_time (note_start_time nt)) n2)) l1
 
 phrase_is_empty :: Phrase t -> Bool
 phrase_is_empty (Phrase n _) = null n
 
 -- | KeyKits p+q
 phrase_append :: Ord t => Phrase t -> Phrase t -> Phrase t
-phrase_append (Phrase n1 l1) (Phrase n2 l2) = Phrase (O.merge n1 (map (note_shift_time l1) n2)) (l1 + l2)
+phrase_append (Phrase n1 l1) (Phrase n2 l2) = Phrase (Data.List.Ordered.merge n1 (map (note_shift_time l1) n2)) (l1 + l2)
 
 phrase_append_list :: Ord t => [Phrase t] -> Phrase t
 phrase_append_list = foldl1' phrase_append
 
 -- | KeyKits p|q
 phrase_merge :: Ord t => Phrase t -> Phrase t -> Phrase t
-phrase_merge (Phrase n1 l1) (Phrase n2 l2) = Phrase (O.merge n1 n2) (max l1 l2)
+phrase_merge (Phrase n1 l1) (Phrase n2 l2) = Phrase (Data.List.Ordered.merge n1 n2) (max l1 l2)
 
 phrase_merge_list :: Ord t => [Phrase t] -> Phrase t
 phrase_merge_list p =

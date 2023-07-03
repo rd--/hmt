@@ -17,7 +17,7 @@ import qualified Music.Theory.Graph.Dot as T {- hmt -}
 import qualified Music.Theory.Graph.Type as T {- hmt -}
 import qualified Music.Theory.List as T {- hmt -}
 
--- | 'T.Lbl' to FGL graph
+-- | 'T.Lbl' to Fgl graph
 lbl_to_fgl :: G.Graph gr => T.Lbl v e -> gr v e
 lbl_to_fgl (v,e) = let f ((i,j),k) = (i,j,k) in G.mkGraph v (map f e)
 
@@ -25,7 +25,7 @@ lbl_to_fgl (v,e) = let f ((i,j),k) = (i,j,k) in G.mkGraph v (map f e)
 lbl_to_fgl_gr :: T.Lbl v e -> G.Gr v e
 lbl_to_fgl_gr = lbl_to_fgl
 
--- | FGL graph to 'T.Lbl'
+-- | Fgl graph to 'T.Lbl'
 fgl_to_lbl :: G.Graph gr => gr v e -> T.Lbl v e
 fgl_to_lbl gr = (G.labNodes gr,map (\(i,j,k) -> ((i,j),k)) (G.labEdges gr))
 
@@ -73,9 +73,10 @@ g_hamiltonian_path_ml sel_f gr =
                     recur (c:r) i
     in recur []
 
--- | 'g_hamiltonian_path_ml' of 'G.neighbors' starting at first node.
---
--- > map (L.observeAll . ug_hamiltonian_path_ml_0) (g_partition gr)
+{- | 'g_hamiltonian_path_ml' of 'G.neighbors' starting at first node.
+
+> map (L.observeAll . ug_hamiltonian_path_ml_0) (g_partition gr)
+-}
 ug_hamiltonian_path_ml_0 :: (MonadPlus m, L.MonadLogic m) => G.Gr v e -> m [G.Node]
 ug_hamiltonian_path_ml_0 gr = g_hamiltonian_path_ml G.neighbors gr (G.nodes gr !! 0)
 
@@ -98,10 +99,12 @@ g_from_edges_l e =
         e' = map (\((lhs,rhs),label) -> (m_get lhs,m_get rhs,label)) e
     in G.mkGraph (zip n_id n) e'
 
--- | Variant that supplies '()' as the (constant) edge label.
---
--- > let g = G.mkGraph [(0,'a'),(1,'b'),(2,'c')] [(0,1,()),(1,2,())]
--- > in g_from_edges_ul [('a','b'),('b','c')] == g
+{- | Variant that supplies '()' as the (constant) edge label.
+
+>>> let g = G.mkGraph [(0,'a'),(1,'b'),(2,'c')] [(0,1,()),(1,2,())]
+>>> g_from_edges [('a','b'),('b','c')] == g
+True
+-}
 g_from_edges :: Ord v => [Edge v] -> G.Gr v ()
 g_from_edges = let f e = (e,()) in g_from_edges_l . map f
 
@@ -131,9 +134,11 @@ e_univ_select_edges f l = [(p,q) | p <- l, q <- l, f p q]
 e_univ_select_u_edges :: Ord t => (t -> t -> Bool) -> [t] -> [Edge t]
 e_univ_select_u_edges f = let g p q = p < q && f p q in e_univ_select_edges g
 
--- | Sequence of connected vertices to edges.
---
--- > e_path_to_edges "abcd" == [('a','b'),('b','c'),('c','d')]
+{- | Sequence of connected vertices to edges.
+
+>>> e_path_to_edges "abcd"
+[('a','b'),('b','c'),('c','d')]
+-}
 e_path_to_edges :: [t] -> [Edge t]
 e_path_to_edges = T.adj2 1
 

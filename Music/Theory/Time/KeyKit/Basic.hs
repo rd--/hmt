@@ -9,9 +9,10 @@ import Music.Theory.Time {- hmt -}
 import Music.Theory.Time.KeyKit {- hmt -}
 
 {- | Returns an arpeggiated version of the phrase.
-One way of describing desc it is that all the notes have been separated and then put back together, back-to-back.
+One way of describing it is that all the notes have been separated and then put back together, back-to-back.
 
-> phrase_arpeggio (wseq_to_phrase (zip (repeat (0,1)) [60, 64, 67]))
+>>> phrase_arpeggio (wseq_to_phrase (zip (repeat (0,1)) [60, 64, 67])) == Phrase [Note 0 1 60, Note 1 1 64,Note 2 1 67] 1
+True
 -}
 phrase_arpeggio :: Phrase t -> Phrase t
 phrase_arpeggio (Phrase n l) =
@@ -30,7 +31,9 @@ phrase_echo p n t = phrase_merge_list (map (\i -> phrase_shift p (fromIntegral i
 {- | Convert a phrase to be in step time, ie. all notes with the same spacing and duration.
 Overlapped notes (no matter how small the overlap) are played at the same time.
 
-> phrase_step (wseq_to_phrase [((0, 1), 60), ((5, 2), 64), ((23, 3), 67)]) 1
+>>> let r = Phrase [Note 0 1 60,Note 1 1 64,Note 2 1 67] 3
+>>> phrase_step (wseq_to_phrase [((0, 1), 60), ((5, 2), 64), ((23, 3), 67)]) 1 == r
+True
 -}
 phrase_step :: Phrase t -> Duration -> Phrase t
 phrase_step (Phrase n _) d =
