@@ -7,60 +7,83 @@ import Numeric {- base -}
 import qualified Music.Theory.List as T
 import qualified Music.Theory.Set.List as T
 
--- | Set of elements.
+{- | Set of elements. -}
 type Set = [Int]
 
--- | Set as sequence of 'Bool', most significant bit left.
---
--- > set_binary [0,1,4] == [True,False,False,True,True]
+{- | Set as sequence of 'Bool', most significant bit left.
+
+>>> set_binary [0,1,4]
+[True,False,False,True,True]
+-}
 set_binary :: Set -> [Bool]
 set_binary =
     let f n = True : replicate (n - 1) False
     in reverse . (++ [True]) . concatMap f . differentiate
 
--- | Show 'set_binary' of 'Set' (most significant bit at left).
---
--- > set_binary_pp 12 [0,1,4] == "000000010011"
---
--- > map (set_binary_pp 4) (family 4 [0..3]) == ["1111","0001","0011","0101"]
+{- | Show 'set_binary' of 'Set' (most significant bit at left).
+
+>>> set_binary_pp 12 [0,1,4]
+"000000010011"
+
+>>> map (set_binary_pp 4) (family 4 [0..3])
+["1111","0001","0011","0101"]
+-}
 set_binary_pp :: Int -> Set -> String
 set_binary_pp k =
     let c b = if b then '1' else '0'
     in T.pad_left '0' k . map c . set_binary
 
--- | Show 'Word' in binary.
+{- | Show 'Word' in binary. -}
 word_pp :: Word -> String
 word_pp n = showIntAtBase 2 intToDigit n ""
 
--- | Encode 'Set' as 'Word'.
---
--- > encode_set [0,1,3,7] == 139
--- > word_pp 139 == "10001011"
--- > set_binary_pp 8 [0,1,3,7] == word_pp 139
+{- | Encode 'Set' as 'Word'.
+
+>>> encode_set [0,1,3,7]
+139
+
+>>> word_pp 139
+"10001011"
+
+>>> set_binary_pp 8 [0,1,3,7] == word_pp 139
+True
+-}
 encode_set :: Set -> Word
 encode_set s =
     case s of
       [] -> 0
       b:s' -> setBit (encode_set s') b
 
--- | Decode 'Set' with given /modulo/.
---
--- > decode_set 12 11 == [0,1,3]
--- > decode_set 12 (2 ^ 4 - 1) == [0,1,2,3]
+{- | Decode 'Set' with given /modulo/.
+
+>>> decode_set 12 11
+[0,1,3]
+
+>>> decode_set 12 (2 ^ 4 - 1)
+[0,1,2,3]
+-}
 decode_set :: Int -> Word -> Set
 decode_set n k = filter (testBit k) [0 .. n - 1]
 
--- | The basic operation (modulo /n/) on /k/.
---
--- > decode_set 12 (encode_set [0,1,3] `xor` encode_set [1,2,4]) == [0,2,3,4]
--- > (decode_set 11 . operation 11 . encode_set) [0,1,3] == [0,2,3,4]
+{- | The basic operation (modulo /n/) on /k/.
+
+>>> decode_set 12 (encode_set [0,1,3] `xor` encode_set [1,2,4])
+[0,2,3,4]
+
+>>> (decode_set 11 . operation 11 . encode_set) [0,1,3]
+[0,2,3,4]
+-}
 operation :: Int -> Word -> Word
 operation n k = (k `xor` shiftL k 1) .&. (2 ^ n - 1)
 
--- | Predicate to determine if the set /q/ is a rotation of /p/.
---
--- > is_rotation [0,1,3] [1,3,0] == True
--- > is_rotation [] [] == True
+{- | Predicate to determine if the set /q/ is a rotation of /p/.
+
+>>> is_rotation [0,1,3] [1,3,0]
+True
+
+>>> is_rotation [] []
+True
+-}
 is_rotation :: Eq a => [a] -> [a] -> Bool
 is_rotation p q =
     case p of
@@ -68,9 +91,11 @@ is_rotation p q =
       e:_ -> let (a,b) = break (== e) q
              in b ++ a == p
 
--- | Iteration of 'operation' at encoding of 'Set' until cycle.
---
--- > is_rotation (family 12 [0,1,4,7]) (family 12 [0,4,5,6,8]) == True
+{- | Iteration of 'operation' at encoding of 'Set' until cycle.
+
+>>> is_rotation (family 12 [0,1,4,7]) (family 12 [0,4,5,6,8])
+True
+-}
 family :: Int -> Set -> [Set]
 family n s =
     let k = encode_set s
@@ -79,11 +104,12 @@ family n s =
 
 {- | The set of all 'family' of modulo /n/.
 
-> universe 4 == [[[0,1,2],[0,3],[0,1,3],[0,2,3]]
->               ,[[0,1,2,3],[0],[0,1],[0,2]]]
+>>> universe 4
+[[[0,1,2],[0,3],[0,1,3],[0,2,3]],[[0,1,2,3],[0],[0,1],[0,2]]]
 
-> let u = universe 12
-> (length u,length (concat u)) == (128,2048)
+>>> let u = universe 12
+>>> (length u,length (concat u))
+(128,2048)
 
 > import Music.Theory.Diagram.Sequencer as D
 > import Text.Printf
@@ -101,8 +127,9 @@ family n s =
 
 > mapM_ (gen D.Vertical 3) (zip (map concat (chunksOf 16 (universe 12))) [0..])
 
-> import qualified Data.List as L
-> fmap (is_rotation (family 12 [0,1,3])) (L.find ([0,1,3] `elem`) (universe 12)) == Just True
+>>> import Data.List
+>>> fmap (is_rotation (family 12 [0,1,3])) (find ([0,1,3] `elem`) (universe 12))
+Just True
 
 -}
 universe :: Int -> [[Set]]
@@ -246,7 +273,11 @@ universe n =
 {0123456789AB,0,01,02,0123,04,0145,0246,01234567,08,0189,028A,012389AB,048,014589,02468A}
 -}
 
--- > differentiate [0,1,3] == [1,2]
+{- | x -> dx
+
+>>> differentiate [0,1,3]
+[1,2]
+-}
 differentiate :: (Num a) => [a] -> [a]
 differentiate l = zipWith (-) (tail l) l
 
