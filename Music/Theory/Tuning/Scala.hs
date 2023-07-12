@@ -30,6 +30,9 @@ import qualified Music.Theory.String as T {- hmt-base -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
+-- $setup
+-- >>> db <- scl_load_db_dir
+
 -- * Pitch
 
 -- | A @.scl@ pitch is either in 'Cents' or is a 'Ratio'.
@@ -54,7 +57,8 @@ pitch_cents p =
 
 {- | Pitch is 1:1 or 0c
 
-> map pitch_is_zero [Left 0, Right 1]
+>>> map pitch_is_zero [Left 0, Right 1]
+[True,True]
 -}
 pitch_is_zero :: Pitch -> Bool
 pitch_is_zero p = pitch_cents p == 0
@@ -124,8 +128,9 @@ scale_pitches_including_octave = scale_pitches True
 {- | Scales generally do not have a ratio of 1:1 or a cents of 0, but sometimes do.
 This predicate is used by functions that prepend (or not) a zero.
 
-> db <- scl_load_db_dir
-> length (filter scale_has_zero db) == 55
+>>> length (filter scale_has_zero db)
+55
+
 > map scale_name (filter scale_has_zero db)
 -}
 scale_has_zero :: Scale -> Bool
@@ -229,16 +234,17 @@ scale_ratios_excluding_octave_req = scale_ratios_req False
 
 {- | Are scales equal ('==') at degree and tuning data.
 
-> db <- scl_load_db_dir
-> let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
-> let Just py = find (scale_eq ("","",length r,map Right r)) db
-> scale_name py == "pyth_12"
+>>> let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
+>>> let Just py = find (scale_eq ("","",length r,map Right r)) db
+>>> scale_name py
+"pyth_12"
 
 'scale_eqv' provides an approximate equality function.
 
-> let c = map T.ratio_to_cents r
-> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
-> scale_name py' == "pyth_12"
+>>> let c = map T.ratio_to_cents r
+>>> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
+>>> scale_name py'
+"pyth_12"
 
 -}
 scale_eq :: Scale -> Scale -> Bool
@@ -267,23 +273,29 @@ is_comment x =
       '!':_ -> True
       _ -> False
 
--- | Remove to end of line @!@ comments.
---
--- > remove_eol_comments " 1 ! comment" == " 1 "
+{- | Remove to end of line @!@ comments.
+
+>>> remove_eol_comments " 1 ! comment"
+" 1 "
+-}
 remove_eol_comments :: String -> String
 remove_eol_comments = takeWhile (/= '!')
 
--- | Remove comments and trailing comments (the description may be empty, keep nulls)
---
--- > filter_comments ["!a","b","","c","d!e"] == ["b","","c","d"]
+{- | Remove comments and trailing comments (the description may be empty, keep nulls)
+
+>>> filter_comments ["!a","b","","c","d!e"]
+["b","","c","d"]
+-}
 filter_comments :: [String] -> [String]
 filter_comments =
     map remove_eol_comments .
     filter (not . Function.predicate_any [is_comment])
 
--- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
---
--- > map parse_pitch ["70.0","350.","3/2","2","2/1"] == [Left 70,Left 350,Right (3/2),Right 2,Right 2]
+{- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
+
+>>> map parse_pitch ["70.0","350.","3/2","2","2/1"]
+[Left 70.0,Left 350.0,Right (3 % 2),Right (2 % 1),Right (2 % 1)]
+-}
 parse_pitch :: String -> Pitch
 parse_pitch p =
     if '.' `elem` p
@@ -328,10 +340,12 @@ This is a sequence of colon separated directories used to locate scala files on.
 scl_get_path :: IO [FilePath]
 scl_get_path = fmap splitSearchPath (getEnv "SCALA_SCL_PATH")
 
--- | Lookup the @SCALA_SCL_PATH@ environment variable, which must exist, and derive the filepath.
--- It is an error if the name has a file extension.
---
--- > mapM scl_derive_filename ["young-lm_piano","et12"]
+{- | Lookup the @SCALA_SCL_PATH@ environment variable, which must exist, and derive the filepath.
+It is an error if the name has a file extension.
+
+>>> mapM scl_derive_filename ["young-lm_piano","et12"]
+["/home/rohan/data/scala/91/scl/young-lm_piano.scl","/home/rohan/sw/hmt/data/scl/et12.scl"]
+-}
 scl_derive_filename :: FilePath -> IO FilePath
 scl_derive_filename nm = do
   path <- scl_get_path
@@ -339,12 +353,17 @@ scl_derive_filename nm = do
   when (hasExtension nm) (error "scl_derive_filename: name has extension")
   Directory.path_scan_err path (nm <.> "scl")
 
--- | If the name is an absolute file path and has a @.scl@ extension,
--- then return it, else run 'scl_derive_filename'.
---
--- > scl_resolve_name "young-lm_piano"
--- > scl_resolve_name "/home/rohan/data/scala/90/scl/young-lm_piano.scl"
--- > scl_resolve_name "/home/rohan/data/scala/90/scl/unknown-tuning.scl"
+{- | If the name is an absolute file path and has a @.scl@ extension,
+then return it, else run 'scl_derive_filename'.
+
+>>> scl_resolve_name "young-lm_piano"
+"/home/rohan/data/scala/91/scl/young-lm_piano.scl"
+
+>>> scl_resolve_name "/home/rohan/data/scala/90/scl/young-lm_piano.scl"
+"/home/rohan/data/scala/90/scl/young-lm_piano.scl"
+
+> scl_resolve_name "/home/rohan/data/scala/90/scl/unknown-tuning.scl" -- error
+-}
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
     let ex_f x = if x then return nm else error ("scl_resolve_name: file does not exist: " ++ nm)
@@ -352,11 +371,15 @@ scl_resolve_name nm =
        then doesFileExist nm >>= ex_f
        else scl_derive_filename nm
 
--- | Load @.scl@ file, runs 'scl_resolve_name'.
---
--- > s <- scl_load "xenakis_chrom"
--- > pitch_representations (scale_pitches_excluding_octave s) == (6,0)
--- > scale_ratios_excluding_octave 1e-3 s == [1,21/20,29/23,179/134,280/187,11/7,100/53]
+{- | Load @.scl@ file, runs 'scl_resolve_name'.
+
+>>> s <- scl_load "xenakis_chrom"
+>>> pitch_representations (scale_pitches_excluding_octave s)
+(6,0)
+
+>>> scale_ratios_excluding_octave 1e-3 s
+[1 % 1,21 % 20,29 % 23,179 % 134,280 % 187,11 % 7,100 % 53]
+-}
 scl_load :: String -> IO Scale
 scl_load nm = do
   fn <- scl_resolve_name nm
@@ -381,7 +404,6 @@ scl_load_dir = fmap (map snd) . scl_load_dir_fn
 
 {- | Load Scala data base files at 'scl_get_dir'.
 
-> db <- scl_load_db_dir
 > mapM_ (putStrLn . unlines . scale_stat) (filter (not . perfect_octave) db)
 -}
 scl_load_db_dir :: IO [Scale]
@@ -391,9 +413,10 @@ scl_load_db_dir = do
 
 {- | Load Scala data base files at 'scl_get_path'.
 
-> db_dir <- scl_load_db_dir
-> db_path <- scl_load_db_path
-> (length db_dir, length db_path) == (5176,5194)
+>>> db_dir <- scl_load_db_dir
+>>> db_path <- scl_load_db_path
+>>> (length db_dir, length db_path)
+(5176,5194)
 -}
 scl_load_db_path :: IO [Scale]
 scl_load_db_path = do
@@ -411,7 +434,6 @@ scales_dir_txt_tbl =
 
 {- | Format 'scales_dir_txt_tbl' as Csv file.
 
-> db <- scl_load_db_dir
 > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
 -}
 scales_dir_txt_csv :: [Scale] -> String
@@ -419,7 +441,6 @@ scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_
 
 {- | Simple plain-text display of scale data.
 
-> db <- scl_load_db_dir
 > writeFile "/tmp/scl.txt" (unlines (intercalate [""] (map scale_stat db)))
 -}
 scale_stat :: Scale -> [String]
@@ -469,9 +490,10 @@ scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 
 -- * Dist
 
--- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
---
--- > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22"
+{- | @scala@ distribution directory, given at @SCALA_DIST_DIR@.
+
+> setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22"
+-}
 dist_get_dir :: IO String
 dist_get_dir = getEnv "SCALA_DIST_DIR"
 
@@ -483,8 +505,9 @@ load_dist_file nm = do
 
 {- | 'fmap' 'lines' 'load_dist_file'
 
-> s <- load_dist_file_ln "intnam.par"
-> length s == 565 -- Scala 2.46d
+>>> s <- load_dist_file_ln "intnam.par"
+>>> length s -- Scala 2.46d
+565
 -}
 load_dist_file_ln :: FilePath -> IO [String]
 load_dist_file_ln = fmap lines . load_dist_file
@@ -508,11 +531,14 @@ scl_cdiff_abs_sum c scl =
 
 {- | Variant selecting only nearest and with post-processing function.
 
-> scl <- scl_load "holder"
-> scale_cents_including_octave_i scl
-> c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
-> (_,r,_) = scl_cdiff_abs_sum_1 round c scl
-> r == [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
+>>> scl <- scl_load "holder"
+>>> scale_cents_including_octave_i scl
+[0,81,194,307,388,503,584,696,778,890,1004,1085,1200]
+
+>>> let c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
+>>> (_,r,_) = scl_cdiff_abs_sum_1 round c scl
+>>> r
+[0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
 -}
 scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (Double,[n],Int)
 scl_cdiff_abs_sum_1 pp c scl =
@@ -523,11 +549,12 @@ scl_cdiff_abs_sum_1 pp c scl =
 {- | Sort Db into ascending order of sum of absolute of differences to scale given in cents.
      Scales are sorted and all rotations are considered.
 
-> db <- scl_load_db_dir
-> c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
-> r = scl_db_query_cdiff_asc round db c
-> ((_,dx,_),_):_ = r
-> dx == [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
+>>> let c = [0,83,193,308,388,502,584,695,778,890,1004,1085,1200]
+>>> let r = scl_db_query_cdiff_asc round db c
+>>> ((_,dx,_),_):_ = r
+>>> dx
+[0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
+
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
 -}
 scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((Double,[n],Int),Scale)]
@@ -546,10 +573,10 @@ scale_cmp_ji includingOctave cmp x scl =
 {- | Find scale(s) that are 'scale_cmp_ji' to /x/.
 Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
 
-> db <- scl_load_db_dir
-> let inv = nub . sort . map (T.fold_ratio_to_octave_err . recip)
-> let cmp p q = p == q || p == inv q
-> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
+>>> let inv = nub . sort . map (T.fold_ratio_to_octave_err . recip)
+>>> let cmp p q = p == q || p == inv q
+>>> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
+[("malkauns","Raga Malkauns, inverse of prime_5.scl",5,[Right (6 % 5),Right (4 % 3),Right (8 % 5),Right (16 % 9),Right (2 % 1)]),("prime_5","What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale",5,[Right (9 % 8),Right (5 % 4),Right (3 % 2),Right (5 % 3),Right (2 % 1)])]
 
 -}
 scl_find_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
@@ -560,14 +587,18 @@ scl_find_ji includingOctave cmp x = filter (scale_cmp_ji includingOctave cmp x)
 {- | Translate 'Scale' to 'T.Tuning'.
 If 'Scale' is uniformly rational, 'T.Tuning' is rational, else it is in 'T.Cents'.
 
-> db <- scl_load_db_dir
-> let s59 = filter (\s -> scl_is_ji s && scl_ji_limit s == 59) db
-> length s59 == 15
-> let tn = map scale_to_tuning db
-> let t59 = filter (\t -> T.tn_limit t == Just 59) tn
-> length t59 == 15
-> tn_scl_rat t = T.tn_ratios_err t
-> concatMap (\t -> scl_find_ji (==) (tn_scl_rat t) db) t59 == s59
+>>> let s59 = filter (\s -> scl_is_ji s && scl_ji_limit s == 59) db
+>>> length s59
+15
+
+>>> let tn = map scale_to_tuning db
+>>> let t59 = filter (\t -> T.tn_limit t == Just 59) tn
+>>> length t59
+15
+
+>>> let tn_scl_rat t = T.tn_ratios_err t
+>>> concatMap (\t -> scl_find_ji False (==) (tn_scl_rat t) db) t59 == s59
+True
 -}
 scale_to_tuning :: Scale -> T.Tuning
 scale_to_tuning s@(_,_,_,p) =
@@ -583,7 +614,8 @@ scale_to_tuning s@(_,_,_,p) =
 
 {- | Convert 'T.Tuning' to 'Scale'.
 
-> tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
+>>> tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
+("et12","12 tone equal temperament",12,[Left 100.0,Left 200.0,Left 300.0,Left 400.0,Left 500.0,Left 600.0,Left 700.0,Left 800.0,Left 900.0,Left 1000.0,Left 1100.0,Right (2 % 1)])
 -}
 tuning_to_scale :: (String,String) -> T.Tuning -> Scale
 tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
@@ -591,8 +623,6 @@ tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
         p' = either (map Right . tail) (map Left . tail) p ++ [Either.either_swap (T.tn_octave_def tn)]
     in (nm,dsc,n,p')
 
-{- | 'scale_to_tuning' of 'scl_load'.
-
--}
+{- | 'scale_to_tuning' of 'scl_load'. -}
 scl_load_tuning :: String -> IO T.Tuning
 scl_load_tuning = fmap scale_to_tuning . scl_load

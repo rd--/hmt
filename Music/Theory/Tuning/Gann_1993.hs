@@ -5,8 +5,9 @@ module Music.Theory.Tuning.Gann_1993 where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Math as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
+
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as T {- hmt -}
@@ -14,9 +15,8 @@ import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
 {- | Ratios for 'lmy_wtp'. lmy = La Monte Young. wtp = Well-Tuned Piano.
 
-> let c = [0,177,204,240,471,444,675,702,738,969,942,1173]
-> in map (round . T.ratio_to_cents) lmy_wtp_r == c
-
+>>> map (round . T.ratio_to_cents) lmy_wtp_r
+[0,177,204,240,471,444,675,702,738,969,942,1173]
 -}
 lmy_wtp_r :: [Rational]
 lmy_wtp_r =
@@ -28,18 +28,22 @@ lmy_wtp_r =
     ,7/4,441/256
     ,63/32]
 
--- | The pitch-class of the key associated with each ratio of the tuning.
---
--- > mapMaybe lmy_wtp_ratio_to_pc [1,1323/1024,7/4] == [3,8,0]
+{- | The pitch-class of the key associated with each ratio of the tuning.
+
+>>> mapMaybe lmy_wtp_ratio_to_pc [1,1323/1024,7/4]
+[3,8,0]
+-}
 lmy_wtp_ratio_to_pc :: Rational -> Maybe T.PitchClass
-lmy_wtp_ratio_to_pc r = fmap (T.mod12 . (+ 3)) (elemIndex r lmy_wtp_r)
+lmy_wtp_ratio_to_pc r = fmap (Math.mod12 . (+ 3)) (elemIndex r lmy_wtp_r)
 
 lmy_wtp_ratio_to_pc_err :: Rational -> T.PitchClass
 lmy_wtp_ratio_to_pc_err = fromMaybe (error "lmy_wtp_ratio_to_pc") . lmy_wtp_ratio_to_pc
 
--- | The list of all non-unison ascending intervals possible in 'lmy_wtp_r'.
---
--- > length lmy_wtp_univ == 66
+{- | The list of all non-unison ascending intervals possible in 'lmy_wtp_r'.
+
+>>> length lmy_wtp_univ
+66
+-}
 lmy_wtp_univ :: [(Rational,(T.PitchClass,T.PitchClass))]
 lmy_wtp_univ =
     let f (p,q) = if p < q
@@ -47,7 +51,7 @@ lmy_wtp_univ =
                             ,(lmy_wtp_ratio_to_pc_err p
                              ,lmy_wtp_ratio_to_pc_err q))
                   else Nothing
-    in mapMaybe f (T.all_pairs_lc lmy_wtp_r lmy_wtp_r)
+    in mapMaybe f (List.all_pairs_lc lmy_wtp_r lmy_wtp_r)
 
 {- | Collated and sorted 'lmy_wtp_univ'.
 
@@ -62,6 +66,7 @@ lmy_wtp_univ =
 
 > putStrLn $ unlines $ map f lmy_wtp_uniq
 
+@
 3:2 = 702 = #9 = (3,10) (4,9) (5,10) (6,11) (6,1) (7,0) (7,2) (8,1) (9,2)
 7:4 = 969 = #7 = (3,0) (5,2) (6,7) (7,10) (8,9) (11,0) (1,2)
 7:6 = 267 = #6 = (4,8) (5,7) (6,2) (7,11) (9,1) (10,0)
@@ -81,19 +86,21 @@ lmy_wtp_univ =
 441:256 = 942 = #2 = (3,1) (8,10)
 567:512 = 177 = #1 = (3,4)
 1323:1024 = 444 = #1 = (3,8)
+@
 
 -}
 lmy_wtp_uniq :: [(Rational,[(T.PitchClass,T.PitchClass)])]
-lmy_wtp_uniq = sortOn (T.ratio_nd_sum . fst) (T.collate_on fst snd lmy_wtp_univ)
+lmy_wtp_uniq = sortOn (Math.ratio_nd_sum . fst) (List.collate_on fst snd lmy_wtp_univ)
 
 {- | Gann, 1993, p.137.
 
-> cents_i lmy_wtp == [0,177,204,240,471,444,675,702,738,969,942,1173]
+>>> T.tn_cents_i lmy_wtp
+[0,177,204,240,471,444,675,702,738,969,942,1173]
 
 > import Data.List {- base -}
 > import Music.Theory.Tuning.Scala {- hmt -}
 > scl <- scl_load "young-lm_piano"
-> cents_i (scale_to_tuning 0.01 scl) == cents_i lmy_wtp
+> T.tn_cents_i (scale_to_tuning scl) == T.tn_cents_i lmy_wtp
 
 > let f = d12_midi_tuning_f (lmy_wtp,-74.7,-3)
 > import qualified Music.Theory.Pitch as T
@@ -114,7 +121,8 @@ lmy_wtp_1964_r =
 
 {- | La Monte Young's initial 1964 tuning for \"The Well-Tuned Piano\" (Gann, 1993, p.141).
 
-> cents_i lmy_wtp_1964 == [0,149,204,240,471,647,675,702,738,969,1145,1173]
+>>> T.tn_cents_i lmy_wtp_1964
+[0,149,204,240,471,647,675,702,738,969,1145,1173]
 
 > import Music.Theory.Tuning.Scala
 > let nm = ("young-lm_piano_1964","LaMonte Young's Well-Tuned Piano (1964)")

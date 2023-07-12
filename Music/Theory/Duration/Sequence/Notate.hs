@@ -32,15 +32,22 @@ import Music.Theory.Duration.Rq {- hmt -}
 import Music.Theory.Duration.Rq.Tied {- hmt -}
 import Music.Theory.Time_Signature {- hmt -}
 
+-- $setup
+-- >>> let t = True
+-- >>> let f = False
+
 -- * Lists
 
 {- | Applies a /join/ function to the first two elements of the list.
      If the /join/ function succeeds the joined element is considered for further coalescing.
 
-> coalesce (\p q -> Just (p + q)) [1..5] == [15]
+>>> coalesce (\p q -> Just (p + q)) [1..5]
+[15]
 
-> let jn p q = if even p then Just (p + q) else Nothing
-> coalesce jn [1..5] == map sum [[1],[2,3],[4,5]]
+>>> let jn p q = if even p then Just (p + q) else Nothing
+>>> coalesce jn [1..5] == map sum [[1],[2,3],[4,5]]
+True
+
 -}
 coalesce :: (a -> a -> Maybe a) -> [a] -> [a]
 coalesce f x =
@@ -51,15 +58,19 @@ coalesce f x =
             Just r -> coalesce f (r : x')
       _ -> x
 
--- | Variant of 'coalesce' with accumulation parameter.
---
--- > coalesce_accum (\_ p q -> Left (p + q)) 0 [1..5] == [(0,15)]
---
--- > let jn i p q = if even p then Left (p + q) else Right (p + i)
--- > coalesce_accum jn 0 [1..7] == [(0,1),(1,5),(6,9),(15,13)]
---
--- > let jn i p q = if even p then Left (p + q) else Right [p,q]
--- > coalesce_accum jn [] [1..5] == [([],1),([1,2],5),([5,4],9)]
+{- | Variant of 'coalesce' with accumulation parameter.
+
+>>> coalesce_accum (\_ p q -> Left (p + q)) 0 [1..5]
+[(0,15)]
+
+>>> let jn i p q = if even p then Left (p + q) else Right (p + i)
+>>> coalesce_accum jn 0 [1..7]
+[(0,1),(1,5),(6,9),(15,13)]
+
+>>> let jn i p q = if even p then Left (p + q) else Right [p,q]
+>>> coalesce_accum jn [] [1..5]
+[([],1),([1,2],5),([5,4],9)]
+-}
 coalesce_accum :: (b -> a -> a -> Either a b) -> b -> [a] -> [(b,a)]
 coalesce_accum f i x =
     case x of
@@ -70,10 +81,12 @@ coalesce_accum f i x =
             Right j -> (i,p) : coalesce_accum f j (q : x')
             Left r -> coalesce_accum f i (r : x')
 
--- | Variant of 'coalesce_accum' that accumulates running sum.
---
--- > let f i p q = if i == 1 then Just (p + q) else Nothing
--- > coalesce_sum (+) 0 f [1,1/2,1/4,1/4] == [1,1]
+{- | Variant of 'coalesce_accum' that accumulates running sum.
+
+>>> let f i p q = if i == 1 then Just (p + q) else Nothing
+>>> coalesce_sum (+) 0 f [1,1%2,1%4,1%4]
+[1 % 1,1 % 1]
+-}
 coalesce_sum :: (b -> a -> b) -> b -> (b -> a -> a -> Maybe a) -> [a] -> [a]
 coalesce_sum add zero f =
     let g i p q = case f i p q of
@@ -133,19 +146,37 @@ split_sum_by_eq f mm l =
       _ -> Nothing
 
 {- | Split sequence /l/ such that the prefix sums to precisely /m/.
-     The third element of the result indicates if it was required to divide an element.
-     Note that zero elements are kept left.
-     If the required sum is non positive, or the input list does not sum to at least the required sum, gives nothing.
+The third element of the result indicates if it was required to divide an element.
+Note that zero elements are kept left.
+If the required sum is non positive, or the input list does not sum to at least the required sum,
+gives nothing.
 
-> split_sum 5 [2,3,1] == Just ([2,3],[1],Nothing)
-> split_sum 5 [2,1,3] == Just ([2,1,2],[1],Just (2,1))
-> split_sum 2 [3/2,3/2,3/2] == Just ([3/2,1/2],[1,3/2],Just (1/2,1))
-> split_sum 6 [1..10] == Just ([1..3],[4..10],Nothing)
-> fmap (\(a,_,c)->(a,c)) (split_sum 5 [1..]) == Just ([1,2,2],Just (2,1))
-> split_sum 0 [1..] == Nothing
-> split_sum 3 [1,1] == Nothing
-> split_sum 3 [2,1,0] == Just ([2,1,0],[],Nothing)
-> split_sum 3 [2,1,0,1] == Just ([2,1,0],[1],Nothing)
+>>> split_sum 5 [2,3,1]
+Just ([2,3],[1],Nothing)
+
+>>> split_sum 5 [2,1,3]
+Just ([2,1,2],[1],Just (2,1))
+
+>>> split_sum 2 [3/2,3/2,3/2] == Just ([3/2,1/2],[1,3/2],Just (1/2,1))
+True
+
+>>> split_sum 6 [1..10] == Just ([1..3],[4..10],Nothing)
+True
+
+>>> fmap (\(a,_,c) -> (a,c)) (split_sum 5 [1..])
+Just ([1,2,2],Just (2,1))
+
+>>> split_sum 0 [1..]
+Nothing
+
+>>> split_sum 3 [1,1]
+Nothing
+
+>>> split_sum 3 [2,1,0]
+Just ([2,1,0],[],Nothing)
+
+>>> split_sum 3 [2,1,0,1]
+Just ([2,1,0],[1],Nothing)
 -}
 split_sum :: (Ord a, Num a) => a -> [a] -> Maybe ([a],[a],Maybe (a,a))
 split_sum m l =
@@ -160,16 +191,16 @@ split_sum m l =
 
 {- | Variant of 'split_sum' that operates at 'Rq_Tied' sequences.
 
-> t = True
-> f = False
+>>> let r = Just ([(3,f),(2,t)],[(1,f)])
+>>> rqt_split_sum 5 [(3,f),(2,t),(1,f)] == r
+True
 
-> r = Just ([(3,f),(2,t)],[(1,f)])
-> rqt_split_sum 5 [(3,f),(2,t),(1,f)] == r
+>>> let r = Just ([(3,f),(1,t)],[(1,t),(1,f)])
+>>> rqt_split_sum 4 [(3,f),(2,t),(1,f)] == r
+True
 
-> r = Just ([(3,f),(1,t)],[(1,t),(1,f)])
-> rqt_split_sum 4 [(3,f),(2,t),(1,f)] == r
-
-> rqt_split_sum 4 [(5/2,False)] == Nothing
+>>> rqt_split_sum 4 [(5/2,False)]
+Nothing
 -}
 rqt_split_sum :: Rq -> [Rq_Tied] -> Maybe ([Rq_Tied],[Rq_Tied])
 rqt_split_sum d x =
@@ -189,20 +220,20 @@ rqt_split_sum d x =
     This is a recursive variant of 'rqt_split_sum'.
     Note that is does not ensure /cmn/ notation of values.
 
-> t = True
-> f = False
+>>> let d = [(2,f),(2,f),(2,f)]
+>>> let r = [[(2,f),(1,t)],[(1,f),(2,f)]]
+>>> rqt_separate [3,3] d == Right r
+True
 
-> d = [(2,f),(2,f),(2,f)]
-> r = [[(2,f),(1,t)],[(1,f),(2,f)]]
-> rqt_separate [3,3] d == Right r
+>>> let d = [(5/8,f),(1,f),(3/8,f)]
+>>> let r = [[(5/8,f),(3/8,t)],[(5/8,f),(3/8,f)]]
+>>> rqt_separate [1,1] d == Right r
+True
 
-> d = [(5/8,f),(1,f),(3/8,f)]
-> r = [[(5/8,f),(3/8,t)],[(5/8,f),(3/8,f)]]
-> rqt_separate [1,1] d == Right r
-
-> d = [(4/7,t),(1/7,f),(1,f),(6/7,f),(3/7,f)]
-> r = [[(4/7,t),(1/7,f),(2/7,t)],[(5/7,f),(2/7,t)],[(4/7,f),(3/7,f)]]
-> rqt_separate [1,1,1] d == Right r
+>>> let d = [(4/7,t),(1/7,f),(1,f),(6/7,f),(3/7,f)]
+>>> let r = [[(4/7,t),(1/7,f),(2/7,t)],[(5/7,f),(2/7,t)],[(4/7,f),(3/7,f)]]
+>>> rqt_separate [1,1,1] d == Right r
+True
 -}
 rqt_separate :: [Rq] -> [Rq_Tied] -> Either String [[Rq_Tied]]
 rqt_separate m x =
@@ -381,39 +412,36 @@ m_divisions_ts ts = m_divisions_rq (ts_divisions ts)
 {-| Composition of 'to_measures_rq' and 'm_divisions_rq', where
 measures are initially given as sets of divisions.
 
-> let m = [[1,1,1],[1,1,1]]
-> in to_divisions_rq m [2,2,2] == Right [[[(1,t)],[(1,f)],[(1,t)]]
->                                      ,[[(1,f)],[(1,t)],[(1,f)]]]
+>>> let m = [[1,1,1],[1,1,1]]
+>>> let r = [[[(1,t)],[(1,f)],[(1,t)]],[[(1,f)],[(1,t)],[(1,f)]]]
+>>> to_divisions_rq m [2,2,2] == Right r
+True
 
-> let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
-> in to_divisions_rq [[1,1,1,1]] d == Right [[[(2/7,f),(1/7,f),(4/7,f)]
->                                           ,[(4/7,t),(1/7,f),(2/7,t)]
->                                           ,[(6/7,f),(1/7,t)]
->                                           ,[(6/7,f),(1/7,f)]]]
+>>> let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
+>>> let r = [[[(2/7,f),(1/7,f),(4/7,f)],[(4/7,t),(1/7,f),(2/7,t)],[(6/7,f),(1/7,t)],[(6/7,f),(1/7,f)]]]
+>>> to_divisions_rq [[1,1,1,1]] d == Right r
+True
 
-> let d = [5/7,1,6/7,3/7]
-> in to_divisions_rq [[1,1,1]] d == Right [[[(4/7,t),(1/7,f),(2/7,t)]
->                                         ,[(4/7,t),(1/7,f),(2/7,t)]
->                                         ,[(4/7,f),(3/7,f)]]]
+>>> let d = [5/7,1,6/7,3/7]
+>>> let r = [[[(4/7,t),(1/7,f),(2/7,t)],[(4/7,t),(1/7,f),(2/7,t)],[(4/7,f),(3/7,f)]]]
+>>> to_divisions_rq [[1,1,1]] d == Right r
+True
 
-> let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
-> in to_divisions_rq [[1,1,1,1]] d == Right [[[(2/7,f),(1/7,f),(4/7,f)]
->                                           ,[(4/7,t),(1/7,f),(2/7,t)]
->                                           ,[(4/7,t),(1/7,f),(2/7,t)]
->                                           ,[(4/7,f),(3/7,f)]]]
+>>> let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
+>>> let r = [[[(2/7,f),(1/7,f),(4/7,f)],[(4/7,t),(1/7,f),(2/7,t)],[(4/7,t),(1/7,f),(2/7,t)],[(4/7,f),(3/7,f)]]]
+>>> to_divisions_rq [[1,1,1,1]] d == Right r
+True
 
-> let d = [4/7,33/28,9/20,4/5]
-> in to_divisions_rq [[1,1,1]] d == Right [[[(4/7,f),(3/7,t)]
->                                          ,[(3/4,f),(1/4,t)]
->                                          ,[(1/5,f),(4/5,f)]]]
+>>> let d = [4/7,33/28,9/20,4/5]
+>>> let r = [[[(4/7,f),(3/7,t)],[(3/4,f),(1/4,t)],[(1/5,f),(4/5,f)]]]
+>>> to_divisions_rq [[1,1,1]] d == Right r
+True
 
-> let {p = [[1/2,1,1/2],[1/2,1]]
->     ;d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]}
-> in to_divisions_rq p d == Right [[[(1/6,f),(1/6,f),(1/6,f)]
->                                  ,[(1/6,f),(1/6,f),(1/6,f),(1/2,True)]
->                                  ,[(1/6,f),(1/6,f),(1/6,True)]]
->                                 ,[[(1/6,f),(1/6,f),(1/6,f)]
->                                  ,[(1/3,f),(1/6,f),(1/2,f)]]]
+>>> let p = [[1/2,1,1/2],[1/2,1]]
+>>> let d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]
+>>> let r = [[[(1/6,f),(1/6,f),(1/6,f)],[(1/6,f),(1/6,f),(1/6,f),(1/2,t)],[(1/6,f),(1/6,f),(1/6,t)]],[[(1/6,f),(1/6,f),(1/6,f)],[(1/3,f),(1/6,f),(1/2,f)]]]
+>>> to_divisions_rq p d == Right r
+True
 
 -}
 to_divisions_rq :: [[Rq]] -> [Rq] -> Either String [[[Rq_Tied]]]
@@ -423,42 +451,47 @@ to_divisions_rq m x =
          Right y -> all_right (zipWith m_divisions_rq m y)
          Left e -> Left e
 
--- | Variant of 'to_divisions_rq' with measures given as set of
--- 'Time_Signature'.
---
--- > let d = [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]
--- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,f),(2/5,f)]
--- >                                       ,[(1/3,f),(1/6,f),(1/2,t)]
--- >                                       ,[(1/5,f),(4/5,t)]
--- >                                       ,[(1/3,f),(1/2,f),(1/6,f)]]]
---
--- > let d = [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]
--- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,f),(2/5,f)]
--- >                                       ,[(1/3,f),(1/6,f),(1/2,t)]
--- >                                       ,[(1/5,f),(4/5,t)]
--- >                                       ,[(1/6,f),(1/2,f),(1/3,f)]]]
---
--- > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
--- > in to_divisions_ts [(4,4)] d == Just [[[(3/5,f),(2/5,f)]
--- >                                       ,[(1/3,f),(1/6,f),(1/2,t)]
--- >                                       ,[(1/5,f),(4/5,f)]
--- >                                       ,[(1/2,f),(1/2,f)]]]
---
--- > let d = [4/7,33/28,9/20,4/5]
--- > in to_divisions_ts [(3,4)] d == Just [[[(4/7,f),(3/7,t)]
--- >                                       ,[(3/4,f),(1/4,t)]
--- >                                       ,[(1/5,f),(4/5,f)]]]
+{- | Variant of 'to_divisions_rq' with measures given as set of 'Time_Signature'.
+
+>>> let d = [3/5,2/5,1/3,1/6,7/10,17/15,1/2,1/6]
+>>> let r = [[[(3/5,f),(2/5,f)],[(1/3,f),(1/6,f),(1/2,t)],[(1/5,f),(4/5,t)],[(1/3,f),(1/2,f),(1/6,f)]]]
+>>> to_divisions_ts [(4,4)] d == Right r
+True
+
+>>> let d = [3/5,2/5,1/3,1/6,7/10,29/30,1/2,1/3]
+>>> let r = [[[(3/5,f),(2/5,f)],[(1/3,f),(1/6,f),(1/2,t)],[(1/5,f),(4/5,t)],[(1/6,f),(1/2,f),(1/3,f)]]]
+>>> to_divisions_ts [(4,4)] d == Right r
+True
+
+>>> let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
+>>> let r = [[[(3/5,f),(2/5,f)],[(1/3,f),(1/6,f),(1/2,t)],[(1/5,f),(4/5,f)],[(1/2,f),(1/2,f)]]]
+>>> to_divisions_ts [(4,4)] d == Right r
+True
+
+>>> let d = [4/7,33/28,9/20,4/5]
+>>> let r = [[[(4/7,f),(3/7,t)],[(3/4,f),(1/4,t)],[(1/5,f),(4/5,f)]]]
+>>> to_divisions_ts [(3,4)] d == Right r
+True
+-}
 to_divisions_ts :: [Time_Signature] -> [Rq] -> Either String [[[Rq_Tied]]]
 to_divisions_ts ts = to_divisions_rq (map ts_divisions ts)
 
 -- * Durations
 
--- | Pulse tuplet derivation.
---
--- > p_tuplet_rqt [(2/3,f),(1/3,t)] == Just ((3,2),[(1,f),(1/2,t)])
--- > p_tuplet_rqt (map rq_rqt [1/3,1/6]) == Just ((3,2),[(1/2,f),(1/4,f)])
--- > p_tuplet_rqt (map rq_rqt [2/5,1/10]) == Just ((5,4),[(1/2,f),(1/8,f)])
--- > p_tuplet_rqt (map rq_rqt [1/3,1/6,2/5,1/10])
+{- | Pulse tuplet derivation.
+
+>>> p_tuplet_rqt [(2/3,f),(1/3,t)] == Just ((3,2),[(1,f),(1/2,t)])
+True
+
+>>> p_tuplet_rqt (map rq_rqt [1/3,1/6]) == Just ((3,2),[(1/2,f),(1/4,f)])
+True
+
+>>> p_tuplet_rqt (map rq_rqt [2/5,1/10]) == Just ((5,4),[(1/2,f),(1/8,f)])
+True
+
+>>> p_tuplet_rqt (map rq_rqt [1/3,1/6,2/5,1/10]) == Just ((15,8),[(5/8,f),(5/16,f),(3/4,f),(3/16,f)])
+True
+-}
 p_tuplet_rqt :: [Rq_Tied] -> Maybe ((Integer,Integer),[Rq_Tied])
 p_tuplet_rqt x =
     let f t = (t,map (rqt_un_tuplet t) x)
@@ -499,17 +532,17 @@ m_notate z m =
 {-| Multiple measure notation.
 
 > let d = [2/7,1/7,4/7,5/7,8/7,1,1/7]
-> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+> fmap mm_notate (to_divisions_ts [(4,4)] d)
 
 > let d = [2/7,1/7,4/7,5/7,1,6/7,3/7]
-> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+> fmap mm_notate (to_divisions_ts [(4,4)] d)
 
 > let d = [3/5,2/5,1/3,1/6,7/10,4/5,1/2,1/2]
-> in fmap mm_notate (to_divisions_ts [(4,4)] d)
+> fmap mm_notate (to_divisions_ts [(4,4)] d)
 
-> let {p = [[1/2,1,1/2],[1/2,1]]
->     ;d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]}
-> in fmap mm_notate (to_divisions_rq p d)
+> let p = [[1/2,1,1/2],[1/2,1]]
+> let d = map (/6) [1,1,1,1,1,1,4,1,2,1,1,2,1,3]
+> fmap mm_notate (to_divisions_rq p d)
 
 -}
 mm_notate :: [[[Rq_Tied]]] -> Either String [[Duration_A]]
@@ -537,9 +570,11 @@ meta_table_p (tt,ss,pp) (t,s,p) = t `elem` tt && s `elem` ss && p `elem` pp
 meta_table_t :: Simplify_M -> [Simplify_T]
 meta_table_t (tt,ss,pp) = [(t,s,p) | t <- tt, s <- ss,p <- pp]
 
--- | The default table of simplifiers.
---
--- > default_table ((3,4),1,(1,1)) == True
+{- | The default table of simplifiers.
+
+>>> default_table ((3,4),1,(1,1))
+True
+-}
 default_table :: Simplify_P
 default_table x =
     let t :: [Simplify_M]
@@ -548,14 +583,26 @@ default_table x =
         p = map meta_table_p t
     in or (p <*> pure x)
 
--- | The default eighth-note pulse simplifier rule.
---
--- > default_8_rule ((3,8),0,(1/2,1/2)) == True
--- > default_8_rule ((3,8),1/2,(1/2,1/2)) == True
--- > default_8_rule ((3,8),1,(1/2,1/2)) == True
--- > default_8_rule ((2,8),0,(1/2,1/2)) == True
--- > default_8_rule ((5,8),0,(1,1/2)) == True
--- > default_8_rule ((5,8),0,(2,1/2)) == True
+{- | The default eighth-note pulse simplifier rule.
+
+>>> default_8_rule ((3,8),0,(1/2,1/2))
+True
+
+>>> default_8_rule ((3,8),1/2,(1/2,1/2))
+True
+
+>>> default_8_rule ((3,8),1,(1/2,1/2))
+True
+
+>>> default_8_rule ((2,8),0,(1/2,1/2))
+True
+
+>>> default_8_rule ((5,8),0,(1,1/2))
+True
+
+>>> default_8_rule ((5,8),0,(2,1/2))
+True
+-}
 default_8_rule :: Simplify_P
 default_8_rule ((i,j),t,(p,q)) =
     let r = p + q
@@ -563,15 +610,29 @@ default_8_rule ((i,j),t,(p,q)) =
        denominator t `elem` [1,2] &&
        (r <= 2 || r == ts_rq (i,j) || rq_is_integral r)
 
--- | The default quarter note pulse simplifier rule.
---
--- > default_4_rule ((3,4),0,(1,1/2)) == True
--- > default_4_rule ((3,4),0,(1,3/4)) == True
--- > default_4_rule ((4,4),1,(1,1)) == False
--- > default_4_rule ((4,4),2,(1,1)) == True
--- > default_4_rule ((4,4),2,(1,2)) == True
--- > default_4_rule ((4,4),0,(2,1)) == True
--- > default_4_rule ((3,4),1,(1,1)) == False
+{- | The default quarter note pulse simplifier rule.
+
+>>> default_4_rule ((3,4),0,(1,1/2))
+True
+
+>>> default_4_rule ((3,4),0,(1,3/4))
+True
+
+>>> default_4_rule ((4,4),1,(1,1))
+False
+
+>>> default_4_rule ((4,4),2,(1,1))
+True
+
+>>> default_4_rule ((4,4),2,(1,2))
+True
+
+>>> default_4_rule ((4,4),0,(2,1))
+True
+
+>>> default_4_rule ((3,4),1,(1,1))
+False
+-}
 default_4_rule :: Simplify_P
 default_4_rule ((_,j),t,(p,q)) =
     let r = p + q
@@ -679,16 +740,23 @@ notate limit r ts = notate_rqp limit r ts Nothing
 
 -- * Ascribe
 
--- | Variant of 'zip' that retains elements of the right hand (rhs)
--- list where elements of the left hand (lhs) list meet the given lhs
--- predicate.  If the right hand side is longer the remaining elements
--- to be processed are given.  It is an error for the right hand side
--- to be short.
---
--- > zip_hold_lhs even [1..5] "abc" == ([],zip [1..6] "abbcc")
--- > zip_hold_lhs odd [1..6] "abc" == ([],zip [1..6] "aabbcc")
--- > zip_hold_lhs even [1] "ab" == ("b",[(1,'a')])
--- > zip_hold_lhs even [1,2] "a" == undefined
+{- | Variant of 'zip' that retains elements of the right hand (rhs)
+list where elements of the left hand (lhs) list meet the given lhs
+predicate.  If the right hand side is longer the remaining elements
+to be processed are given.  It is an error for the right hand side
+to be short.
+
+>>> zip_hold_lhs even [1..5] "abc" == ([],zip [1..6] "abbcc")
+True
+
+>>> zip_hold_lhs odd [1..6] "abc" == ([],zip [1..6] "aabbcc")
+True
+
+>>> zip_hold_lhs even [1] "ab"
+("b",[(1,'a')])
+
+> zip_hold_lhs even [1,2] "a" == undefined
+-}
 zip_hold_lhs :: (Show t,Show x) => (x -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
 zip_hold_lhs lhs_f =
     let f st e =
@@ -698,32 +766,46 @@ zip_hold_lhs lhs_f =
               _ -> error (show ("zip_hold_lhs: rhs ends",st,e))
     in flip (mapAccumL f)
 
--- | Variant of 'zip_hold' that requires the right hand side to be
--- precisely the required length.
---
--- > zip_hold_lhs_err even [1..5] "abc" == zip [1..6] "abbcc"
--- > zip_hold_lhs_err odd [1..6] "abc" == zip [1..6] "aabbcc"
--- > zip_hold_lhs_err id [False,False] "a" == undefined
--- > zip_hold_lhs_err id [False] "ab" == undefined
+{- | Variant of 'zip_hold' that requires the right hand side to be
+precisely the required length.
+
+>>> zip_hold_lhs_err even [1..5] "abc" == zip [1..6] "abbcc"
+True
+
+>>> zip_hold_lhs_err odd [1..6] "abc" == zip [1..6] "aabbcc"
+True
+
+> zip_hold_lhs_err id [False,False] "a" == undefined
+
+> zip_hold_lhs_err id [False] "ab" == undefined
+-}
 zip_hold_lhs_err :: (Show t,Show x) => (x -> Bool) -> [x] -> [t] -> [(x,t)]
 zip_hold_lhs_err lhs_f p q =
     case zip_hold_lhs lhs_f p q of
       ([],r) -> r
       e -> error (show ("zip_hold_lhs_err: lhs ends",e))
 
--- | Variant of 'zip' that retains elements of the right hand (rhs)
--- list where elements of the left hand (lhs) list meet the given lhs
--- predicate, and elements of the lhs list where elements of the rhs
--- meet the rhs predicate.  If the right hand side is longer the
--- remaining elements to be processed are given.  It is an error for
--- the right hand side to be short.
---
--- > zip_hold even (const False) [1..5] "abc" == ([],zip [1..6] "abbcc")
--- > zip_hold odd (const False) [1..6] "abc" == ([],zip [1..6] "aabbcc")
--- > zip_hold even (const False) [1] "ab" == ("b",[(1,'a')])
--- > zip_hold even (const False) [1,2] "a" == undefined
---
--- > zip_hold odd even [1,2,6] [1..5] == ([4,5],[(1,1),(2,1),(6,2),(6,3)])
+{- | Variant of 'zip' that retains elements of the right hand (rhs)
+list where elements of the left hand (lhs) list meet the given lhs
+predicate, and elements of the lhs list where elements of the rhs
+meet the rhs predicate.  If the right hand side is longer the
+remaining elements to be processed are given.  It is an error for
+the right hand side to be short.
+
+>>> zip_hold even (const False) [1..5] "abc" == ([],zip [1..6] "abbcc")
+True
+
+>>> zip_hold odd (const False) [1..6] "abc" == ([],zip [1..6] "aabbcc")
+True
+
+>>> zip_hold even (const False) [1] "ab"
+("b",[(1,'a')])
+
+> zip_hold even (const False) [1,2] "a" == undefined
+
+>>> zip_hold odd even [1,2,6] [1..5]
+([4,5],[(1,1),(2,1),(6,2),(6,3)])
+-}
 zip_hold :: (Show t,Show x) => (x -> Bool) -> (t -> Bool) -> [x] -> [t] -> ([t],[(x,t)])
 zip_hold lhs_f rhs_f =
     let f r x t =
@@ -735,12 +817,14 @@ zip_hold lhs_f rhs_f =
                                in f ((x0,t0) : r) x'' t''
     in f []
 
--- | Zip a list of 'Duration_A' elements duplicating elements of the
--- right hand sequence for tied durations.
---
--- > let {Just d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
--- >     ;f = map snd . snd . flip m_ascribe "xyz"}
--- > in fmap f (notate d) == Just "xxxyyyzz"
+{- | Zip a list of 'Duration_A' elements duplicating elements of the
+right hand sequence for tied durations.
+
+> let Right d = to_divisions_ts [(4,4),(4,4)] [3,3,2]
+> let f = map snd . snd . flip m_ascribe "xyz"
+> fmap f (mm_notate d)
+Just "xxxyyyzz"
+-}
 m_ascribe :: Show x => [Duration_A] -> [x] -> ([x],[(Duration_A,x)])
 m_ascribe = zip_hold_lhs da_tied_right
 
@@ -769,10 +853,11 @@ notate_mm_ascribe_err :: Show a => Int -> [Simplify_T] -> [Time_Signature] -> Ma
                          [[(Duration_A,a)]]
 notate_mm_ascribe_err = either error id .::::: notate_mm_ascribe
 
--- | Group elements as /chords/ where a chord element is indicated by
--- the given predicate.
---
--- > group_chd even [1,2,3,4,4,5,7,8] == [[1,2],[3,4,4],[5],[7,8]]
+{- | Group elements as /chords/ where a chord element is indicated by the given predicate.
+
+>>> group_chd even [1,2,3,4,4,5,7,8]
+[[1,2],[3,4,4],[5],[7,8]]
+-}
 group_chd :: (x -> Bool) -> [x] -> [[x]]
 group_chd f x =
     case split (keepDelimsL (whenElt (not.f))) x of

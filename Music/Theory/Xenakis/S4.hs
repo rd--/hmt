@@ -7,8 +7,8 @@ module Music.Theory.Xenakis.S4 where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T
-import qualified Music.Theory.Permutations as T
+import qualified Music.Theory.List as List
+import qualified Music.Theory.Permutations as Permutations
 
 -- * S4 notation
 
@@ -91,32 +91,41 @@ Music Research, 33(2):145-159, 2004.
 
 Note that the article has an error, printing Q4 for Q11 in the sequence below.
 
-> import qualified Music.Theory.List as T
+>>> let r = [D,Q12,Q4, E,Q8,Q2, E2,Q7,Q4, D2,Q3,Q11, L2,Q7,Q2, L,Q8,Q11]
+>>> take 18 (fib_proc l_on D Q12) == r
+True
 
-> let r = [D,Q12,Q4, E,Q8,Q2, E2,Q7,Q4, D2,Q3,Q11, L2,Q7,Q2, L,Q8,Q11]
-> (take 18 (fib_proc l_on D Q12) == r,T.duplicates r == [Q2,Q4,Q7,Q8,Q11])
+>>> List.duplicates r
+[Q2,Q4,Q7,Q8,Q11]
 
 Beginning E then G2 no Q nodes are visited.
 
-> let r = [E,G2,L2,C,G,D,E,B,D2,L,G,C,L2,E2,D2,B]
-> (take 16 (fib_proc l_on E G2) == r,T.duplicates r == [B,C,D2,E,G,L2])
+>>> let r = [E,G2,L2,C,G,D,E,B,D2,L,G,C,L2,E2,D2,B]
+>>> take 16 (fib_proc l_on E G2) == r
+True
 
-> let [a,b] = take 2 (T.segments 18 18 (fib_proc l_on D Q12)) in a == b
+>>> List.duplicates r
+[B,C,D2,E,G,L2]
+
+>>> let [a,b] = take 2 (List.segments 18 18 (fib_proc l_on D Q12))
+>>> a == b
+True
 
 The prime numbers that are not factors of 18 are {1,5,7,11,13,17}.
 They form a closed group under modulo 18 multiplication.
 
-> let n = [5,7,11,13,17]
-> let r0 = [(5,7,17),(5,11,1),(5,13,11),(5,17,13)]
-> let r1 = [(7,11,5),(7,13,1),(7,17,11)]
-> let r2 = [(11,13,17),(11,17,7)]
-> let r3 = [(13,17,5)]
-> [(p,q,(p * q) `mod` 18) | p <- n, q <- n, p < q] == concat [r0,r1,r2,r3]
+>>> let n = [5,7,11,13,17]
+>>> let r0 = [(5,7,17),(5,11,1),(5,13,11),(5,17,13)]
+>>> let r1 = [(7,11,5),(7,13,1),(7,17,11)]
+>>> let r2 = [(11,13,17),(11,17,7)]
+>>> let r3 = [(13,17,5)]
+>>> [(p,q,(p * q) `mod` 18) | p <- n, q <- n, p < q] == concat [r0,r1,r2,r3]
+True
 
 The article also omits the 5 after 5,1 in the sequence below.
 
-> let r = [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1,11]
-> take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13) == r
+>>> take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13)
+[11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1,11]
 
 -}
 fib_proc :: (a -> a -> a) -> a -> a -> [a]
@@ -157,7 +166,7 @@ Q4
 label_of :: Seq -> Label
 label_of i =
     let err = error ("label_of: " ++ show i)
-    in fromMaybe err (T.reverse_lookup i viii_6b)
+    in fromMaybe err (List.reverse_lookup i viii_6b)
 
 {- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
 
@@ -172,7 +181,7 @@ complementary p q =
 -- * Rel
 
 {- | Relation between to 'Half_Seq' values as a /(complementary,permutation)/ pair. -}
-type Rel = (Bool,T.Permutation)
+type Rel = (Bool,Permutations.Permutation)
 
 {- | Determine 'Rel' of 'Half_Seq's.
 
@@ -185,8 +194,8 @@ type Rel = (Bool,T.Permutation)
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
     if complementary p q
-    then (True,T.permutation (complement p) q)
-    else (False,T.permutation p q)
+    then (True,Permutations.permutation (complement p) q)
+    else (False,Permutations.permutation p q)
 
 {- | 'Rel' from 'Label' /p/ to /q/.
 
@@ -215,7 +224,7 @@ relations_l p = zipWith relate_l p (tail p)
 -}
 apply_relation :: Rel -> Half_Seq -> Half_Seq
 apply_relation (c,p) i =
-    let j = T.apply_permutation p i
+    let j = Permutations.apply_permutation p i
     in if c then complement j else j
 
 {- | Apply sequence of 'Rel' to initial 'Half_Seq'. -}
@@ -247,7 +256,7 @@ data Face = F_Back | F_Front | F_Right | F_Left | F_Bottom | F_Top
 >>> lookup [1,4,6,7] faces
 Just F_Left
 
->>> T.reverse_lookup F_Right faces
+>>> List.reverse_lookup F_Right faces
 Just [2,3,5,8]
 -}
 faces :: [([Int],Face)]

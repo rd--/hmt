@@ -4,9 +4,11 @@ module Music.Theory.Duration where
 import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
+import Text.Printf {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Ord as Ord {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
 
 type Division = Integer
 type Dots = Int
@@ -17,7 +19,20 @@ data Duration =
   {division :: Division -- ^ division of whole note
   ,dots :: Int -- ^ number of dots
   ,multiplier :: Rational} -- ^ tuplet modifier
-  deriving (Eq,Show)
+  deriving (Eq, Show)
+
+{- | Prettier printer for Duration
+
+>>> duration_pp (Duration 4 0 (1/3))
+"(Duration 4 0 (1/3))"
+-}
+duration_pp :: Duration -> String
+duration_pp (Duration d t m) =
+  printf "(Duration %d %d (%s))" d t (Show.rational_pp m)
+
+{-
+instance Show Duration where show = duration_pp
+-}
 
 -- | Are multipliers equal?
 duration_meq :: Duration -> Duration -> Bool
