@@ -1,4 +1,4 @@
--- | Anamark tuning (TUN) files
+-- | Anamark tuning (Tun) files
 --
 -- <https://www.mark-henning.de/files/am/Tuning_File_V2_Doc.pdf>
 module Music.Theory.Tuning.Anamark where
@@ -23,7 +23,7 @@ tun_attr_int (k,v) = printf "%s = %d" k v
 tun_attr_real :: (String,Double) -> String
 tun_attr_real (k,v) = printf "%s = %f" k v
 
--- | TUN V.200 /Scale Begin/ (header) section.
+-- | Tun V.200 /Scale Begin/ (header) section.
 tun_begin :: [String]
 tun_begin =
   [tun_sec "Scale Begin"
@@ -31,18 +31,22 @@ tun_begin =
   ,tun_attr_int ("FormatVersion",200)
   ,tun_attr_txt ("FormatSpecs","http://www.mark-henning.de/eternity/tuningspecs.html")]
 
--- | Format /Info/ section given Name and ID (the only required fields).
---
--- > tun_info ("name","id")
+{- | Format /Info/ section given Name and ID (the only required fields).
+
+>>> tun_info ("name","id")
+["[Info]","Name = \"name\"","ID = \"id\""]
+-}
 tun_info :: (String,String) -> [String]
 tun_info (nm,k) =
   [tun_sec "Info"
   ,tun_attr_txt ("Name",nm)
   ,tun_attr_txt ("ID",k)]
 
--- | Format /Tuning/ section given sequence of 128 integral cents values.
---
--- > tun_tuning [0,100.. 12700]
+{- | Format /Tuning/ section given sequence of 128 integral cents values.
+
+>>> tun_tuning [0,100.. 12700] !! 61
+"note 60 = 6000"
+-}
 tun_tuning :: [Int] -> [String]
 tun_tuning =
   let f k c = printf "note %d = %d" k c
@@ -52,9 +56,11 @@ tun_tuning =
 tun_f0_default :: Double
 tun_f0_default = 8.1757989156437073336
 
--- | Format /Exact Tuning/ section given base frequency and sequence of 128 real cents values.
---
--- > tun_exact_tuning tun_f0_default [0,100.. 12700]
+{- | Format /Exact Tuning/ section given base frequency and sequence of 128 real cents values.
+
+>>> tun_exact_tuning tun_f0_default [0,100.. 12700] !! 62
+"note 60 = 6000.0"
+-}
 tun_exact_tuning :: Double -> [Double] -> [String]
 tun_exact_tuning f0 =
   let f k c = printf "note %d = %f" k c
@@ -66,7 +72,8 @@ tun_exact_tuning f0 =
 
 This simply sets note zero to /f0/ and increments each note by the difference from the previous note.
 
-> tun_functional_tuning tun_f0_default [0,100.. 12700]
+>>> tun_functional_tuning tun_f0_default [0,100.. 12700] !! 61
+"note 60 = \"#x=59 % 100.0\""
 -}
 tun_functional_tuning :: Double -> [Double] -> [String]
 tun_functional_tuning f0 =
@@ -81,16 +88,16 @@ tun_end =
   [tun_sec "Scale End"]
 
 -- | Synonym for a list of strings.
-type TUN = [String]
+type Tun = [String]
 
 -- | Version 1 has just the /Tuning/ and /Exact Tuning/.
-tun_from_cents_version_one :: (Double, [Double]) -> TUN
+tun_from_cents_version_one :: (Double, [Double]) -> Tun
 tun_from_cents_version_one (f0,c) =
   concat [tun_tuning (map round c)
          ,tun_exact_tuning f0 c]
 
 -- | Version 2 files have, in addition, /Begin/, /Info/, /Functional Tuning/ and /End/ sections.
-tun_from_cents_version_two :: (String,String) -> (Double, [Double]) -> TUN
+tun_from_cents_version_two :: (String,String) -> (Double, [Double]) -> Tun
 tun_from_cents_version_two (nm,k) (f0,c) =
   concat [tun_begin
          ,tun_info (nm,k)
@@ -99,8 +106,13 @@ tun_from_cents_version_two (nm,k) (f0,c) =
          ,tun_functional_tuning f0 c
          ,tun_end]
 
--- > t = tun_from_cents_version_one (tun_f0_default,[0,100 .. 12700])
--- > t = tun_from_cents_version_two ("equal-temperament-12","et12") (tun_f0_default,[0,100 .. 12700])
--- > tun_store "/home/rohan/et12.tun" t
-tun_store :: FilePath -> TUN -> IO ()
+{- | Write Tun.
+
+> let t1 = tun_from_cents_version_one (tun_f0_default,[0,100 .. 12700])
+> tun_store "/home/rohan/et12-t1.tun" t1
+
+> let t2 = tun_from_cents_version_two ("equal-temperament-12","et12") (tun_f0_default,[0,100 .. 12700])
+> tun_store "/home/rohan/et12-t2.tun" t2
+-}
+tun_store :: FilePath -> Tun -> IO ()
 tun_store fn = writeFile fn . unlines

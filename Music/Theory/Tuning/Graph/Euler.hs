@@ -6,82 +6,94 @@ module Music.Theory.Tuning.Graph.Euler where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.Function as T {- hmt-base -}
-import qualified Music.Theory.List as T {- hmt-base -}
-import qualified Music.Theory.Show as T {- hmt-base -}
-import qualified Music.Theory.Tuple as T {- hmt-base -}
+import qualified Music.Theory.Function as Function {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
-import qualified Music.Theory.Pitch.Note as T {- hmt -}
-import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Pitch.Note as Note {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
 
--- | 'T.fold_ratio_to_octave_err' of '*'.
+-- | 'Note.fold_ratio_to_octave_err' of '*'.
 rat_mul :: Rational -> Rational -> Rational
-rat_mul r = T.fold_ratio_to_octave_err . (* r)
+rat_mul r = Tuning.fold_ratio_to_octave_err . (* r)
 
--- | 'T.fold_ratio_to_octave_err' of '/'.
+-- | 'Note.fold_ratio_to_octave_err' of '/'.
 rat_div :: Rational -> Rational -> Rational
-rat_div p q = T.fold_ratio_to_octave_err (p / q)
+rat_div p q = Tuning.fold_ratio_to_octave_err (p / q)
 
--- | /n/ = length, /m/ = multiplier, /r/ = initial ratio.
---
--- > tun_seq 5 (3/2) 1 == [1/1,3/2,9/8,27/16,81/64]
+{- | /n/ = length, /m/ = multiplier, /r/ = initial ratio.
+
+>>> tun_seq 5 (3/2) 1 == [1/1,3/2,9/8,27/16,81/64]
+True
+-}
 tun_seq :: Int -> Rational -> Rational -> [Rational]
 tun_seq n m = take n . iterate (rat_mul m)
 
 -- | Give all pairs from (l2,l1) and (l3,l2) that are at interval ratios r1 and r2 respectively.
-euler_align_rat :: T.T2 Rational -> T.T3 [Rational] -> T.T2 [T.T2 Rational]
+euler_align_rat :: Tuple.T2 Rational -> Tuple.T3 [Rational] -> Tuple.T2 [Tuple.T2 Rational]
 euler_align_rat (r1,r2) (l1,l2,l3) =
     let f r (p,q) = rat_mul p r == q
-    in (filter (f r1) (T.all_pairs_lc l2 l1)
-       ,filter (f r2) (T.all_pairs_lc l3 l2))
+    in (filter (f r1) (List.all_pairs_lc l2 l1)
+       ,filter (f r2) (List.all_pairs_lc l3 l2))
 
--- | Pretty printer for pitch class (UNICODE).
---
--- > unwords (map pc_pp [0..11]) == "C♮ C♯ D♮ E♭ E♮ F♮ F♯ G♮ A♭ A♮ B♭ B♮"
+{- | Pretty printer for pitch class (Unicode).
+
+>>> unwords (map pc_pp [0..11]) == "C♮ C♯ D♮ E♭ E♮ F♮ F♯ G♮ A♭ A♮ B♭ B♮"
+True
+-}
 pc_pp :: (Integral i,Show i) => i -> String
 pc_pp x =
-    case T.pc_to_note_alteration_ks x of
-      Just (n,a) -> [T.note_pp n,T.alteration_symbol a]
+    case Note.pc_to_note_alteration_ks x of
+      Just (n,a) -> [Note.note_pp n,Note.alteration_symbol a]
       Nothing -> error (show ("pc_pp",x))
 
 -- | Show ratio as intergral ('round') cents value.
 cents_pp :: Rational -> String
-cents_pp = show . (round :: Double -> Integer) . T.ratio_to_cents
+cents_pp = show . (round :: Double -> Integer) . Tuning.ratio_to_cents
 
 -- | (unit-pitch-class,print-cents)
 type RAT_LABEL_OPT = (Int,Bool)
 
--- | Dot label for ratio, /k/ is the pitch-class of the unit ratio.
---
--- > rat_label (0,False) 1 == "C♮\\n1:1"
--- > rat_label (3,True) (7/4) == "C♯=969\\n7:4"
+{- | Dot label for ratio, /k/ is the pitch-class of the unit ratio.
+
+>>> rat_label (0,False) 1 == "C♮\\n1:1"
+True
+
+>>> rat_label (3,True) (7/4) == "C♯=969\\n7:4"
+True
+-}
 rat_label :: RAT_LABEL_OPT -> Rational -> String
 rat_label (k,with_cents) r =
     if r < 1 || r >= 2
     then error (show ("rat_label",r))
-    else concat [pc_pp (T.ratio_to_pc k r)
+    else concat [pc_pp (Tuning.ratio_to_pc k r)
                 ,if with_cents
                  then '=' : cents_pp r
                  else ""
-                ,"\\n",T.ratio_pp r]
+                ,"\\n",Show.ratio_pp r]
 
--- | Generate value /dot/ node identifier for ratio.
---
--- > rat_id (5/4) == "R_5_4"
+{- | Generate value /dot/ node identifier for ratio.
+
+>>> rat_id (5/4)
+"R_5_4"
+-}
 rat_id :: Rational-> String
 rat_id r = "R_" ++ show (numerator r) ++ "_" ++ show (denominator r)
 
 -- | Printer for edge label between given ratio nodes.
 rat_edge_label :: (Rational, Rational) -> String
-rat_edge_label (p,q) = concat ["   (",T.ratio_pp (rat_div p q),")"]
+rat_edge_label (p,q) = concat ["   (",Show.ratio_pp (rat_div p q),")"]
 
--- | Zip start-middle-end.
---
--- > zip_sme (0,1,2) "abcd" == [(0,'a'),(1,'b'),(1,'c'),(2,'d')]
+{- | Zip start-middle-end.
+
+>>> zip_sme (0,1,2) "abcd"
+[(0,'a'),(1,'b'),(1,'c'),(2,'d')]
+-}
 zip_sme :: (t,t,t) -> [u] -> [(t,u)]
 zip_sme (s,m,e) xs =
     case xs of
-      x0:x1:xs' -> (s,x0) : (m,x1) : T.at_last (\x -> (m,x)) (\x -> (e,x)) xs'
+      x0:x1:xs' -> (s,x0) : (m,x1) : List.at_last (\x -> (m,x)) (\x -> (e,x)) xs'
       _ -> error "zip_sme: not SME list"
 
 -- | Euler diagram given as (/h/,/v/) duple,
@@ -94,7 +106,7 @@ euler_plane_r = sort . concat . fst
 
 -- | Apply /f/ at all nodes of the plane.
 euler_plane_map :: (t -> u) -> Euler_Plane t -> Euler_Plane u
-euler_plane_map f (p,q) = (map (map f) p,map (T.bimap1 f) q)
+euler_plane_map f (p,q) = (map (map f) p,map (Function.bimap1 f) q)
 
 -- | Generate /dot/ graph given printer functions and an /Euler_Plane/.
 euler_plane_to_dot :: (t -> String,t -> String,(t,t) -> String) -> Euler_Plane t -> [String]

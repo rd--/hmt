@@ -5,14 +5,16 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 import qualified Safe {- safe -}
 
-import qualified Music.Theory.Pitch as T {- hmt -}
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 import Music.Theory.Tuning.Type {- hmt -}
 
 
--- | Harmonic series to /n/th partial, with indicated octave.
---
--- > harmonic_series 17 2
+{- | Harmonic series to /n/th partial, with indicated octave.
+
+>>> tn_cents_i (harmonic_series 17 Nothing)
+[0,1200,1902,2400,2786,3102,3369,3600,3804,3986,4151,4302,4441,4569,4688,4800,4905]
+-}
 harmonic_series :: Integer -> Maybe Rational -> Tuning
 harmonic_series n o = Tuning (Left [1 .. n%1]) (fmap Left o)
 
@@ -20,10 +22,11 @@ harmonic_series n o = Tuning (Left [1 .. n%1]) (fmap Left o)
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
 harmonic_series_cps n = [n,n * 2 ..]
 
--- | /n/ elements of 'harmonic_series_cps'.
---
--- > let r = [55,110,165,220,275,330,385,440,495,550,605,660,715,770,825,880,935]
--- > harmonic_series_cps_n 17 55 == r
+{- | /n/ elements of 'harmonic_series_cps'.
+
+>>> harmonic_series_cps_n 17 55
+[55,110,165,220,275,330,385,440,495,550,605,660,715,770,825,880,935]
+-}
 harmonic_series_cps_n :: (Num a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_n n = take n . harmonic_series_cps
 
@@ -31,29 +34,31 @@ harmonic_series_cps_n n = take n . harmonic_series_cps
 subharmonic_series_cps :: (Fractional t,Enum t) => t -> [t]
 subharmonic_series_cps n = map ((* n) . recip) [1..]
 
--- | /n/ elements of 'harmonic_series_cps'.
---
--- > let r = [1760,880,587,440,352,293,251,220,196,176,160,147,135,126,117,110,104]
--- > map round (subharmonic_series_cps_n 17 1760) == r
+{- | /n/ elements of 'harmonic_series_cps'.
+
+>>> map round (subharmonic_series_cps_n 17 1760)
+[1760,880,587,440,352,293,251,220,196,176,160,147,135,126,117,110,104]
+-}
 subharmonic_series_cps_n :: (Fractional t,Enum t) => Int -> t -> [t]
 subharmonic_series_cps_n n = take n . subharmonic_series_cps
 
--- | /n/th partial of /f1/, ie. one indexed.
---
--- > map (partial 55) [1,5,3] == [55,275,165]
+{- | /n/th partial of /f1/, ie. one indexed.
+
+>>> map (partial 55) [1,5,3]
+[55,275,165]
+-}
 partial :: (Num a, Enum a) => a -> Int -> a
 partial f1 k = harmonic_series_cps f1 `Safe.at` (k - 1)
 
--- | Derivative harmonic series, based on /k/th partial of /f1/.
---
--- > import Music.Theory.Pitch
---
--- > let r = [52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
--- > let d = harmonic_series_cps_derived 5 (T.octpc_to_cps (1,4))
--- > map round (take 15 d) == r
+{- | Derivative harmonic series, based on /k/th partial of /f1/.
+
+>>> let d = harmonic_series_cps_derived 5 (Pitch.octpc_to_cps (1,4))
+>>> map round (take 15 d)
+[52,103,155,206,258,309,361,412,464,515,567,618,670,721,773]
+-}
 harmonic_series_cps_derived :: (RealFrac a, Floating a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
-    let f0 = T.cps_in_octave_above f1 (partial f1 k)
+    let f0 = Pitch.cps_in_octave_above f1 (partial f1 k)
     in harmonic_series_cps f0
 
 -- | Harmonic series to /n/th harmonic (folded, duplicated removed).
