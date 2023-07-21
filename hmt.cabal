@@ -52,9 +52,6 @@ Library
                    Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
                    Music.Theory.Db.Cli
-                   Music.Theory.Db.Common
-                   Music.Theory.Db.Csv
-                   Music.Theory.Db.Plain
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.ClickTrack
