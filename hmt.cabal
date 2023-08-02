@@ -51,7 +51,6 @@ Library
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
-                   Music.Theory.Db.Cli
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.ClickTrack
