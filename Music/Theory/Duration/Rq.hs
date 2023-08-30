@@ -6,7 +6,7 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
 
 import Music.Theory.Duration {- hmt -}
 
@@ -60,7 +60,7 @@ rq_plain_to_duration :: Dots -> Rq -> Maybe Duration
 rq_plain_to_duration k x = lookup x (rq_plain_duration_tbl k)
 
 rq_plain_to_duration_err :: Dots -> Rq -> Duration
-rq_plain_to_duration_err k x = T.lookup_err x (rq_plain_duration_tbl k)
+rq_plain_to_duration_err k x = List.lookup_err x (rq_plain_duration_tbl k)
 
 {- | Rational quarter note to duration value.
      Lookup composite plain (hence dots) and tuplet tables.
