@@ -66,23 +66,40 @@ modenam_modes (_,_,m) = m
 modenam_search_seq :: ModeNam -> [Int] -> [Mode]
 modenam_search_seq (_,_,m) x = filter ((== x) . mode_intervals) m
 
--- | Expect /one/ result.
---
--- > mn <- load_modenam
--- > let sq = putStrLn . unlines . mode_stat . fromJust . modenam_search_seq1 mn
--- > sq [2,2,1,2,2,2,1]
--- > sq [2,1,2,2,1,2,2]
--- > sq [2,1,2,2,1,3,1]
--- > sq (replicate 6 2)
--- > sq [1,2,1,2,1,2,1,2]
--- > sq [2,1,2,1,2,1,2,1]
--- > sq (replicate 12 1)
+{- | Expect /one/ result.
+
+>>> mn <- load_modenam
+>>> let sq = take 90 . mode_description . fromJust . modenam_search_seq1 mn
+>>> sq [2,2,1,2,2,2,1]
+"G.Lydian, M.Ionian, M.Hypolydian, Major, Bilaval That, Mela Shankarabharanam, Raga Atana, "
+
+>>> sq [2,1,2,2,1,2,2]
+"G.M.Hypodorian, G.M.Aeolian, G.Hyperphrygian, Natural Minor, Melodic Minor descending, Asa"
+
+>>> sq [2,1,2,2,1,3,1]
+"Harmonic Minor, Mischung 4, Pilu That, Mela Kiravani, Raga Kiranavali, Kirvani (Kirwani), "
+
+>>> sq (replicate 6 2)
+"Whole-tone, Messiaen mode 1, Raga Gopriya, Anhemitonic Hexatonic"
+
+>>> sq [1,2,1,2,1,2,1,2]
+"Octatonic, Messiaen mode 2, Dominant Diminished, Diminished Blues, Half-Whole step scale"
+
+>>> sq [2,1,2,1,2,1,2,1]
+"Diminished, Modus conjunctus, Messiaen mode 2 inverse, Whole-Half step scale"
+
+>>> sq (replicate 12 1)
+"Twelve-tone Chromatic (1/11-comma)"
+-}
 modenam_search_seq1 :: ModeNam -> [Int] -> Maybe Mode
 modenam_search_seq1 mn = List.unlist1 . modenam_search_seq mn
 
--- | Search for mode by description text.
---
--- > map (modenam_search_description mn) ["Messiaen","Xenakis","Raga"]
+{- | Search for mode by description text.
+
+>>> mn <- load_modenam
+>>> map (length . map mode_intervals . modenam_search_description mn) ["Messiaen","Xenakis","Raga"]
+[24,3,339]
+-}
 modenam_search_description :: ModeNam -> String -> [Mode]
 modenam_search_description (_,_,m) x = filter (isInfixOf x . mode_description) m
 
@@ -95,16 +112,25 @@ mode_rot_eqv p q =
 
 {- | Pretty printer.
 
-> mn <- load_modenam
+>>> mn <- load_modenam
 
-> let r = filter ((/=) 0 . mode_starting_degree) (modenam_modes mn) -- non-zero starting degrees
-> let r = filter ((== [(1,2),(2,5)]) . mode_histogram) (modenam_modes mn) -- 2×1 and 5×2
-> let r = filter ((== 22) . mode_univ) (modenam_search_description mn "Raga") -- raga of 22 shruti univ
+>>> let r = filter ((/=) 0 . mode_starting_degree) (modenam_modes mn) -- non-zero starting degrees
+>>> length r
+17
 
-> [(p,q) | p <- r, q <- r, p < q, mode_rot_eqv p q] -- rotationally equivalent elements of r
+>>> let r = filter ((== [(1,2),(2,5)]) . mode_histogram) (modenam_modes mn) -- 2×1 and 5×2
+>>> length r
+19
 
-> length r
-> putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r
+>>> let r = filter ((== 22) . mode_univ) (modenam_search_description mn "Raga") -- raga of 22 shruti univ
+>>> length r
+44
+
+>>> let eq = [(p,q) | p <- r, q <- r, p < q, mode_rot_eqv p q] -- rotationally equivalent elements of r
+>>> length eq
+8
+
+> putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r3
 -}
 mode_stat :: Mode -> [String]
 mode_stat m =
@@ -122,9 +148,11 @@ mode_stat m =
 
 -- * Parser
 
--- | Bracketed integers are a non-implicit starting degree.
---
--- > map non_implicit_degree ["4","[4]"] == [Nothing,Just 4]
+{- | Bracketed integers are a non-implicit starting degree.
+
+>>> map non_implicit_degree ["4","[4]"]
+[Nothing,Just 4]
+-}
 non_implicit_degree :: String -> Maybe Int
 non_implicit_degree s =
     case List.unbracket s of
@@ -169,9 +197,10 @@ parse_modenam l =
 
 {- | 'parse_modenam' of 'Scala.load_dist_file' of @modenam.par@.
 
-> mn <- load_modenam
-> let (n,x,m) = mn
-> (n, x, length m) == (3087,15,3087) -- Scala 2.64p
+>>> mn <- load_modenam
+>>> let (n,x,m) = mn
+>>> (n, x, length m) -- Scala 2.64p
+(3087,15,3087)
 -}
 load_modenam :: IO ModeNam
 load_modenam = do
