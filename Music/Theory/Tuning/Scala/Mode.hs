@@ -130,7 +130,7 @@ mode_rot_eqv p q =
 >>> length eq
 8
 
-> putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r3
+> putStrLn $ unlines $ intercalate ["\n"] $ map mode_stat r
 -}
 mode_stat :: Mode -> [String]
 mode_stat m =
@@ -201,6 +201,9 @@ parse_modenam l =
 >>> let (n,x,m) = mn
 >>> (n, x, length m) -- Scala 2.64p
 (3087,15,3087)
+
+>>> head m
+(0,[1,5],"Vietnamese ditonic")
 -}
 load_modenam :: IO ModeNam
 load_modenam = do
