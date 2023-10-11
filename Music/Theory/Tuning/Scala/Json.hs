@@ -61,14 +61,14 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
   let integerArray = Json.array . map Json.integer
       intArray = Json.array . map Json.int
   in (nm
-      ,Json.object ([
-          ("name", Json.string nm)
+      ,Json.object (
+          [("name", Json.string nm)
           ,("description", Json.string dsc)
           ,("degree", Json.int (length iseq))
           ,("limit", Json.integer (maximum (concatMap prime_factors iseq)))
-          ,("tuning", integerArray iseq)] ++ catMaybes [
-                       fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
-                       ,fmap (\x -> ("sequence", intArray x)) sq]))
+          ,("tuning", integerArray iseq)] ++ catMaybes
+            [fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
+            ,fmap (\x -> ("sequence", intArray x)) sq]))
 
 {- | Write Ji subset of Scala database to Json.
 Pitches are stored as sorted sequences of integers.
