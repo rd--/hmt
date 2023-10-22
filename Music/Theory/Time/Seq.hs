@@ -481,7 +481,7 @@ True
 -}
 dseq_coalesce' :: Num t => (a -> a -> Bool) -> Dseq t a -> Dseq t a
 dseq_coalesce' eq =
-    let f l = let (t,e) = unzip l in (sum t,head e)
+    let f l = let (t,e) = unzip l in (sum t,List.head_err e)
     in map f . groupBy (eq `on` snd)
 
 iseq_coalesce :: Num t => (a -> a -> Bool) -> (a -> a -> a) -> Iseq t a -> Iseq t a
@@ -939,7 +939,7 @@ dseq_to_tseq_discard t0 = List.drop_last . dseq_to_tseq t0 undefined
 True
 -}
 iseq_to_tseq :: Num t => t -> Iseq t a -> Tseq t a
-iseq_to_tseq t0 = List.rezip (tail . List.dx_d t0) id
+iseq_to_tseq t0 = List.rezip (List.tail_err . List.dx_d t0) id
 
 {- | The conversion requires a start time and does not consult the /logical/ duration.
 
@@ -1023,7 +1023,7 @@ tseq_to_wseq dur_f sq =
 tseq_to_wseq_iot :: Num t => t -> Tseq t a -> Wseq t a
 tseq_to_wseq_iot total_dur sq =
   let (t, e) = unzip sq
-      d = zipWith (-) (tail t ++ [total_dur]) t
+      d = zipWith (-) (List.tail_err t ++ [total_dur]) t
   in zip (zip t d) e
 
 {- | Tseq to Iseq.

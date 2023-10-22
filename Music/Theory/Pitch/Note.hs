@@ -21,7 +21,7 @@ note_seq = [C .. B]
 
 {- | Char variant of 'show'. -}
 note_pp :: Note -> Char
-note_pp = head . show
+note_pp = List.head_err . show
 
 {- | Note name in lilypond syntax (ie. lower case). -}
 note_pp_ly :: Note -> String

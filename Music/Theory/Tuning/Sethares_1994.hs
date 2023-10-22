@@ -5,7 +5,9 @@ module Music.Theory.Tuning.Sethares_1994 where
 
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
 
 {- | Plomp-Levelt consonance curve.
 
@@ -43,7 +45,7 @@ local_minima :: Ord t => [t] -> [(Int,t)]
 local_minima =
   let f (ix,i,j,k) = if j <= i && j <= k then Just (ix,j) else Nothing
       triples ix l = case l of
-                       i:j:k:_ -> (ix,i,j,k) : triples (ix + 1) (tail l)
+                       i:j:k:_ -> (ix,i,j,k) : triples (ix + 1) (List.tail_err l)
                        _ -> []
   in mapMaybe f . triples 1
 
@@ -53,7 +55,7 @@ local_minima =
 atms_fig_1 :: (Floating n,Enum n,Ord n) => [[n]]
 atms_fig_1 =
     let f0 = [125,250,500,1000,2000]
-        r_seq = map T.cents_to_fratio [0 .. 1200]
+        r_seq = map Tuning.cents_to_fratio [0 .. 1200]
     in map (\f -> map (\r -> pl_dissonance (f,1) (f * r,1)) r_seq) f0
 
 -- > plot_p1_ln [atms_fig_2 880]
@@ -61,7 +63,7 @@ atms_fig_1 =
 atms_fig_2 :: (Ord t, Floating t, Enum t) => t -> [t]
 atms_fig_2 f0 =
   let gen fq = map (\r -> (fq * r,1)) [1 .. 9]
-      r_seq = map T.cents_to_fratio [0,1 .. 1200]
+      r_seq = map Tuning.cents_to_fratio [0,1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq
 
 -- > Sound.SC3.Plot.plot_p1_ln [atms_fig_3 880]
@@ -70,7 +72,7 @@ atms_fig_3 :: (Ord t, Floating t, Enum t) => t -> [t]
 atms_fig_3 f0 =
   let b = 2 ** (1/9)
       gen fq = map (\r -> (fq * r,1)) (1 : map (b **) [9,14,18,21,25,27,30])
-      r_seq = map T.cents_to_fratio [0,1 .. 1200]
+      r_seq = map Tuning.cents_to_fratio [0,1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq
 
 -- | "Relating Tuning and Timbre" <http://sethares.engr.wisc.edu/consemi.html>
@@ -81,5 +83,5 @@ rtt_fig_2 :: (Ord t, Floating t, Enum t) => t -> [t]
 rtt_fig_2 f0 =
   let a_seq = take 7 (iterate (* 0.88) 1.0)
       gen fq = zipWith (\r a -> (fq * r,a)) [1 .. 7] a_seq
-      r_seq = map T.cents_to_fratio [0,1 .. 1200]
+      r_seq = map Tuning.cents_to_fratio [0,1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq

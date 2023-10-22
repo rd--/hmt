@@ -9,7 +9,6 @@ import Text.Printf {- base -}
 import qualified Music.Theory.List as T {- hmt -}
 import Music.Theory.Pitch {- hmt -}
 import Music.Theory.Pitch.Note {- hmt -}
-import Music.Theory.Pitch.Spelling.Table {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 
 -- | 'octpc_to_pitch' and 'octpc_to_cps_k0'.

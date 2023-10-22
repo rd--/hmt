@@ -10,9 +10,9 @@ import Data.List {- base -}
 import Data.List.Split {- split -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T {- hmt-base -}
-import qualified Music.Theory.Permutations as T {- hmt-base -}
-import qualified Music.Theory.Tuple as T {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Permutations as Permutations {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
 {- | A change either swaps all adjacent bells, or holds a subset of bells. -}
 data Change = Swap_All | Hold [Int] deriving (Eq,Show)
@@ -33,7 +33,7 @@ method_changes :: Method -> [Change]
 method_changes (Method p q) =
     case q of
       Nothing -> p
-      Just le -> p ++ tail (reverse p) ++ le
+      Just le -> p ++ List.tail_err (reverse p) ++ le
 
 {- | Parse a change notation.
 
@@ -89,7 +89,7 @@ is_swap_all = flip elem ["-","x"]
 [1,2,3,4]
 -}
 flatten_pairs :: [(a,a)] -> [a]
-flatten_pairs = concatMap T.t2_to_list
+flatten_pairs = concatMap Tuple.t2_to_list
 
 {- | Swap all adjacent pairs at list.
 
@@ -97,7 +97,7 @@ flatten_pairs = concatMap T.t2_to_list
 [2,1,4,3,6,5,8,7]
 -}
 swap_all :: [a] -> [a]
-swap_all = flatten_pairs . map T.p2_swap . T.adj2 2
+swap_all = flatten_pairs . map Tuple.p2_swap . List.adj2 2
 
 numeric_spelling_tbl :: [(Char,Int)]
 numeric_spelling_tbl = zip "1234567890ETABCDFGHJKL" [1 .. 22]
@@ -116,7 +116,7 @@ nchar_to_int = fromMaybe (error "nchar_to_int") . flip lookup numeric_spelling_t
 "380ETA"
 -}
 int_to_nchar :: Int -> Char
-int_to_nchar = flip T.reverse_lookup_err numeric_spelling_tbl
+int_to_nchar = flip List.reverse_lookup_err numeric_spelling_tbl
 
 {- | Given a 'Hold' notation, generate permutation cycles.
 
@@ -174,8 +174,8 @@ to_zero_indexed = map (map pred)
 swap_abbrev :: Int -> [Int] -> [a] -> [a]
 swap_abbrev k a =
     let c = to_zero_indexed (swaps_to_cycles (gen_swaps k a))
-        p = T.from_cycles_zero_indexed c
-    in T.apply_permutation p
+        p = Permutations.from_cycles_zero_indexed c
+    in Permutations.apply_permutation p
 
 {- | Apply a 'Change'. -}
 apply_change :: Int -> Change -> [a] -> [a]

@@ -8,12 +8,13 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import qualified Music.Theory.Enum as T {- hmt-base -}
+import qualified Music.Theory.Enum as Enum {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
 
-import qualified Music.Theory.Clef as T {- hmt -}
-import qualified Music.Theory.Pitch as T {- hmt -}
-import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Et as T {- hmt-diagrams -}
+import qualified Music.Theory.Clef as Clef {- hmt -}
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
+import qualified Music.Theory.Tuning.Et as Et {- hmt-diagrams -}
 
 -- | 'fromJust' with error message.
 fromJust_err :: String -> Maybe a -> a
@@ -36,7 +37,7 @@ data Instrument_Family
 
 -- | Universe
 instrument_family_set :: [Instrument_Family]
-instrument_family_set = T.enum_univ
+instrument_family_set = Enum.enum_univ
 
 -- | Enumeration of Gamelan instruments.
 data Instrument_Name
@@ -82,27 +83,27 @@ instrument_name_pp =
     in map f . show
 
 -- | 'Clef' appropriate for 'Instrument_Name'.
-instrument_name_clef :: Integral i => Instrument_Name -> T.Clef i
+instrument_name_clef :: Integral i => Instrument_Name -> Clef.Clef i
 instrument_name_clef nm =
     case nm of
-      Bonang_Barung -> T.Clef T.Treble 0
-      Bonang_Panerus -> T.Clef T.Treble 1
-      Gambang_Kayu -> T.Clef T.Treble 0
-      Gender_Barung -> T.Clef T.Treble 0
-      Gender_Panerus -> T.Clef T.Treble 1
-      Gender_Panembung -> T.Clef T.Bass 0
-      Gong_Ageng -> T.Clef T.Bass 0
-      Gong_Suwukan -> T.Clef T.Bass 0
-      Kempul -> T.Clef T.Bass 0
-      Kempyang -> T.Clef T.Treble 1
-      Kenong -> T.Clef T.Treble 0
-      Ketuk -> T.Clef T.Alto 0
-      Saron_Barung -> T.Clef T.Treble 0
-      Saron_Demung -> T.Clef T.Treble 0
-      Saron_Panerus -> T.Clef T.Treble 1
+      Bonang_Barung -> Clef.Clef Clef.Treble 0
+      Bonang_Panerus -> Clef.Clef Clef.Treble 1
+      Gambang_Kayu -> Clef.Clef Clef.Treble 0
+      Gender_Barung -> Clef.Clef Clef.Treble 0
+      Gender_Panerus -> Clef.Clef Clef.Treble 1
+      Gender_Panembung -> Clef.Clef Clef.Bass 0
+      Gong_Ageng -> Clef.Clef Clef.Bass 0
+      Gong_Suwukan -> Clef.Clef Clef.Bass 0
+      Kempul -> Clef.Clef Clef.Bass 0
+      Kempyang -> Clef.Clef Clef.Treble 1
+      Kenong -> Clef.Clef Clef.Treble 0
+      Ketuk -> Clef.Clef Clef.Alto 0
+      Saron_Barung -> Clef.Clef Clef.Treble 0
+      Saron_Demung -> Clef.Clef Clef.Treble 0
+      Saron_Panerus -> Clef.Clef Clef.Treble 1
 
-instrument_name_clef_plain :: Integral i => Instrument_Name -> T.Clef i
-instrument_name_clef_plain = T.clef_zero . instrument_name_clef
+instrument_name_clef_plain :: Integral i => Instrument_Name -> Clef.Clef i
+instrument_name_clef_plain = Clef.clef_zero . instrument_name_clef
 
 -- | Enumeration of Gamelan scales.
 data Scale = Pelog | Slendro deriving (Enum,Eq,Ord,Show,Read)
@@ -200,44 +201,44 @@ tone_equivalent p q =
         Tone nm' nt' _ _ = q
     in nm == nm' && nt == nt'
 
-tone_24et_pitch :: Tone t -> Maybe T.Pitch
+tone_24et_pitch :: Tone t -> Maybe Pitch.Pitch
 tone_24et_pitch =
-    let f i = let (_,pt,_,_,_) = T.nearest_24et_tone_k0 (69,440) i in pt
+    let f i = let (_,pt,_,_,_) = Et.nearest_24et_tone_k0 (69,440) i in pt
     in fmap f . tone_frequency
 
-tone_24et_pitch' :: Tone t -> T.Pitch
+tone_24et_pitch' :: Tone t -> Pitch.Pitch
 tone_24et_pitch' = fromJust_err "tone_24et_pitch" . tone_24et_pitch
 
-tone_24et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
-tone_24et_pitch_detune = fmap (T.nearest_pitch_detune_24et_k0 (69,440)) . tone_frequency
+tone_24et_pitch_detune :: Tone t -> Maybe Et.Pitch_Detune
+tone_24et_pitch_detune = fmap (Et.nearest_pitch_detune_24et_k0 (69,440)) . tone_frequency
 
-tone_24et_pitch_detune' :: Tone t -> T.Pitch_Detune
+tone_24et_pitch_detune' :: Tone t -> Et.Pitch_Detune
 tone_24et_pitch_detune' = fromJust_err "tone_24et_pitch_detune" . tone_24et_pitch_detune
 
 tone_fmidi :: Tone t -> Double
-tone_fmidi = T.cps_to_fmidi . tone_frequency_err
+tone_fmidi = Pitch.cps_to_fmidi . tone_frequency_err
 
 -- | Fractional (rational) 24-et midi note number of 'Tone'.
 tone_24et_fmidi :: Tone t -> Rational
-tone_24et_fmidi = near_rat . T.pitch_to_fmidi . tone_24et_pitch'
+tone_24et_fmidi = near_rat . Pitch.pitch_to_fmidi . tone_24et_pitch'
 
-tone_12et_pitch :: Tone t -> Maybe T.Pitch
+tone_12et_pitch :: Tone t -> Maybe Pitch.Pitch
 tone_12et_pitch =
-    let f i = let (_,pt,_,_,_) = T.nearest_12et_tone_k0 (69,440) i in pt
+    let f i = let (_,pt,_,_,_) = Et.nearest_12et_tone_k0 (69,440) i in pt
     in fmap f . tone_frequency
 
-tone_12et_pitch' :: Tone t -> T.Pitch
+tone_12et_pitch' :: Tone t -> Pitch.Pitch
 tone_12et_pitch' = fromJust_err "tone_12et_pitch" . tone_12et_pitch
 
-tone_12et_pitch_detune :: Tone t -> Maybe T.Pitch_Detune
-tone_12et_pitch_detune = fmap (T.nearest_pitch_detune_12et_k0 (69,440)) . tone_frequency
+tone_12et_pitch_detune :: Tone t -> Maybe Et.Pitch_Detune
+tone_12et_pitch_detune = fmap (Et.nearest_pitch_detune_12et_k0 (69,440)) . tone_frequency
 
-tone_12et_pitch_detune' :: Tone t -> T.Pitch_Detune
+tone_12et_pitch_detune' :: Tone t -> Et.Pitch_Detune
 tone_12et_pitch_detune' = fromJust_err "tone_12et_pitch_detune" . tone_12et_pitch_detune
 
 -- | Fractional (rational) 24-et midi note number of 'Tone'.
 tone_12et_fmidi :: Tone t -> Rational
-tone_12et_fmidi = near_rat . T.pitch_to_fmidi . tone_12et_pitch'
+tone_12et_fmidi = near_rat . Pitch.pitch_to_fmidi . tone_12et_pitch'
 
 tone_family :: Tone t -> Instrument_Family
 tone_family = instrument_family . tone_instrument_name
@@ -301,10 +302,10 @@ tone_family_class_p (fm,sc) t =
     instrument_family (tone_instrument_name t) == fm &&
     tone_scale t == Just sc
 
--- | Given a 'Tone_Set', find those 'Tone's that are within 'T.Cents' of 'Frequency'.
-tone_set_near_frequency :: Tone_Set t -> T.Cents -> Frequency -> Tone_Set t
+-- | Given a 'Tone_Set', find those 'Tone's that are within 'Pitch.Cents' of 'Frequency'.
+tone_set_near_frequency :: Tone_Set t -> Tuning.Cents -> Frequency -> Tone_Set t
 tone_set_near_frequency t k n =
-    let near i = abs (T.cps_difference_cents i n) <= k
+    let near i = abs (Tuning.cps_difference_cents i n) <= k
         near_t i = maybe False near (tone_frequency i)
     in filter near_t t
 
@@ -342,7 +343,7 @@ instruments c =
 
 instrument_gamut :: Instrument -> Maybe (Pitch,Pitch)
 instrument_gamut =
-    let f p = (head p,last p)
+    let f p = (List.head_err p,last p)
     in fmap f . instrument_pitches
 
 {- | Pelog has seven degrees, numbered one to seven.

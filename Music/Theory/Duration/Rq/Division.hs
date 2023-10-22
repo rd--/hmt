@@ -4,6 +4,8 @@ module Music.Theory.Duration.Rq.Division where
 import Data.List.Split {- split -}
 import Data.Ratio {- base -}
 
+import qualified Safe {- safe -}
+
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Permutations.List as Permutations.List {- hmt-base -}
 
@@ -80,7 +82,7 @@ This includes the two 'trivial paritions, into a set /n/ @1@, and a set of @1@ /
 -}
 partitions_sum :: Integral i => i -> [[i]]
 partitions_sum n =
-    let f p = if null p then 0 else head p
+    let f p = Safe.headDef 0 p
     in case n of
          0 -> [[]]
          _ -> [x:y | x <- [1..n], y <- partitions_sum (n - x), x >= f y]

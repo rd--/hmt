@@ -4,6 +4,8 @@
 -- <https://ccrma.stanford.edu/courses/120-fall-2003/lecture-5.html>
 module Music.Theory.Pitch.Bark where
 
+import qualified Music.Theory.List as List {- hmt-base -}
+
 -- * Tables
 
 -- | Center freqencies of Bark scale critical bands (hz).
@@ -22,7 +24,7 @@ bark_edge =
 
 -- | Bandwidths of Bark scale critical bands (hz).
 bark_bandwidth :: Num n => [n]
-bark_bandwidth = let c = bark_edge in zipWith (-) (tail c) c
+bark_bandwidth = let c = bark_edge in zipWith (-) (List.tail_err c) c
 
 -- * Functions
 

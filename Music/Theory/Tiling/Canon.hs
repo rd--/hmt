@@ -7,7 +7,7 @@ import Text.Printf {- base -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt -}
 
 -- | Sequence.
 type S = [Int]
@@ -59,9 +59,9 @@ e_to_seq (s,m,o) = map ((+ o) . (* m)) s
 -}
 e_from_seq :: [Int] -> E
 e_from_seq p =
-    let i = head p
+    let i = List.head_err p
         q = map (+ negate i) p
-        r = tail q
+        r = List.tail_err q
         n = if null r then 1 else foldl1 gcd r
     in (map (`div` n) q,n,i)
 
@@ -105,8 +105,8 @@ r_from_t t =
     let e = map e_from_seq t
         n = maximum (concat t) + 1
         t3_1 (i,_,_) = i
-        f z = let (s,m,o) = unzip3 z in (n,head s,m,o)
-    in map f (T.group_on t3_1 e)
+        f z = let (s,m,o) = unzip3 z in (n,List.head_err s,m,o)
+    in map f (List.group_on t3_1 e)
 
 -- * Construction
 

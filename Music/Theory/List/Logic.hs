@@ -5,6 +5,8 @@ import Control.Monad {- base -}
 
 import qualified Control.Monad.Logic as L {- logict -}
 
+import qualified Music.Theory.List as List {- hmt-base -}
+
 -- | 'L.MonadLogic' value to enumerate indices for all embeddings of /q/ in /p/.
 all_embeddings_m :: (Eq t, MonadPlus m, L.MonadLogic m) => [t] -> [t] -> m [Int]
 all_embeddings_m p q =
@@ -13,11 +15,11 @@ all_embeddings_m p q =
             if n == q_n
             then return (reverse k)
             else do (m,c) <- msum (map return p')
-                    let k0 = head k
-                        c' = head q'
+                    let k0 = List.head_err k
+                        c' = List.head_err q'
                     guard (c == c' && (null k || m > k0))
-                    let p'' = tail p'
-                        q'' = tail q'
+                    let p'' = List.tail_err p'
+                        q'' = List.tail_err q'
                     recur p'' q'' (n + 1) (m : k)
     in recur (zip [0..] p) q 0 []
 

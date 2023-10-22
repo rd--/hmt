@@ -22,7 +22,7 @@ data Dynamic_Mark = Niente
 -}
 dynamic_mark_t_parse_ci :: String -> Maybe Dynamic_Mark
 dynamic_mark_t_parse_ci =
-  let capitalise x = toUpper (head x) : map toLower (tail x)
+  let capitalise x = toUpper (List.head_err x) : map toLower (List.tail_err x)
   in readMaybe . capitalise
 
 {- | Lookup Midi velocity for 'Dynamic_Mark'.  The range is linear in @0-127@.
@@ -127,7 +127,7 @@ empty_dynamic_node = (Nothing,Nothing)
 -}
 dynamic_sequence :: [Dynamic_Mark] -> [Dynamic_Node]
 dynamic_sequence d =
-    let h = zipWith implied_hairpin d (tail d) ++ [Nothing]
+    let h = zipWith implied_hairpin d (List.tail_err d) ++ [Nothing]
         e = Just End_Hairpin
         rec i p =
             case p of
