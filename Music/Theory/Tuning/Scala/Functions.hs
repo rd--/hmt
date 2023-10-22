@@ -32,7 +32,7 @@ lineartemp scale_size octave _degree_of_fifth fifth down =
   let geom i m = i : geom (i * m) m
       geom_oct i = map Tuning.fold_ratio_to_octave_err . geom i
       lhs = take (down + 1) (geom_oct 1 (1 / fifth))
-      rhs = tail (take (scale_size - down) (geom_oct 1 fifth))
+      rhs = List.tail_err (take (scale_size - down) (geom_oct 1 fifth))
   in sort (lhs ++ rhs) ++ [octave]
 
 -- * Intervals
@@ -59,7 +59,7 @@ intervals_list_ratios :: String -> IO ()
 intervals_list_ratios scl_nm = do
   nam_db <- Interval.load_intnam
   scl <- Scala.scl_load scl_nm
-  intervals_list_ratios_r nam_db (tail (Scala.scale_ratios_req True scl))
+  intervals_list_ratios_r nam_db (List.tail_err (Scala.scale_ratios_req True scl))
 
 -- * Intervals
 

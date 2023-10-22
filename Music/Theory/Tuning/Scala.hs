@@ -620,7 +620,11 @@ scale_to_tuning s@(_,_,_,p) =
 tuning_to_scale :: (String,String) -> T.Tuning -> Scale
 tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
     let n = either length length p
-        p' = either (map Right . tail) (map Left . tail) p ++ [Either.either_swap (T.tn_octave_def tn)]
+        p' =
+          either
+          (map Right . List.tail_err)
+          (map Left . List.tail_err)
+          p ++ [Either.either_swap (T.tn_octave_def tn)]
     in (nm,dsc,n,p')
 
 {- | 'scale_to_tuning' of 'scl_load'. -}

@@ -7,7 +7,7 @@ module Music.Theory.Bjorklund where
 
 import Data.List.Split {- split -}
 
-import qualified Music.Theory.List as T {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
 
 -- | Bjorklund state
 type Bjorklund a = ((Int, Int), ([[a]], [[a]]))
@@ -100,13 +100,13 @@ bjorklund (i,j') =
         (_,(x',y')) = bjorklund_f ((i,j),(x,y))
     in concat x' ++ concat y'
 
-{- | 'T.rotate_right' of 'bjorklund'.
+{- | 'List.rotate_right' of 'bjorklund'.
 
 >>> map xdot_unicode (bjorklund_r 2 (5,16)) == "··×··×··×··×··×·"
 True
 -}
 bjorklund_r :: Int -> (Int, Int) -> [Bool]
-bjorklund_r n = T.rotate_right n . bjorklund
+bjorklund_r n = List.rotate_right n . bjorklund
 
 -- | Pretty printer, generalise.
 euler_pp_f :: (Bool -> Char) -> (Int,Int) -> String
@@ -155,7 +155,7 @@ xdot_unicode x = if x then '×' else '·'
 [2,2,2,2,1]
 -}
 iseq :: [Bool] -> [Int]
-iseq = let f = split . keepDelimsL . whenElt in tail . map length . f (== True)
+iseq = let f = split . keepDelimsL . whenElt in List.tail_err . map length . f (== True)
 
 {- | 'iseq' of pattern as compact string.
 

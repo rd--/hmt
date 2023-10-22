@@ -7,7 +7,7 @@ import Data.Bifunctor {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt -}
 import qualified Music.Theory.Set.List as S {- hmt -}
 
 import Music.Theory.Unicode {- hmt -}
@@ -23,7 +23,7 @@ import Music.Theory.Z.Sro {- hmt -}
 -}
 z_t_rotations :: Integral i => Z i -> [i] -> [[i]]
 z_t_rotations z p =
-    let r = T.rotations (sort p)
+    let r = List.rotations (sort p)
     in map (z_sro_tn_to z 0) r
 
 {- | T\/I-related rotations of /p/.
@@ -34,16 +34,16 @@ z_t_rotations z p =
 z_ti_rotations :: Integral i => Z i -> [i] -> [[i]]
 z_ti_rotations z p =
     let q = z_sro_invert z 0 p
-        r = T.rotations (sort p) ++ T.rotations (sort q)
+        r = List.rotations (sort p) ++ List.rotations (sort q)
     in map (z_sro_tn_to z 0) r
 
 {- | Prime form rule requiring comparator, considering 't_rotations'. -}
 z_t_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
-z_t_cmp_prime z f = T.minimumBy_or [] f . z_t_rotations z
+z_t_cmp_prime z f = List.minimumBy_or [] f . z_t_rotations z
 
 {- | Prime form rule requiring comparator, considering 'ti_rotations'. -}
 z_ti_cmp_prime :: Integral i => Z i -> ([i] -> [i] -> Ordering) -> [i] -> [i]
-z_ti_cmp_prime z f = T.minimumBy_or [] f . z_ti_rotations z
+z_ti_cmp_prime z f = List.minimumBy_or [] f . z_ti_rotations z
 
 {- | Forte comparison function (rightmost first then leftmost outwards).
 
@@ -122,7 +122,7 @@ z_ic z i =
 z_icv :: (Integral i, Num n) => Z i -> [i] -> [n]
 z_icv z s =
     let i = map (z_ic z . z_mod z . uncurry (-)) (S.pairs s)
-        f l = (head l,genericLength l)
+        f l = (List.head_err l,genericLength l)
         j = map f (group (sort i))
         k = map (`lookup` j) [1 .. z_modulus z `div` 2]
     in map (fromMaybe 0) k
@@ -138,7 +138,7 @@ z_icv z s =
 [1,1,2,2,3,3,4,4,5,5,6]
 -}
 z_bip :: Integral i => Z i -> [i] -> [i]
-z_bip z = sort . map (z_ic z . z_mod z) . T.d_dx
+z_bip z = sort . map (z_ic z . z_mod z) . List.d_dx
 
 {- | Generate SC universe, though not in order of the Forte table.
 
@@ -153,7 +153,7 @@ True
 -}
 z_sc_univ :: Integral i => Z i -> [[i]]
 z_sc_univ z =
-    T.sort_by_two_stage_on length id $
+    List.sort_by_two_stage_on length id $
     nub $
     map (z_forte_prime z) $
     S.powerset (z_univ z)

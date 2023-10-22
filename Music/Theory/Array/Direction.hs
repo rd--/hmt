@@ -40,7 +40,7 @@ type Direction_S = String
 
 -- | Directions are D=down, L=left, R=right, U=up.
 is_direction :: String -> Bool
-is_direction = (`elem` "DLRU.") . head
+is_direction = (`elem` "DLRU.") . List.head_err
 
 type Direction_C = Char
 

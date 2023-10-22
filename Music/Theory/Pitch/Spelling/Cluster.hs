@@ -16,7 +16,7 @@ import Music.Theory.Pitch.Note.Name {- hmt -}
 -}
 cluster_normal_order :: [Pitch.PitchClass] -> [Pitch.PitchClass]
 cluster_normal_order =
-    let with_bounds x = ((last x - head x) `mod` 12,x)
+    let with_bounds x = ((last x - List.head_err x) `mod` 12,x)
     in snd . minimum . map with_bounds . List.rotations
 
 {- | Normal order starting in indicated octave.
@@ -27,7 +27,7 @@ cluster_normal_order =
 cluster_normal_order_octpc :: Pitch.Octave -> [Pitch.PitchClass] -> [Pitch.OctPc]
 cluster_normal_order_octpc o pc =
     let pc_n = cluster_normal_order pc
-        pc_0 = head pc_n
+        pc_0 = List.head_err pc_n
     in map (\x -> (if x >= pc_0 then o else o + 1,x)) pc_n
 
 {- | True if 'sort' of cluster is not equal to 'cluster_normal_order'.

@@ -278,7 +278,7 @@ whole_note_division_name :: Division -> Maybe String
 whole_note_division_name = flip lookup whole_note_division_name_tbl
 
 whole_note_division_letter_tbl :: [(Division, Char)]
-whole_note_division_letter_tbl = map (\(d,n) -> (d,head n)) whole_note_division_name_tbl
+whole_note_division_letter_tbl = map (\(d,n) -> (d,List.head_err n)) whole_note_division_name_tbl
 
 {- | Letter names for note divisions.
 
@@ -286,7 +286,7 @@ whole_note_division_letter_tbl = map (\(d,n) -> (d,head n)) whole_note_division_
 "mlbwhqest"
 -}
 whole_note_division_letter_pp :: Division -> Maybe Char
-whole_note_division_letter_pp = flip lookup (tail whole_note_division_letter_tbl)
+whole_note_division_letter_pp = flip lookup (List.tail_err whole_note_division_letter_tbl)
 
 {- | Letter names for durations.
 

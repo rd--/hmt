@@ -452,7 +452,7 @@ fmidi_in_octave_nearest m1 m2 =
         m2'' = [m2' - 12,m2',m2' + 12]
         d = map (abs . (m1 -)) m2''
         z = sortOn snd (zip m2'' d)
-    in fst (head z)
+    in fst (List.head_err z)
 
 {- | Displacement of /q/ into octave above /p/.
 

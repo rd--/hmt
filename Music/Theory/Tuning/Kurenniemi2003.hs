@@ -10,7 +10,6 @@ import Data.Ratio {- base -}
 import qualified Data.Numbers.Primes as Primes {- primes -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
-import qualified Music.Theory.Pitch.Spelling.Table as Pitch {- hmt -}
 
 {- | In a divisibility network, two numbers are connected if they share a common divisor.
 

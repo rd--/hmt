@@ -171,7 +171,7 @@ parse_modenam_entry w =
     let (n,c) = span (Function.predicate_or is_non_implicit_degree is_integer) w
     in case non_implicit_degree (n !! 0) of
          Nothing -> (0,map read n,unwords c)
-         Just d -> (d,map read (tail n),unwords c)
+         Just d -> (d,map read (List.tail_err n),unwords c)
 
 -- | Lines ending with @\@ continue to next line.
 join_long_lines :: [String] -> [String]

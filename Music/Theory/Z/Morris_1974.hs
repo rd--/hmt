@@ -4,6 +4,8 @@ module Music.Theory.Z.Morris_1974 where
 
 import Control.Monad {- base -}
 
+import qualified Music.Theory.List as List {- hmt-base -}
+
 import qualified Control.Monad.Logic as L {- logict -}
 
 -- | 'msum' '.' 'map' 'return'.
@@ -30,7 +32,7 @@ all_interval_m n =
             then return (reverse p)
             else do i <- fromList [1 .. n - 1]
                     guard (i `notElem` p)
-                    let j = head p
+                    let j = List.head_err p
                         m = int_n n i j
                     guard (m `notElem` q)
                     recur (k + 1) (i : p) (m : q)

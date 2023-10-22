@@ -15,7 +15,6 @@ import qualified Music.Theory.Show as Show {- hmt-base -}
 
 import qualified Music.Theory.Array.Csv.Midi.Mnd as T {- hmt -}
 import qualified Music.Theory.Pitch as T {- hmt -}
-import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Et as T {- hmt -}

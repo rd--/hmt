@@ -207,7 +207,7 @@ relate_l p q = relate (half_seq_of p) (half_seq_of q)
 
 {- | 'relate' adjacent 'Half_Seq', see also 'relations_l'. -}
 relations :: [Half_Seq] -> [Rel]
-relations p = zipWith relate p (tail p)
+relations p = zipWith relate p (List.tail_err p)
 
 {- | 'relate' adjacent 'Label's.
 
@@ -215,7 +215,7 @@ relations p = zipWith relate p (tail p)
 [(False,[0,2,3,1]),(False,[2,0,1,3])]
 -}
 relations_l :: [Label] -> [Rel]
-relations_l p = zipWith relate_l p (tail p)
+relations_l p = zipWith relate_l p (List.tail_err p)
 
 {- | Apply 'Rel' to 'Half_Seq'.
 

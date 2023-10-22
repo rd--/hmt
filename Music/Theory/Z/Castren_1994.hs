@@ -128,7 +128,7 @@ ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (Sro.z_sro_ti_relate
 -}
 rle :: (Eq a,Integral i) => [a] -> [(i,a)]
 rle =
-    let f x = (genericLength x,head x)
+    let f x = (genericLength x,List.head_err x)
     in map f . group
 
 {- | Inverse of 'rle'.

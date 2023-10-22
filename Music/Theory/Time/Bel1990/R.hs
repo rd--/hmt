@@ -27,7 +27,7 @@ import qualified Music.Theory.List as List {- hmt-base -}
 import Music.Theory.Parse (P) {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
 
-import Music.Theory.Time {- hmt -}
+import Music.Theory.Time (Tempo, Time) {- hmt -}
 
 -- * Bel
 

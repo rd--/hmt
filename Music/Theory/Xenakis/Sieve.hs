@@ -3,8 +3,9 @@
 -- Vol. 28, No. 1 (Winter, 1990), pp. 58-78
 module Music.Theory.Xenakis.Sieve where
 
-import qualified Data.List as L
-import Music.Theory.List
+import qualified Data.List {- base -}
+
+import qualified Music.Theory.List as List
 
 -- | A Sieve.
 data Sieve = Empty -- ^ 'Empty' 'Sieve'
@@ -129,15 +130,15 @@ True
 -}
 build :: Sieve -> [Integer]
 build s =
-    let u_f = map head . L.group
+    let u_f = map List.head_err . Data.List.group
         i_f = let g [x,_] = [x]
                   g _ = []
-              in concatMap g . L.group
+              in concatMap g . Data.List.group
     in case s of
          Empty -> []
          L (m,i) -> [i, i+m ..]
-         Union s0 s1 -> u_f (merge (build s0) (build s1))
-         Intersection s0 s1 -> i_f (merge (build s0) (build s1))
+         Union s0 s1 -> u_f (List.merge (build s0) (build s1))
+         Intersection s0 s1 -> i_f (List.merge (build s0) (build s1))
          Complement s' -> i_complement (build s')
 
 {- | Variant of 'build' that gives the first /n/ places of the 'reduce' of 'Sieve'.
@@ -269,7 +270,7 @@ buildn n = take n . build . reduce
 [2,2,1,2,2,2,1]
 -}
 differentiate :: (Num a) => [a] -> [a]
-differentiate x = zipWith (-) (tail x) x
+differentiate x = zipWith (-) (List.tail_err x) x
 
 {- | Euclid's algorithm for computing the greatest common divisor.
 

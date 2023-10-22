@@ -57,7 +57,7 @@ chord_type_dat :: Num n => Chord_Type -> ([String],[n])
 chord_type_dat = flip List.lookup_err chord_type_tbl
 
 chord_type_pp :: Chord_Type -> String
-chord_type_pp = head . fst . (chord_type_dat :: Chord_Type -> ([String],[Int]))
+chord_type_pp = List.head_err . fst . (chord_type_dat :: Chord_Type -> ([String],[Int]))
 
 chord_type_pcset :: Num n => Chord_Type -> [n]
 chord_type_pcset = snd . chord_type_dat

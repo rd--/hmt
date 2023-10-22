@@ -4,7 +4,6 @@ module Music.Theory.Pitch.Spelling where
 import qualified Music.Theory.Pitch as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Cluster as T {- hmt -}
 import qualified Music.Theory.Pitch.Spelling.Key as T {- hmt -}
-import qualified Music.Theory.Pitch.Spelling.Table as T {- hmt -}
 
 spell_octpc_set :: [T.OctPc] -> [T.Pitch]
 spell_octpc_set o =

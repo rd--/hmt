@@ -15,6 +15,8 @@ import Data.List {- base -}
 
 import qualified Data.List.Ordered {- data-ordlist -}
 
+import qualified Music.Theory.List as List {- hmt-base -}
+
 import Music.Theory.Time {- hmt -}
 import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 
@@ -97,13 +99,13 @@ phrase_time_at (Phrase n _) k = note_start_time (n !! (k - 1))
 
 phrase_clear_at :: Phrase t -> Int -> Phrase t
 phrase_clear_at (Phrase n l) k =
-  let remove_ix ix list = let (p,q) = splitAt ix list in p ++ tail q
+  let remove_ix ix list = let (p,q) = splitAt ix list in p ++ List.tail_err q
   in Phrase (remove_ix (k - 1) n) l
 
 phrase_at_put :: Ord t => Phrase t -> Int -> Phrase t -> Phrase t
 phrase_at_put (Phrase n1 l1) k (Phrase n2 _) =
   let nt = n1 !! (k - 1)
-      remove_ix ix list = let (p,q) = splitAt ix list in p ++ tail q
+      remove_ix ix list = let (p,q) = splitAt ix list in p ++ List.tail_err q
   in Phrase (Data.List.Ordered.merge (remove_ix (k - 1) n1) (map (note_shift_time (note_start_time nt)) n2)) l1
 
 phrase_is_empty :: Phrase t -> Bool

@@ -239,7 +239,7 @@ ew_gr_r_pos (k,lc) primes_l =
      lc_pos_to_pt (k,lc) .
      (\c -> (k,c)) .
      -- this is a little subtle, tail removes the '2' slot from rational_prime_factors_t
-     maybe (tail . Prime.rational_prime_factors_t (k + 1)) Prime.rational_prime_factors_c primes_l
+     maybe (List.tail_err . Prime.rational_prime_factors_t (k + 1)) Prime.rational_prime_factors_c primes_l
 
 -- | 'Dot.lbl_to_udot' add position attribute if a 'Lattice_Design' is given.
 ew_gr_udot :: Ew_Gr_Opt -> Graph.Lbl Rational () -> [String]
@@ -395,7 +395,7 @@ mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos
 mos_seq :: (Ord b, Num b) => b -> b -> [[b]]
 mos_seq p g =
   let step_f (i,j) = concatMap (\x -> if x == i + j then [i,j] else [x])
-      recur_f x l = if null x then [l] else l : recur_f (tail x) (step_f (head x) l)
+      recur_f x l = if null x then [l] else l : recur_f (List.tail_err x) (step_f (List.head_err x) l)
       ((i0,j0), r) = List.headTail (mos p g)
   in recur_f r [i0,j0]
 
@@ -511,7 +511,8 @@ m3_gen_to_r = r_normalise . concatMap m3_gen_unfold
 r_to_scala_r :: [Rational] -> [Rational]
 r_to_scala_r r =
   let r' = map Tuning.fold_ratio_to_octave_err r
-  in if head r' /= 1 || last r' == 1
+      (f,l) = List.firstLast r'
+  in if f /= 1 || l == 1
      then error "r_to_scala_r?"
      else r'
 
@@ -525,7 +526,7 @@ r_to_scale nm dsc r =
 ew_scl_find_r_eq :: [Rational] -> [Scala.Scale] -> [String]
 ew_scl_find_r_eq r =
   let r' = r_to_scala_r r
-  in if head r' /= 1
+  in if List.head_err r' /= 1
      then error "ew_scl_find_r_eq?: r'0 /= 1"
      else map Scala.scale_name . Scala.scl_find_ji False (==) r'
 
@@ -698,14 +699,14 @@ hel_1_i =
 hel_2_i :: Hel
 hel_2_i =
   let i = take 10 (hel_r_asc (9,8))
-  in (take 8 (List.rotate_left 3 (tail i))
+  in (take 8 (List.rotate_left 3 (List.tail_err i))
      ,take 7 i)
 
 -- | P.10
 hel_3_i :: Hel
 hel_3_i =
   let i = take 16 (hel_r_asc (15,14))
-  in (take 13 (List.rotate_left 6 (take 14 i)),take 14 (tail i))
+  in (take 13 (List.rotate_left 6 (take 14 i)),take 14 (List.tail_err i))
 
 hel_r :: Hel -> [[Rational]]
 hel_r (p,q) =
@@ -813,7 +814,7 @@ meru_1 k = zipWith (flip (Safe.atDef 0)) [0..] (reverse (meru_k k))
 
 -- > take 13 meru_1_direct == [1,1,2,3,5,8,13,21,34,55,89,144,233]
 meru_1_direct :: Num n => [n]
-meru_1_direct = tail Oeis.a000045
+meru_1_direct = List.tail_err Oeis.a000045
 
 {- | Meru 2 = Meta-Pelog
 
@@ -836,7 +837,7 @@ meru_3 :: Num n => Int -> [[n]]
 meru_3 k =
   let f t = zipWith (flip (Safe.atDef 0)) [0,2..] t
       t0 = reverse (meru_k k)
-      t1 = map tail t0
+      t1 = map List.tail_err t0
   in [f t0,f t1]
 
 -- > map sum (meru_3_seq 13) == [1,0,1,1,1,2,2,3,4,5,7,9,12,16,21,28,37,49,65,86,114,151,200,265,351,465]
@@ -853,7 +854,7 @@ meru_4 k = zipWith (flip (Safe.atDef 0)) [0..] (every_nth (reverse (meru_k k)) 3
 
 -- > take 31 meru_4_direct == map (sum . meru_4) [1 .. 31]
 meru_4_direct :: Num n => [n]
-meru_4_direct = tail Oeis.a003269
+meru_4_direct = List.tail_err Oeis.a003269
 
 -- > map meru_5 [1..4]
 meru_5 :: Num n => Int -> [[n]]

@@ -580,7 +580,7 @@ p178_i6_seq :: [PcSet]
 p178_i6_seq = map (sort . (\n -> Z.Tto.z_pcset Z.z12 [n,n+6])) [0..6]
 
 p178_ch :: [(PcSet,[PcSet],PcSet)]
-p178_ch = zip3 p178_i6_seq (mk_bridge_set_seq ait p178_i6_seq) (tail p178_i6_seq)
+p178_ch = zip3 p178_i6_seq (mk_bridge_set_seq ait p178_i6_seq) (List.tail_err p178_i6_seq)
 
 type Id = Char
 
