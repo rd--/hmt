@@ -18,7 +18,7 @@ Journal of the Acoustical Society of America.38, 548-560 (1965).
 "Relating Tuning and Timbre" <http://sethares.engr.wisc.edu/consemi.html>
 MATLAB: <https://sethares.engr.wisc.edu/comprog.html>
 
-> import Sound.SC3.Plot {- hsc3-plot -}
+> import Sound.Sc3.Plot {- hsc3-plot -}
 > plot_p1_ln [map (\f -> pl_dissonance (220,1) (f,1)) [220 .. 440]]
 -}
 pl_dissonance :: (Floating n, Ord n) => (n,n) -> (n,n) -> n

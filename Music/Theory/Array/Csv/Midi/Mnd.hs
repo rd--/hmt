@@ -20,7 +20,7 @@ import qualified Music.Theory.Show as T {- hmt-base -}
 
 import qualified Music.Theory.Time.Seq as T {- hmt -}
 
--- * Param ; Sound.SC3.Server.Param
+-- * Param ; Sound.Sc3.Server.Param
 
 type Param = [(String,Double)]
 
@@ -203,12 +203,12 @@ csv_mndd_parse_f cnv (hdr,dat) =
         f m =
             case m of
               [st,du,msg,mnn,vel,ch,pm] ->
-                  (T.reads_exact_err "time" st
-                  ,T.reads_exact_err "duration" du
+                  (T.reads_exact_err "time:real" st
+                  ,T.reads_exact_err "duration:real" du
                   ,msg
-                  ,cnv (T.reads_exact_err "note" mnn)
-                  ,cnv (T.reads_exact_err "velocity" vel)
-                  ,T.reads_exact_err "channel" ch
+                  ,cnv (T.reads_exact_err "note:real" mnn)
+                  ,cnv (T.reads_exact_err "velocity:real" vel)
+                  ,T.reads_exact_err "channel:int" ch
                   ,param_parse (';','=') pm)
               _ -> err "entry?"
     in case hdr of
