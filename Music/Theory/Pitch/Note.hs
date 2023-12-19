@@ -1,4 +1,4 @@
-{- | Common music notation note and alteration values. -}
+-- | Common music notation note and alteration values.
 module Music.Theory.Pitch.Note where
 
 import Data.Char {- base -}
@@ -11,25 +11,25 @@ import qualified Music.Theory.Parse as Parse {- hmt-base -}
 
 -- * Note
 
-{- | Enumeration of common music notation note names (@C@ to @B@). -}
+-- | Enumeration of common music notation note names (@C@ to @B@).
 data Note = C | D | E | F | G | A | B
-              deriving (Eq,Enum,Bounded,Ord,Read,Show)
+  deriving (Eq, Enum, Bounded, Ord, Read, Show)
 
-{- | Note sequence as usually understood, ie. 'C' - 'B'. -}
+-- | Note sequence as usually understood, ie. 'C' - 'B'.
 note_seq :: [Note]
 note_seq = [C .. B]
 
-{- | Char variant of 'show'. -}
+-- | Char variant of 'show'.
 note_pp :: Note -> Char
 note_pp = List.head_err . show
 
-{- | Note name in lilypond syntax (ie. lower case). -}
+-- | Note name in lilypond syntax (ie. lower case).
 note_pp_ly :: Note -> String
 note_pp_ly = map toLower . show
 
-{- | Table of 'Note' and corresponding pitch-classes. -}
-note_pc_tbl :: Num i => [(Note,i)]
-note_pc_tbl = zip [C .. B] [0,2,4,5,7,9,11]
+-- | Table of 'Note' and corresponding pitch-classes.
+note_pc_tbl :: Num i => [(Note, i)]
+note_pc_tbl = zip [C .. B] [0, 2, 4, 5, 7, 9, 11]
 
 {- | Transform 'Note' to pitch-class number.
 
@@ -44,7 +44,7 @@ note_to_pc n = List.lookup_err_msg "note_to_pc" n note_pc_tbl
 >>> mapMaybe pc_to_note [0,4,7]
 [C,E,G]
 -}
-pc_to_note :: (Eq i,Num i) => i -> Maybe Note
+pc_to_note :: (Eq i, Num i) => i -> Maybe Note
 pc_to_note i = List.reverse_lookup i note_pc_tbl
 
 {- | Modal transposition of 'Note' value.
@@ -54,9 +54,9 @@ E
 -}
 note_t_transpose :: Note -> Int -> Note
 note_t_transpose x n =
-    let x' = fromEnum x
-        n' = fromEnum (maxBound::Note) + 1
-    in toEnum ((x' + n) `mod` n')
+  let x' = fromEnum x
+      n' = fromEnum (maxBound :: Note) + 1
+  in toEnum ((x' + n) `mod` n')
 
 {- | Parser from 'Char', case insensitive flag.
 
@@ -65,8 +65,8 @@ note_t_transpose x n =
 -}
 parse_note_t :: Bool -> Char -> Maybe Note
 parse_note_t ci c =
-    let tbl = zip "CDEFGAB" [C,D,E,F,G,A,B]
-    in lookup (if ci then toUpper c else c) tbl
+  let tbl = zip "CDEFGAB" [C, D, E, F, G, A, B]
+  in lookup (if ci then toUpper c else c) tbl
 
 char_to_note_t :: Bool -> Char -> Note
 char_to_note_t ci = fromMaybe (error "char_to_note_t") . parse_note_t ci
@@ -85,33 +85,37 @@ This is not equal to 'enumFromTo' which is not circular.
 -}
 note_span :: Note -> Note -> [Note]
 note_span n1 n2 =
-    let fn x = toEnum (x `mod` 7)
-        n1' = fromEnum n1
-        n2' = fromEnum n2
-        n2'' = if n1' > n2' then n2' + 7 else n2'
-    in map fn [n1' .. n2'']
+  let fn x = toEnum (x `mod` 7)
+      n1' = fromEnum n1
+      n2' = fromEnum n2
+      n2'' = if n1' > n2' then n2' + 7 else n2'
+  in map fn [n1' .. n2'']
 
 -- * Alteration
 
-{- | Enumeration of common music notation note alterations. -}
-data Alteration =
-    DoubleFlat
-  | ThreeQuarterToneFlat | Flat | QuarterToneFlat
+-- | Enumeration of common music notation note alterations.
+data Alteration
+  = DoubleFlat
+  | ThreeQuarterToneFlat
+  | Flat
+  | QuarterToneFlat
   | Natural
-  | QuarterToneSharp | Sharp | ThreeQuarterToneSharp
+  | QuarterToneSharp
+  | Sharp
+  | ThreeQuarterToneSharp
   | DoubleSharp
-    deriving (Eq,Enum,Bounded,Ord,Show)
+  deriving (Eq, Enum, Bounded, Ord, Show)
 
-{- | Generic form. -}
+-- | Generic form.
 generic_alteration_to_diff :: Integral i => Alteration -> Maybe i
 generic_alteration_to_diff a =
-    case a of
-      DoubleFlat -> Just (-2)
-      Flat -> Just (-1)
-      Natural -> Just 0
-      Sharp -> Just 1
-      DoubleSharp -> Just 2
-      _ -> Nothing
+  case a of
+    DoubleFlat -> Just (-2)
+    Flat -> Just (-1)
+    Natural -> Just 0
+    Sharp -> Just 1
+    DoubleSharp -> Just 2
+    _ -> Nothing
 
 {- | Transform 'Alteration' to semitone alteration.  Returns 'Nothing' for non-semitone alterations.
 
@@ -121,7 +125,7 @@ generic_alteration_to_diff a =
 alteration_to_diff :: Alteration -> Maybe Int
 alteration_to_diff = generic_alteration_to_diff
 
-{- | Is 'Alteration' 12-EList. -}
+-- | Is 'Alteration' 12-EList.
 alteration_is_12et :: Alteration -> Bool
 alteration_is_12et = isJust . alteration_to_diff
 
@@ -132,8 +136,8 @@ alteration_is_12et = isJust . alteration_to_diff
 -}
 alteration_to_diff_err :: Integral i => Alteration -> i
 alteration_to_diff_err =
-    let err = error "alteration_to_diff: quarter tone"
-    in fromMaybe err . generic_alteration_to_diff
+  let err = error "alteration_to_diff: quarter tone"
+  in fromMaybe err . generic_alteration_to_diff
 
 {- | Transform 'Alteration' to fractional semitone alteration, ie. allow quarter tones.
 
@@ -142,31 +146,31 @@ alteration_to_diff_err =
 -}
 alteration_to_fdiff :: Fractional n => Alteration -> n
 alteration_to_fdiff a =
-    case a of
-      ThreeQuarterToneFlat -> -1.5
-      QuarterToneFlat -> -0.5
-      QuarterToneSharp -> 0.5
-      ThreeQuarterToneSharp -> 1.5
-      _ -> fromInteger (alteration_to_diff_err a)
+  case a of
+    ThreeQuarterToneFlat -> -1.5
+    QuarterToneFlat -> -0.5
+    QuarterToneSharp -> 0.5
+    ThreeQuarterToneSharp -> 1.5
+    _ -> fromInteger (alteration_to_diff_err a)
 
 {- | Transform fractional semitone alteration to 'Alteration', ie. allow quarter tones.
 
 >>> map fdiff_to_alteration [-0.5,0.5]
 [Just QuarterToneFlat,Just QuarterToneSharp]
 -}
-fdiff_to_alteration :: (Fractional n,Eq n) => n -> Maybe Alteration
+fdiff_to_alteration :: (Fractional n, Eq n) => n -> Maybe Alteration
 fdiff_to_alteration d =
-    case d of
-      -2 -> Just DoubleFlat
-      -1.5 -> Just ThreeQuarterToneFlat
-      -1 -> Just Flat
-      -0.5 -> Just QuarterToneFlat
-      0 -> Just Natural
-      0.5 -> Just QuarterToneSharp
-      1 -> Just Sharp
-      1.5 -> Just ThreeQuarterToneSharp
-      2 -> Just DoubleSharp
-      _ -> undefined
+  case d of
+    -2 -> Just DoubleFlat
+    -1.5 -> Just ThreeQuarterToneFlat
+    -1 -> Just Flat
+    -0.5 -> Just QuarterToneFlat
+    0 -> Just Natural
+    0.5 -> Just QuarterToneSharp
+    1 -> Just Sharp
+    1.5 -> Just ThreeQuarterToneSharp
+    2 -> Just DoubleSharp
+    _ -> undefined
 
 {- | Raise 'Alteration' by a quarter tone where possible.
 
@@ -178,7 +182,7 @@ Nothing
 -}
 alteration_raise_quarter_tone :: Alteration -> Maybe Alteration
 alteration_raise_quarter_tone a =
-    if a == maxBound then Nothing else Just (toEnum (fromEnum a + 1))
+  if a == maxBound then Nothing else Just (toEnum (fromEnum a + 1))
 
 {- | Lower 'Alteration' by a quarter tone where possible.
 
@@ -190,7 +194,7 @@ Nothing
 -}
 alteration_lower_quarter_tone :: Alteration -> Maybe Alteration
 alteration_lower_quarter_tone a =
-    if a == minBound then Nothing else Just (toEnum (fromEnum a - 1))
+  if a == minBound then Nothing else Just (toEnum (fromEnum a - 1))
 
 {- | Edit 'Alteration' by a quarter tone where possible, @-0.5@ lowers, @0@ retains, @0.5@ raises.
 
@@ -198,13 +202,13 @@ alteration_lower_quarter_tone a =
 >>> alteration_edit_quarter_tone (-1 % 2) Flat
 Just ThreeQuarterToneFlat
 -}
-alteration_edit_quarter_tone :: (Fractional n,Eq n) => n -> Alteration -> Maybe Alteration
+alteration_edit_quarter_tone :: (Fractional n, Eq n) => n -> Alteration -> Maybe Alteration
 alteration_edit_quarter_tone n a =
-    case n of
-      -0.5 -> alteration_lower_quarter_tone a
-      0 -> Just a
-      0.5 -> alteration_raise_quarter_tone a
-      _ -> Nothing
+  case n of
+    -0.5 -> alteration_lower_quarter_tone a
+    0 -> Just a
+    0.5 -> alteration_raise_quarter_tone a
+    _ -> Nothing
 
 {- | Simplify 'Alteration' to standard 12ET by deleting quarter tones.
 
@@ -213,25 +217,26 @@ alteration_edit_quarter_tone n a =
 -}
 alteration_clear_quarter_tone :: Alteration -> Alteration
 alteration_clear_quarter_tone x =
-    case x of
-      ThreeQuarterToneFlat -> Flat
-      QuarterToneFlat -> Flat
-      QuarterToneSharp -> Sharp
-      ThreeQuarterToneSharp -> Sharp
-      _ -> x
+  case x of
+    ThreeQuarterToneFlat -> Flat
+    QuarterToneFlat -> Flat
+    QuarterToneSharp -> Sharp
+    ThreeQuarterToneSharp -> Sharp
+    _ -> x
 
-{- | Table of Unicode characters for alterations. -}
-alteration_symbol_tbl :: [(Alteration,Char)]
+-- | Table of Unicode characters for alterations.
+alteration_symbol_tbl :: [(Alteration, Char)]
 alteration_symbol_tbl =
-    [(DoubleFlat,'𝄫')
-    ,(ThreeQuarterToneFlat,'𝄭')
-    ,(Flat,'♭')
-    ,(QuarterToneFlat,'𝄳')
-    ,(Natural,'♮')
-    ,(QuarterToneSharp,'𝄲')
-    ,(Sharp,'♯')
-    ,(ThreeQuarterToneSharp,'𝄰')
-    ,(DoubleSharp,'𝄪')]
+  [ (DoubleFlat, '𝄫')
+  , (ThreeQuarterToneFlat, '𝄭')
+  , (Flat, '♭')
+  , (QuarterToneFlat, '𝄳')
+  , (Natural, '♮')
+  , (QuarterToneSharp, '𝄲')
+  , (Sharp, '♯')
+  , (ThreeQuarterToneSharp, '𝄰')
+  , (DoubleSharp, '𝄪')
+  ]
 
 {- | Unicode has entries for /Musical Symbols/ in the range @U+1D100@ through @U+1D1FF@.
 The @3/4@ symbols are non-standard, here they correspond to @MUSICAL SYMBOL FLAT DOWN@ and @MUSICAL SYMBOL SHARP UP@.
@@ -250,40 +255,41 @@ alteration_symbol a = fromMaybe (error "alteration_symbol") (lookup a alteration
 symbol_to_alteration :: Char -> Maybe Alteration
 symbol_to_alteration c = List.reverse_lookup c alteration_symbol_tbl
 
-{- | ISO alteration notation.  When not strict extended to allow ## for x. -}
+-- | ISO alteration notation.  When not strict extended to allow ## for x.
 symbol_to_alteration_iso :: Bool -> String -> Maybe Alteration
 symbol_to_alteration_iso strict txt =
-    case txt of
-      "bb" -> Just DoubleFlat
-      "b" -> Just Flat
-      "#" -> Just Sharp
-      "##" -> if strict then Nothing else Just DoubleSharp
-      "x" -> Just DoubleSharp
-      "" -> Just Natural
-      _ -> Nothing
+  case txt of
+    "bb" -> Just DoubleFlat
+    "b" -> Just Flat
+    "#" -> Just Sharp
+    "##" -> if strict then Nothing else Just DoubleSharp
+    "x" -> Just DoubleSharp
+    "" -> Just Natural
+    _ -> Nothing
 
 symbol_to_alteration_iso_err :: Bool -> String -> Alteration
 symbol_to_alteration_iso_err strict =
-  fromMaybe (error "symbol_to_alteration_iso") .
-  symbol_to_alteration_iso strict
+  fromMaybe (error "symbol_to_alteration_iso")
+    . symbol_to_alteration_iso strict
 
-{- | 'symbol_to_alteration' extended to allow single character ISO notations. -}
+-- | 'symbol_to_alteration' extended to allow single character ISO notations.
 symbol_to_alteration_unicode_plus_iso :: Char -> Maybe Alteration
 symbol_to_alteration_unicode_plus_iso c =
-    case c of
-      'b' -> Just Flat
-      '#' -> Just Sharp
-      'x' -> Just DoubleSharp
-      _ -> symbol_to_alteration c
+  case c of
+    'b' -> Just Flat
+    '#' -> Just Sharp
+    'x' -> Just DoubleSharp
+    _ -> symbol_to_alteration c
 
-{- | ISO alteration table, strings not characters because of double flat. -}
-alteration_iso_tbl :: [(Alteration,String)]
+-- | ISO alteration table, strings not characters because of double flat.
+alteration_iso_tbl :: [(Alteration, String)]
 alteration_iso_tbl =
-    [(DoubleFlat,"bb")
-    ,(Flat,"b")
-    ,(Natural,"")
-    ,(Sharp,"#")
-    ,(DoubleSharp,"x")]
+  [ (DoubleFlat, "bb")
+  , (Flat, "b")
+  , (Natural, "")
+  , (Sharp, "#")
+  , (DoubleSharp, "x")
+  ]
 
 {- | The @ISO@ ASCII spellings for alterations.  Naturals are written as the empty string.
 
@@ -296,24 +302,25 @@ alteration_iso_tbl =
 alteration_iso_m :: Alteration -> Maybe String
 alteration_iso_m a = lookup a alteration_iso_tbl
 
-{- | The @ISO@ ASCII spellings for alterations. -}
+-- | The @ISO@ ASCII spellings for alterations.
 alteration_iso :: Alteration -> String
 alteration_iso =
-    let qt = error "alteration_iso: quarter tone"
-    in fromMaybe qt . alteration_iso_m
+  let qt = error "alteration_iso: quarter tone"
+  in fromMaybe qt . alteration_iso_m
 
-{- | The /Tonhöhe/ ASCII spellings for alterations. -}
+-- | The /Tonhöhe/ ASCII spellings for alterations.
 alteration_tonh_tbl :: [(Alteration, String)]
 alteration_tonh_tbl =
-  [(DoubleFlat,"eses")
-  ,(ThreeQuarterToneFlat,"eseh")
-  ,(Flat,"es")
-  ,(QuarterToneFlat,"eh")
-  ,(Natural,"")
-  ,(QuarterToneSharp,"ih")
-  ,(Sharp,"is")
-  ,(ThreeQuarterToneSharp,"isih")
-  ,(DoubleSharp,"isis")]
+  [ (DoubleFlat, "eses")
+  , (ThreeQuarterToneFlat, "eseh")
+  , (Flat, "es")
+  , (QuarterToneFlat, "eh")
+  , (Natural, "")
+  , (QuarterToneSharp, "ih")
+  , (Sharp, "is")
+  , (ThreeQuarterToneSharp, "isih")
+  , (DoubleSharp, "isis")
+  ]
 
 {- | The /Tonhöhe/ ASCII spellings for alterations.
 
@@ -339,11 +346,11 @@ tonh_to_alteration_err = fromMaybe (error "tonh_to_alteration") . tonh_to_altera
 
 -- * 12-ET
 
-{- | Note and alteration to pitch-class, or not. -}
-note_alteration_to_pc :: (Note,Alteration) -> Maybe Int
-note_alteration_to_pc (n,a) =
-    let n_pc = note_to_pc n
-    in fmap ((`mod` 12) . (+ n_pc)) (alteration_to_diff a)
+-- | Note and alteration to pitch-class, or not.
+note_alteration_to_pc :: (Note, Alteration) -> Maybe Int
+note_alteration_to_pc (n, a) =
+  let n_pc = note_to_pc n
+  in fmap ((`mod` 12) . (+ n_pc)) (alteration_to_diff a)
 
 {- | Error variant.
 
@@ -353,24 +360,35 @@ note_alteration_to_pc (n,a) =
 note_alteration_to_pc_err :: (Note, Alteration) -> Int
 note_alteration_to_pc_err = fromMaybe (error "note_alteration_to_pc") . note_alteration_to_pc
 
-{- | Note & alteration sequence in key-signature spelling. -}
+-- | Note & alteration sequence in key-signature spelling.
 note_alteration_ks :: [(Note, Alteration)]
 note_alteration_ks =
-    [(C,Natural),(C,Sharp),(D,Natural),(E,Flat),(E,Natural),(F,Natural)
-    ,(F,Sharp),(G,Natural),(A,Flat),(A,Natural),(B,Flat),(B,Natural)]
+  [ (C, Natural)
+  , (C, Sharp)
+  , (D, Natural)
+  , (E, Flat)
+  , (E, Natural)
+  , (F, Natural)
+  , (F, Sharp)
+  , (G, Natural)
+  , (A, Flat)
+  , (A, Natural)
+  , (B, Flat)
+  , (B, Natural)
+  ]
 
-{- | Table connecting pitch class number with 'note_alteration_ks'.-}
-pc_note_alteration_ks_tbl :: Integral i => [((Note,Alteration),i)]
-pc_note_alteration_ks_tbl = zip note_alteration_ks [0..11]
+-- | Table connecting pitch class number with 'note_alteration_ks'.
+pc_note_alteration_ks_tbl :: Integral i => [((Note, Alteration), i)]
+pc_note_alteration_ks_tbl = zip note_alteration_ks [0 .. 11]
 
-{- | 'List.reverse_lookup' of 'pc_note_alteration_ks_tbl'. -}
-pc_to_note_alteration_ks :: Integral i => i -> Maybe (Note,Alteration)
+-- | 'List.reverse_lookup' of 'pc_note_alteration_ks_tbl'.
+pc_to_note_alteration_ks :: Integral i => i -> Maybe (Note, Alteration)
 pc_to_note_alteration_ks i = List.reverse_lookup i pc_note_alteration_ks_tbl
 
 -- * Rational Alteration
 
-{- | Alteration given as a rational semitone difference and a string representation of the alteration. -}
-type Alteration_R = (Rational,String)
+-- | Alteration given as a rational semitone difference and a string representation of the alteration.
+type Alteration_R = (Rational, String)
 
 {- | Transform 'Alteration' to 'Alteration_R'.
 
@@ -379,7 +397,7 @@ type Alteration_R = (Rational,String)
 True
 -}
 alteration_r :: Alteration -> Alteration_R
-alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])
+alteration_r a = (alteration_to_fdiff a, [alteration_symbol a])
 
 -- * Parsers
 
@@ -391,11 +409,11 @@ alteration_r a = (alteration_to_fdiff a,[alteration_symbol a])
 p_note_t :: Parse.P Note
 p_note_t = fmap (char_to_note_t False) (Parsec.oneOf "ABCDEFG")
 
-{- | Note name in lower case (not ISO) -}
+-- | Note name in lower case (not ISO)
 p_note_t_lc :: Parse.P Note
 p_note_t_lc = fmap (char_to_note_t True) (Parsec.oneOf "abcdefg")
 
-{- | Case-insensitive note name (not ISO). -}
+-- | Case-insensitive note name (not ISO).
 p_note_t_ci :: Parse.P Note
 p_note_t_ci = fmap (char_to_note_t True) (Parsec.oneOf "abcdefgABCDEFG")
 
@@ -420,8 +438,8 @@ p_alteration_t_tonh = fmap tonh_to_alteration_err (Parsec.many1 (Parsec.oneOf "e
 >>> map (Parse.run_parser_error p_note_alteration_ly) ["c","ees","fis","aeses"]
 [(C,Nothing),(E,Just Flat),(F,Just Sharp),(A,Just DoubleFlat)]
 -}
-p_note_alteration_ly :: Parse.P (Note,Maybe Alteration)
+p_note_alteration_ly :: Parse.P (Note, Maybe Alteration)
 p_note_alteration_ly = do
   n <- p_note_t_lc
   a <- Parsec.optionMaybe p_alteration_t_tonh
-  return (n,a)
+  return (n, a)

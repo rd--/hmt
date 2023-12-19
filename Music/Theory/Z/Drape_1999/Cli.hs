@@ -12,15 +12,16 @@ type Z12 = Int8
 
 pct_cli_help :: [String]
 pct_cli_help =
-    ["pct ess pcset"
-    ,"pct fl -c cset"
-    ,"pct frg pcset"
-    ,"pct si [pcset]"
-    ,"pct spsc set-class..."
-    ,"pct sra"
-    ,"pct sro sro"
-    ,"pct tmatrix pcseg"
-    ,"pct trs [-m] pcseg"]
+  [ "pct ess pcset"
+  , "pct fl -c cset"
+  , "pct frg pcset"
+  , "pct si [pcset]"
+  , "pct spsc set-class..."
+  , "pct sra"
+  , "pct sro sro"
+  , "pct tmatrix pcseg"
+  , "pct trs [-m] pcseg"
+  ]
 
 z16_seq_parse :: String -> [Int]
 z16_seq_parse = map digitToInt
@@ -63,8 +64,8 @@ fl_c_cmd = unlines . map z12_sc_name . concatMap scs_n . cset_parse
 
 frg_cmd :: Cmd
 frg_cmd p =
-    let p' = pco_parse p
-    in unlines [frg_pp p',ic_cycle_vector_pp (ic_cycle_vector p')]
+  let p' = pco_parse p
+  in unlines [frg_pp p', ic_cycle_vector_pp (ic_cycle_vector p')]
 
 pi_cmd :: String -> Cmd
 pi_cmd p = mk_cmd_many (pci z12 (z16_seq_parse p))
@@ -114,18 +115,18 @@ interact_ln f = interact (unlines . map f . lines)
 pct_cli :: [String] -> IO ()
 pct_cli arg = do
   case arg of
-    ["ess",p] -> interact_ln (ess_cmd p)
-    ["fl","-c",c] -> putStr (fl_c_cmd c)
-    ["frg",p] -> putStr (frg_cmd p)
-    ["pi",p,q] -> putStr (pi_cmd q p)
-    ["scc",p] -> interact_ln (scc_cmd p)
-    ["scc",p,q] -> putStr (scc_cmd p q)
+    ["ess", p] -> interact_ln (ess_cmd p)
+    ["fl", "-c", c] -> putStr (fl_c_cmd c)
+    ["frg", p] -> putStr (frg_cmd p)
+    ["pi", p, q] -> putStr (pi_cmd q p)
+    ["scc", p] -> interact_ln (scc_cmd p)
+    ["scc", p, q] -> putStr (scc_cmd p q)
     ["si"] -> interact_ln si_cmd
-    ["si",p] -> putStr (si_cmd p)
-    "spsc":p -> putStr (spsc_cmd p)
+    ["si", p] -> putStr (si_cmd p)
+    "spsc" : p -> putStr (spsc_cmd p)
     ["sra"] -> interact_ln sra_cmd
-    ["sro",o] -> interact_ln (sro_cmd o)
-    ["tmatrix",p] -> putStr (tmatrix_cmd p)
-    ["trs",p] -> interact_ln (trs_cmd (trs z12) p)
-    ["trs","-m",p] -> interact_ln (trs_cmd (trs_m z12) p)
+    ["sro", o] -> interact_ln (sro_cmd o)
+    ["tmatrix", p] -> putStr (tmatrix_cmd p)
+    ["trs", p] -> interact_ln (trs_cmd (trs z12) p)
+    ["trs", "-m", p] -> interact_ln (trs_cmd (trs_m z12) p)
     _ -> putStrLn (unlines pct_cli_help)

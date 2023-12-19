@@ -11,34 +11,34 @@ import qualified Music.Theory.List as List {- hmt-base -}
 
 import qualified Music.Theory.Contour.Polansky_1992 as Contour {- hmt -}
 
-{- | Distance function, ordinarily /n/ below is in 'Num', 'Fractional' or 'Real'. -}
+-- | Distance function, ordinarily /n/ below is in 'Num', 'Fractional' or 'Real'.
 type Interval a n = (a -> a -> n)
 
-{- | 'fromIntegral' '.' '-'. -}
-dif_i :: (Integral a,Num b) => a -> a -> b
+-- | 'fromIntegral' '.' '-'.
+dif_i :: (Integral a, Num b) => a -> a -> b
 dif_i i j = fromIntegral (i - j)
 
-{- | 'realToFrac' '.' '-'. -}
-dif_r :: (Real a,Fractional b) => a -> a -> b
+-- | 'realToFrac' '.' '-'.
+dif_r :: (Real a, Fractional b) => a -> a -> b
 dif_r i j = realToFrac (i - j)
 
-{- | 'abs' '.' /f/. -}
+-- | 'abs' '.' /f/.
 abs_of :: Num n => Interval a n -> a -> a -> n
 abs_of f i j = abs (i `f` j)
 
-{- | Square. -}
+-- | Square.
 sqr :: Num a => a -> a
 sqr n = n * n
 
-{- | 'sqr' '.' /f/. -}
+-- | 'sqr' '.' /f/.
 sqr_of :: Num n => Interval a n -> a -> a -> n
 sqr_of f i j = sqr (i `f` j)
 
-{- | 'sqr' '.' 'abs' '.' /f/. -}
+-- | 'sqr' '.' 'abs' '.' /f/.
 sqr_abs_of :: Num n => Interval a n -> a -> a -> n
 sqr_abs_of f i = sqr . abs_of f i
 
-{- | 'sqrt' '.' 'abs' '.' /f/. -}
+-- | 'sqrt' '.' 'abs' '.' /f/.
 sqrt_abs_of :: Floating c => Interval a c -> a -> a -> c
 sqrt_abs_of f i = sqrt . abs_of f i
 
@@ -47,16 +47,16 @@ sqrt_abs_of f i = sqrt . abs_of f i
 >>> city_block_metric (-) (1,2) (3,5) == 2+3
 True
 -}
-city_block_metric :: Num n => Interval a n -> (a,a) -> (a,a) -> n
-city_block_metric f (x1,x2) (y1,y2) = abs_of f x1 y1 + abs_of f x2 y2
+city_block_metric :: Num n => Interval a n -> (a, a) -> (a, a) -> n
+city_block_metric f (x1, x2) (y1, y2) = abs_of f x1 y1 + abs_of f x2 y2
 
 {- | Two-dimensional euclidean metric, p.297.
 
 >>> euclidean_metric_2 (-) (1,2) (3,5) == sqrt (4+9)
 True
 -}
-euclidean_metric_2 :: Floating n => Interval a n -> (a,a) -> (a,a) -> n
-euclidean_metric_2 f (x1,x2) (y1,y2) = sqrt (sqr_of f x1 y1 + sqr_of f x2 y2)
+euclidean_metric_2 :: Floating n => Interval a n -> (a, a) -> (a, a) -> n
+euclidean_metric_2 f (x1, x2) (y1, y2) = sqrt (sqr_of f x1 y1 + sqr_of f x2 y2)
 
 {- | /n/-dimensional euclidean metric
 
@@ -75,7 +75,7 @@ euclidean_metric_l f p = sqrt . sum . zipWith (sqr_of f) p
 [1.0,2.0,3.0]
 -}
 cbrt :: Floating a => a -> a
-cbrt n = n ** (1/3)
+cbrt n = n ** (1 / 3)
 
 {- | /n/-th root
 
@@ -96,9 +96,9 @@ True
 >>> minkowski_metric_2 (-) 3 (1,2) (3,5) == cbrt (8 + 27)
 True
 -}
-minkowski_metric_2 :: Floating a => Interval t a -> a -> (t,t) -> (t,t) -> a
-minkowski_metric_2 f n (x1,x2) (y1,y2) =
-    ((abs (x1 `f` y1) ** n) + (abs (x2 `f` y2) ** n)) ** (1/n)
+minkowski_metric_2 :: Floating a => Interval t a -> a -> (t, t) -> (t, t) -> a
+minkowski_metric_2 f n (x1, x2) (y1, y2) =
+  ((abs (x1 `f` y1) ** n) + (abs (x2 `f` y2) ** n)) ** (1 / n)
 
 {- | /n/-dimensional Minkowski metric
 
@@ -110,8 +110,8 @@ True
 -}
 minkowski_metric_l :: Floating a => Interval t a -> a -> [t] -> [t] -> a
 minkowski_metric_l f n p q =
-    let g i j = abs (i `f` j) ** n
-    in nthrt n (sum (zipWith g p q))
+  let g i j = abs (i `f` j) ** n
+  in nthrt n (sum (zipWith g p q))
 
 {- | 'map' 'abs' '.' 'List.d_dx_by'.
 
@@ -131,9 +131,9 @@ d_dx_abs f = map abs . List.d_dx_by f
 -}
 olm_no_delta' :: Fractional a => [a] -> [a] -> a
 olm_no_delta' p q =
-    let r = zipWith (-) (d_dx_abs (-) p) (d_dx_abs (-) q)
-        z = sum (map abs r)
-    in z / (fromIntegral (length p) - 1)
+  let r = zipWith (-) (d_dx_abs (-) p) (d_dx_abs (-) q)
+      z = sum (map abs r)
+  in z / (fromIntegral (length p) - 1)
 
 {- | Ordered linear magintude (general form) p.302
 
@@ -145,11 +145,11 @@ olm_no_delta' p q =
 -}
 olm_general :: Fractional n => Interval a n -> [a] -> [a] -> n
 olm_general f p q =
-    let r = zipWith (-) (List.d_dx_by f p) (List.d_dx_by f q)
-        z = sum (map abs r)
-    in z / (fromIntegral (length p) - 1)
+  let r = zipWith (-) (List.d_dx_by f p) (List.d_dx_by f q)
+      z = sum (map abs r)
+  in z / (fromIntegral (length p) - 1)
 
-{- | 'Delta' (Δ) determines an interval given a sequence and an index. -}
+-- | 'Delta' (Δ) determines an interval given a sequence and an index.
 type Delta n a = ([n] -> Int -> a)
 
 {- | /f/ at indices /i/ and /i+1/ of /x/.
@@ -179,7 +179,7 @@ abs_ix_dif f x i = abs (ix_dif f x i)
 sqr_abs_ix_dif :: Num n => Interval a n -> Delta a n
 sqr_abs_ix_dif f x i = sqr (abs_ix_dif f x i)
 
-{- | 'Psi' (Ψ) joins 'Delta' equivalent intervals from morphologies /m/ and /n/. -}
+-- | 'Psi' (Ψ) joins 'Delta' equivalent intervals from morphologies /m/ and /n/.
 type Psi a = (a -> a -> a)
 
 {- | Ordered linear magintude (generalised-interval form) p.305
@@ -190,14 +190,14 @@ type Psi a = (a -> a -> a)
 >>> olm (abs_of dif_r) (abs_ix_dif dif_r) maximum [1,5,12,2,9,6] [7,6,4,9,8,1]
 0.46
 -}
-olm :: Fractional a => Psi a -> Delta n a  -> ([a] -> a) -> [n] -> [n] -> a
+olm :: Fractional a => Psi a -> Delta n a -> ([a] -> a) -> [n] -> [n] -> a
 olm psi delta maxint m n =
-    let l = length m
-        l' = fromIntegral l - 1
-        k = [0..l-2]
-        m' = map (delta m) k
-        n' = map (delta n) k
-    in sum (zipWith psi m' n') / (l' * maxint (m' ++ n'))
+  let l = length m
+      l' = fromIntegral l - 1
+      k = [0 .. l - 2]
+      m' = map (delta m) k
+      n' = map (delta n) k
+  in sum (zipWith psi m' n') / (l' * maxint (m' ++ n'))
 
 {- | No delta
 
@@ -207,7 +207,7 @@ olm psi delta maxint m n =
 >>> olm_no_delta [1,6,2,5,11] [3,15,13,2,9]
 4.5
 -}
-olm_no_delta :: (Real a,Real n,Fractional n) => [a] -> [a] -> n
+olm_no_delta :: (Real a, Real n, Fractional n) => [a] -> [a] -> n
 olm_no_delta = olm (abs_of dif_r) (abs_ix_dif dif_r) (const 1)
 
 {- | No delta squared
@@ -226,7 +226,7 @@ second_order f p q = f (d_dx_abs (-) p) (d_dx_abs (-) q)
 >>> olm_no_delta_second_order [0,2,4,1,0] [2,3,0,4,1]
 1.0
 -}
-olm_no_delta_second_order :: (Real a,Fractional a) => [a] -> [a] -> a
+olm_no_delta_second_order :: (Real a, Fractional a) => [a] -> [a] -> a
 olm_no_delta_second_order = second_order olm_no_delta
 
 {- | No delta, squared, second order.
@@ -262,11 +262,11 @@ direction_interval = List.d_dx_by (flip compare)
 >>> ord_hist [LT,GT,GT]
 (1,0,2)
 -}
-ord_hist :: Integral t => [Ordering] -> (t,t,t)
+ord_hist :: Integral t => [Ordering] -> (t, t, t)
 ord_hist x =
-    let h = List.generic_histogram x
-        f n = fromMaybe 0 (lookup n h)
-    in (f LT,f EQ,f GT)
+  let h = List.generic_histogram x
+      f n = fromMaybe 0 (lookup n h)
+  in (f LT, f EQ, f GT)
 
 {- | Histogram of /directions/ of adjacent elements, p.312.
 
@@ -276,7 +276,7 @@ ord_hist x =
 >>> direction_vector [2,5,6,6]
 (2,1,0)
 -}
-direction_vector :: Integral i => (Ord a) => [a] -> (i,i,i)
+direction_vector :: Integral i => (Ord a) => [a] -> (i, i, i)
 direction_vector = ord_hist . direction_interval
 
 {- | Unordered linear direction, p.311 (Fig. 5)
@@ -287,12 +287,12 @@ True
 >>> uld [5,3,6,1,4] [3,6,1,4,2] == 0
 True
 -}
-uld :: (Integral n,Ord a) => [a] -> [a] -> Ratio n
+uld :: (Integral n, Ord a) => [a] -> [a] -> Ratio n
 uld m n =
-    let (i,j,k) = direction_vector m
-        (p,q,r) = direction_vector n
-        z = (i + j + k) * 2
-    in (abs_of (-) i p + abs_of (-) j q + abs_of (-) k r) % z
+  let (i, j, k) = direction_vector m
+      (p, q, r) = direction_vector n
+      z = (i + j + k) * 2
+  in (abs_of (-) i p + abs_of (-) j q + abs_of (-) k r) % z
 
 {- | Ordered linear direction, p.312
 
@@ -307,10 +307,10 @@ True
 -}
 old :: (Ord i, Integral a) => [i] -> [i] -> Ratio a
 old m n =
-    let p = direction_interval m
-        q = direction_interval n
-        f i j = if i == j then 0 else 1
-    in sum (zipWith f p q) % (genericLength m - 1)
+  let p = direction_interval m
+      q = direction_interval n
+      f i j = if i == j then 0 else 1
+  in sum (zipWith f p q) % (genericLength m - 1)
 
 {- | Ordered combinatorial direction, p.314
 
@@ -320,12 +320,12 @@ True
 >>> ocd [5,3,6,1,4] [3,6,1,4,2] == 4/5
 True
 -}
-ocd :: (Ord a,Integral i) => [a] -> [a] -> Ratio i
+ocd :: (Ord a, Integral i) => [a] -> [a] -> Ratio i
 ocd m n =
-    let p = concat (Contour.half_matrix_f compare m)
-        q = concat (Contour.half_matrix_f compare n)
-        f i j = if i == j then 0 else 1
-    in sum (zipWith f p q) % genericLength p
+  let p = concat (Contour.half_matrix_f compare m)
+      q = concat (Contour.half_matrix_f compare n)
+      f i j = if i == j then 0 else 1
+  in sum (zipWith f p q) % genericLength p
 
 {- | Unordered combinatorial direction, p.314
 
@@ -343,14 +343,13 @@ True
 
 >>> ucd [5,3,7,6] [8,3,5,4] == 1/3
 True
-
 -}
-ucd :: (Integral n,Ord a) => [a] -> [a] -> Ratio n
+ucd :: (Integral n, Ord a) => [a] -> [a] -> Ratio n
 ucd m n =
-    let (i,j,k) = ord_hist (concat (Contour.half_matrix_f compare m))
-        (p,q,r) = ord_hist (concat (Contour.half_matrix_f compare n))
-        z = (i + j + k) * 2
-    in (abs_of (-) i p + abs_of (-) j q + abs_of (-) k r) % z
+  let (i, j, k) = ord_hist (concat (Contour.half_matrix_f compare m))
+      (p, q, r) = ord_hist (concat (Contour.half_matrix_f compare n))
+      z = (i + j + k) * 2
+  in (abs_of (-) i p + abs_of (-) j q + abs_of (-) k r) % z
 
 {- | 'Contour.half_matrix_f', Fig.9, p.318
 
@@ -371,18 +370,18 @@ True
 -}
 ulm_simplified :: Fractional n => Interval a n -> [a] -> [a] -> n
 ulm_simplified f p q =
-    let g = abs . sum . List.d_dx_by f
-    in abs (g p - g q) / fromIntegral (length p - 1)
+  let g = abs . sum . List.d_dx_by f
+  in abs (g p - g q) / fromIntegral (length p - 1)
 
 ocm_zcm :: Fractional n => Interval a n -> [a] -> [a] -> (n, n, [n])
 ocm_zcm f p q =
-    let p' = concat (Contour.half_matrix_f f p)
-        q' = concat (Contour.half_matrix_f f q)
-        r = zipWith (-) p' q'
-        z = sum (map abs r)
-        c = second_order_binonial_coefficient (fromIntegral (length p))
-        m = p' ++ q'
-    in (z,c,m)
+  let p' = concat (Contour.half_matrix_f f p)
+      q' = concat (Contour.half_matrix_f f q)
+      r = zipWith (-) p' q'
+      z = sum (map abs r)
+      c = second_order_binonial_coefficient (fromIntegral (length p))
+      m = p' ++ q'
+  in (z, c, m)
 
 {- | Ordered combinatorial magnitude (OCM), p.323
 
@@ -394,8 +393,8 @@ ocm_zcm f p q =
 -}
 ocm :: Fractional n => Interval a n -> [a] -> [a] -> n
 ocm f p q =
-    let (z,c,_) = ocm_zcm f p q
-    in z / c
+  let (z, c, _) = ocm_zcm f p q
+  in z / c
 
 {- | Ordered combinatorial magnitude (OCM), p.323
 
@@ -405,7 +404,7 @@ ocm f p q =
 >>> ocm_absolute_scaled (abs_of (-)) [1,5,12,2,9,6] [7,6,4,9,8,1] == 54 / (15 * 11)
 True
 -}
-ocm_absolute_scaled :: (Ord n,Fractional n) => Interval a n -> [a] -> [a] -> n
+ocm_absolute_scaled :: (Ord n, Fractional n) => Interval a n -> [a] -> [a] -> n
 ocm_absolute_scaled f p q =
-    let (z,c,m) = ocm_zcm f p q
-    in z / (c * maximum m)
+  let (z, c, m) = ocm_zcm f p q
+  in z / (c * maximum m)

@@ -3,7 +3,6 @@
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
 This module succesfully parses all scales in v.91 of the scale library.
-
 -}
 module Music.Theory.Tuning.Scala where
 
@@ -30,8 +29,9 @@ import qualified Music.Theory.String as T {- hmt-base -}
 import qualified Music.Theory.Tuning as T {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
 
--- $setup
--- >>> db <- scl_load_db_dir
+{- $setup
+>>> db <- scl_load_db_dir
+-}
 
 -- * Pitch
 
@@ -39,7 +39,7 @@ import qualified Music.Theory.Tuning.Type as T {- hmt -}
 type Pitch = Either T.Cents Rational
 
 -- | An enumeration type for @.scl@ pitch classification.
-data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq,Show)
+data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq, Show)
 
 -- | A nearness value for deriving approximate rationals.
 type Epsilon = Double
@@ -51,9 +51,9 @@ pitch_type = either (const Pitch_Cents) (const Pitch_Ratio)
 -- | Pitch as 'T.Cents', conversion by 'T.ratio_to_cents' if necessary.
 pitch_cents :: Pitch -> T.Cents
 pitch_cents p =
-    case p of
-      Left c -> c
-      Right r -> T.ratio_to_cents r
+  case p of
+    Left c -> c
+    Right r -> T.ratio_to_cents r
 
 {- | Pitch is 1:1 or 0c
 
@@ -63,59 +63,61 @@ pitch_cents p =
 pitch_is_zero :: Pitch -> Bool
 pitch_is_zero p = pitch_cents p == 0
 
--- | Pitch as 'Rational', conversion by 'T.reconstructed_ratio' if
--- necessary, hence /epsilon/.
+{- | Pitch as 'Rational', conversion by 'T.reconstructed_ratio' if
+necessary, hence /epsilon/.
+-}
 pitch_ratio :: Epsilon -> Pitch -> Rational
 pitch_ratio epsilon p =
-    case p of
-      Left c -> T.reconstructed_ratio epsilon c
-      Right r -> r
+  case p of
+    Left c -> T.reconstructed_ratio epsilon c
+    Right r -> r
 
 -- | A pair giving the number of 'Cents' and number of 'Ratio' pitches.
-pitch_representations :: [Pitch] -> (Int,Int)
+pitch_representations :: [Pitch] -> (Int, Int)
 pitch_representations =
-    let f (l,r) p = case p of
-                      Left _ -> (l + 1,r)
-                      Right _ -> (l,r + 1)
-    in foldl f (0,0)
+  let f (l, r) p = case p of
+        Left _ -> (l + 1, r)
+        Right _ -> (l, r + 1)
+  in foldl f (0, 0)
 
 -- | If all pitches are uniform, give type.
 uniform_pitch_type :: [Pitch] -> Maybe Pitch_Type
 uniform_pitch_type p =
-    case pitch_representations p of
-      (0,_) -> Just Pitch_Ratio
-      (_,0) -> Just Pitch_Cents
-      _ -> Nothing
+  case pitch_representations p of
+    (0, _) -> Just Pitch_Ratio
+    (_, 0) -> Just Pitch_Cents
+    _ -> Nothing
 
 -- | The predominant type of a list of pitches.
 pitch_type_predominant :: [Pitch] -> Pitch_Type
 pitch_type_predominant p =
-    let (c,r) = pitch_representations p
-    in if c >= r then Pitch_Cents else Pitch_Ratio
+  let (c, r) = pitch_representations p
+  in if c >= r then Pitch_Cents else Pitch_Ratio
 
 -- * Scale
 
--- | A scale has a name, a description, a degree, and a sequence of pitches.
---   The /name/ is the the file-name without the /.scl/ suffix.
---   By convention the first comment line gives the file name (with suffix).
---   The pitches do not generally include 1:1 or 0c and do include the octave.
-type Scale = (String,String,Int,[Pitch])
+{- | A scale has a name, a description, a degree, and a sequence of pitches.
+  The /name/ is the the file-name without the /.scl/ suffix.
+  By convention the first comment line gives the file name (with suffix).
+  The pitches do not generally include 1:1 or 0c and do include the octave.
+-}
+type Scale = (String, String, Int, [Pitch])
 
 -- | The name of a scale.
 scale_name :: Scale -> String
-scale_name (nm,_,_,_) = nm
+scale_name (nm, _, _, _) = nm
 
 -- | Text description of a scale.
 scale_description :: Scale -> String
-scale_description (_,d,_,_) = d
+scale_description (_, d, _, _) = d
 
 -- | The degree of the scale (number of 'Pitch'es).
 scale_degree :: Scale -> Int
-scale_degree (_,_,n,_) = n
+scale_degree (_, _, n, _) = n
 
 -- | The 'Pitch'es at 'Scale', either including or excluding the octave.
 scale_pitches :: Bool -> Scale -> [Pitch]
-scale_pitches includingOctave (_,_,_,p) = if includingOctave then p else List.drop_last p
+scale_pitches includingOctave (_, _, _, p) = if includingOctave then p else List.drop_last p
 
 -- | The 'Pitch'es at 'Scale', excluding the octave.
 scale_pitches_excluding_octave :: Scale -> [Pitch]
@@ -145,7 +147,7 @@ pitch_non_oct p =
 
 -- | Ensure degree and number of pitches align.
 scale_verify :: Scale -> Bool
-scale_verify (_,_,n,p) = n == length p
+scale_verify (_, _, n, p) = n == length p
 
 -- | Raise error if scale doesn't verify, else 'id'.
 scale_verify_err :: Scale -> Scale
@@ -153,10 +155,10 @@ scale_verify_err scl = if scale_verify scl then scl else error ("invalid scale: 
 
 -- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale -> Maybe Pitch
-scale_octave (_,_,_,s) =
-    case s of
-      [] -> Nothing
-      _ -> Just (last s)
+scale_octave (_, _, _, s) =
+  case s of
+    [] -> Nothing
+    _ -> Just (last s)
 
 -- | Error variant.
 scale_octave_err :: Scale -> Pitch
@@ -180,10 +182,10 @@ is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches_excludi
 
 -- | Make scale pitches uniform, conforming to the most predominant pitch type.
 scale_uniform :: Epsilon -> Scale -> Scale
-scale_uniform epsilon (nm,d,n,p) =
-    case pitch_type_predominant p of
-      Pitch_Cents -> (nm,d,n,map (Left . pitch_cents) p)
-      Pitch_Ratio -> (nm,d,n,map (Right . pitch_ratio epsilon) p)
+scale_uniform epsilon (nm, d, n, p) =
+  case pitch_type_predominant p of
+    Pitch_Cents -> (nm, d, n, map (Left . pitch_cents) p)
+    Pitch_Ratio -> (nm, d, n, map (Right . pitch_ratio epsilon) p)
 
 -- | Scale as list of 'T.Cents' (ie. 'pitch_cents') with @0@ prefix (if scale does not have 0), either including or excluding octave.
 scale_cents :: Bool -> Scale -> [T.Cents]
@@ -213,9 +215,10 @@ scale_ratios includingOctave epsilon s =
 scale_ratios_u :: Bool -> Scale -> Maybe [Rational]
 scale_ratios_u includingOctave scl =
   if scl_is_ji scl
-  then let r = map (fromMaybe (error "scale_ratios_u?") . Either.from_right) (scale_pitches includingOctave scl)
-       in Just (if scale_has_zero scl then r else 1 : r)
-  else Nothing
+    then
+      let r = map (fromMaybe (error "scale_ratios_u?") . Either.from_right) (scale_pitches includingOctave scl)
+      in Just (if scale_has_zero scl then r else 1 : r)
+    else Nothing
 
 -- | Erroring variant of 'scale_ratios_u.
 scale_ratios_req :: Bool -> Scale -> [Rational]
@@ -245,33 +248,32 @@ scale_ratios_excluding_octave_req = scale_ratios_req False
 >>> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
 >>> scale_name py'
 "pyth_12"
-
 -}
 scale_eq :: Scale -> Scale -> Bool
-scale_eq (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && p0 == p1
+scale_eq (_, _, d0, p0) (_, _, d1, p1) = d0 == d1 && p0 == p1
 
 -- | Are scales equal at degree and 'intersect' to at least /k/ places of tuning data.
 scale_eq_n :: Int -> Scale -> Scale -> Bool
-scale_eq_n k (_,_,d0,p0) (_,_,d1,p1) = d0 == d1 && length (p0 `intersect` p1) >= k
+scale_eq_n k (_, _, d0, p0) (_, _, d1, p1) = d0 == d1 && length (p0 `intersect` p1) >= k
 
 -- | Is `s1` a proper subset of `s2`.
 scale_sub :: Scale -> Scale -> Bool
-scale_sub (_,_,d0,p0) (_,_,d1,p1) = d0 < d1 && intersect p0 p1 == p0
+scale_sub (_, _, d0, p0) (_, _, d1, p1) = d0 < d1 && intersect p0 p1 == p0
 
 -- | Are scales equal at degree and equivalent to within /epsilon/ at 'pitch_cents'.
 scale_eqv :: Epsilon -> Scale -> Scale -> Bool
-scale_eqv epsilon (_,_,d0,p0) (_,_,d1,p1) =
-    let (~=) p q = abs (pitch_cents p - pitch_cents q) < epsilon
-    in d0 == d1 && and (zipWith (~=) p0 p1)
+scale_eqv epsilon (_, _, d0, p0) (_, _, d1, p1) =
+  let (~=) p q = abs (pitch_cents p - pitch_cents q) < epsilon
+  in d0 == d1 && and (zipWith (~=) p0 p1)
 
 -- * Parser
 
 -- | Comment lines begin with @!@.
 is_comment :: String -> Bool
 is_comment x =
-    case x of
-      '!':_ -> True
-      _ -> False
+  case x of
+    '!' : _ -> True
+    _ -> False
 
 {- | Remove to end of line @!@ comments.
 
@@ -288,8 +290,8 @@ remove_eol_comments = takeWhile (/= '!')
 -}
 filter_comments :: [String] -> [String]
 filter_comments =
-    map remove_eol_comments .
-    filter (not . Function.predicate_any [is_comment])
+  map remove_eol_comments
+    . filter (not . Function.predicate_any [is_comment])
 
 {- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
 
@@ -298,27 +300,30 @@ filter_comments =
 -}
 parse_pitch :: String -> Pitch
 parse_pitch p =
-    if '.' `elem` p
+  if '.' `elem` p
     then Left (T.read_fractional_allow_trailing_point_err p)
     else Right (T.read_ratio_with_div_err False p)
 
 -- | Pitch lines may contain commentary.
 parse_pitch_ln :: String -> Pitch
 parse_pitch_ln x =
-    case words x of
-      p:_ -> parse_pitch p
-      _ -> error (show ("parse_pitch_ln",words x))
+  case words x of
+    p : _ -> parse_pitch p
+    _ -> error (show ("parse_pitch_ln", words x))
 
 -- | Parse @.scl@ file.
 parse_scl :: String -> String -> Scale
 parse_scl nm s =
-    case filter_comments (lines (T.filter_cr s)) of
-      t:n:p -> let scl = (nm
-                         ,T.delete_trailing_whitespace t
-                         ,T.read_err_msg "degree" n
-                         ,map parse_pitch_ln p)
-               in scale_verify_err scl
-      _ -> error "parse"
+  case filter_comments (lines (T.filter_cr s)) of
+    t : n : p ->
+      let scl =
+            ( nm
+            , T.delete_trailing_whitespace t
+            , T.read_err_msg "degree" n
+            , map parse_pitch_ln p
+            )
+      in scale_verify_err scl
+    _ -> error "parse"
 
 -- * Io
 
@@ -366,10 +371,10 @@ then return it, else run 'scl_derive_filename'.
 -}
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
-    let ex_f x = if x then return nm else error ("scl_resolve_name: file does not exist: " ++ nm)
-    in if isAbsolute nm && takeExtension nm == ".scl"
-       then doesFileExist nm >>= ex_f
-       else scl_derive_filename nm
+  let ex_f x = if x then return nm else error ("scl_resolve_name: file does not exist: " ++ nm)
+  in if isAbsolute nm && takeExtension nm == ".scl"
+      then doesFileExist nm >>= ex_f
+      else scl_derive_filename nm
 
 {- | Load @.scl@ file, runs 'scl_resolve_name'.
 
@@ -392,7 +397,7 @@ scl_load nm = do
 > length db == 5176 -- v.91
 > map (\(fn,s) -> (takeFileName fn,scale_name s)) db
 -}
-scl_load_dir_fn :: FilePath -> IO [(FilePath,Scale)]
+scl_load_dir_fn :: FilePath -> IO [(FilePath, Scale)]
 scl_load_dir_fn d = do
   fn <- Directory.dir_subset [".scl"] d
   scl <- mapM scl_load fn
@@ -429,7 +434,7 @@ scl_load_db_path = do
 -- | <http://www.huygens-fokker.org/docs/scalesdir.txt>
 scales_dir_txt_tbl :: [Scale] -> [[String]]
 scales_dir_txt_tbl =
-  let f s = [scale_name s,show (scale_degree s),scale_description s]
+  let f s = [scale_name s, show (scale_degree s), scale_description s]
   in map f
 
 {- | Format 'scales_dir_txt_tbl' as Csv file.
@@ -437,7 +442,7 @@ scales_dir_txt_tbl =
 > writeFile "/tmp/scl.csv" (scales_dir_txt_csv db)
 -}
 scales_dir_txt_csv :: [Scale] -> String
-scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_txt_tbl db)
+scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing, scales_dir_txt_tbl db)
 
 {- | Simple plain-text display of scale data.
 
@@ -445,27 +450,29 @@ scales_dir_txt_csv db = Csv.csv_table_pp id Csv.def_csv_opt (Nothing,scales_dir_
 -}
 scale_stat :: Scale -> [String]
 scale_stat s =
-    let p = scale_pitches_excluding_octave s
-        u_ty = uniform_pitch_type p
-        n_ty = let p_ty = pitch_type_predominant p
-                   (p_i,p_j) = pitch_representations p
-               in concat ["non-uniform (",show p_ty,",",show p_i,":",show p_j,")"]
-    in ["name        : " ++ scale_name s
-       ,"description : " ++ scale_description s
-       ,"degree      : " ++ show (scale_degree s)
-       ,"type        : " ++ maybe n_ty show u_ty
-       ,"octave      : " ++ pitch_pp (scale_octave_err s)
-       ,"cents-i     : " ++ show (scale_cents_i False s)
-       ,if scl_is_ji s
+  let p = scale_pitches_excluding_octave s
+      u_ty = uniform_pitch_type p
+      n_ty =
+        let p_ty = pitch_type_predominant p
+            (p_i, p_j) = pitch_representations p
+        in concat ["non-uniform (", show p_ty, ",", show p_i, ":", show p_j, ")"]
+  in [ "name        : " ++ scale_name s
+     , "description : " ++ scale_description s
+     , "degree      : " ++ show (scale_degree s)
+     , "type        : " ++ maybe n_ty show u_ty
+     , "octave      : " ++ pitch_pp (scale_octave_err s)
+     , "cents-i     : " ++ show (scale_cents_i False s)
+     , if scl_is_ji s
         then "ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req False s))
-        else ""]
+        else ""
+     ]
 
 -- | Pretty print 'Pitch' in @Scala@ format.
 pitch_pp :: Pitch -> String
 pitch_pp p =
-    case p of
-      Left c -> show c
-      Right r -> show (numerator r) ++ "/" ++ show (denominator r)
+  case p of
+    Left c -> show c
+    Right r -> show (numerator r) ++ "/" ++ show (denominator r)
 
 {- | Pretty print 'Scale' in @Scala@ format.
 
@@ -474,12 +481,14 @@ pitch_pp p =
 > putStr $ unlines $ scale_pp scl
 -}
 scale_pp :: Scale -> [String]
-scale_pp (nm,dsc,k,p) =
-    ["! " ++ nm ++ ".scl"
-    ,"!"
-    ,dsc
-    ,show k
-    ,"!"] ++ map pitch_pp p
+scale_pp (nm, dsc, k, p) =
+  [ "! " ++ nm ++ ".scl"
+  , "!"
+  , dsc
+  , show k
+  , "!"
+  ]
+    ++ map pitch_pp p
 
 scale_wr :: FilePath -> Scale -> IO ()
 scale_wr fn = writeFile fn . unlines . scale_pp
@@ -523,11 +532,11 @@ scl_ji_limit :: Scale -> Integer
 scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . scale_ratios_req True
 
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
-scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double,[T.Cents],Int)]
+scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double, [T.Cents], Int)]
 scl_cdiff_abs_sum c scl =
   let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents_including_octave scl))))
-      ndiff x i = let d = zipWith (-) c x in (sum (map abs d),d,i)
-  in sort (zipWith ndiff r [0..])
+      ndiff x i = let d = zipWith (-) c x in (sum (map abs d), d, i)
+  in sort (zipWith ndiff r [0 ..])
 
 {- | Variant selecting only nearest and with post-processing function.
 
@@ -540,11 +549,11 @@ scl_cdiff_abs_sum c scl =
 >>> r
 [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
 -}
-scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (Double,[n],Int)
+scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (Double, [n], Int)
 scl_cdiff_abs_sum_1 pp c scl =
   case scl_cdiff_abs_sum c scl of
     [] -> error "scl_cdiff_abs_sum_1"
-    (n,d,r):_ -> (n,map pp d,r)
+    (n, d, r) : _ -> (n, map pp d, r)
 
 {- | Sort Db into ascending order of sum of absolute of differences to scale given in cents.
      Scales are sorted and all rotations are considered.
@@ -557,11 +566,11 @@ scl_cdiff_abs_sum_1 pp c scl =
 
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
 -}
-scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((Double,[n],Int),Scale)]
+scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((Double, [n], Int), Scale)]
 scl_db_query_cdiff_asc pp db c =
   let n = length c - 1
       db_n = filter ((== n) . scale_degree) db
-  in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl,scl)) db_n)
+  in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl, scl)) db_n)
 
 -- | Is /x/ the same scale as /scl/ under /cmp/.
 scale_cmp_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
@@ -577,7 +586,6 @@ Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons c
 >>> let cmp p q = p == q || p == inv q
 >>> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
 [("malkauns","Raga Malkauns, inverse of prime_5.scl",5,[Right (6 % 5),Right (4 % 3),Right (8 % 5),Right (16 % 9),Right (2 % 1)]),("prime_5","What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale",5,[Right (9 % 8),Right (5 % 4),Right (3 % 2),Right (5 % 3),Right (2 % 1)])]
-
 -}
 scl_find_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
 scl_find_ji includingOctave cmp x = filter (scale_cmp_ji includingOctave cmp x)
@@ -601,32 +609,35 @@ If 'Scale' is uniformly rational, 'T.Tuning' is rational, else it is in 'T.Cents
 True
 -}
 scale_to_tuning :: Scale -> T.Tuning
-scale_to_tuning s@(_,_,_,p) =
-    case partitionEithers p of
-      ([],r) -> let (r',o) = List.separate_last r
-                    r'' = if scale_has_zero s then r' else 1 : r'
-                in T.Tuning (Left r'') (if o == 2 then Nothing else Just (Left o))
-      _ -> let (p', o) = List.separate_last p
-               c = map pitch_cents p'
-               c' = if scale_has_zero s then c else 0 : c
-               o' = if o == Left 1200 || o == Right 2 then Nothing else Just (Either.either_swap o)
-           in T.Tuning (Right c') o'
+scale_to_tuning s@(_, _, _, p) =
+  case partitionEithers p of
+    ([], r) ->
+      let (r', o) = List.separate_last r
+          r'' = if scale_has_zero s then r' else 1 : r'
+      in T.Tuning (Left r'') (if o == 2 then Nothing else Just (Left o))
+    _ ->
+      let (p', o) = List.separate_last p
+          c = map pitch_cents p'
+          c' = if scale_has_zero s then c else 0 : c
+          o' = if o == Left 1200 || o == Right 2 then Nothing else Just (Either.either_swap o)
+      in T.Tuning (Right c') o'
 
 {- | Convert 'T.Tuning' to 'Scale'.
 
 >>> tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
 ("et12","12 tone equal temperament",12,[Left 100.0,Left 200.0,Left 300.0,Left 400.0,Left 500.0,Left 600.0,Left 700.0,Left 800.0,Left 900.0,Left 1000.0,Left 1100.0,Right (2 % 1)])
 -}
-tuning_to_scale :: (String,String) -> T.Tuning -> Scale
-tuning_to_scale (nm,dsc) tn@(T.Tuning p _) =
-    let n = either length length p
-        p' =
-          either
+tuning_to_scale :: (String, String) -> T.Tuning -> Scale
+tuning_to_scale (nm, dsc) tn@(T.Tuning p _) =
+  let n = either length length p
+      p' =
+        either
           (map Right . List.tail_err)
           (map Left . List.tail_err)
-          p ++ [Either.either_swap (T.tn_octave_def tn)]
-    in (nm,dsc,n,p')
+          p
+          ++ [Either.either_swap (T.tn_octave_def tn)]
+  in (nm, dsc, n, p')
 
-{- | 'scale_to_tuning' of 'scl_load'. -}
+-- | 'scale_to_tuning' of 'scl_load'.
 scl_load_tuning :: String -> IO T.Tuning
 scl_load_tuning = fmap scale_to_tuning . scl_load

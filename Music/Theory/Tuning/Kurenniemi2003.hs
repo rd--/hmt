@@ -9,6 +9,8 @@ import Data.Ratio {- base -}
 
 import qualified Data.Numbers.Primes as Primes {- primes -}
 
+import qualified Music.Theory.Geometry.Matrix as Matrix {- hmt-base -}
+
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
 
 {- | In a divisibility network, two numbers are connected if they share a common divisor.
@@ -64,7 +66,7 @@ kToName f0 k = Pitch.pitch_pp_iso (kToPitch f0 k)
 
 -- | Name of k given f0 of C1.
 kC1 :: Integer -> String
-kC1 = kToName (Pitch.octpc_to_cps (1::Integer, 0))
+kC1 = kToName (Pitch.octpc_to_cps (1 :: Integer, 0))
 
 c1Names :: [Integer] -> String
 c1Names = unwords . map kC1
@@ -106,23 +108,21 @@ True
 numberOfDivisors :: Integral a => a -> Int
 numberOfDivisors n = product (map ((+ 1) . length) (group (Primes.primeFactors n)))
 
-type V3 t = (t,t,t)
-type M33 t = V3 (V3 t)
-
-rotationMatrix :: M33 Double
+rotationMatrix :: Matrix.M33 Double
 rotationMatrix =
-  ((0.335136, 0.531178, 0.778161)
-  ,(0.94217, -0.188943, -0.276797)
-  ,(0, -0.825924, 0.563781))
+  ( (0.335136, 0.531178, 0.778161)
+  , (0.94217, -0.188943, -0.276797)
+  , (0, -0.825924, 0.563781)
+  )
 
 ilog :: Integer -> Double
 ilog = log . fromIntegral
 
 linlin :: Fractional n => (n, n) -> (n, n) -> n -> n
 linlin (sl, sr) (dl, dr) n =
-    let m = (dr - dl) / (sr - sl)
-        a = dl - (m * sl)
-    in n * m + a
+  let m = (dr - dl) / (sr - sl)
+      a = dl - (m * sl)
+  in n * m + a
 
 {- | A more exact measure of majorness / minorness, the M-index
 
@@ -165,8 +165,7 @@ mIndex c =
       f = linlin (lg, ll) (-1, 1)
   in sum (map (f . ilog) c) / genericLength c
 
-
-{-| One-indexed prime number, p(i) is the ith prime.
+{- | One-indexed prime number, p(i) is the ith prime.
 
 >>> map nthPrime [2, 3, 5, 7, 11]
 [3,5,11,17,31]

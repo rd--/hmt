@@ -25,7 +25,7 @@ type Z12 = Int8
 [1,0,0,0,0,1,0,0,1,1,0,1]
 -}
 inv_sym :: [Z12] -> Bool
-inv_sym x = x `elem` map (\i -> sort (Sro.z_sro_tn z12 i (Sro.z_sro_invert z12 0 x))) [0..11]
+inv_sym x = x `elem` map (\i -> sort (Sro.z_sro_tn z12 i (Sro.z_sro_invert z12 0 x))) [0 .. 11]
 
 {- | If /p/ is not 'inv_sym' then @(p,invert 0 p)@ else 'Nothing'.
 
@@ -37,9 +37,9 @@ Just ([0,1,3],[0,2,3])
 -}
 sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
-    if inv_sym p
+  if inv_sym p
     then Nothing
-    else Just (p,Forte.z_t_prime z12 (Sro.z_sro_invert z12 0 p))
+    else Just (p, Forte.z_t_prime z12 (Sro.z_sro_invert z12 0 p))
 
 {- | Transpositional equivalence variant of Forte's 'sc_table'.
 The inversionally related classes are distinguished by labels @A@ and @B@;
@@ -52,13 +52,14 @@ If neither @A@ nor @B@ appears in the name of a set-class, it is inversionally s
 >>> lookup "5-Z18B" t_sc_table
 Just [0,2,3,6,7]
 -}
-t_sc_table :: [(Forte.Sc_Name,[Z12])]
+t_sc_table :: [(Forte.Sc_Name, [Z12])]
 t_sc_table =
-    let f x = let nm = Forte.sc_name x
-              in case sc_t_ti x of
-                   Nothing -> [(nm,x)]
-                   Just (p,q) -> [(nm++"A",p),(nm++"B",q)]
-    in concatMap f Forte.scs
+  let f x =
+        let nm = Forte.sc_name x
+        in case sc_t_ti x of
+            Nothing -> [(nm, x)]
+            Just (p, q) -> [(nm ++ "A", p), (nm ++ "B", q)]
+  in concatMap f Forte.scs
 
 {- | Lookup a set-class name.  The input set is subject to 't_prime' before lookup.
 
@@ -70,8 +71,8 @@ t_sc_table =
 -}
 t_sc_name :: [Z12] -> Forte.Sc_Name
 t_sc_name p =
-    let n = find (\(_,q) -> Forte.z_t_prime z12 p == q) t_sc_table
-    in fst (fromJust n)
+  let n = find (\(_, q) -> Forte.z_t_prime z12 p == q) t_sc_table
+  in fst (fromJust n)
 
 {- | Lookup a set-class given a set-class name.
 
@@ -79,9 +80,9 @@ t_sc_name p =
 [0,1,2,4,7,8]
 -}
 t_sc :: Forte.Sc_Name -> [Z12]
-t_sc n = snd (fromJust (find (\(m,_) -> n == m) t_sc_table))
+t_sc n = snd (fromJust (find (\(m, _) -> n == m) t_sc_table))
 
-{- | List of set classes. -}
+-- | List of set classes.
 t_scs :: [[Z12]]
 t_scs = map snd t_sc_table
 
@@ -126,27 +127,27 @@ ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (Sro.z_sro_ti_relate
 >>> rle "abbcccdde"
 [(1,'a'),(2,'b'),(3,'c'),(2,'d'),(1,'e')]
 -}
-rle :: (Eq a,Integral i) => [a] -> [(i,a)]
+rle :: (Eq a, Integral i) => [a] -> [(i, a)]
 rle =
-    let f x = (genericLength x,List.head_err x)
-    in map f . group
+  let f x = (genericLength x, List.head_err x)
+  in map f . group
 
 {- | Inverse of 'rle'.
 
 >>> rle_decode [(5,'a'),(4,'b')]
 "aaaaabbbb"
 -}
-rle_decode :: (Integral i) => [(i,a)] -> [a]
+rle_decode :: (Integral i) => [(i, a)] -> [a]
 rle_decode =
-    let f (i,j) = genericReplicate i j
-    in concatMap f
+  let f (i, j) = genericReplicate i j
+  in concatMap f
 
 {- | Length of /rle/ encoded sequence.
 
 >>> rle_length [(5,'a'),(4,'b')]
 9
 -}
-rle_length :: (Integral i) => [(i,a)] -> i
+rle_length :: (Integral i) => [(i, a)] -> i
 rle_length = sum . map fst
 
 {- | T-equivalence /n/-class vector (subset-class vector, nCV).
@@ -162,8 +163,8 @@ rle_length = sum . map fst
 -}
 t_n_class_vector :: (Num a, Integral i) => i -> [Z12] -> [a]
 t_n_class_vector n x =
-    let a = t_scs_n n
-    in map (genericLength . t_subsets x) a
+  let a = t_scs_n n
+  in map (genericLength . t_subsets x) a
 
 {- | T\/I-equivalence /n/-class vector (subset-class vector, nCV).
 
@@ -178,8 +179,8 @@ t_n_class_vector n x =
 -}
 ti_n_class_vector :: (Num b, Integral i) => i -> [Z12] -> [b]
 ti_n_class_vector n x =
-    let a = Forte.scs_n n
-    in map (genericLength . ti_subsets x) a
+  let a = Forte.scs_n n
+  in map (genericLength . ti_subsets x) a
 
 {- | 'icv' scaled by sum of /icv/.
 
@@ -191,8 +192,8 @@ ti_n_class_vector n x =
 -}
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
-    let p' = Forte.z_icv z12 p
-    in map (sum p' *) p'
+  let p' = Forte.z_icv z12 p
+  in map (sum p' *) p'
 
 {- | /rel/ metric.
 
@@ -207,6 +208,6 @@ True
 -}
 rel :: Integral i => [Z12] -> [Z12] -> Ratio i
 rel x y =
-    let x' = dyad_class_percentage_vector x
-        y' = dyad_class_percentage_vector y
-    in sum (map abs (zipWith (-) x' y')) % 2
+  let x' = dyad_class_percentage_vector x
+      y' = dyad_class_percentage_vector y
+  in sum (map abs (zipWith (-) x' y')) % 2

@@ -13,19 +13,21 @@ import Music.Theory.Z {- hmt -}
 -- * Tto
 
 -- | Twelve-tone operator, of the form TMI.
-data Tto t = Tto {tto_T :: t,tto_M :: t,tto_I :: Bool}
-             deriving (Eq,Show)
+data Tto t = Tto {tto_T :: t, tto_M :: t, tto_I :: Bool}
+  deriving (Eq, Show)
 
 -- | T0
 tto_identity :: Num t => Tto t
 tto_identity = Tto 0 1 False
 
 -- | Pretty printer.  It is an error here is M is not 1 or 5.
-tto_pp :: (Show t,Num t,Eq t) => Tto t -> String
+tto_pp :: (Show t, Num t, Eq t) => Tto t -> String
 tto_pp (Tto t m i) =
-  concat ['T' : show t
-         ,if m == 1 then "" else if m == 5 then "M" else error "tto_pp: M?"
-         ,if i then "I" else ""]
+  concat
+    [ 'T' : show t
+    , if m == 1 then "" else if m == 5 then "M" else error "tto_pp: M?"
+    , if i then "I" else ""
+    ]
 
 -- | Parser for Tto, requires value for M (ordinarily 5 for 12-tone Tto).
 p_tto :: Integral t => t -> Parse.P (Tto t)
@@ -45,7 +47,7 @@ p_tto m_mul = do
 tto_parse :: Integral i => i -> String -> Tto i
 tto_parse m = either (\e -> error ("tto_parse failed\n" ++ show e)) id . P.parse (p_tto m) ""
 
-{- | Set M at Tto. -}
+-- | Set M at Tto.
 tto_M_set :: Integral t => t -> Tto t -> Tto t
 tto_M_set m (Tto t _ i) = Tto t m i
 
@@ -60,7 +62,7 @@ tto_M_set m (Tto t _ i) = Tto t m i
 ["T0","T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T0I","T1I","T2I","T3I","T4I","T5I","T6I","T7I","T8I","T9I","T10I","T11I","T0M","T1M","T2M","T3M","T4M","T5M","T6M","T7M","T8M","T9M","T10M","T11M","T0MI","T1MI","T2MI","T3MI","T4MI","T5MI","T6MI","T7MI","T8MI","T9MI","T10MI","T11MI"]
 -}
 z_tto_univ :: Integral t => t -> Z t -> [Tto t]
-z_tto_univ m_mul z = [Tto t m i | m <- [1,m_mul], i <- [False,True], t <- z_univ z]
+z_tto_univ m_mul z = [Tto t m i | m <- [1, m_mul], i <- [False, True], t <- z_univ z]
 
 {- | Apply Tto to pitch-class.
 
@@ -69,10 +71,10 @@ z_tto_univ m_mul z = [Tto t m i | m <- [1,m_mul], i <- [False,True], t <- z_univ
 -}
 z_tto_f :: Integral t => Z t -> Tto t -> (t -> t)
 z_tto_f z (Tto t m i) =
-    let i_f = if i then z_negate z else id
-        m_f = if m == 1 then id else z_mul z m
-        t_f = if t > 0 then z_add z t else id
-    in t_f . m_f . i_f
+  let i_f = if i then z_negate z else id
+      m_f = if m == 1 then id else z_mul z m
+      t_f = if t > 0 then z_add z t else id
+  in t_f . m_f . i_f
 
 {- | 'nub' of 'sort' of 'z_tto_f'.  (nub because M may be 0).
 
@@ -87,7 +89,7 @@ z_tto_apply z o = nub . sort . map (z_tto_f z o)
 >>> map tto_pp (z_tto_rel 5 z12 [0,1,2,3] [1,4,6,11])
 ["T1M","T4MI"]
 -}
-z_tto_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [Tto t]
+z_tto_rel :: (Ord t, Integral t) => t -> Z t -> [t] -> [t] -> [Tto t]
 z_tto_rel m z x y =
   let f o = if z_tto_apply z o x == y then Just o else Nothing
   in mapMaybe f (z_tto_univ m z)
@@ -102,7 +104,7 @@ z_tto_rel m z x y =
 >>> map (z_pcset z12) [[0,6],[6,12],[12,18]]
 [[0,6],[0,6],[0,6]]
 -}
-z_pcset :: (Integral t,Ord t) => Z t -> [t] -> [t]
+z_pcset :: (Integral t, Ord t) => Z t -> [t] -> [t]
 z_pcset z = nub . sort . map (z_mod z)
 
 {- | Transpose by n.
@@ -156,9 +158,9 @@ z_tto_m5 z = z_tto_mn z 5
 
 -- * Sequence
 
-{- | T-related sets of /p/. -}
+-- | T-related sets of /p/.
 z_tto_t_related_seq :: Integral i => Z i -> [i] -> [[i]]
-z_tto_t_related_seq z p = map (\q -> z_tto_tn z q p) [0..11]
+z_tto_t_related_seq z p = map (\q -> z_tto_tn z q p) [0 .. 11]
 
 {- | Unique elements of 'z_tto_t_related_seq'.
 
@@ -171,7 +173,7 @@ z_tto_t_related_seq z p = map (\q -> z_tto_tn z q p) [0..11]
 z_tto_t_related :: Integral i => Z i -> [i] -> [[i]]
 z_tto_t_related z = nub . z_tto_t_related_seq z
 
-{- | T\/I-related set of /p/. -}
+-- | T\/I-related set of /p/.
 z_tto_ti_related_seq :: Integral i => Z i -> [i] -> [[i]]
 z_tto_ti_related_seq z p = z_tto_t_related z p ++ z_tto_t_related z (z_tto_invert z 0 p)
 

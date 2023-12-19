@@ -1,4 +1,4 @@
-{- | Serial (ordered) pitch-class operations on 'Z'. -}
+-- | Serial (ordered) pitch-class operations on 'Z'.
 module Music.Theory.Z.Sro where
 
 import Data.List {- base -}
@@ -10,28 +10,32 @@ import qualified Music.Theory.Parse as Parse {- hmt -}
 
 import Music.Theory.Z
 
-{- | Serial operator,of the form rRTMI. -}
-data Sro t = Sro {sro_r :: Int
-                 ,sro_R :: Bool
-                 ,sro_T :: t
-                 ,sro_M :: t {- 1 5-}
-                 ,sro_I :: Bool}
-             deriving (Eq,Show)
+-- | Serial operator,of the form rRTMI.
+data Sro t = Sro
+  { sro_r :: Int
+  , sro_R :: Bool
+  , sro_T :: t
+  , sro_M :: t {- 1 5-}
+  , sro_I :: Bool
+  }
+  deriving (Eq, Show)
 
 {- | Printer in 'rnRTnMI' form.
 
 >>> sro_pp (sro_parse 5 "T4")
 "T4"
 -}
-sro_pp :: (Show t,Eq t,Num t) => Sro t -> String
+sro_pp :: (Show t, Eq t, Num t) => Sro t -> String
 sro_pp (Sro rN r tN m i) =
-    concat [if rN /= 0 then 'r' : show rN else ""
-           ,if r then "R" else ""
-           ,'T' : show tN
-           ,if m == 5 then "M" else if m == 1 then "" else error "sro_pp: M?"
-           ,if i then "I" else ""]
+  concat
+    [ if rN /= 0 then 'r' : show rN else ""
+    , if r then "R" else ""
+    , 'T' : show tN
+    , if m == 5 then "M" else if m == 1 then "" else error "sro_pp: M?"
+    , if i then "I" else ""
+    ]
 
-{- | Parser for Sro. -}
+-- | Parser for Sro.
 p_sro :: Integral t => t -> Parse.P (Sro t)
 p_sro m_mul = do
   let rot = P.option 0 (P.char 'r' >> Parse.parse_int)
@@ -54,8 +58,8 @@ True
 -}
 sro_parse :: Integral i => i -> String -> Sro i
 sro_parse m =
-    either (\e -> error ("sro_parse failed\n" ++ show e)) id .
-    P.parse (p_sro m) ""
+  either (\e -> error ("sro_parse failed\n" ++ show e)) id
+    . P.parse (p_sro m) ""
 
 -- * Z
 
@@ -68,48 +72,53 @@ sro_parse m =
 -}
 z_sro_univ :: Integral i => Int -> i -> Z i -> [Sro i]
 z_sro_univ n_rot m_mul z =
-    [Sro r r' t m i |
-     r <- [0 .. n_rot - 1],
-     r' <- [False,True],
-     t <- z_univ z,
-     m <- [1,m_mul],
-     i <- [False,True]]
+  [ Sro r r' t m i
+  | r <- [0 .. n_rot - 1]
+  , r' <- [False, True]
+  , t <- z_univ z
+  , m <- [1, m_mul]
+  , i <- [False, True]
+  ]
 
-{- | The set of transposition 'Sro's. -}
+-- | The set of transposition 'Sro's.
 z_sro_Tn :: Integral i => Z i -> [Sro i]
 z_sro_Tn z = [Sro 0 False n 1 False | n <- z_univ z]
 
-{- | The set of transposition and inversion 'Sro's. -}
+-- | The set of transposition and inversion 'Sro's.
 z_sro_TnI :: Integral i => Z i -> [Sro i]
 z_sro_TnI z =
-    [Sro 0 False n 1 i |
-     n <- z_univ z,
-     i <- [False,True]]
+  [ Sro 0 False n 1 i
+  | n <- z_univ z
+  , i <- [False, True]
+  ]
 
-{- | The set of retrograde and transposition and inversion 'Sro's. -}
+-- | The set of retrograde and transposition and inversion 'Sro's.
 z_sro_RTnI :: Integral i => Z i -> [Sro i]
 z_sro_RTnI z =
-    [Sro 0 r n 1 i |
-     r <- [True,False],
-     n <- z_univ z,
-     i <- [False,True]]
+  [ Sro 0 r n 1 i
+  | r <- [True, False]
+  , n <- z_univ z
+  , i <- [False, True]
+  ]
 
-{- | The set of transposition, @M@ and inversion 'Sro's. -}
+-- | The set of transposition, @M@ and inversion 'Sro's.
 z_sro_TnMI :: Integral i => i -> Z i -> [Sro i]
 z_sro_TnMI m_mul z =
-    [Sro 0 False n m i |
-     n <- z_univ z,
-     m <- [1,m_mul],
-     i <- [True,False]]
+  [ Sro 0 False n m i
+  | n <- z_univ z
+  , m <- [1, m_mul]
+  , i <- [True, False]
+  ]
 
-{- | The set of retrograde,transposition,@M5@ and inversion 'Sro's. -}
+-- | The set of retrograde,transposition,@M5@ and inversion 'Sro's.
 z_sro_RTnMI :: Integral i => i -> Z i -> [Sro i]
 z_sro_RTnMI m_mul z =
-    [Sro 0 r n m i |
-     r <- [True,False],
-     n <- z_univ z,
-     m <- [1,m_mul],
-     i <- [True,False]]
+  [ Sro 0 r n m i
+  | r <- [True, False]
+  , n <- z_univ z
+  , m <- [1, m_mul]
+  , i <- [True, False]
+  ]
 
 -- * Serial operations
 
@@ -123,18 +132,18 @@ z_sro_RTnMI m_mul z =
 -}
 z_sro_apply :: Integral i => Z i -> Sro i -> [i] -> [i]
 z_sro_apply z (Sro r r' t m i) x =
-    let x1 = if i then z_sro_invert z 0 x else x
-        x2 = if m == 1 then x1 else z_sro_mn z m x1
-        x3 = z_sro_tn z t x2
-        x4 = if r' then reverse x3 else x3
-    in List.rotate_left r x4
+  let x1 = if i then z_sro_invert z 0 x else x
+      x2 = if m == 1 then x1 else z_sro_mn z m x1
+      x3 = z_sro_tn z t x2
+      x4 = if r' then reverse x3 else x3
+  in List.rotate_left r x4
 
 {- | Find 'Sro's that map /x/ to /y/ given /m/ and /z/.
 
 >>> map sro_pp (z_sro_rel 5 z12 [0,1,2,3] [11,6,1,4])
 ["r1T4MI","r1RT1M"]
 -}
-z_sro_rel :: (Ord t,Integral t) => t -> Z t -> [t] -> [t] -> [Sro t]
+z_sro_rel :: (Ord t, Integral t) => t -> Z t -> [t] -> [t] -> [Sro t]
 z_sro_rel m z x y = filter (\o -> z_sro_apply z o x == y) (z_sro_univ (length x) m z)
 
 -- * Plain
@@ -161,12 +170,12 @@ z_sro_tn z n = fmap (z_add z n)
 >>> map (z_sro_invert z12 0) [[0,1,3],[1,4,8]]
 [[0,11,9],[11,8,4]]
 
->>> import Data.Word {- base -}
+>>> import Data.Word
 >>> z_sro_invert z12 (0::Word8) [1,4,8]
 [3,0,8]
 -}
 z_sro_invert :: (Integral i, Functor f) => Z i -> i -> f i -> f i
-z_sro_invert z n = fmap (\p -> z_sub z n (z_sub z p  n))
+z_sro_invert z n = fmap (\p -> z_sub z n (z_sub z p n))
 
 {- | Composition of 'invert' about @0@ and 'tn'.
 
@@ -234,15 +243,15 @@ z_sro_ti_related z p = nub (z_sro_t_related z p ++ z_sro_t_related z (z_sro_inve
 z_sro_rti_related :: Integral i => Z i -> [i] -> [[i]]
 z_sro_rti_related z p = let q = z_sro_ti_related z p in nub (q ++ map reverse q)
 
-{- | T\/M\/I-related sequences of /p/, duplicates removed. -}
+-- | T\/M\/I-related sequences of /p/, duplicates removed.
 z_sro_tmi_related :: Integral i => Z i -> [i] -> [[i]]
 z_sro_tmi_related z p = let q = z_sro_ti_related z p in nub (q ++ map (z_sro_m5 z) q)
 
-{- | R\/T\/M\/I-related sequences of /p/, duplicates removed. -}
+-- | R\/T\/M\/I-related sequences of /p/, duplicates removed.
 z_sro_rtmi_related :: Integral i => Z i -> [i] -> [[i]]
 z_sro_rtmi_related z p = let q = z_sro_tmi_related z p in nub (q ++ map reverse q)
 
-{- | r\/R\/T\/M\/I-related sequences of /p/, duplicates removed. -}
+-- | r\/R\/T\/M\/I-related sequences of /p/, duplicates removed.
 z_sro_rrtmi_related :: Integral i => Z i -> [i] -> [[i]]
 z_sro_rrtmi_related z p = nub (concatMap (z_sro_rtmi_related z) (List.rotations p))
 
@@ -258,9 +267,9 @@ z_sro_rrtmi_related z p = nub (concatMap (z_sro_rtmi_related z) (List.rotations 
 -}
 z_sro_tn_to :: Integral i => Z i -> i -> [i] -> [i]
 z_sro_tn_to z n p =
-    case p of
-      [] -> []
-      x:xs -> n : z_sro_tn z (z_sub z n x) xs
+  case p of
+    [] -> []
+    x : xs -> n : z_sro_tn z (z_sub z n x) xs
 
 {- | Variant of 'invert', inverse about /n/th element.
 

@@ -16,7 +16,7 @@ type Description = String
 type JiTuning = (Name, Description, [Integer], Maybe Rational, Maybe [Int])
 
 float64_integer_max :: Integer
-float64_integer_max = (2 ^ (53::Integer)) - 1
+float64_integer_max = (2 ^ (53 :: Integer)) - 1
 
 ji_tuning_name :: JiTuning -> Name
 ji_tuning_name (x, _, _, _, _) = x
@@ -33,8 +33,8 @@ ji_tuning_limit (_, _, x, _, _) = maximum (concatMap prime_factors x)
 rational_to_integer :: Rational -> Integer
 rational_to_integer r =
   if denominator r == 1
-  then numerator r
-  else error "rational_to_integer?"
+    then numerator r
+    else error "rational_to_integer?"
 
 scale_ji_tuning :: Scale -> JiTuning
 scale_ji_tuning scl =
@@ -43,12 +43,14 @@ scale_ji_tuning scl =
       m = foldr1 lcm d % 1
       s = map (rational_to_integer . (* m)) r
       i = nub (sort s)
-      i' = if i == s
-           then Nothing
-           else Just (map (\x -> fromMaybe (error "?") (elemIndex x i) + 1) s)
-      o' = if o == 2
-           then Nothing
-           else Just o
+      i' =
+        if i == s
+          then Nothing
+          else Just (map (\x -> fromMaybe (error "?") (elemIndex x i) + 1) s)
+      o' =
+        if o == 2
+          then Nothing
+          else Just o
   in (scale_name scl, scale_description scl, i, o', i')
 
 quote :: String -> String
@@ -60,15 +62,20 @@ ji_tuning_json :: JiTuning -> Json.Association
 ji_tuning_json (nm, dsc, iseq, oct, sq) =
   let integerArray = Json.array . map Json.integer
       intArray = Json.array . map Json.int
-  in (nm
-      ,Json.object (
-          [("name", Json.string nm)
-          ,("description", Json.string dsc)
-          ,("degree", Json.int (length iseq))
-          ,("limit", Json.integer (maximum (concatMap prime_factors iseq)))
-          ,("tuning", integerArray iseq)] ++ catMaybes
-            [fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
-            ,fmap (\x -> ("sequence", intArray x)) sq]))
+  in ( nm
+     , Json.object
+        ( [ ("name", Json.string nm)
+          , ("description", Json.string dsc)
+          , ("degree", Json.int (length iseq))
+          , ("limit", Json.integer (maximum (concatMap prime_factors iseq)))
+          , ("tuning", integerArray iseq)
+          ]
+            ++ catMaybes
+              [ fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
+              , fmap (\x -> ("sequence", intArray x)) sq
+              ]
+        )
+     )
 
 {- | Write Ji subset of Scala database to Json.
 Pitches are stored as sorted sequences of integers.
@@ -87,30 +94,32 @@ write_ji_tuning_db fn = do
 
 pitch_can_be_json :: Pitch -> Bool
 pitch_can_be_json p =
-    case p of
-      Left _ -> True
-      Right r -> all Json.isSafeIntegral [numerator r, denominator r]
+  case p of
+    Left _ -> True
+    Right r -> all Json.isSafeIntegral [numerator r, denominator r]
 
 -- | Cents are written as numbers, ratios as [numerator, denominator] two-vectors.
 pitch_json :: Pitch -> Json.Value
 pitch_json p =
-    case p of
-      Left c -> Json.double c
-      Right r -> Json.array (map Json.integer [numerator r, denominator r])
+  case p of
+    Left c -> Json.double c
+    Right r -> Json.array (map Json.integer [numerator r, denominator r])
 
 scale_can_be_json :: Scale -> Bool
 scale_can_be_json (_, _, _, p) = all pitch_can_be_json p
 
 -- | Format Scale as Json string.  Pitches are written as a string.
 scale_json :: Scale -> Json.Association
-scale_json (nm,dsc,k,p) =
-  (nm
-  ,Json.object [
-      ("name", Json.string nm)
-      ,("description", Json.string dsc)
-      ,("degree", Json.int k)
-      ,("pitches", Json.array (map pitch_json (drop_last p)))
-      ,("octave", pitch_json (last p))])
+scale_json (nm, dsc, k, p) =
+  ( nm
+  , Json.object
+      [ ("name", Json.string nm)
+      , ("description", Json.string dsc)
+      , ("degree", Json.int k)
+      , ("pitches", Json.array (map pitch_json (drop_last p)))
+      , ("octave", pitch_json (last p))
+      ]
+  )
 
 {- | Write Scala database to Json.
 

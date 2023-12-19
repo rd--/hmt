@@ -26,8 +26,7 @@ type Length = Time
 
 -- * Note
 
-data Note t =
-  Note { note_start_time :: Time, note_duration :: Duration, note_value :: t }
+data Note t = Note {note_start_time :: Time, note_duration :: Duration, note_value :: t}
   deriving (Eq, Ord, Show)
 
 note_end_time :: Note t -> Time
@@ -54,8 +53,7 @@ note_is_entirely_in_region (t1, t2) (Note t d _) = t >= t1 && (t + d) < t2
 -- * Phrase
 
 -- | It is an un-checked invariant that the note list is in ascending order.
-data Phrase t =
-  Phrase { phrase_notes :: [Note t], phrase_length :: Length }
+data Phrase t = Phrase {phrase_notes :: [Note t], phrase_length :: Length}
   deriving (Eq, Ord, Show)
 
 phrase_values :: Phrase t -> [t]
@@ -99,13 +97,13 @@ phrase_time_at (Phrase n _) k = note_start_time (n !! (k - 1))
 
 phrase_clear_at :: Phrase t -> Int -> Phrase t
 phrase_clear_at (Phrase n l) k =
-  let remove_ix ix list = let (p,q) = splitAt ix list in p ++ List.tail_err q
+  let remove_ix ix list = let (p, q) = splitAt ix list in p ++ List.tail_err q
   in Phrase (remove_ix (k - 1) n) l
 
 phrase_at_put :: Ord t => Phrase t -> Int -> Phrase t -> Phrase t
 phrase_at_put (Phrase n1 l1) k (Phrase n2 _) =
   let nt = n1 !! (k - 1)
-      remove_ix ix list = let (p,q) = splitAt ix list in p ++ List.tail_err q
+      remove_ix ix list = let (p, q) = splitAt ix list in p ++ List.tail_err q
   in Phrase (Data.List.Ordered.merge (remove_ix (k - 1) n1) (map (note_shift_time (note_start_time nt)) n2)) l1
 
 phrase_is_empty :: Phrase t -> Bool
@@ -156,8 +154,8 @@ phrase_extract_region p (t1, t2) =
 phrase_delete_region :: Ord t => Phrase t -> (Time, Time) -> Phrase t
 phrase_delete_region p (t1, t2) =
   phrase_append
-  (phrase_extract_region p (0, t1))
-  (phrase_extract_region p (t2, phrase_length p))
+    (phrase_extract_region p (0, t1))
+    (phrase_extract_region p (t2, phrase_length p))
 
 phrase_separate :: Phrase t -> Time -> (Phrase t, Phrase t)
 phrase_separate p t =

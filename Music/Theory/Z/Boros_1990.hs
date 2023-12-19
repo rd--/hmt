@@ -8,8 +8,8 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Numeric {- base -}
 
-import qualified Data.Graph.Inductive.Graph as Fgl {- fgl -}
 import qualified Data.Graph.Inductive.Basic as Fgl {- fgl -}
+import qualified Data.Graph.Inductive.Graph as Fgl {- fgl -}
 import qualified Data.Graph.Inductive.PatriciaTree as Fgl {- fgl -}
 import qualified Data.Graph.Inductive.Query.BFS as Fgl {- fgl -}
 
@@ -29,9 +29,9 @@ import qualified Music.Theory.Z.Tto as Z.Tto
 
 singular :: String -> [t] -> t
 singular err l =
-    case l of
-      [x] -> x
-      _ -> error ("not singular: " ++ err)
+  case l of
+    [x] -> x
+    _ -> error ("not singular: " ++ err)
 
 set_eq :: Ord t => [t] -> [t] -> Bool
 set_eq p q = Set.List.set p == Set.List.set q
@@ -45,7 +45,7 @@ tto_tni_univ :: Integral i => [Z.Tto.Tto i]
 tto_tni_univ = filter ((== 1) . Z.Tto.tto_M) (Z.Tto.z_tto_univ 5 Z.z12)
 
 all_tn :: Integral i => [i] -> [[i]]
-all_tn p = map (\n -> map (Z.z_add Z.z12 n) p) [0..11]
+all_tn p = map (\n -> map (Z.z_add Z.z12 n) p) [0 .. 11]
 
 all_tni :: Integral i => [i] -> [[i]]
 all_tni p = map (\f -> Z.Tto.z_tto_apply Z.z12 f p) tto_tni_univ
@@ -108,9 +108,9 @@ pcset_pp_hex = map toUpper . concatMap (`showHex` "")
 True
 -}
 ath :: Pcset
-ath = [0,1,2,4,7,8]
+ath = [0, 1, 2, 4, 7, 8]
 
-{- | Is /p/ an instance of 'ath'. -}
+-- | Is /p/ an instance of 'ath'.
 is_ath :: Pcset -> Bool
 is_ath p = Z.Forte_1973.z_forte_prime Z.z12 p == ath
 
@@ -137,9 +137,9 @@ ath_tni = singular "ath_tni" . filter ((== 1) . Z.Tto.tto_M) . Z.Tto.z_tto_rel 5
 -}
 ath_pp :: Pcset -> String
 ath_pp p =
-    let r = ath_tni p
-        h = if Z.Tto.tto_I r then 'h' else 'H'
-    in h : show (Z.Tto.tto_T r)
+  let r = ath_tni p
+      h = if Z.Tto.tto_I r then 'h' else 'H'
+  in h : show (Z.Tto.tto_T r)
 
 {- | The twenty three-element subsets of 'ath'.
 
@@ -147,7 +147,7 @@ ath_pp p =
 20
 -}
 ath_trichords :: [Pcset]
-ath_trichords = Combinations.combinations (3::Int) ath
+ath_trichords = Combinations.combinations (3 :: Int) ath
 
 {- | '\\' of 'ath' and /p/, ie. the pitch classes that are in 'ath' and not in /p/.
 
@@ -167,24 +167,24 @@ ath_complement p = ath \\ p
 -}
 ath_completions :: Pcset -> Sc -> [Pcset]
 ath_completions p q =
-    let f z = is_ath (nub (p ++ z))
-    in filter f (uniq_tni q)
+  let f z = is_ath (nub (p ++ z))
+  in filter f (uniq_tni q)
 
 realise_ath_seq :: [Pcset] -> [[Pcset]]
 realise_ath_seq sq =
-    case sq of
-      p:q:sq' -> concatMap (\z -> map (p :) (realise_ath_seq (z : sq'))) (ath_completions p q)
-      _ -> [sq]
+  case sq of
+    p : q : sq' -> concatMap (\z -> map (p :) (realise_ath_seq (z : sq'))) (ath_completions p q)
+    _ -> [sq]
 
-{- | Return edges that connect z to nodes at gr in an ATH relation -}
+-- | Return edges that connect z to nodes at gr in an ATH relation
 ath_gr_extend :: [Graph.Fgl.Edge Pcset] -> Pcset -> [Graph.Fgl.Edge Pcset]
 ath_gr_extend gr c =
-    let f x y = if is_ath (x ++ y) then Just (x,y) else Nothing
-        g (p,q) = mapMaybe (f c) [p,q]
-    in nub (map Tuple.t2_sort (concatMap g gr))
+  let f x y = if is_ath (x ++ y) then Just (x, y) else Nothing
+      g (p, q) = mapMaybe (f c) [p, q]
+  in nub (map Tuple.t2_sort (concatMap g gr))
 
 gr_trs :: Int -> [Graph.Fgl.Edge Pcset] -> [Graph.Fgl.Edge Pcset]
-gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
+gr_trs n = let f (p, q) = (pcset_trs n p, pcset_trs n q) in map f
 
 -- * Tables
 
@@ -193,12 +193,13 @@ gr_trs n = let f (p,q) = (pcset_trs n p,pcset_trs n q) in map f
 >>> length table_3
 20
 -}
-table_3 :: [((Pcset,Sc,Z.Forte_1973.Sc_Name),(Pcset,Sc,Z.Forte_1973.Sc_Name))]
+table_3 :: [((Pcset, Sc, Z.Forte_1973.Sc_Name), (Pcset, Sc, Z.Forte_1973.Sc_Name))]
 table_3 =
-    let f p = let q = ath_complement p
-                  i x = (x,Z.Forte_1973.z_forte_prime Z.z12 x,Z.Forte_1973.sc_name x)
-              in (i p,i q)
-    in map f ath_trichords
+  let f p =
+        let q = ath_complement p
+            i x = (x, Z.Forte_1973.z_forte_prime Z.z12 x, Z.Forte_1973.sc_name x)
+        in (i p, i q)
+  in map f ath_trichords
 
 pp_tbl :: Array.Text.Text_Table -> [String]
 pp_tbl = Array.Text.table_pp Array.Text.table_opt_simple
@@ -208,15 +209,15 @@ pp_tbl = Array.Text.table_pp Array.Text.table_opt_simple
 -}
 table_3_md :: [String]
 table_3_md =
-    let pp = pcset_pp_hex
-        f ((p,q,r),(s,t,u)) = [pp p,pp q,r,pp s,pp t,u]
-        hdr = ["P","P/SC","P/F","Q=H0-P","Q/SC","Q/F"]
-    in pp_tbl (hdr : map f table_3)
+  let pp = pcset_pp_hex
+      f ((p, q, r), (s, t, u)) = [pp p, pp q, r, pp s, pp t, u]
+      hdr = ["P", "P/SC", "P/F", "Q=H0-P", "Q/SC", "Q/F"]
+  in pp_tbl (hdr : map f table_3)
 
 {-
 >>> length table_4 == 10
 -}
-table_4 :: [((Pcset,Pcset,Z.Forte_1973.Sc_Name),(Pcset,Pcset,Z.Forte_1973.Sc_Name))]
+table_4 :: [((Pcset, Pcset, Z.Forte_1973.Sc_Name), (Pcset, Pcset, Z.Forte_1973.Sc_Name))]
 table_4 = nub (map Tuple.t2_sort table_3)
 
 {-
@@ -224,12 +225,12 @@ table_4 = nub (map Tuple.t2_sort table_3)
 -}
 table_4_md :: [String]
 table_4_md =
-    let pp = pcset_pp_hex
-        f ((p,q,r),(s,t,u)) = [pp p ++ "/" ++ pp s,pp q ++ "/" ++ pp t,r ++ "/" ++ u]
-        hdr = ["Trichords","Prime Forms","Forte Numbers"]
-    in pp_tbl (hdr : map f table_4)
+  let pp = pcset_pp_hex
+      f ((p, q, r), (s, t, u)) = [pp p ++ "/" ++ pp s, pp q ++ "/" ++ pp t, r ++ "/" ++ u]
+      hdr = ["Trichords", "Prime Forms", "Forte Numbers"]
+  in pp_tbl (hdr : map f table_4)
 
-table_5 :: [(Pcset,Int)]
+table_5 :: [(Pcset, Int)]
 table_5 = List.histogram (map (Z.Forte_1973.z_forte_prime Z.z12) ath_trichords)
 
 {- | Table 5
@@ -256,13 +257,13 @@ SC #ATH
 -}
 table_5_md :: [String]
 table_5_md =
-    let f (p,q) = [pcset_pp_hex p,show q]
-    in pp_tbl (["SC","#ATH"] : map f table_5)
+  let f (p, q) = [pcset_pp_hex p, show q]
+  in pp_tbl (["SC", "#ATH"] : map f table_5)
 
-table_6 :: [(Pcset,Int,Int)]
+table_6 :: [(Pcset, Int, Int)]
 table_6 =
-    let f (p,n) = (p,n,length (filter (\q -> p `List.is_subset` q) ath_univ))
-    in map f table_5
+  let f (p, n) = (p, n, length (filter (\q -> p `List.is_subset` q) ath_univ))
+  in map f table_5
 
 {- | Table 6
 
@@ -288,8 +289,8 @@ SC #H0 #Hn
 -}
 table_6_md :: [String]
 table_6_md =
-    let f (p,q,r) = [pcset_pp_hex p,show q,show r]
-    in pp_tbl (["SC","#H0","#Hn"] : map f table_6)
+  let f (p, q, r) = [pcset_pp_hex p, show q, show r]
+  in pp_tbl (["SC", "#H0", "#Hn"] : map f table_6)
 
 -- * Figures
 
@@ -319,13 +320,13 @@ fig_1_gr = Graph.Fgl.g_from_edges fig_1
 -}
 fig_2 :: [[Pcset]]
 fig_2 =
- let g = Fgl.undir fig_1_gr
-     n = Fgl.labNodes g
-     n' = filter ((== 2) . Fgl.deg g . fst) n
-     c = Combinations.combinations (2::Int) n'
-     p = map (\l -> let (lhs,rhs) = List.firstSecond l in Fgl.esp (fst lhs) (fst rhs) g) c
-     p' = filter (not . null) p
- in map (mapMaybe (`lookup` n)) p'
+  let g = Fgl.undir fig_1_gr
+      n = Fgl.labNodes g
+      n' = filter ((== 2) . Fgl.deg g . fst) n
+      c = Combinations.combinations (2 :: Int) n'
+      p = map (\l -> let (lhs, rhs) = List.firstSecond l in Fgl.esp (fst lhs) (fst rhs) g) c
+      p' = filter (not . null) p
+  in map (mapMaybe (`lookup` n)) p'
 
 fig_3 :: [[Graph.Fgl.Edge Pcset]]
 fig_3 = map (concatMap (List.adj2 1) . realise_ath_seq) fig_2
@@ -335,32 +336,32 @@ fig_3_gr = map Graph.Fgl.g_from_edges fig_3
 
 fig_4 :: [[Graph.Fgl.Edge Pcset]]
 fig_4 =
-    let p = concatMap realise_ath_seq fig_2
-        q = filter ([0,1,2] `elem`) p
-    in map (List.adj2 1) q
+  let p = concatMap realise_ath_seq fig_2
+      q = filter ([0, 1, 2] `elem`) p
+  in map (List.adj2 1) q
 
 fig_5 :: [[Graph.Fgl.Edge Pcset]]
 fig_5 =
-    let c = [0,4,8]
-        f gr = case ath_gr_extend gr c of
-                 [] -> Nothing
-                 r -> Just (gr ++ r)
-        g0 = concat fig_4
-    in mapMaybe (\n -> f (gr_trs n g0)) [0 .. 11]
+  let c = [0, 4, 8]
+      f gr = case ath_gr_extend gr c of
+        [] -> Nothing
+        r -> Just (gr ++ r)
+      g0 = concat fig_4
+  in mapMaybe (\n -> f (gr_trs n g0)) [0 .. 11]
 
 -- * Drawing
 
 uedge_set :: Ord v => [Graph.Fgl.Edge v] -> [Graph.Fgl.Edge v]
 uedge_set = nub . map Tuple.t2_sort
 
-{- | Self-inversional pcsets are drawn in a double circle, other pcsets in a circle. -}
+-- | Self-inversional pcsets are drawn in a double circle, other pcsets in a circle.
 set_shape :: Pcset -> Graph.Dot.Dot_Attr
-set_shape v = ("shape",if self_inv v then "doublecircle" else "circle")
+set_shape v = ("shape", if self_inv v then "doublecircle" else "circle")
 
 type Gr = Fgl.Gr Pcset ()
 
 gr_pp' :: (Pcset -> String) -> Graph.Dot.Graph_Pp Pcset ()
-gr_pp' f = (\(_,v) -> [set_shape v,("label",f v)],const [])
+gr_pp' f = (\(_, v) -> [set_shape v, ("label", f v)], const [])
 
 gr_pp :: Graph.Dot.Graph_Pp Pcset ()
 gr_pp = gr_pp' pcset_pp
@@ -375,7 +376,7 @@ d_fig_3 :: [String]
 d_fig_3 = Graph.Fgl.fgl_to_udot [] gr_pp d_fig_3_g
 
 d_fig_3' :: [[String]]
-d_fig_3' = map (Graph.Fgl.fgl_to_udot [("node:shape","circle")] gr_pp) fig_3_gr
+d_fig_3' = map (Graph.Fgl.fgl_to_udot [("node:shape", "circle")] gr_pp) fig_3_gr
 
 d_fig_4_g :: Gr
 d_fig_4_g = Graph.Fgl.g_from_edges (uedge_set (concat fig_4))
@@ -387,15 +388,15 @@ d_fig_5_g :: Gr
 d_fig_5_g = Graph.Fgl.g_from_edges (uedge_set (concat fig_5))
 
 d_fig_5 :: [String]
-d_fig_5 = Graph.Fgl.fgl_to_udot [("edge:len","1.5")] (gr_pp' pcset_pp_hex) d_fig_5_g
+d_fig_5 = Graph.Fgl.fgl_to_udot [("edge:len", "1.5")] (gr_pp' pcset_pp_hex) d_fig_5_g
 
 d_fig_5_e :: [Graph.Fgl.Edge_Lbl Pcset Pcset]
-d_fig_5_e = map (\(p,q) -> ((p,q),p++q)) (uedge_set (concat fig_5))
+d_fig_5_e = map (\(p, q) -> ((p, q), p ++ q)) (uedge_set (concat fig_5))
 
 d_fig_5_g' :: Fgl.Gr Pcset Pcset
 d_fig_5_g' = Graph.Fgl.g_from_edges_l d_fig_5_e
 
 d_fig_5' :: [String]
 d_fig_5' =
-    let pp = (const [("shape","")],\(_,e) -> [("label",ath_pp e)])
-    in Graph.Fgl.fgl_to_udot [("node:shape","point"),("edge:len","1.25")] pp d_fig_5_g'
+  let pp = (const [("shape", "")], \(_, e) -> [("label", ath_pp e)])
+  in Graph.Fgl.fgl_to_udot [("node:shape", "point"), ("edge:len", "1.25")] pp d_fig_5_g'

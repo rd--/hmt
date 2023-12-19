@@ -11,28 +11,28 @@ import qualified Music.Theory.List as List
 import qualified Music.Theory.Tuning as Tuning
 
 k_manisrenga :: Fractional n => [n]
-k_manisrenga = [219.5,266.5,227,233.5,258.5]
+k_manisrenga = [219.5, 266.5, 227, 233.5, 258.5]
 
 k_kanjutmesem :: Fractional n => [n]
-k_kanjutmesem = [224,253.5,237.5,232.5,264]
+k_kanjutmesem = [224, 253.5, 237.5, 232.5, 264]
 
 k_udanriris :: Fractional n => [n]
-k_udanriris = [255.5,256.5,223.5,235.5,234]
+k_udanriris = [255.5, 256.5, 223.5, 235.5, 234]
 
 k_pengawesari :: Fractional n => [n]
-k_pengawesari = [251.5,233.5,233.5,236,250]
+k_pengawesari = [251.5, 233.5, 233.5, 236, 250]
 
 k_rarasrum :: Fractional n => [n]
-k_rarasrum = [229.5,227.5,253,232,261.5]
+k_rarasrum = [229.5, 227.5, 253, 232, 261.5]
 
 k_hardjanagara :: Fractional n => [n]
-k_hardjanagara = [216,249.5,216,262,261.5]
+k_hardjanagara = [216, 249.5, 216, 262, 261.5]
 
 k_madukentir :: Fractional n => [n]
-k_madukentir = [268.5,242,243,230,221]
+k_madukentir = [268.5, 242, 243, 230, 221]
 
 k_surak :: Fractional n => [n]
-k_surak = [206,231.5,238.5,265,264.5]
+k_surak = [206, 231.5, 238.5, 265, 264.5]
 
 {- | The set of /K/ slendro tunings.
 
@@ -46,14 +46,16 @@ True
 268.5
 -}
 k_set :: Fractional n => [[n]]
-k_set = [k_manisrenga
-        ,k_kanjutmesem
-        ,k_udanriris
-        ,k_pengawesari
-        ,k_rarasrum
-        ,k_hardjanagara
-        ,k_madukentir
-        ,k_surak]
+k_set =
+  [ k_manisrenga
+  , k_kanjutmesem
+  , k_udanriris
+  , k_pengawesari
+  , k_rarasrum
+  , k_hardjanagara
+  , k_madukentir
+  , k_surak
+  ]
 
 {- | Given a set of equal length lists calculate the average value of each position.
 
@@ -62,9 +64,9 @@ k_set = [k_manisrenga
 -}
 calculate_averages :: Fractional n => [[n]] -> [n]
 calculate_averages set =
-    let n = fromIntegral (length set)
-        z = map sum (transpose set)
-    in map (/ n) z
+  let n = fromIntegral (length set)
+      z = map sum (transpose set)
+  in map (/ n) z
 
 {- | Averages of /K/ set, p. 10.
 
@@ -74,15 +76,15 @@ calculate_averages set =
 k_averages :: Fractional n => [n]
 k_averages = calculate_averages k_set
 
-gm_1,gm_2,gm_3,gm_4,gm_5,gm_6,gm_7,gm_8 :: Fractional n => [n]
-gm_1 = [237,251,248,242,258]
-gm_2 = [252,239,242,236.5,253.5]
-gm_3 = [237,238.5,232.5,262,238]
-gm_4 = [226,252,260,234,256]
-gm_5 = [232,239,248,232,259.5]
-gm_6 = [218,238.5,244.5,244.5,260]
-gm_7 = [238,230,257,243,250.5]
-gm_8 = [232,234,249,251,257]
+gm_1, gm_2, gm_3, gm_4, gm_5, gm_6, gm_7, gm_8 :: Fractional n => [n]
+gm_1 = [237, 251, 248, 242, 258]
+gm_2 = [252, 239, 242, 236.5, 253.5]
+gm_3 = [237, 238.5, 232.5, 262, 238]
+gm_4 = [226, 252, 260, 234, 256]
+gm_5 = [232, 239, 248, 232, 259.5]
+gm_6 = [218, 238.5, 244.5, 244.5, 260]
+gm_7 = [238, 230, 257, 243, 250.5]
+gm_8 = [232, 234, 249, 251, 257]
 
 {- | The set of /GM/ (Gadja Mada University) slendro tunings.
 
@@ -96,7 +98,7 @@ True
 262.0
 -}
 gm_set :: Fractional n => [[n]]
-gm_set = [gm_1,gm_2,gm_3,gm_4,gm_5,gm_6,gm_7,gm_8]
+gm_set = [gm_1, gm_2, gm_3, gm_4, gm_5, gm_6, gm_7, gm_8]
 
 {- | Averages of /GM/ set, p. 10.
 
@@ -106,21 +108,21 @@ gm_set = [gm_1,gm_2,gm_3,gm_4,gm_5,gm_6,gm_7,gm_8]
 gm_averages :: Fractional n => [n]
 gm_averages = calculate_averages gm_set
 
-{- | Association list giving interval boundaries for interval class categories (pp.10-11).
--}
-i_categories :: Num n => [((n,n),String)]
+-- | Association list giving interval boundaries for interval class categories (pp.10-11).
+i_categories :: Num n => [((n, n), String)]
 i_categories =
-    [((206,238),"S")
-    ,((238,240),"S-E")
-    ,((240,248),"E")
-    ,((248,250),"E-L")
-    ,((250,269),"L")]
+  [ ((206, 238), "S")
+  , ((238, 240), "S-E")
+  , ((240, 248), "E")
+  , ((248, 250), "E-L")
+  , ((250, 269), "L")
+  ]
 
-{- | Categorise an interval. -}
+-- | Categorise an interval.
 i_category :: (Ord a, Num a) => a -> String
 i_category x =
-    let f n (i,j) = i <= n && n < j
-    in maybe "U" snd (find (f x . fst) i_categories)
+  let f n (i, j) = i <= n && n < j
+  in maybe "U" snd (find (f x . fst) i_categories)
 
 {- | Pretty interval category table (pp. 10-11).
 
@@ -151,7 +153,7 @@ S    S    E-L  L    L
 @
 -}
 i_category_table :: (Ord a, Num a) => [[a]] -> [String]
-i_category_table = map (intercalate "  " .  map (List.pad_right ' ' 3 . i_category))
+i_category_table = map (intercalate "  " . map (List.pad_right ' ' 3 . i_category))
 
 {- | Rational tuning derived from 'gm_averages', p.11.
 
@@ -166,10 +168,10 @@ True
 -}
 polansky_1984_r :: [Rational]
 polansky_1984_r =
-    let vi = 12/7
-        v = 128/147 * vi
-        i' = 21/16 * v
-    in [1,8/7,21/16,v,vi,i']
+  let vi = 12 / 7
+      v = 128 / 147 * vi
+      i' = 21 / 16 * v
+  in [1, 8 / 7, 21 / 16, v, vi, i']
 
 {- | 'ratio_to_cents' of 'polansky_1984_r'.
 

@@ -1,4 +1,4 @@
-{- | Z-/n/ functions -}
+-- | Z-/n/ functions
 module Music.Theory.Z where
 
 import Data.Char {- base -}
@@ -21,14 +21,14 @@ newtype Z i = Z {z_modulus :: i}
 z_mod :: Integral i => Z i -> i -> i
 z_mod (Z i) n = mod n i
 
-{- | Common moduli in music theory. -}
-z5,z7,z12,z16 :: Num i => Z i
+-- | Common moduli in music theory.
+z5, z7, z12, z16 :: Num i => Z i
 z5 = Z 5
 z7 = Z 7
 z12 = Z 12
 z16 = Z 16
 
-{- | Is /n/ in (0,/m/-1). -}
+-- | Is /n/ in (0,/m/-1).
 is_z_n :: (Num a, Ord a) => a -> a -> Bool
 is_z_n m n = n >= 0 && n < m
 
@@ -51,7 +51,7 @@ z_add z = lift_binary_Z z (+)
 >>> z_sub z12 0 8
 4
 
->>> import Data.Word {- base -}
+>>> import Data.Word
 >>> z_sub z12 (0::Word8) 8
 8
 
@@ -70,9 +70,9 @@ z_sub z = lift_binary_Z z (-)
 >>> z_sub_unsigned z12 (0::Word8) 8
 4
 -}
-z_sub_unsigned :: (Integral i,Ord i) => Z i -> i -> i -> i
+z_sub_unsigned :: (Integral i, Ord i) => Z i -> i -> i -> i
 z_sub_unsigned z p q =
-    if p > q
+  if p > q
     then z_mod z (p - q)
     else z_mod z (p + z_modulus z - q)
 
@@ -104,7 +104,7 @@ z_abs _ _ = error "Z numbers are not signed"
 to_Z :: Integral i => Z i -> i -> i
 to_Z z = z_fromInteger z . fromIntegral
 
-from_Z :: (Integral i,Num n) => i -> n
+from_Z :: (Integral i, Num n) => i -> n
 from_Z = fromIntegral
 
 {- | Universe of 'Z'.
@@ -138,11 +138,11 @@ div_err s p q = if q == 0 then error ("div_err: zero" ++ s) else p `div` q
 z_div :: Integral i => Z i -> i -> i -> i
 z_div z p = to_Z z . div_err "z_div" p
 
-z_quotRem :: Integral i => Z i -> i -> i -> (i,i)
-z_quotRem z p q = (z_quot z p q,z_quot z p q)
+z_quotRem :: Integral i => Z i -> i -> i -> (i, i)
+z_quotRem z p q = (z_quot z p q, z_quot z p q)
 
-z_divMod :: Integral i => Z i -> i -> i -> (i,i)
-z_divMod z p q = (z_div z p q,z_mod z (mod p q))
+z_divMod :: Integral i => Z i -> i -> i -> (i, i)
+z_divMod z p q = (z_div z p q, z_mod z (mod p q))
 
 z_toInteger :: Integral i => Z i -> i -> i
 z_toInteger = to_Z
@@ -157,22 +157,22 @@ z_toInteger = to_Z
 integral_to_digit :: Integral t => t -> Char
 integral_to_digit = intToDigit . fromIntegral
 
-{- | 'is_z_n' 16. -}
+-- | 'is_z_n' 16.
 is_z16 :: Integral t => t -> Bool
 is_z16 = is_z_n 16
 
-{- | Alias for 'integral_to_digit'. -}
+-- | Alias for 'integral_to_digit'.
 z16_to_char :: Integral t => t -> Char
 z16_to_char = integral_to_digit
 
-{- | 'z16_to_char' in braces, {1,2,3}. -}
+-- | 'z16_to_char' in braces, {1,2,3}.
 z16_set_pp :: Integral t => [t] -> String
-z16_set_pp = T.bracket ('{','}') . map z16_to_char
+z16_set_pp = T.bracket ('{', '}') . map z16_to_char
 
-{- | 'z16_to_char' in arrows, <1,2,3>. -}
+-- | 'z16_to_char' in arrows, <1,2,3>.
 z16_seq_pp :: Integral t => [t] -> String
-z16_seq_pp = T.bracket ('<','>') . map z16_to_char
+z16_seq_pp = T.bracket ('<', '>') . map z16_to_char
 
-{- | 'z16_to_char' in brackets, [1,2,3]. -}
+-- | 'z16_to_char' in brackets, [1,2,3].
 z16_vec_pp :: Integral t => [t] -> String
-z16_vec_pp = T.bracket ('[',']') . map z16_to_char
+z16_vec_pp = T.bracket ('[', ']') . map z16_to_char

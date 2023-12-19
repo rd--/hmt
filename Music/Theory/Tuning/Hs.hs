@@ -9,18 +9,17 @@ import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import Music.Theory.Tuning {- hmt -}
 import Music.Theory.Tuning.Type {- hmt -}
 
-
 {- | Harmonic series to /n/th partial, with indicated octave.
 
 >>> tn_cents_i (harmonic_series 17 Nothing)
 [0,1200,1902,2400,2786,3102,3369,3600,3804,3986,4151,4302,4441,4569,4688,4800,4905]
 -}
 harmonic_series :: Integer -> Maybe Rational -> Tuning
-harmonic_series n o = Tuning (Left [1 .. n%1]) (fmap Left o)
+harmonic_series n o = Tuning (Left [1 .. n % 1]) (fmap Left o)
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
-harmonic_series_cps n = [n,n * 2 ..]
+harmonic_series_cps n = [n, n * 2 ..]
 
 {- | /n/ elements of 'harmonic_series_cps'.
 
@@ -31,15 +30,15 @@ harmonic_series_cps_n :: (Num a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_n n = take n . harmonic_series_cps
 
 -- | Sub-harmonic series on /n/.
-subharmonic_series_cps :: (Fractional t,Enum t) => t -> [t]
-subharmonic_series_cps n = map ((* n) . recip) [1..]
+subharmonic_series_cps :: (Fractional t, Enum t) => t -> [t]
+subharmonic_series_cps n = map ((* n) . recip) [1 ..]
 
 {- | /n/ elements of 'harmonic_series_cps'.
 
 >>> map round (subharmonic_series_cps_n 17 1760)
 [1760,880,587,440,352,293,251,220,196,176,160,147,135,126,117,110,104]
 -}
-subharmonic_series_cps_n :: (Fractional t,Enum t) => Int -> t -> [t]
+subharmonic_series_cps_n :: (Fractional t, Enum t) => Int -> t -> [t]
 subharmonic_series_cps_n n = take n . subharmonic_series_cps
 
 {- | /n/th partial of /f1/, ie. one indexed.
@@ -58,17 +57,18 @@ partial f1 k = harmonic_series_cps f1 `Safe.at` (k - 1)
 -}
 harmonic_series_cps_derived :: (RealFrac a, Floating a, Enum a) => Int -> a -> [a]
 harmonic_series_cps_derived k f1 =
-    let f0 = Pitch.cps_in_octave_above f1 (partial f1 k)
-    in harmonic_series_cps f0
+  let f0 = Pitch.cps_in_octave_above f1 (partial f1 k)
+  in harmonic_series_cps f0
 
--- | Harmonic series to /n/th harmonic (folded, duplicated removed).
---
--- > harmonic_series_folded_r 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
---
--- > let r = [0,105,204,386,551,702,841,969,1088]
--- > map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
+{- | Harmonic series to /n/th harmonic (folded, duplicated removed).
+
+> harmonic_series_folded_r 17 == [1,17/16,9/8,5/4,11/8,3/2,13/8,7/4,15/8]
+
+> let r = [0,105,204,386,551,702,841,969,1088]
+> map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
+-}
 harmonic_series_folded_r :: Integer -> [Rational]
-harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n%1]))
+harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n % 1]))
 
 -- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
 harmonic_series_folded_c :: Integer -> [Cents]
@@ -77,10 +77,10 @@ harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded_r
 harmonic_series_folded :: Integer -> Tuning
 harmonic_series_folded n = Tuning (Left (harmonic_series_folded_r n)) Nothing
 
--- | @12@-tone tuning of first @21@ elements of the harmonic series.
---
--- > tn_cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
--- > tn_divisions harmonic_series_folded_21 == 11
+{- | @12@-tone tuning of first @21@ elements of the harmonic series.
+
+> tn_cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
+> tn_divisions harmonic_series_folded_21 == 11
+-}
 harmonic_series_folded_21 :: Tuning
 harmonic_series_folded_21 = harmonic_series_folded 21
-

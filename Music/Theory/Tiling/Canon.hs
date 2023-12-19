@@ -13,7 +13,7 @@ import qualified Music.Theory.List as List {- hmt -}
 type S = [Int]
 
 -- | Canon of /(period,sequence,multipliers,displacements)/.
-type R = (Int,S,[Int],[Int])
+type R = (Int, S, [Int], [Int])
 
 -- | Voice.
 type V = [Int]
@@ -30,7 +30,7 @@ p_cycle :: Int -> [Int] -> [Int]
 p_cycle n s = s ++ p_cycle n (map (+ n) s)
 
 -- | Element of /(sequence,multiplier,displacement)/.
-type E = (S,Int,Int)
+type E = (S, Int, Int)
 
 {- | Resolve sequence from 'E'.
 
@@ -44,7 +44,7 @@ type E = (S,Int,Int)
 [2]
 -}
 e_to_seq :: E -> [Int]
-e_to_seq (s,m,o) = map ((+ o) . (* m)) s
+e_to_seq (s, m, o) = map ((+ o) . (* m)) s
 
 {- | Infer 'E' from sequence.
 
@@ -59,17 +59,17 @@ e_to_seq (s,m,o) = map ((+ o) . (* m)) s
 -}
 e_from_seq :: [Int] -> E
 e_from_seq p =
-    let i = List.head_err p
-        q = map (+ negate i) p
-        r = List.tail_err q
-        n = if null r then 1 else foldl1 gcd r
-    in (map (`div` n) q,n,i)
+  let i = List.head_err p
+      q = map (+ negate i) p
+      r = List.tail_err q
+      n = if null r then 1 else foldl1 gcd r
+  in (map (`div` n) q, n, i)
 
 -- | Set of 'V' from 'R'.
 r_voices :: R -> [V]
-r_voices (p,s,m,o) =
-    let f i j = p_cycle p (e_to_seq (s,i,j))
-    in zipWith f m o
+r_voices (p, s, m, o) =
+  let f i j = p_cycle p (e_to_seq (s, i, j))
+  in zipWith f m o
 
 -- | 'concatMap' of 'r_voices'.
 rr_voices :: [R] -> [V]
@@ -82,8 +82,8 @@ rr_voices = concatMap r_voices
 -}
 t_retrograde :: T -> T
 t_retrograde t =
-    let n = maximum (concat t)
-    in sort (map (reverse . map (n -)) t)
+  let n = maximum (concat t)
+  in sort (map (reverse . map (n -)) t)
 
 {- | The normal form of 'T' is the 'min' of /t/ and it's 't_retrograde'.
 
@@ -102,11 +102,11 @@ True
 -}
 r_from_t :: T -> [R]
 r_from_t t =
-    let e = map e_from_seq t
-        n = maximum (concat t) + 1
-        t3_1 (i,_,_) = i
-        f z = let (s,m,o) = unzip3 z in (n,List.head_err s,m,o)
-    in map f (List.group_on t3_1 e)
+  let e = map e_from_seq t
+      n = maximum (concat t) + 1
+      t3_1 (i, _, _) = i
+      f z = let (s, m, o) = unzip3 z in (n, List.head_err s, m, o)
+  in map f (List.group_on t3_1 e)
 
 -- * Construction
 
@@ -118,23 +118,25 @@ r_from_t t =
 fromList :: MonadPlus m => [a] -> m a
 fromList = msum . map return
 
--- | Search for /perfect/ tilings of the sequence 'S' using
--- multipliers from /m/ to degree /n/ with /k/ parts.
+{- | Search for /perfect/ tilings of the sequence 'S' using
+multipliers from /m/ to degree /n/ with /k/ parts.
+-}
 perfect_tilings_m :: MonadPlus m => [S] -> [Int] -> Int -> Int -> m T
 perfect_tilings_m s m n k =
-    let rec p q =
-            if length q == k
-            then return (sort q)
-            else do m' <- fromList m
-                    guard (m' `notElem` p)
-                    s' <- fromList s
-                    let i = n - (maximum s' * m') - 1
-                    o <- fromList [0..i]
-                    let s'' = e_to_seq (s',m',o)
-                        q' = concat q
-                    guard (all (`notElem` q') s'')
-                    rec (m':p) (s'':q)
-    in rec [] []
+  let rec p q =
+        if length q == k
+          then return (sort q)
+          else do
+            m' <- fromList m
+            guard (m' `notElem` p)
+            s' <- fromList s
+            let i = n - (maximum s' * m') - 1
+            o <- fromList [0 .. i]
+            let s'' = e_to_seq (s', m', o)
+                q' = concat q
+            guard (all (`notElem` q') s'')
+            rec (m' : p) (s'' : q)
+  in rec [] []
 
 {- | 't_normal' of 'L.observeAll' of 'perfect_tilings_m'.
 
@@ -161,11 +163,10 @@ Johnson 2004, p.2
 > let r = [[0,10,20],[1,9,17],[2,4,6],[3,7,11],[5,12,19],[8,13,18],[14,15,16]]
 > perfect_tilings [[0,1,2]] [1,2,4,5,7,8,10] 21 7 == [t_retrograde r] -- slow
 True
-
 -}
 perfect_tilings :: [S] -> [Int] -> Int -> Int -> [T]
 perfect_tilings s m n =
-    nub . sort . map t_normal . L.observeAll . perfect_tilings_m s m n
+  nub . sort . map t_normal . L.observeAll . perfect_tilings_m s m n
 
 -- * Display
 
@@ -179,12 +180,12 @@ True
 -}
 elemOrd :: Ord a => a -> [a] -> Bool
 elemOrd i p =
-    case p of
-      [] -> False
-      j:p' -> case compare j i of
-                LT -> elemOrd i p'
-                EQ -> True
-                GT -> False
+  case p of
+    [] -> False
+    j : p' -> case compare j i of
+      LT -> elemOrd i p'
+      EQ -> True
+      GT -> False
 
 {- | A @.*@ diagram of /n/ places of 'V'.
 
@@ -193,8 +194,8 @@ elemOrd i p =
 -}
 v_dot_star :: Int -> V -> String
 v_dot_star n v =
-    let f p i = if i `elemOrd` p then '*' else '.'
-    in map (f v) [0..n-1]
+  let f p i = if i `elemOrd` p then '*' else '.'
+  in map (f v) [0 .. n - 1]
 
 {- | A white space and index diagram of /n/ places of 'V'.
 
@@ -203,10 +204,10 @@ v_dot_star n v =
 -}
 v_space_ix :: Int -> V -> String
 v_space_ix n v =
-    let w = length (show n)
-        nil = replicate w ' '
-        f p i = if i `elemOrd` p then printf "%*d" w i else nil
-    in unwords (map (f v) [0..n-1])
+  let w = length (show n)
+      nil = replicate w ' '
+      f p i = if i `elemOrd` p then printf "%*d" w i else nil
+  in unwords (map (f v) [0 .. n - 1])
 
 {- | Insert @|@ every /n/ places.
 
@@ -241,9 +242,9 @@ v_print_m m n = putStrLn . v_show_m m n
 -- | Variant that discards first /k/ measures.
 v_show_m_from :: Int -> Int -> Int -> [V] -> String
 v_show_m_from k m n =
-    let k' = k * m
-        f = with_bars m . drop k' . v_dot_star (n * m + k')
-    in unlines . ("" :) . map f
+  let k' = k * m
+      f = with_bars m . drop k' . v_dot_star (n * m + k')
+  in unlines . ("" :) . map f
 
 v_print_m_from :: Int -> Int -> Int -> [V] -> IO ()
 v_print_m_from k m n = putStrLn . v_show_m_from k m n

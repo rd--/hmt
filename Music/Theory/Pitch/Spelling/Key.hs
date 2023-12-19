@@ -6,13 +6,15 @@ import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
 
 pcset_spell_implied_key_f :: Integral i => [i] -> Maybe (Pitch.Spelling i)
 pcset_spell_implied_key_f x =
-    case Key.implied_fifths Key.Major_Mode x of
-      Nothing -> Nothing
-      Just n -> if n == 0
-                then Just Pitch.pc_spell_natural
-                else if n < 0
-                     then Just Pitch.pc_spell_flat
-                     else Just Pitch.pc_spell_sharp
+  case Key.implied_fifths Key.Major_Mode x of
+    Nothing -> Nothing
+    Just n ->
+      if n == 0
+        then Just Pitch.pc_spell_natural
+        else
+          if n < 0
+            then Just Pitch.pc_spell_flat
+            else Just Pitch.pc_spell_sharp
 
 {- | Implied key
 
@@ -21,9 +23,9 @@ pcset_spell_implied_key_f x =
 -}
 pcset_spell_implied_key :: Integral i => [i] -> Maybe [(Pitch.Note.Note, Pitch.Note.Alteration)]
 pcset_spell_implied_key x =
-    case pcset_spell_implied_key_f x of
-      Just f -> Just (map f x)
-      Nothing -> Nothing
+  case pcset_spell_implied_key_f x of
+    Just f -> Just (map f x)
+    Nothing -> Nothing
 
 {- | Implied key from octave pitch classes
 
@@ -32,8 +34,8 @@ pcset_spell_implied_key x =
 -}
 octpc_spell_implied_key :: [Pitch.OctPc] -> Maybe [Pitch.Pitch]
 octpc_spell_implied_key x =
-    let f o (n,a) = Pitch.Pitch n a o
-    in fmap (zipWith f (map fst x)) (pcset_spell_implied_key (map snd x))
+  let f o (n, a) = Pitch.Pitch n a o
+  in fmap (zipWith f (map fst x)) (pcset_spell_implied_key (map snd x))
 
 {- | Implied key from midi note numbers
 

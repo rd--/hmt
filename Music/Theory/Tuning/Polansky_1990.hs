@@ -16,7 +16,7 @@ import qualified Music.Theory.Tuning as Tuning {- hmt -}
 [252,238,241,236,253]
 -}
 kanjutmesem_s :: Num n => [n]
-kanjutmesem_s = [0,252,490,731,967,1220]
+kanjutmesem_s = [0, 252, 490, 731, 967, 1220]
 
 {- | Kanjutmesem Pelog (P1,P2,P3,P4,P5,P6,P7,P1')
 
@@ -24,7 +24,7 @@ kanjutmesem_s = [0,252,490,731,967,1220]
 [141,141,272,140,115,172,246]
 -}
 kanjutmesem_p :: Num n => [n]
-kanjutmesem_p = [37,178,319,591,731,846,1018,1264]
+kanjutmesem_p = [37, 178, 319, 591, 731, 846, 1018, 1264]
 
 {- | Darius Slendro (S1,S2,S3,S5,S6,S1')
 
@@ -35,7 +35,7 @@ kanjutmesem_p = [37,178,319,591,731,846,1018,1264]
 True
 -}
 darius_s :: Num n => [n]
-darius_s = [0,204,435,702,933,1200]
+darius_s = [0, 204, 435, 702, 933, 1200]
 
 {- | Madeleine Pelog (P1,P2,P3,P4,P5,P6,P7,P1')
 
@@ -46,7 +46,7 @@ darius_s = [0,204,435,702,933,1200]
 True
 -}
 madeleine_p :: Num n => [n]
-madeleine_p = [137,276,404,740,839,933,1106,1337]
+madeleine_p = [137, 276, 404, 740, 839, 933, 1106, 1337]
 
 {- | Lipur Sih Slendro (S1,S2,S3,S5,S6,S1')
 
@@ -54,7 +54,7 @@ madeleine_p = [137,276,404,740,839,933,1106,1337]
 [273,236,224,258,256]
 -}
 lipur_sih_s :: Num n => [n]
-lipur_sih_s = [0,273,509,733,991,1247]
+lipur_sih_s = [0, 273, 509, 733, 991, 1247]
 
 {- | Lipur Sih Pelog (P1,P2,P3,P4,P5,P6,P7,P1')
 
@@ -62,7 +62,7 @@ lipur_sih_s = [0,273,509,733,991,1247]
 [110,153,253,146,113,179]
 -}
 lipur_sih_p :: Num n => [n]
-lipur_sih_p = [216,326,479,732,878,991,1170]
+lipur_sih_p = [216, 326, 479, 732, 878, 991, 1170]
 
 {- | Idealized ET Slendro, 5-tone equal temperament (p.17)
 
@@ -70,7 +70,7 @@ lipur_sih_p = [216,326,479,732,878,991,1170]
 [240,240,240,240,240]
 -}
 idealized_et_s :: Num n => [n]
-idealized_et_s = [0,240,480,720,960,1200]
+idealized_et_s = [0, 240, 480, 720, 960, 1200]
 
 {- | Idealized ET Pelog, subset of 9-tone equal temperament (p.17)
 
@@ -78,8 +78,8 @@ idealized_et_s = [0,240,480,720,960,1200]
 True
 -}
 idealized_et_p :: Integral n => [Ratio n]
-idealized_et_p = [160,293+1/3,560,693+1/3,826+2/3,960,1093+1/3,1360]
+idealized_et_p = [160, 293 + 1 / 3, 560, 693 + 1 / 3, 826 + 2 / 3, 960, 1093 + 1 / 3, 1360]
 
-{- | Reconstruct approximate ratios to within @1e-3@ from intervals. -}
+-- | Reconstruct approximate ratios to within @1e-3@ from intervals.
 ax_r :: Real n => [n] -> [Rational]
 ax_r = map (Tuning.reconstructed_ratio 1e-3 . realToFrac) . List.d_dx

@@ -1,6 +1,7 @@
--- | Euler plane diagrams as /dot/ language graphs.
---
--- <http://rohandrape.net/?t=hmt-texts&e=md/euler.md>
+{- | Euler plane diagrams as /dot/ language graphs.
+
+<http://rohandrape.net/?t=hmt-texts&e=md/euler.md>
+-}
 module Music.Theory.Tuning.Graph.Euler where
 
 import Data.List {- base -}
@@ -32,28 +33,29 @@ tun_seq n m = take n . iterate (rat_mul m)
 
 -- | Give all pairs from (l2,l1) and (l3,l2) that are at interval ratios r1 and r2 respectively.
 euler_align_rat :: Tuple.T2 Rational -> Tuple.T3 [Rational] -> Tuple.T2 [Tuple.T2 Rational]
-euler_align_rat (r1,r2) (l1,l2,l3) =
-    let f r (p,q) = rat_mul p r == q
-    in (filter (f r1) (List.all_pairs_lc l2 l1)
-       ,filter (f r2) (List.all_pairs_lc l3 l2))
+euler_align_rat (r1, r2) (l1, l2, l3) =
+  let f r (p, q) = rat_mul p r == q
+  in ( filter (f r1) (List.all_pairs_lc l2 l1)
+     , filter (f r2) (List.all_pairs_lc l3 l2)
+     )
 
 {- | Pretty printer for pitch class (Unicode).
 
 >>> unwords (map pc_pp [0..11]) == "C♮ C♯ D♮ E♭ E♮ F♮ F♯ G♮ A♭ A♮ B♭ B♮"
 True
 -}
-pc_pp :: (Integral i,Show i) => i -> String
+pc_pp :: (Integral i, Show i) => i -> String
 pc_pp x =
-    case Note.pc_to_note_alteration_ks x of
-      Just (n,a) -> [Note.note_pp n,Note.alteration_symbol a]
-      Nothing -> error (show ("pc_pp",x))
+  case Note.pc_to_note_alteration_ks x of
+    Just (n, a) -> [Note.note_pp n, Note.alteration_symbol a]
+    Nothing -> error (show ("pc_pp", x))
 
 -- | Show ratio as intergral ('round') cents value.
 cents_pp :: Rational -> String
 cents_pp = show . (round :: Double -> Integer) . Tuning.ratio_to_cents
 
 -- | (unit-pitch-class,print-cents)
-type RAT_LABEL_OPT = (Int,Bool)
+type Rat_Label_Opt = (Int, Bool)
 
 {- | Dot label for ratio, /k/ is the pitch-class of the unit ratio.
 
@@ -63,42 +65,47 @@ True
 >>> rat_label (3,True) (7/4) == "C♯=969\\n7:4"
 True
 -}
-rat_label :: RAT_LABEL_OPT -> Rational -> String
-rat_label (k,with_cents) r =
-    if r < 1 || r >= 2
-    then error (show ("rat_label",r))
-    else concat [pc_pp (Tuning.ratio_to_pc k r)
-                ,if with_cents
-                 then '=' : cents_pp r
-                 else ""
-                ,"\\n",Show.ratio_pp r]
+rat_label :: Rat_Label_Opt -> Rational -> String
+rat_label (k, with_cents) r =
+  if r < 1 || r >= 2
+    then error (show ("rat_label", r))
+    else
+      concat
+        [ pc_pp (Tuning.ratio_to_pc k r)
+        , if with_cents
+            then '=' : cents_pp r
+            else ""
+        , "\\n"
+        , Show.ratio_pp r
+        ]
 
 {- | Generate value /dot/ node identifier for ratio.
 
 >>> rat_id (5/4)
 "R_5_4"
 -}
-rat_id :: Rational-> String
+rat_id :: Rational -> String
 rat_id r = "R_" ++ show (numerator r) ++ "_" ++ show (denominator r)
 
 -- | Printer for edge label between given ratio nodes.
 rat_edge_label :: (Rational, Rational) -> String
-rat_edge_label (p,q) = concat ["   (",Show.ratio_pp (rat_div p q),")"]
+rat_edge_label (p, q) = concat ["   (", Show.ratio_pp (rat_div p q), ")"]
 
 {- | Zip start-middle-end.
 
 >>> zip_sme (0,1,2) "abcd"
 [(0,'a'),(1,'b'),(1,'c'),(2,'d')]
 -}
-zip_sme :: (t,t,t) -> [u] -> [(t,u)]
-zip_sme (s,m,e) xs =
-    case xs of
-      x0:x1:xs' -> (s,x0) : (m,x1) : List.at_last (\x -> (m,x)) (\x -> (e,x)) xs'
-      _ -> error "zip_sme: not SME list"
+zip_sme :: (t, t, t) -> [u] -> [(t, u)]
+zip_sme (s, m, e) xs =
+  case xs of
+    x0 : x1 : xs' -> (s, x0) : (m, x1) : List.at_last (\x -> (m, x)) (\x -> (e, x)) xs'
+    _ -> error "zip_sme: not SME list"
 
--- | Euler diagram given as (/h/,/v/) duple,
--- where /h/ are the horizontal sequences and /v/ are the vertical edges.
-type Euler_Plane t = ([[t]],[(t,t)])
+{- | Euler diagram given as (/h/,/v/) duple,
+where /h/ are the horizontal sequences and /v/ are the vertical edges.
+-}
+type Euler_Plane t = ([[t]], [(t, t)])
 
 -- | Ratios at plane, sorted.
 euler_plane_r :: Ord t => Euler_Plane t -> [t]
@@ -106,26 +113,27 @@ euler_plane_r = sort . concat . fst
 
 -- | Apply /f/ at all nodes of the plane.
 euler_plane_map :: (t -> u) -> Euler_Plane t -> Euler_Plane u
-euler_plane_map f (p,q) = (map (map f) p,map (Function.bimap1 f) q)
+euler_plane_map f (p, q) = (map (map f) p, map (Function.bimap1 f) q)
 
 -- | Generate /dot/ graph given printer functions and an /Euler_Plane/.
-euler_plane_to_dot :: (t -> String,t -> String,(t,t) -> String) -> Euler_Plane t -> [String]
-euler_plane_to_dot (n_id,n_pp,e_pp) (h,v) =
-    let mk_lab_term x = concat [" [label=\"",x,"\"];"]
-        node_to_dot x = concat [n_id x,mk_lab_term (n_pp x)]
-        subgraph_edges x = intercalate " -- " (map n_id x) ++ ";"
-        edge_to_dot (lhs,rhs) = concat [n_id lhs," -- ",n_id rhs,mk_lab_term (e_pp (lhs,rhs))]
-        subgraphs_to_dot (ty,x) = concat ["{rank=",ty,"; ",unwords (map n_id x),"}"]
-    in ["graph g {"
-       ,"graph [layout=\"dot\",rankdir=\"TB\",nodesep=0.5];"
-       ,"edge [fontsize=\"8\",fontname=\"century schoolbook\"];"
-       ,"node [shape=\"plaintext\",fontsize=\"10\",fontname=\"century schoolbook\"];"] ++
-       map node_to_dot (concat h) ++
-       map subgraph_edges h ++
-       map edge_to_dot v ++
-       map subgraphs_to_dot (zip_sme ("min","same","max") h) ++
-       ["}"]
+euler_plane_to_dot :: (t -> String, t -> String, (t, t) -> String) -> Euler_Plane t -> [String]
+euler_plane_to_dot (n_id, n_pp, e_pp) (h, v) =
+  let mk_lab_term x = concat [" [label=\"", x, "\"];"]
+      node_to_dot x = concat [n_id x, mk_lab_term (n_pp x)]
+      subgraph_edges x = intercalate " -- " (map n_id x) ++ ";"
+      edge_to_dot (lhs, rhs) = concat [n_id lhs, " -- ", n_id rhs, mk_lab_term (e_pp (lhs, rhs))]
+      subgraphs_to_dot (ty, x) = concat ["{rank=", ty, "; ", unwords (map n_id x), "}"]
+  in [ "graph g {"
+     , "graph [layout=\"dot\",rankdir=\"TB\",nodesep=0.5];"
+     , "edge [fontsize=\"8\",fontname=\"century schoolbook\"];"
+     , "node [shape=\"plaintext\",fontsize=\"10\",fontname=\"century schoolbook\"];"
+     ]
+      ++ map node_to_dot (concat h)
+      ++ map subgraph_edges h
+      ++ map edge_to_dot v
+      ++ map subgraphs_to_dot (zip_sme ("min", "same", "max") h)
+      ++ ["}"]
 
 -- | Variant with default printers and fixed node type.
-euler_plane_to_dot_rat :: RAT_LABEL_OPT -> Euler_Plane Rational -> [String]
-euler_plane_to_dot_rat opt = euler_plane_to_dot (rat_id,rat_label opt,rat_edge_label)
+euler_plane_to_dot_rat :: Rat_Label_Opt -> Euler_Plane Rational -> [String]
+euler_plane_to_dot_rat opt = euler_plane_to_dot (rat_id, rat_label opt, rat_edge_label)

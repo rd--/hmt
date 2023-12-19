@@ -22,18 +22,18 @@ True
 -}
 rq_tuplet_duration_table :: [(Rq, Duration)]
 rq_tuplet_duration_table =
-  [(1/3,Duration 8 0 (2/3))
-  ,(2/3,Duration 4 0 (2/3))
-  ,(1/5,Duration 16 0 (4/5))
-  ,(2/5,Duration 8 0 (4/5))
-  ,(3/5,Duration 8 1 (4/5))
-  ,(4/5,Duration 4 0 (4/5))
-  ,(1/6,Duration 16 0 (2/3))
-  ,(1/7,Duration 16 0 (4/7))
-  ,(2/7,Duration 8 0 (4/7))
-  ,(3/7,Duration 8 1 (4/7))
-  ,(4/7,Duration 4 0 (4/7))
-  ,(6/7,Duration 4 1 (4/7))
+  [ (1 / 3, Duration 8 0 (2 / 3))
+  , (2 / 3, Duration 4 0 (2 / 3))
+  , (1 / 5, Duration 16 0 (4 / 5))
+  , (2 / 5, Duration 8 0 (4 / 5))
+  , (3 / 5, Duration 8 1 (4 / 5))
+  , (4 / 5, Duration 4 0 (4 / 5))
+  , (1 / 6, Duration 16 0 (2 / 3))
+  , (1 / 7, Duration 16 0 (4 / 7))
+  , (2 / 7, Duration 8 0 (4 / 7))
+  , (3 / 7, Duration 8 1 (4 / 7))
+  , (4 / 7, Duration 4 0 (4 / 7))
+  , (6 / 7, Duration 4 1 (4 / 7))
   ]
 
 {- | Lookup rq_tuplet_duration_tbl.
@@ -53,8 +53,8 @@ rq_tuplet_to_duration x = lookup x rq_tuplet_duration_table
 >>> map (multiplier . snd) (rq_plain_duration_tbl 1) == replicate 18 1
 True
 -}
-rq_plain_duration_tbl :: Dots -> [(Rq,Duration)]
-rq_plain_duration_tbl k = map (\d -> (duration_to_rq d,d)) (duration_set k)
+rq_plain_duration_tbl :: Dots -> [(Rq, Duration)]
+rq_plain_duration_tbl k = map (\d -> (duration_to_rq d, d)) (duration_set k)
 
 rq_plain_to_duration :: Dots -> Rq -> Maybe Duration
 rq_plain_to_duration k x = lookup x (rq_plain_duration_tbl k)
@@ -80,8 +80,8 @@ rq_to_duration k x = lookup x (rq_tuplet_duration_table ++ rq_plain_duration_tbl
 -- | Variant of 'rq_to_duration' with error message.
 rq_to_duration_err :: Show a => a -> Dots -> Rq -> Duration
 rq_to_duration_err msg k n =
-    let err = error ("rq_to_duration:" ++ show (msg,n))
-    in fromMaybe err (rq_to_duration k n)
+  let err = error ("rq_to_duration:" ++ show (msg, n))
+  in fromMaybe err (rq_to_duration k n)
 
 {- | Is 'Rq' a /cmn/ duration (ie. rq_plain_to_duration)
 
@@ -98,11 +98,11 @@ True
 -}
 whole_note_division_to_rq :: Division -> Rq
 whole_note_division_to_rq x =
-    let f = (* 4) . recip . (% 1)
-    in case x of
-         0 -> 8
-         -1 -> 16
-         _ -> f x
+  let f = (* 4) . recip . (% 1)
+  in case x of
+      0 -> 8
+      -1 -> 16
+      _ -> f x
 
 {- | Apply dots to an 'Rq' duration.
 
@@ -111,8 +111,8 @@ True
 -}
 rq_apply_dots :: Rq -> Dots -> Rq
 rq_apply_dots n d =
-    let m = iterate (/ 2) n
-    in sum (genericTake (d + 1) m)
+  let m = iterate (/ 2) n
+  in sum (genericTake (d + 1) m)
 
 {- | Convert 'Duration' to 'Rq' value, see 'rq_to_duration' for partial inverse.
 
@@ -122,8 +122,8 @@ True
 -}
 duration_to_rq :: Duration -> Rq
 duration_to_rq (Duration n d m) =
-    let x = whole_note_division_to_rq n
-    in rq_apply_dots x d * m
+  let x = whole_note_division_to_rq n
+  in rq_apply_dots x d * m
 
 {- | 'compare' function for 'Duration' via 'duration_to_rq'.
 
@@ -140,10 +140,10 @@ True
 -}
 rq_mod :: Rq -> Rq -> Rq
 rq_mod i j
-    | i == j = 0
-    | i < 0 = rq_mod (i + j) j
-    | i > j = rq_mod (i - j) j
-    | otherwise = i
+  | i == j = 0
+  | i < 0 = rq_mod (i + j) j
+  | i > j = rq_mod (i - j) j
+  | otherwise = i
 
 {- | Is /p/ divisible by /q/, ie. is the 'denominator' of @p/q@ '==' @1@.
 
@@ -198,12 +198,13 @@ Just (30,16)
 >>> map rq_derive_tuplet_plain [[1/3,1/6],[2/5,1/10]]
 [Just (6,4),Just (10,8)]
 -}
-rq_derive_tuplet_plain :: [Rq] -> Maybe (Integer,Integer)
+rq_derive_tuplet_plain :: [Rq] -> Maybe (Integer, Integer)
 rq_derive_tuplet_plain x =
-    let i = foldl lcm 1 (map denominator x)
-        j = let z = iterate (* 2) 2
-            in fromJust (find (>= i) z) `div` 2
-    in if i `rem` j == 0 then Nothing else Just (i,j)
+  let i = foldl lcm 1 (map denominator x)
+      j =
+        let z = iterate (* 2) 2
+        in fromJust (find (>= i) z) `div` 2
+  in if i `rem` j == 0 then Nothing else Just (i, j)
 
 {- | Derive the tuplet structure of a set of 'Rq' values.
 
@@ -222,11 +223,12 @@ Just (5,4)
 >>> rq_derive_tuplet [1/3,1/6,2/5,1/10]
 Just (15,8)
 -}
-rq_derive_tuplet :: [Rq] -> Maybe (Integer,Integer)
+rq_derive_tuplet :: [Rq] -> Maybe (Integer, Integer)
 rq_derive_tuplet =
-    let f (i,j) = let k = i % j
-                  in (numerator k,denominator k)
-    in fmap f . rq_derive_tuplet_plain
+  let f (i, j) =
+        let k = i % j
+        in (numerator k, denominator k)
+  in fmap f . rq_derive_tuplet_plain
 
 {- | Remove tuplet multiplier from value, ie. to give notated
 -- duration.  This seems odd but is neccessary to avoid ambiguity.
@@ -235,8 +237,8 @@ rq_derive_tuplet =
 >>> map (rq_un_tuplet (3,2)) [1,2/3,1/2,1/3] == [3/2,1,3/4,1/2]
 True
 -}
-rq_un_tuplet :: (Integer,Integer) -> Rq -> Rq
-rq_un_tuplet (i,j) x = x * (i % j)
+rq_un_tuplet :: (Integer, Integer) -> Rq -> Rq
+rq_un_tuplet (i, j) x = x * (i % j)
 
 {- | If an 'Rq' duration is un-representable by a single /cmn/
 -- duration, give tied notation.
@@ -247,16 +249,16 @@ True
 >>> map rq_to_cmn [5/4,5/8] == [Just (1,1/4),Just (1/2,1/8)]
 True
 -}
-rq_to_cmn :: Rq -> Maybe (Rq,Rq)
+rq_to_cmn :: Rq -> Maybe (Rq, Rq)
 rq_to_cmn x =
-    let (i,j) = (numerator x,denominator x)
-        k = case i of
-              5 -> Just (4,1)
-              7 -> Just (4,3)
-              9 -> Just (8,1)
-              _ -> Nothing
-        f (n,m) = (n%j,m%j)
-    in fmap f k
+  let (i, j) = (numerator x, denominator x)
+      k = case i of
+        5 -> Just (4, 1)
+        7 -> Just (4, 3)
+        9 -> Just (8, 1)
+        _ -> Nothing
+      f (n, m) = (n % j, m % j)
+  in fmap f k
 
 {- | Predicate to determine if a segment can be notated
      either without a tuplet or with a single tuplet.
@@ -281,10 +283,10 @@ True
 -}
 rq_can_notate :: Dots -> [Rq] -> Bool
 rq_can_notate k x =
-    let x' = case rq_derive_tuplet x of
-               Nothing -> x
-               Just t -> map (rq_un_tuplet t) x
-    in all (rq_is_cmn k) x'
+  let x' = case rq_derive_tuplet x of
+        Nothing -> x
+        Just t -> map (rq_un_tuplet t) x
+  in all (rq_is_cmn k) x'
 
 -- * Time
 

@@ -1,6 +1,7 @@
--- | Clarence Barlow. \"Two Essays on Theory\".
--- /Computer Music Journal/, 11(1):44-60, 1987.
--- Translated by Henning Lohner.
+{- | Clarence Barlow. \"Two Essays on Theory\".
+/Computer Music Journal/, 11(1):44-60, 1987.
+Translated by Henning Lohner.
+-}
 module Music.Theory.Interval.Barlow_1987 where
 
 import Data.List {- base -}
@@ -16,31 +17,31 @@ import qualified Music.Theory.Tuning as T {- hmt -}
 >>> map barlow [1,2,3,5,7,11,13] == [0,1,8/3,32/5,72/7,200/11,288/13]
 True
 -}
-barlow :: (Integral a,Fractional b) => a -> b
+barlow :: (Integral a, Fractional b) => a -> b
 barlow p =
-    let p' = fromIntegral p
-        square n = n * n
-    in 2 * (square (p' - 1) / p')
+  let p' = fromIntegral p
+      square n = n * n
+  in 2 * (square (p' - 1) / p')
 
 {- | Compute the disharmonicity of the interval /(p,q)/ using the prime valuation function /pv/.
 
 >>> map (disharmonicity barlow) [(9,10),(8,9)] == ([12 + 11/15,8 + 1/3] :: [Rational])
 True
 -}
-disharmonicity :: (Integral a,Num b) => (a -> b) -> (a,a) -> b
-disharmonicity pv (p,q) =
-    let n = T.rat_prime_factors_m (p,q)
-    in sum [abs (fromIntegral j) * pv i | (i,j) <- n]
+disharmonicity :: (Integral a, Num b) => (a -> b) -> (a, a) -> b
+disharmonicity pv (p, q) =
+  let n = T.rat_prime_factors_m (p, q)
+  in sum [abs (fromIntegral j) * pv i | (i, j) <- n]
 
 {- | The reciprocal of 'disharmonicity'.
 
 >>> map (harmonicity barlow) [(9,10),(8,9),(2,1)] == ([15/191,3/25,1] :: [Rational])
 True
 -}
-harmonicity :: (Integral a,Fractional b) => (a -> b) -> (a,a) -> b
+harmonicity :: (Integral a, Fractional b) => (a -> b) -> (a, a) -> b
 harmonicity pv = recip . disharmonicity pv
 
-harmonicity_m :: (Eq b,Integral a,Fractional b) => (a -> b) -> (a,a) -> Maybe b
+harmonicity_m :: (Eq b, Integral a, Fractional b) => (a -> b) -> (a, a) -> Maybe b
 harmonicity_m pv = T.recip_m . disharmonicity pv
 
 {- | Variant of 'harmonicity' with 'Ratio' input.
@@ -48,7 +49,7 @@ harmonicity_m pv = T.recip_m . disharmonicity pv
 >>> harmonicity_r barlow 1 == 1/0
 True
 -}
-harmonicity_r :: (Integral a,Fractional b) => (a -> b) -> Ratio a -> b
+harmonicity_r :: (Integral a, Fractional b) => (a -> b) -> Ratio a -> b
 harmonicity_r pv = harmonicity pv . T.rational_nd
 
 -- | Variant of 'harmonicity_r' with output in (0,100), infinity maps to 100.
@@ -58,17 +59,19 @@ harmonicity_r_100 pv x =
     Nothing -> 100
     Just y -> round (y * 100)
 
--- | Set of 1. interval size (cents), 2. intervals as product of
--- powers of primes, 3. frequency ratio and 4. harmonicity value.
-type Table_2_Row = (Double,[Int],Rational,Double)
+{- | Set of 1. interval size (cents), 2. intervals as product of
+powers of primes, 3. frequency ratio and 4. harmonicity value.
+-}
+type Table_2_Row = (Double, [Int], Rational, Double)
 
 -- | Given ratio /r/ generate 'Table_2_Row'
 mk_table_2_row :: Rational -> Table_2_Row
 mk_table_2_row r =
-  (T.fratio_to_cents r
-  ,T.rat_prime_factors_t 6 (T.rational_nd r)
-  ,r
-  ,harmonicity_r barlow r)
+  ( T.fratio_to_cents r
+  , T.rat_prime_factors_t 6 (T.rational_nd r)
+  , r
+  , harmonicity_r barlow r
+  )
 
 {- | Table 2 (p.45)
 
@@ -80,10 +83,10 @@ mk_table_2_row r =
 -}
 table_2 :: Double -> [Table_2_Row]
 table_2 z =
-    let g n = n <= 2 && n >= 1
-        r = nub (sort (filter g [p % q | p <- [1..81],q <- [1..81]]))
-        f (_,_,_,h) = h > z
-    in filter f (map mk_table_2_row r)
+  let g n = n <= 2 && n >= 1
+      r = nub (sort (filter g [p % q | p <- [1 .. 81], q <- [1 .. 81]]))
+      f (_, _, _, h) = h > z
+  in filter f (map mk_table_2_row r)
 
 {- | Pretty printer for 'Table_2_Row' values.
 
@@ -117,9 +120,9 @@ table_2 z =
 @
 -}
 table_2_pp :: Table_2_Row -> String
-table_2_pp (i,j,k,l) =
-    let i' = printf "%8.3f" i
-        j' = unwords (map (printf "%2d") j)
-        k' = let (p,q) = T.rational_nd k in printf "%2d:%-2d" q p
-        l' = printf "%1.6f" l
-    in intercalate " | " [i',j',k',l']
+table_2_pp (i, j, k, l) =
+  let i' = printf "%8.3f" i
+      j' = unwords (map (printf "%2d") j)
+      k' = let (p, q) = T.rational_nd k in printf "%2d:%-2d" q p
+      l' = printf "%1.6f" l
+  in intercalate " | " [i', j', k', l']

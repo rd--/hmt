@@ -12,17 +12,40 @@ import qualified Music.Theory.Permutations as Permutations
 
 -- * S4 notation
 
-{- | 'Label's for elements of the symmetric group P4. -}
-data Label = A|B|C|D|D2|E|E2|G|G2|I|L|L2
-           | Q1|Q2|Q3|Q4|Q5|Q6|Q7|Q8|Q9|Q10|Q11|Q12
-             deriving (Eq,Ord,Enum,Bounded,Show)
+-- | 'Label's for elements of the symmetric group P4.
+data Label
+  = A
+  | B
+  | C
+  | D
+  | D2
+  | E
+  | E2
+  | G
+  | G2
+  | I
+  | L
+  | L2
+  | Q1
+  | Q2
+  | Q3
+  | Q4
+  | Q5
+  | Q6
+  | Q7
+  | Q8
+  | Q9
+  | Q10
+  | Q11
+  | Q12
+  deriving (Eq, Ord, Enum, Bounded, Show)
 
 {- | Initial half of 'Seq' (ie. #4).
 The complete 'Seq' is formed by appending the 'complement' of the 'Half_Seq'.
 -}
 type Half_Seq = [Int]
 
-{- | Complete sequence (ie. #8). -}
+-- | Complete sequence (ie. #8).
 type Seq = [Int]
 
 {- | Complement of a 'Half_Seq'.
@@ -32,10 +55,10 @@ type Seq = [Int]
 -}
 complement :: Half_Seq -> Half_Seq
 complement x =
-    case sort x of
-      [1,2,3,4] -> map (+ 4) x
-      [5,6,7,8] -> map (+ (-4)) x
-      _ -> error "complement"
+  case sort x of
+    [1, 2, 3, 4] -> map (+ 4) x
+    [5, 6, 7, 8] -> map (+ (-4)) x
+    _ -> error "complement"
 
 {- | Form 'Seq' from 'Half_Seq'.
 
@@ -58,10 +81,10 @@ full_seq x = x ++ complement x
 -}
 lower :: Half_Seq -> Half_Seq
 lower x =
-    case sort x of
-      [1,2,3,4] -> x
-      [5,6,7,8] -> complement x
-      _ -> error (show ("lower",x))
+  case sort x of
+    [1, 2, 3, 4] -> x
+    [5, 6, 7, 8] -> complement x
+    _ -> error (show ("lower", x))
 
 {- | Application of 'Label' /p/ on /q/.
 
@@ -76,10 +99,10 @@ Q4
 -}
 l_on :: Label -> Label -> Label
 l_on p q =
-    let p' = seq_of p
-        q' = seq_of q
-        r = map (\i -> q' !! (i - 1)) p'
-    in label_of r
+  let p' = seq_of p
+      q' = seq_of q
+      r = map (\i -> q' !! (i - 1)) p'
+  in label_of r
 
 {- | Generalisation of Fibonnaci process, /f/ is the binary operator
 giving the next element, /p/ and /q/ are the initial elements.
@@ -126,7 +149,6 @@ The article also omits the 5 after 5,1 in the sequence below.
 
 >>> take 24 (fib_proc (\p q -> (p * q) `mod` 18) 11 13)
 [11,13,17,5,13,11,17,7,11,5,1,5,5,7,17,11,7,5,17,13,5,11,1,11]
-
 -}
 fib_proc :: (a -> a -> a) -> a -> a -> [a]
 fib_proc f p q = let r = f p q in p : fib_proc f q r
@@ -165,8 +187,8 @@ Q4
 -}
 label_of :: Seq -> Label
 label_of i =
-    let err = error ("label_of: " ++ show i)
-    in fromMaybe err (List.reverse_lookup i viii_6b)
+  let err = error ("label_of: " ++ show i)
+  in fromMaybe err (List.reverse_lookup i viii_6b)
 
 {- | 'True' if two 'Half_Seq's are complementary, ie. form a 'Seq'.
 
@@ -175,13 +197,13 @@ True
 -}
 complementary :: Half_Seq -> Half_Seq -> Bool
 complementary p q =
-    let c = concat (sort [sort p,sort q])
-    in c == [1..8]
+  let c = concat (sort [sort p, sort q])
+  in c == [1 .. 8]
 
 -- * Rel
 
-{- | Relation between to 'Half_Seq' values as a /(complementary,permutation)/ pair. -}
-type Rel = (Bool,Permutations.Permutation)
+-- | Relation between to 'Half_Seq' values as a /(complementary,permutation)/ pair.
+type Rel = (Bool, Permutations.Permutation)
 
 {- | Determine 'Rel' of 'Half_Seq's.
 
@@ -193,9 +215,9 @@ type Rel = (Bool,Permutations.Permutation)
 -}
 relate :: Half_Seq -> Half_Seq -> Rel
 relate p q =
-    if complementary p q
-    then (True,Permutations.permutation (complement p) q)
-    else (False,Permutations.permutation p q)
+  if complementary p q
+    then (True, Permutations.permutation (complement p) q)
+    else (False, Permutations.permutation p q)
 
 {- | 'Rel' from 'Label' /p/ to /q/.
 
@@ -205,7 +227,7 @@ relate p q =
 relate_l :: Label -> Label -> Rel
 relate_l p q = relate (half_seq_of p) (half_seq_of q)
 
-{- | 'relate' adjacent 'Half_Seq', see also 'relations_l'. -}
+-- | 'relate' adjacent 'Half_Seq', see also 'relations_l'.
 relations :: [Half_Seq] -> [Rel]
 relations p = zipWith relate p (List.tail_err p)
 
@@ -223,17 +245,18 @@ relations_l p = zipWith relate_l p (List.tail_err p)
 [1,3,4,2]
 -}
 apply_relation :: Rel -> Half_Seq -> Half_Seq
-apply_relation (c,p) i =
-    let j = Permutations.apply_permutation p i
-    in if c then complement j else j
+apply_relation (c, p) i =
+  let j = Permutations.apply_permutation p i
+  in if c then complement j else j
 
-{- | Apply sequence of 'Rel' to initial 'Half_Seq'. -}
+-- | Apply sequence of 'Rel' to initial 'Half_Seq'.
 apply_relations :: [Rel] -> Half_Seq -> [Half_Seq]
 apply_relations rs i =
-    case rs of
-      [] -> [i]
-      (r:rs') -> let i' = apply_relation r i
-                 in i : apply_relations rs' i'
+  case rs of
+    [] -> [i]
+    (r : rs') ->
+      let i' = apply_relation r i
+      in i : apply_relations rs' i'
 
 {- | Variant of 'apply_relations'.
 
@@ -241,15 +264,16 @@ apply_relations rs i =
 [L2,L,A,Q1]
 -}
 apply_relations_l :: [Rel] -> Label -> [Label]
-apply_relations_l rs = map (label_of . full_seq) .
-                       apply_relations rs .
-                       half_seq_of
+apply_relations_l rs =
+  map (label_of . full_seq)
+    . apply_relations rs
+    . half_seq_of
 
 -- * Face
 
-{- | Enumeration of set of /faces/ of a cube. -}
+-- | Enumeration of set of /faces/ of a cube.
 data Face = F_Back | F_Front | F_Right | F_Left | F_Bottom | F_Top
-          deriving (Eq,Enum,Bounded,Ord,Show)
+  deriving (Eq, Enum, Bounded, Ord, Show)
 
 {- | Table indicating set of faces of cubes as drawn in Fig. VIII-6 (p.220).
 
@@ -259,14 +283,15 @@ Just F_Left
 >>> List.reverse_lookup F_Right faces
 Just [2,3,5,8]
 -}
-faces :: [([Int],Face)]
+faces :: [([Int], Face)]
 faces =
-    [([1,3,6,8],F_Back) -- (I in viii-6)
-    ,([2,4,5,7],F_Front)
-    ,([2,3,5,8],F_Right)
-    ,([1,4,6,7],F_Left)
-    ,([3,4,5,6],F_Bottom)
-    ,([1,2,7,8],F_Top)]
+  [ ([1, 3, 6, 8], F_Back) -- (I in viii-6)
+  , ([2, 4, 5, 7], F_Front)
+  , ([2, 3, 5, 8], F_Right)
+  , ([1, 4, 6, 7], F_Left)
+  , ([3, 4, 5, 6], F_Bottom)
+  , ([1, 2, 7, 8], F_Top)
+  ]
 
 -- * Figures
 
@@ -277,10 +302,31 @@ faces =
 -}
 viii_6_lseq :: [Label]
 viii_6_lseq =
-    [L2,L,A,Q1,Q7,Q3,Q9
-    ,G2,G,C,Q8,Q5,Q10,Q2
-    ,E,E2,B,Q4,Q11,Q12,Q6
-    ,D,D2,I]
+  [ L2
+  , L
+  , A
+  , Q1
+  , Q7
+  , Q3
+  , Q9
+  , G2
+  , G
+  , C
+  , Q8
+  , Q5
+  , Q10
+  , Q2
+  , E
+  , E2
+  , B
+  , Q4
+  , Q11
+  , Q12
+  , Q6
+  , D
+  , D2
+  , I
+  ]
 
 {- | Label sequence of Fig. VIII-7 (p.221)
 
@@ -289,12 +335,31 @@ viii_6_lseq =
 -}
 viii_7_lseq :: [Label]
 viii_7_lseq =
-    [I,A,B,C
-    ,D,D2,E,E2
-    ,G,G2,L,L2
-    ,Q1,Q2,Q3,Q4
-    ,Q5,Q6,Q7,Q8
-    ,Q9,Q10,Q11,Q12]
+  [ I
+  , A
+  , B
+  , C
+  , D
+  , D2
+  , E
+  , E2
+  , G
+  , G2
+  , L
+  , L2
+  , Q1
+  , Q2
+  , Q3
+  , Q4
+  , Q5
+  , Q6
+  , Q7
+  , Q8
+  , Q9
+  , Q10
+  , Q11
+  , Q12
+  ]
 
 {- | Fig. VIII-7 (p.221)
 
@@ -314,12 +379,31 @@ True
 -}
 viii_6b_lseq :: [Label]
 viii_6b_lseq =
-    [I,A,B,C
-    ,D2,D,E2,E
-    ,G2,G,L2,L
-    ,Q7,Q2,Q3,Q11
-    ,Q8,Q6,Q1,Q5
-    ,Q9,Q10,Q4,Q12]
+  [ I
+  , A
+  , B
+  , C
+  , D2
+  , D
+  , E2
+  , E
+  , G2
+  , G
+  , L2
+  , L
+  , Q7
+  , Q2
+  , Q3
+  , Q11
+  , Q8
+  , Q6
+  , Q1
+  , Q5
+  , Q9
+  , Q10
+  , Q4
+  , Q12
+  ]
 
 {- | Fig. VIII-6/b 'Half_Seq'.
 
@@ -331,35 +415,34 @@ True
 -}
 viii_6b_p' :: [Half_Seq]
 viii_6b_p' =
-    [[1,2,3,4]
-    ,[2,1,4,3]
-    ,[3,4,1,2]
-    ,[4,3,2,1]
-    ,[2,3,1,4]
-    ,[3,1,2,4]
-    ,[2,4,3,1]
-    ,[4,1,3,2]
+  [ [1, 2, 3, 4]
+  , [2, 1, 4, 3]
+  , [3, 4, 1, 2]
+  , [4, 3, 2, 1]
+  , [2, 3, 1, 4]
+  , [3, 1, 2, 4]
+  , [2, 4, 3, 1]
+  , [4, 1, 3, 2]
+  , [3, 2, 4, 1]
+  , [4, 2, 1, 3]
+  , [1, 3, 4, 2]
+  , [1, 4, 2, 3]
+  , [7, 8, 6, 5]
+  , [7, 6, 5, 8]
+  , [8, 6, 7, 5]
+  , [6, 7, 8, 5]
+  , [6, 8, 5, 7]
+  , [6, 5, 7, 8]
+  , [8, 7, 5, 6]
+  , [7, 5, 8, 6]
+  , [5, 8, 7, 6]
+  , [5, 7, 6, 8]
+  , [8, 5, 6, 7]
+  , [5, 6, 8, 7]
+  ]
 
-    ,[3,2,4,1]
-    ,[4,2,1,3]
-    ,[1,3,4,2]
-    ,[1,4,2,3]
-    ,[7,8,6,5]
-    ,[7,6,5,8]
-    ,[8,6,7,5]
-    ,[6,7,8,5]
-
-    ,[6,8,5,7]
-    ,[6,5,7,8]
-    ,[8,7,5,6]
-    ,[7,5,8,6]
-    ,[5,8,7,6]
-    ,[5,7,6,8]
-    ,[8,5,6,7]
-    ,[5,6,8,7]]
-
-{- | Variant of 'viii_6b' with 'Half_Seq'. -}
-viii_6b' :: [(Label,Half_Seq)]
+-- | Variant of 'viii_6b' with 'Half_Seq'.
+viii_6b' :: [(Label, Half_Seq)]
 viii_6b' = zip viii_6b_lseq viii_6b_p'
 
 {- | Fig. VIII-6/b.
@@ -367,7 +450,7 @@ viii_6b' = zip viii_6b_lseq viii_6b_p'
 >>> map (viii_6b !!) [0,8,16]
 [(I,[1,2,3,4,5,6,7,8]),(G2,[3,2,4,1,7,6,8,5]),(Q8,[6,8,5,7,2,4,1,3])]
 -}
-viii_6b :: [(Label,Seq)]
+viii_6b :: [(Label, Seq)]
 viii_6b = zip viii_6b_lseq (map full_seq viii_6b_p')
 
 {- | The sequence of 'Rel' to give 'viii_6_l' from 'L2'.
@@ -391,4 +474,3 @@ True
 -}
 viii_6b_relations :: [Rel]
 viii_6b_relations = relations (map half_seq_of viii_6b_lseq)
-

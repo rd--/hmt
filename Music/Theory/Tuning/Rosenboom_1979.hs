@@ -17,8 +17,8 @@ import qualified Music.Theory.Pitch.Name as Pitch.Name
 import qualified Music.Theory.Tuning.Et as Et
 import qualified Music.Theory.Tuning.Scala as Scala
 
-t2_to_ratio :: (Integer,Integer) -> Rational
-t2_to_ratio (n,d) = n % d
+t2_to_ratio :: (Integer, Integer) -> Rational
+t2_to_ratio (n, d) = n % d
 
 {- | Tuning, ratios for each octave.
 
@@ -29,15 +29,16 @@ t2_to_ratio (n,d) = n % d
 >>> map (map (round . Tuning.ratio_to_cents . t2_to_ratio)) dr_tuning_oct
 [[0,498,649,814,996],[0,231,498,702,814,996],[0,204,386,498,551,702,814,969]]
 -}
-dr_tuning_oct :: Num n => [[(n,n)]]
+dr_tuning_oct :: Num n => [[(n, n)]]
 dr_tuning_oct =
-    [[(1,1),(4,3),(16,11),(8,5),(16,9)]
-    ,[(1,1),(8,7),(4,3),(3,2),(8,5),(16,9)]
-    ,[(1,1),(9,8),(5,4),(4,3),(11,8),(3,2),(8,5),(7,4)]]
+  [ [(1, 1), (4, 3), (16, 11), (8, 5), (16, 9)]
+  , [(1, 1), (8, 7), (4, 3), (3, 2), (8, 5), (16, 9)]
+  , [(1, 1), (9, 8), (5, 4), (4, 3), (11, 8), (3, 2), (8, 5), (7, 4)]
+  ]
 
-{- | Tuning, actual ratios. -}
+-- | Tuning, actual ratios.
 dr_tuning :: [Rational]
-dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1,2,4] dr_tuning_oct)
+dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1, 2, 4] dr_tuning_oct)
 
 {- | Actual scale, in Cps.
 
@@ -46,9 +47,9 @@ dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1,2,4] dr_tuning_
 -}
 dr_scale :: [Double]
 dr_scale =
-    let f0 = Pitch.octpc_to_cps (1::Int,8)
-        f = (* f0) . fromRational
-    in map f dr_tuning
+  let f0 = Pitch.octpc_to_cps (1 :: Int, 8)
+      f = (* f0) . fromRational
+  in map f dr_tuning
 
 {- | 12et
 
@@ -80,7 +81,7 @@ dr_scale =
 [(32,52),(37,69),(38,76),(40,83),(42,92),(44,104),(46,119),(49,138),(51,156),(52,166),(54,185),(56,208),(58,234),(60,260),(61,277),(62,286),(63,311),(64,332),(66,363)]
 -}
 dr_scale_tbl_12et :: [Et.HS_R Pitch.Pitch]
-dr_scale_tbl_12et = map (Et.nearest_12et_tone_k0 (69,440)) dr_scale
+dr_scale_tbl_12et = map (Et.nearest_12et_tone_k0 (69, 440)) dr_scale
 
 {- | Scala
 
@@ -91,13 +92,13 @@ True
 -}
 dr_scale_scala :: Scala.Scale
 dr_scale_scala =
-    let f r (_,p,_,_,_) = (Pitch.pitch_to_midi p :: Int,r)
-        sq = zipWith f dr_tuning dr_scale_tbl_12et
-        g z k = case lookup k sq of
-                  Nothing -> (z,(k,z))
-                  Just r -> (r,(k,r))
-        r_seq = snd (mapAccumL g 1 [33 .. 32 + 12 * 3 - 1]) ++ [(68,8)]
-    in ("dr_itb_etude_1","...",3 * 12,map (Right . snd) r_seq)
+  let f r (_, p, _, _, _) = (Pitch.pitch_to_midi p :: Int, r)
+      sq = zipWith f dr_tuning dr_scale_tbl_12et
+      g z k = case lookup k sq of
+        Nothing -> (z, (k, z))
+        Just r -> (r, (k, r))
+      r_seq = snd (mapAccumL g 1 [33 .. 32 + 12 * 3 - 1]) ++ [(68, 8)]
+  in ("dr_itb_etude_1", "...", 3 * 12, map (Right . snd) r_seq)
 
 {- | 24et
 
@@ -126,30 +127,30 @@ dr_scale_scala =
 @
 -}
 dr_scale_tbl_24et :: [Et.HS_R Pitch.Pitch]
-dr_scale_tbl_24et = map (Et.nearest_24et_tone_k0 (69,440)) dr_scale
+dr_scale_tbl_24et = map (Et.nearest_24et_tone_k0 (69, 440)) dr_scale
 
 dr_chords :: [[Pitch.Pitch]]
 dr_chords =
-    [[Pitch.Name.aes1,Pitch.Name.bes2,Pitch.Name.des3,Pitch.Name.ees4] -- S1
-    ,[Pitch.Name.aes1,Pitch.Name.aes2,Pitch.Name.fes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.bes2,Pitch.Name.des3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.bes2,Pitch.Name.des3,Pitch.Name.ees4] -- S2
-    ,[Pitch.Name.aes1,Pitch.Name.ges2,Pitch.Name.aes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.bes2,Pitch.Name.des3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.bes2,Pitch.Name.des3,Pitch.Name.ees4] -- S3
-    ,[Pitch.Name.aes1,Pitch.Name.ges2,Pitch.Name.aes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.ges2,Pitch.Name.aes3,Pitch.Name.ees4] -- S4
-    ,[Pitch.Name.aes1,Pitch.Name.aes2,Pitch.Name.fes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.fes2,Pitch.Name.des4,Pitch.Name.ees4] -- S5
-    ,[Pitch.Name.ges2,Pitch.Name.aes2,Pitch.Name.aes3,Pitch.Name.d4]
-    ,[Pitch.Name.aes1,Pitch.Name.d2,Pitch.Name.aes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes2,Pitch.Name.fes3,Pitch.Name.d4] -- S6
-    ,[Pitch.Name.aes1,Pitch.Name.fes2,Pitch.Name.des4,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.fes2,Pitch.Name.des4,Pitch.Name.ees4] -- S7
-    ,[Pitch.Name.aes1,Pitch.Name.ges2,Pitch.Name.aes3,Pitch.Name.ees4]
-    ,[Pitch.Name.aes1,Pitch.Name.ges2,Pitch.Name.aes3,Pitch.Name.ees4] -- S8
-    ,[Pitch.Name.aes1,Pitch.Name.d2,Pitch.Name.aes3,Pitch.Name.ees4]
-    ]
+  [ [Pitch.Name.aes1, Pitch.Name.bes2, Pitch.Name.des3, Pitch.Name.ees4] -- S1
+  , [Pitch.Name.aes1, Pitch.Name.aes2, Pitch.Name.fes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.bes2, Pitch.Name.des3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.bes2, Pitch.Name.des3, Pitch.Name.ees4] -- S2
+  , [Pitch.Name.aes1, Pitch.Name.ges2, Pitch.Name.aes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.bes2, Pitch.Name.des3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.bes2, Pitch.Name.des3, Pitch.Name.ees4] -- S3
+  , [Pitch.Name.aes1, Pitch.Name.ges2, Pitch.Name.aes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.ges2, Pitch.Name.aes3, Pitch.Name.ees4] -- S4
+  , [Pitch.Name.aes1, Pitch.Name.aes2, Pitch.Name.fes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.fes2, Pitch.Name.des4, Pitch.Name.ees4] -- S5
+  , [Pitch.Name.ges2, Pitch.Name.aes2, Pitch.Name.aes3, Pitch.Name.d4]
+  , [Pitch.Name.aes1, Pitch.Name.d2, Pitch.Name.aes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes2, Pitch.Name.fes3, Pitch.Name.d4] -- S6
+  , [Pitch.Name.aes1, Pitch.Name.fes2, Pitch.Name.des4, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.fes2, Pitch.Name.des4, Pitch.Name.ees4] -- S7
+  , [Pitch.Name.aes1, Pitch.Name.ges2, Pitch.Name.aes3, Pitch.Name.ees4]
+  , [Pitch.Name.aes1, Pitch.Name.ges2, Pitch.Name.aes3, Pitch.Name.ees4] -- S8
+  , [Pitch.Name.aes1, Pitch.Name.d2, Pitch.Name.aes3, Pitch.Name.ees4]
+  ]
 
 {- | Ratios
 
@@ -158,46 +159,46 @@ True
 
 >>> map (sum . map snd) dr_ratio_seq == replicate 20 11
 True
-
 -}
-dr_ratio_seq :: Num n => [[(n,n)]]
+dr_ratio_seq :: Num n => [[(n, n)]]
 dr_ratio_seq =
-    [[(11,3),(2,2),(6,6)]
-    ,[(7,2),(7,7),(6,2)]
-    ,[(6,9),(2,2)]
-    ,[(2,9),(11,2)]
-    ,[(10,5),(10,3),(10,3)]
-    ,[(10,10),(5,1)]
-    ,[(5,7),(11,4)]
-    ,[(11,3),(8,8)]
-    ,[(8,8),(10,3)] -- p2
-    ,[(10,7),(10,4)]
-    ,[(10,4),(3,3),(4,4)]
-    ,[(4,3),(9,7),(5,1)]
-    ,[(7,7),(7,4)]
-    ,[(9,9),(9,2)]
-    ,[(9,7),(7,4)]
-    ,[(7,3),(9,4),(7,4)]
-    ,[(5,3),(4,4),(6,1),(4,3)]
-    ,[(4,4),(7,7)]
-    ,[(7,2),(5,8),(8,1)]
-    ,[(8,1),(1,10)]
-    ]
+  [ [(11, 3), (2, 2), (6, 6)]
+  , [(7, 2), (7, 7), (6, 2)]
+  , [(6, 9), (2, 2)]
+  , [(2, 9), (11, 2)]
+  , [(10, 5), (10, 3), (10, 3)]
+  , [(10, 10), (5, 1)]
+  , [(5, 7), (11, 4)]
+  , [(11, 3), (8, 8)]
+  , [(8, 8), (10, 3)] -- p2
+  , [(10, 7), (10, 4)]
+  , [(10, 4), (3, 3), (4, 4)]
+  , [(4, 3), (9, 7), (5, 1)]
+  , [(7, 7), (7, 4)]
+  , [(9, 9), (9, 2)]
+  , [(9, 7), (7, 4)]
+  , [(7, 3), (9, 4), (7, 4)]
+  , [(5, 3), (4, 4), (6, 1), (4, 3)]
+  , [(4, 4), (7, 7)]
+  , [(7, 2), (5, 8), (8, 1)]
+  , [(8, 1), (1, 10)]
+  ]
 
 {- | Hisotogram
 
->>> import Data.Function {- base -}
->>> import Data.List {- base -}
+>>> import Data.Function
+>>> import Data.List
 >>> reverse (sortBy (compare `on` snd) dr_ratio_seq_hist)
 [((10,3),3),((7,7),3),((7,4),3),((4,4),3),((11,3),2),((10,4),2),((9,7),2),((8,8),2),((8,1),2),((7,2),2),((5,1),2),((4,3),2),((2,2),2),((11,4),1),((11,2),1),((10,10),1),((10,7),1),((10,5),1),((9,9),1),((9,4),1),((9,2),1),((7,3),1),((6,9),1),((6,6),1),((6,2),1),((6,1),1),((5,8),1),((5,7),1),((5,3),1),((3,3),1),((2,9),1),((1,10),1)]
 -}
-dr_ratio_seq_hist :: (Ord n,Num n) => [((n,n),Int)]
+dr_ratio_seq_hist :: (Ord n, Num n) => [((n, n), Int)]
 dr_ratio_seq_hist = List.histogram (concat dr_ratio_seq)
 
-dr_nt :: Integral i => [([i],[i])]
+dr_nt :: Integral i => [([i], [i])]
 dr_nt =
-    [([1,7,8,17],[12,13,15,17])
-    ,([1,6,10,17],[6,10,9])]
+  [ ([1, 7, 8, 17], [12, 13, 15, 17])
+  , ([1, 6, 10, 17], [6, 10, 9])
+  ]
 
 {- | Pitch
 
@@ -206,8 +207,8 @@ dr_nt =
 -}
 dr_nt_pitch :: ([Int], [Int]) -> ([Pitch.Pitch], [Pitch.Pitch])
 dr_nt_pitch =
-    let f k = Tuple.p5_snd (dr_scale_tbl_24et !! (k - 1))
-    in Function.bimap1 (map f)
+  let f k = Tuple.p5_snd (dr_scale_tbl_24et !! (k - 1))
+  in Function.bimap1 (map f)
 
 {-
 

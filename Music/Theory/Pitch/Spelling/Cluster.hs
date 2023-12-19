@@ -1,4 +1,4 @@
-{- | Spelling for chromatic clusters. -}
+-- | Spelling for chromatic clusters.
 module Music.Theory.Pitch.Spelling.Cluster where
 
 import Data.List {- base -}
@@ -16,8 +16,8 @@ import Music.Theory.Pitch.Note.Name {- hmt -}
 -}
 cluster_normal_order :: [Pitch.PitchClass] -> [Pitch.PitchClass]
 cluster_normal_order =
-    let with_bounds x = ((last x - List.head_err x) `mod` 12,x)
-    in snd . minimum . map with_bounds . List.rotations
+  let with_bounds x = ((last x - List.head_err x) `mod` 12, x)
+  in snd . minimum . map with_bounds . List.rotations
 
 {- | Normal order starting in indicated octave.
 
@@ -26,9 +26,9 @@ cluster_normal_order =
 -}
 cluster_normal_order_octpc :: Pitch.Octave -> [Pitch.PitchClass] -> [Pitch.OctPc]
 cluster_normal_order_octpc o pc =
-    let pc_n = cluster_normal_order pc
-        pc_0 = List.head_err pc_n
-    in map (\x -> (if x >= pc_0 then o else o + 1,x)) pc_n
+  let pc_n = cluster_normal_order pc
+      pc_0 = List.head_err pc_n
+  in map (\x -> (if x >= pc_0 then o else o + 1, x)) pc_n
 
 {- | True if 'sort' of cluster is not equal to 'cluster_normal_order'.
 
@@ -44,101 +44,102 @@ cluster_is_multiple_octave x = sort x /= cluster_normal_order x
 >>> all f spell_cluster_table
 True
 -}
-spell_cluster_table :: [([Pitch.PitchClass],[(Pitch.Note.Note,Pitch.Note.Alteration)])]
+spell_cluster_table :: [([Pitch.PitchClass], [(Pitch.Note.Note, Pitch.Note.Alteration)])]
 spell_cluster_table =
-    [([0,1,2,3],[bis,cis,d,ees])
-    ,([0,1,2],[bis,cis,d])
-    ,([0,1,3],[c,des,ees])
-    ,([0,1],[c,des])
-    ,([0,2,3],[c,d,ees])
-    ,([0,2],[c,d])
-    ,([0],[c])
-    ,([1,2,3],[cis,d,ees])
-    ,([1,2],[cis,d])
-    ,([10,0,1,2],[ais,bis,cis,d])
-    ,([10,0,1,3],[bes,c,des,ees])
-    ,([10,0,1],[bes,c,des])
-    ,([10,0,2,3],[bes,c,d,ees])
-    ,([10,0,2],[bes,c,d])
-    ,([10,1,2,3],[bes,cis,d,ees])
-    ,([10,1,2],[ais,cis,d])
-    ,([10,11,0,1,2,3],[ais,b,c,cis,d,ees]) -- overlap...
-    ,([10,11,0,1],[ais,b,c,des])
-    ,([10,11,0,2],[ais,b,c,d])
-    ,([10,11,0,3],[ais,b,c,dis])
-    ,([10,11,0],[ais,b,c])
-    ,([10,11,1,2],[ais,b,cis,d])
-    ,([10,11,1,3],[ais,b,cis,dis])
-    ,([10,11,1],[ais,b,cis])
-    ,([10,11,2,3],[bes,ces,d,ees])
-    ,([10,11,2],[ais,b,d])
-    ,([10,11],[ais,b])
-    ,([10],[bes])
-    ,([11,0,1,2],[aisis,bis,cis,d])
-    ,([11,0,1,3],[b,c,des,ees])
-    ,([11,0,1],[b,c,des])
-    ,([11,0,2,3],[b,c,d,ees])
-    ,([11,0,2],[b,c,d])
-    ,([11,0,3],[b,c,dis])
-    ,([11,0],[b,c])
-    ,([11,1,2,3],[b,cis,d,ees])
-    ,([11,1,2],[b,cis,d])
-    ,([11,1,3],[b,cis,dis])
-    ,([11,1],[b,cis])
-    ,([11,2,3],[b,d,ees])
-    ,([11,2],[b,d])
-    ,([11],[b])
-    ,([1],[cis])
-    ,([2,3,4,5],[d,ees,fes,geses])
-    ,([2,3,4],[d,ees,fes])
-    ,([2,3,5],[d,ees,f])
-    ,([2,3],[d,ees])
-    ,([2,4,5],[d,e,f])
-    ,([2,4],[d,e])
-    ,([2,5],[d,f])
-    ,([2],[d])
-    ,([3,4,5],[dis,e,f])
-    ,([3,4],[dis,e])
-    ,([3,5],[ees,f])
-    ,([3],[ees])
-    ,([4,5],[e,f])
-    ,([4],[e])
-    ,([5,6,7,8,9],[eis,fis,g,aes,beses])
-    ,([5,6,7,8],[eis,fis,g,aes])
-    ,([5,6,7,9],[eis,fis,g,a])
-    ,([5,6,7],[eis,fis,g])
-    ,([5,6,8,9],[eis,fis,gis,a])
-    ,([5,6,8],[f,ges,aes])
-    ,([5,6,9],[f,ges,a])
-    ,([5,6],[f,ges])
-    ,([5,7,8,9],[f,g,aes,beses])
-    ,([5,7,8],[f,g,aes])
-    ,([5,7,9],[f,g,a])
-    ,([5,7],[f,g])
-    ,([5,8,9],[f,gis,a])
-    ,([5,8],[f,aes])
-    ,([5,9],[f,a])
-    ,([5],[f])
-    ,([6,7,8,9],[fis,g,aes,beses])
-    ,([6,7,8],[fis,g,aes])
-    ,([6,7,9],[fis,g,a])
-    ,([6,7],[fis,g])
-    ,([6,8,9],[fis,gis,a])
-    ,([6,8],[fis,gis])
-    ,([6,9],[fis,a])
-    ,([6],[fis])
-    ,([7,8,9],[fisis,gis,a])
-    ,([7,8],[g,aes])
-    ,([7,9],[g,a])
-    ,([7],[g])
-    ,([8,10],[aes,bes])
-    ,([8,9,10],[gis,a,bes])
-    ,([8,9],[gis,a])
-    ,([8],[aes])
-    ,([9,10],[a,bes])
-    ,([9],[a])]
+  [ ([0, 1, 2, 3], [bis, cis, d, ees])
+  , ([0, 1, 2], [bis, cis, d])
+  , ([0, 1, 3], [c, des, ees])
+  , ([0, 1], [c, des])
+  , ([0, 2, 3], [c, d, ees])
+  , ([0, 2], [c, d])
+  , ([0], [c])
+  , ([1, 2, 3], [cis, d, ees])
+  , ([1, 2], [cis, d])
+  , ([10, 0, 1, 2], [ais, bis, cis, d])
+  , ([10, 0, 1, 3], [bes, c, des, ees])
+  , ([10, 0, 1], [bes, c, des])
+  , ([10, 0, 2, 3], [bes, c, d, ees])
+  , ([10, 0, 2], [bes, c, d])
+  , ([10, 1, 2, 3], [bes, cis, d, ees])
+  , ([10, 1, 2], [ais, cis, d])
+  , ([10, 11, 0, 1, 2, 3], [ais, b, c, cis, d, ees]) -- overlap...
+  , ([10, 11, 0, 1], [ais, b, c, des])
+  , ([10, 11, 0, 2], [ais, b, c, d])
+  , ([10, 11, 0, 3], [ais, b, c, dis])
+  , ([10, 11, 0], [ais, b, c])
+  , ([10, 11, 1, 2], [ais, b, cis, d])
+  , ([10, 11, 1, 3], [ais, b, cis, dis])
+  , ([10, 11, 1], [ais, b, cis])
+  , ([10, 11, 2, 3], [bes, ces, d, ees])
+  , ([10, 11, 2], [ais, b, d])
+  , ([10, 11], [ais, b])
+  , ([10], [bes])
+  , ([11, 0, 1, 2], [aisis, bis, cis, d])
+  , ([11, 0, 1, 3], [b, c, des, ees])
+  , ([11, 0, 1], [b, c, des])
+  , ([11, 0, 2, 3], [b, c, d, ees])
+  , ([11, 0, 2], [b, c, d])
+  , ([11, 0, 3], [b, c, dis])
+  , ([11, 0], [b, c])
+  , ([11, 1, 2, 3], [b, cis, d, ees])
+  , ([11, 1, 2], [b, cis, d])
+  , ([11, 1, 3], [b, cis, dis])
+  , ([11, 1], [b, cis])
+  , ([11, 2, 3], [b, d, ees])
+  , ([11, 2], [b, d])
+  , ([11], [b])
+  , ([1], [cis])
+  , ([2, 3, 4, 5], [d, ees, fes, geses])
+  , ([2, 3, 4], [d, ees, fes])
+  , ([2, 3, 5], [d, ees, f])
+  , ([2, 3], [d, ees])
+  , ([2, 4, 5], [d, e, f])
+  , ([2, 4], [d, e])
+  , ([2, 5], [d, f])
+  , ([2], [d])
+  , ([3, 4, 5], [dis, e, f])
+  , ([3, 4], [dis, e])
+  , ([3, 5], [ees, f])
+  , ([3], [ees])
+  , ([4, 5], [e, f])
+  , ([4], [e])
+  , ([5, 6, 7, 8, 9], [eis, fis, g, aes, beses])
+  , ([5, 6, 7, 8], [eis, fis, g, aes])
+  , ([5, 6, 7, 9], [eis, fis, g, a])
+  , ([5, 6, 7], [eis, fis, g])
+  , ([5, 6, 8, 9], [eis, fis, gis, a])
+  , ([5, 6, 8], [f, ges, aes])
+  , ([5, 6, 9], [f, ges, a])
+  , ([5, 6], [f, ges])
+  , ([5, 7, 8, 9], [f, g, aes, beses])
+  , ([5, 7, 8], [f, g, aes])
+  , ([5, 7, 9], [f, g, a])
+  , ([5, 7], [f, g])
+  , ([5, 8, 9], [f, gis, a])
+  , ([5, 8], [f, aes])
+  , ([5, 9], [f, a])
+  , ([5], [f])
+  , ([6, 7, 8, 9], [fis, g, aes, beses])
+  , ([6, 7, 8], [fis, g, aes])
+  , ([6, 7, 9], [fis, g, a])
+  , ([6, 7], [fis, g])
+  , ([6, 8, 9], [fis, gis, a])
+  , ([6, 8], [fis, gis])
+  , ([6, 9], [fis, a])
+  , ([6], [fis])
+  , ([7, 8, 9], [fisis, gis, a])
+  , ([7, 8], [g, aes])
+  , ([7, 9], [g, a])
+  , ([7], [g])
+  , ([8, 10], [aes, bes])
+  , ([8, 9, 10], [gis, a, bes])
+  , ([8, 9], [gis, a])
+  , ([8], [aes])
+  , ([9, 10], [a, bes])
+  , ([9], [a])
+  ]
 
-spell_cluster :: [Pitch.PitchClass] -> Maybe [(Pitch.Note.Note,Pitch.Note.Alteration)]
+spell_cluster :: [Pitch.PitchClass] -> Maybe [(Pitch.Note.Note, Pitch.Note.Alteration)]
 spell_cluster = flip lookup spell_cluster_table
 
 {- | Spell an arbitrary sequence of 'Pitch.OctPc' values.
@@ -148,12 +149,12 @@ Just ["B3","D#4","B4","C#5"]
 -}
 spell_cluster_octpc :: [Pitch.OctPc] -> Maybe [Pitch.Pitch]
 spell_cluster_octpc o =
-    let p = cluster_normal_order (sort (nub (map snd o)))
-        na_f na =
-            let na_tbl = map (\x -> (Pitch.Note.note_alteration_to_pc_err x,x)) na
-                o_f (oct,pc) = let (n,alt) = List.lookup_err pc na_tbl in Pitch.Pitch n alt oct
-            in map o_f o
-    in fmap na_f (spell_cluster p)
+  let p = cluster_normal_order (sort (nub (map snd o)))
+      na_f na =
+        let na_tbl = map (\x -> (Pitch.Note.note_alteration_to_pc_err x, x)) na
+            o_f (oct, pc) = let (n, alt) = List.lookup_err pc na_tbl in Pitch.Pitch n alt oct
+        in map o_f o
+  in fmap na_f (spell_cluster p)
 
 {- | Spelling for chromatic clusters.  Sequence must be ascending.
 Pitch class @0@ maps to 'c4', if there is no @0@ then all notes are in octave @4@.
@@ -167,11 +168,11 @@ True
 -}
 spell_cluster_c4 :: [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_c4 p =
-    let o_0 = if cluster_is_multiple_octave p then 3 else 4
-        oct = map fst (cluster_normal_order_octpc o_0 p)
-    in case spell_cluster p of
-         Nothing -> Nothing
-         Just na -> Just (zipWith (\(n,alt) o -> Pitch.Pitch n alt o) na oct)
+  let o_0 = if cluster_is_multiple_octave p then 3 else 4
+      oct = map fst (cluster_normal_order_octpc o_0 p)
+  in case spell_cluster p of
+      Nothing -> Nothing
+      Just na -> Just (zipWith (\(n, alt) o -> Pitch.Pitch n alt o) na oct)
 
 {- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave'.
 An octave of @4@ is the identitiy, @3@ an octave below, @5@ an octave above.
@@ -184,8 +185,8 @@ True
 -}
 spell_cluster_c :: Pitch.Octave -> [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_c o =
-    fmap (map (Pitch.pitch_edit_octave (+ (o - 4)))) .
-    spell_cluster_c4
+  fmap (map (Pitch.pitch_edit_octave (+ (o - 4))))
+    . spell_cluster_c4
 
 {- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave' so that the left-most note is in the octave given by /f/.
 
@@ -202,12 +203,13 @@ True
 -}
 spell_cluster_f :: (Pitch.PitchClass -> Pitch.Octave) -> [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_f o_f p =
-    let fn r = case r of
-                [] -> []
-                l:_ -> let (o,n) = Pitch.pitch_to_octpc l
-                           oct_f = (+ (o_f n - o))
-                       in map (Pitch.pitch_edit_octave oct_f) r
-    in fmap fn (spell_cluster_c4 p)
+  let fn r = case r of
+        [] -> []
+        l : _ ->
+          let (o, n) = Pitch.pitch_to_octpc l
+              oct_f = (+ (o_f n - o))
+          in map (Pitch.pitch_edit_octave oct_f) r
+  in fmap fn (spell_cluster_c4 p)
 
 {- | Variant of 'spell_cluster_c4' that runs 'pitch_edit_octave' so that the left-most note is in octave /o/.
 
@@ -219,8 +221,9 @@ True
 -}
 spell_cluster_left :: Pitch.Octave -> [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_left o p =
-    let fn r = case r of
-                [] -> []
-                l:_ -> let oct_f = (+ (o - Pitch.octave l))
-                       in map (Pitch.pitch_edit_octave oct_f) r
-    in fmap fn (spell_cluster_c4 p)
+  let fn r = case r of
+        [] -> []
+        l : _ ->
+          let oct_f = (+ (o - Pitch.octave l))
+          in map (Pitch.pitch_edit_octave oct_f) r
+  in fmap fn (spell_cluster_c4 p)

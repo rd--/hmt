@@ -20,7 +20,7 @@ import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 equaltemp :: Double -> Double -> Int -> [Double]
 equaltemp division octave scale_size =
   let step = Tuning.fratio_to_cents octave / division
-  in take scale_size [0,step ..]
+  in take scale_size [0, step ..]
 
 {- | <http://www.huygens-fokker.org/scala/help.htm#LINEARTEMP>
 
@@ -37,16 +37,17 @@ lineartemp scale_size octave _degree_of_fifth fifth down =
 
 -- * Intervals
 
-interval_hist_ratios :: (Fractional t,Ord t) => [t] -> [(t,Int)]
+interval_hist_ratios :: (Fractional t, Ord t) => [t] -> [(t, Int)]
 interval_hist_ratios x = List.histogram [(if p < q then p * 2 else p) / q | p <- x, q <- x, p /= q]
 
 intervals_list_ratios_r :: Interval.IntNam -> [Rational] -> IO ()
 intervals_list_ratios_r nam_db rat = do
   let hst = interval_hist_ratios rat
-      ln (r,n) = let nm = maybe "" snd (Interval.intnam_search_ratio nam_db r)
-                     c = Tuning.ratio_to_cents r
-                     i = Math.real_round_int (c / 100)
-                 in [show i,show n,Show.ratio_pp r,Show.real_pp 1 c,nm]
+      ln (r, n) =
+        let nm = maybe "" snd (Interval.intnam_search_ratio nam_db r)
+            c = Tuning.ratio_to_cents r
+            i = Math.real_round_int (c / 100)
+        in [show i, show n, Show.ratio_pp r, Show.real_pp 1 c, nm]
       tbl = map ln hst
       pp = Text.table_pp Text.table_opt_plain
   putStrLn (unlines (pp tbl))
@@ -68,14 +69,14 @@ interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
 interval_half_matrix interval_f =
   let tails' = filter ((>= 2) . length) . tails
       f l = case l of
-              [] -> []
-              i : l' -> map (`interval_f` i) l'
+        [] -> []
+        i : l' -> map (`interval_f` i) l'
   in map f . tails'
 
 interval_half_matrix_tbl :: (t -> String) -> (t -> t -> t) -> [t] -> [[String]]
 interval_half_matrix_tbl show_f interval_f scl =
-    let f n l = replicate n "" ++ map show_f l
-    in zipWith f [1..] (interval_half_matrix interval_f scl)
+  let f n l = replicate n "" ++ map show_f l
+  in zipWith f [1 ..] (interval_half_matrix interval_f scl)
 
 intervals_half_matrix :: (Scala.Scale -> [t]) -> (t -> t -> t) -> (t -> String) -> String -> IO ()
 intervals_half_matrix scl_f interval_f show_f nm = do

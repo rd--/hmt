@@ -1,5 +1,6 @@
--- | "Creating Rhythms" by Stefan Hollos and J. Richard Hollos
---    <http://abrazol.com/books/rhythm1/software.html>
+{- | "Creating Rhythms" by Stefan Hollos and J. Richard Hollos
+   <http://abrazol.com/books/rhythm1/software.html>
+-}
 module Music.Theory.Duration.Hollos2014 where
 
 import Data.List {- base -}
@@ -19,10 +20,11 @@ partm :: (Num a, Ord a) => a -> a -> [[a]]
 partm i j =
   let f t m n =
         if m == 1 && t == n
-        then [[t]]
-        else if n < m || n < 1 || m < 1 || t < 1
-             then []
-        else [reverse (t : r) | r <- f t (m - 1) (n - t)] ++ (f (t - 1) m n)
+          then [[t]]
+          else
+            if n < m || n < 1 || m < 1 || t < 1
+              then []
+              else [reverse (t : r) | r <- f t (m - 1) (n - t)] ++ (f (t - 1) m n)
   in f (j - i + 1) i j
 
 {- | Generates all partitions of n.

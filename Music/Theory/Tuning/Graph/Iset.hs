@@ -21,7 +21,7 @@ import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 {- | Flip a ratio in (1,2) and multiply by 2.
 
->>> import Data.Ratio {- base -}
+>>> import Data.Ratio
 >>> map r_flip [5%4,3%2,7%4]
 [8 % 5,4 % 3,8 % 7]
 
@@ -40,8 +40,8 @@ r_nrm = Tuning.ratio_interval_class_by id
 >>> r_rel (1,3/2) == 4/3
 True
 -}
-r_rel :: (Rational,Rational) -> Rational
-r_rel (p,q) = Tuning.fold_ratio_to_octave_err (p / q)
+r_rel :: (Rational, Rational) -> Rational
+r_rel (p, q) = Tuning.fold_ratio_to_octave_err (p / q)
 
 -- | The interval set /i/ and it's 'r_flip'.
 iset_sym :: [Rational] -> [Rational]
@@ -72,31 +72,35 @@ edj_r = r_nrm . r_rel
 -- | The graph with vertices /scl_r/ and all edges where the interval (i,j) is in /iset/.
 mk_graph :: [Rational] -> [Rational] -> G
 mk_graph iset scl_r =
-  (scl_r
-  ,filter
-    (\e -> edj_r e `elem` iset_sym iset)
-    [(p,q) |
-     p <- scl_r,
-     q <- scl_r,
-     p < q])
+  ( scl_r
+  , filter
+      (\e -> edj_r e `elem` iset_sym iset)
+      [ (p, q)
+      | p <- scl_r
+      , q <- scl_r
+      , p < q
+      ]
+  )
 
 gen_graph :: Ord v => [Dot.Dot_Meta_Attr] -> Dot.Graph_Pp v e -> [Graph.Fgl.Edge_Lbl v e] -> [String]
 gen_graph opt pp es = Graph.Fgl.fgl_to_udot opt pp (Graph.Fgl.g_from_edges_l es)
 
-g_to_dot :: Int -> [(String,String)] -> (Rational -> [(String,String)]) -> G -> [String]
-g_to_dot k attr v_attr (_,e_set) =
+g_to_dot :: Int -> [(String, String)] -> (Rational -> [(String, String)]) -> G -> [String]
+g_to_dot k attr v_attr (_, e_set) =
   let opt =
-        [("graph:layout","neato")
-        ,("graph:bgcolor","transparent")
-        ,("node:shape","plaintext")
-        ,("node:fontsize","10")
-        ,("node:fontname","century schoolbook")
-        ,("edge:fontsize","9")]
+        [ ("graph:layout", "neato")
+        , ("graph:bgcolor", "transparent")
+        , ("node:shape", "plaintext")
+        , ("node:fontsize", "10")
+        , ("node:fontname", "century schoolbook")
+        , ("edge:fontsize", "9")
+        ]
   in gen_graph
-     (opt ++ attr)
-     (\(_,v) -> ("label",Euler.rat_label (k,True) v) : v_attr v
-     ,\(_,e) -> [("label",Show.rational_pp e)])
-     (map (\e -> (e,edj_r e)) e_set)
+      (opt ++ attr)
+      ( \(_, v) -> ("label", Euler.rat_label (k, True) v) : v_attr v
+      , \(_, e) -> [("label", Show.rational_pp e)]
+      )
+      (map (\e -> (e, edj_r e)) e_set)
 
 -- * Scala
 
@@ -104,7 +108,7 @@ mk_graph_scl :: [Rational] -> Scala.Scale -> G
 mk_graph_scl iset = mk_graph iset . rem_oct . Scala.scale_ratios_req True
 
 scl_to_dot :: ([Rational], Int, [(String, String)], Rational -> [(String, String)]) -> String -> IO [String]
-scl_to_dot (iset,k,attr,v_attr) nm = do
+scl_to_dot (iset, k, attr, v_attr) nm = do
   sc <- Scala.scl_load nm
   let gr = mk_graph_scl iset sc
   return (g_to_dot k attr v_attr gr)
@@ -112,11 +116,11 @@ scl_to_dot (iset,k,attr,v_attr) nm = do
 -- * Fgl
 
 graph_to_fgl :: G -> Fgl.Gr Rational Rational
-graph_to_fgl (v,e) =
-  let fgl_v = zip [0..] v
+graph_to_fgl (v, e) =
+  let fgl_v = zip [0 ..] v
       r_to_v :: Rational -> Int
       r_to_v x = fromJust (List.reverse_lookup x fgl_v)
-      fgl_e = map (\(p,q) -> (r_to_v p,r_to_v q,edj_r (p,q))) e
+      fgl_e = map (\(p, q) -> (r_to_v p, r_to_v q, edj_r (p, q))) e
   in Fgl.mkGraph fgl_v fgl_e
 
 mk_graph_fgl :: [Rational] -> [Rational] -> Fgl.Gr Rational Rational

@@ -1,5 +1,6 @@
--- | Robert Morris. \"A Similarity Index for Pitch-Class
--- Sets\". Perspectives of New Music, 18(2):445-460, 1980.
+{- | Robert Morris. \"A Similarity Index for Pitch-Class
+Sets\". Perspectives of New Music, 18(2):445-460, 1980.
+-}
 module Music.Theory.Metric.Morris_1980 where
 
 import Data.Ratio {- base -}
@@ -23,10 +24,10 @@ import qualified Music.Theory.Z.Forte_1973 as Forte {- hmt -}
 -}
 sim :: (Integral i, Num n) => [i] -> [i] -> n
 sim r s =
-    let r' = Forte.z_icv z12 r
-        s' = Forte.z_icv z12 s
-        t = zipWith (-) r' s'
-    in sum (map abs t)
+  let r' = Forte.z_icv z12 r
+      s' = Forte.z_icv z12 s
+      t = zipWith (-) r' s'
+  in sum (map abs t)
 
 {- | Asim
 
@@ -47,6 +48,6 @@ True
 -}
 asim :: Integral i => [i] -> [i] -> Ratio i
 asim r s =
-    let r' = Forte.z_icv z12 r
-        s' = Forte.z_icv z12 s
-    in sim r s % (sum r' + sum s')
+  let r' = Forte.z_icv z12 r
+      s' = Forte.z_icv z12 s
+  in sim r s % (sum r' + sum s')

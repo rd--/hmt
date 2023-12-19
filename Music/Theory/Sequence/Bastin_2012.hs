@@ -4,10 +4,10 @@ import Data.Bits {- base -}
 import Data.Char {- base -}
 import Numeric {- base -}
 
-import qualified Music.Theory.List as T
-import qualified Music.Theory.Set.List as T
+import qualified Music.Theory.List as List
+import qualified Music.Theory.Set.List as Set.List
 
-{- | Set of elements. -}
+-- | Set of elements.
 type Set = [Int]
 
 {- | Set as sequence of 'Bool', most significant bit left.
@@ -17,8 +17,8 @@ type Set = [Int]
 -}
 set_binary :: Set -> [Bool]
 set_binary =
-    let f n = True : replicate (n - 1) False
-    in reverse . (++ [True]) . concatMap f . differentiate
+  let f n = True : replicate (n - 1) False
+  in reverse . (++ [True]) . concatMap f . differentiate
 
 {- | Show 'set_binary' of 'Set' (most significant bit at left).
 
@@ -30,10 +30,10 @@ set_binary =
 -}
 set_binary_pp :: Int -> Set -> String
 set_binary_pp k =
-    let c b = if b then '1' else '0'
-    in T.pad_left '0' k . map c . set_binary
+  let c b = if b then '1' else '0'
+  in List.pad_left '0' k . map c . set_binary
 
-{- | Show 'Word' in binary. -}
+-- | Show 'Word' in binary.
 word_pp :: Word -> String
 word_pp n = showIntAtBase 2 intToDigit n ""
 
@@ -50,9 +50,9 @@ True
 -}
 encode_set :: Set -> Word
 encode_set s =
-    case s of
-      [] -> 0
-      b:s' -> setBit (encode_set s') b
+  case s of
+    [] -> 0
+    b : s' -> setBit (encode_set s') b
 
 {- | Decode 'Set' with given /modulo/.
 
@@ -86,10 +86,11 @@ True
 -}
 is_rotation :: Eq a => [a] -> [a] -> Bool
 is_rotation p q =
-    case p of
-      [] -> null q
-      e:_ -> let (a,b) = break (== e) q
-             in b ++ a == p
+  case p of
+    [] -> null q
+    e : _ ->
+      let (a, b) = break (== e) q
+      in b ++ a == p
 
 {- | Iteration of 'operation' at encoding of 'Set' until cycle.
 
@@ -98,9 +99,9 @@ True
 -}
 family :: Int -> Set -> [Set]
 family n s =
-    let k = encode_set s
-        f_k = takeWhile (/= k) (tail (iterate (operation n) k))
-    in map (decode_set n) (k : f_k)
+  let k = encode_set s
+      f_k = takeWhile (/= k) (List.tail_err (iterate (operation n) k))
+  in map (decode_set n) (k : f_k)
 
 {- | The set of all 'family' of modulo /n/.
 
@@ -123,24 +124,24 @@ family n s =
 
 > mapM_ (gen D.Horizontal 6) (zip (universe 12) [0..])
 
-> import Data.List.Split {- split -}
+> import Data.List.Split
 
 > mapM_ (gen D.Vertical 3) (zip (map concat (chunksOf 16 (universe 12))) [0..])
 
 >>> import Data.List
 >>> fmap (is_rotation (family 12 [0,1,3])) (find ([0,1,3] `elem`) (universe 12))
 Just True
-
 -}
 universe :: Int -> [[Set]]
 universe n =
-    let rec u p =
-            case p of
-              [] -> u
-              x:p' -> if any (x `elem`) u
-                      then rec u p'
-                      else rec (family n x : u) p'
-    in rec [] (map (0:) (T.powerset [1 .. n - 1]))
+  let rec u p =
+        case p of
+          [] -> u
+          x : p' ->
+            if any (x `elem`) u
+              then rec u p'
+              else rec (family n x : u) p'
+  in rec [] (map (0 :) (Set.List.powerset [1 .. n - 1]))
 
 {-
 {01248,034589,01368A,02346789AB,01256,0357,01345678,0239,01249A,03459B,01369AB,0234679,0125689A,03578B,01345679B,02389AB}
@@ -279,7 +280,7 @@ universe n =
 [1,2]
 -}
 differentiate :: (Num a) => [a] -> [a]
-differentiate l = zipWith (-) (tail l) l
+differentiate l = zipWith (-) (List.tail_err l) l
 
 {-
 http://en.wikipedia.org/wiki/Linear_feedback_shift_register

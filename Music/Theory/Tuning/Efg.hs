@@ -1,4 +1,4 @@
-{- | Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html> -}
+-- | Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html>
 module Music.Theory.Tuning.Efg where
 
 import Data.List {- base -}
@@ -8,8 +8,8 @@ import qualified Music.Theory.Set.List as T {- hmt -}
 
 import Music.Theory.Tuning {- hmt -}
 
-{- | Normal form, value with occurences count (ie. exponent in notation above). -}
-type Efg i = [(i,Int)]
+-- | Normal form, value with occurences count (ie. exponent in notation above).
+type Efg i = [(i, Int)]
 
 {- | Degree of Efg, ie. sum of exponents.
 
@@ -42,17 +42,17 @@ efg_collate = T.histogram . sort
 
 >>> efg_factors [(3,3),(7,2)]
 [([0,0],[]),([0,1],[7]),([0,2],[7,7]),([1,0],[3]),([1,1],[3,7]),([1,2],[3,7,7]),([2,0],[3,3]),([2,1],[3,3,7]),([2,2],[3,3,7,7]),([3,0],[3,3,3]),([3,1],[3,3,3,7]),([3,2],[3,3,3,7,7])]
-
 -}
-efg_factors :: Efg i -> [([Int],[i])]
+efg_factors :: Efg i -> [([Int], [i])]
 efg_factors efg =
-    let k = map (\(_,n) -> [0 .. n]) efg
-        k' = if length efg == 1
-             then concatMap (map return) k
-             else T.nfold_cartesian_product k
-        z = map fst efg
-        f ix = (ix,concat (zipWith (\n m -> replicate n (z !! m)) ix [0..]))
-    in map f k'
+  let k = map (\(_, n) -> [0 .. n]) efg
+      k' =
+        if length efg == 1
+          then concatMap (map return) k
+          else T.nfold_cartesian_product k
+      z = map fst efg
+      f ix = (ix, concat (zipWith (\n m -> replicate n (z !! m)) ix [0 ..]))
+  in map f k'
 
 {- | Ratios of Efg, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
@@ -101,11 +101,11 @@ True
 >>> map f (zip [c0,c1,c2] [0,20,40])
 [[(0,0,0,10),(204,0,204,10),(231,0,231,10),(435,0,435,10),(471,0,471,10),(675,0,675,10),(702,0,702,10),(906,0,906,10),(933,0,933,10),(969,0,969,10),(1137,0,1137,10),(1173,0,1173,10),(1200,0,1200,10)],[(0,20,0,30),(120,20,120,30),(155,20,155,30),(351,20,351,30),(386,20,386,30),(506,20,506,30),(583,20,583,30),(738,20,738,30),(814,20,814,30),(893,20,893,30),(969,20,969,30),(1124,20,1124,30),(1200,20,1200,30)],[(0,40,0,50),(155,40,155,50),(267,40,267,50),(386,40,386,50),(498,40,498,50),(653,40,653,50),(884,40,884,50),(969,40,969,50),(1200,40,1200,50)]]
 -}
-efg_ratios :: Real r => Rational -> Efg r -> [([Int],Rational)]
+efg_ratios :: Real r => Rational -> Efg r -> [([Int], Rational)]
 efg_ratios n =
-    let to_r = fold_ratio_to_octave_err . (/ n) . toRational . product
-        f (ix,i) = (ix,to_r i)
-    in map f . efg_factors
+  let to_r = fold_ratio_to_octave_err . (/ n) . toRational . product
+      f (ix, i) = (ix, to_r i)
+  in map f . efg_factors
 
 {- | Generate a line drawing, as a set of (x0,y0,x1,y1) 4-tuples.
      h=row height, m=distance of vertical mark from row edge, k=distance between rows
@@ -116,10 +116,11 @@ efg_ratios n =
 >>> efg_diagram_set (round,25,4,75) e'
 [(0,0,1200,0),(0,25,1200,25),(0,4,0,21),(204,4,204,21),(702,4,702,21),(906,4,906,21),(1200,4,1200,21),(0,75,1200,75),(0,100,1200,100),(0,79,0,96),(386,79,386,96),(773,79,773,96),(1159,79,1159,96),(1200,79,1200,96),(0,150,1200,150),(0,175,1200,175),(0,154,0,171),(506,154,506,171),(738,154,738,171),(969,154,969,171),(1200,154,1200,171),(0,225,1200,225),(0,250,1200,250),(0,229,0,246),(204,229,204,246),(386,229,386,246),(590,229,590,246),(702,229,702,246),(1088,229,1088,246),(1200,229,1200,246),(0,300,1200,300),(0,325,1200,325),(0,304,0,321),(275,304,275,321),(386,304,386,321),(702,304,702,321),(773,304,773,321),(1088,304,1088,321),(1200,304,1200,321),(0,375,1200,375),(0,400,1200,400),(0,379,0,396),(155,379,155,396),(386,379,386,396),(541,379,541,396),(773,379,773,396),(969,379,969,396),(1200,379,1200,396),(0,450,1200,450),(0,475,1200,475),(0,454,0,471),(155,454,155,471),(386,454,386,471),(738,454,738,471),(969,454,969,471),(1124,454,1124,471),(1200,454,1200,471),(0,525,1200,525),(0,550,1200,550),(0,529,0,546),(240,529,240,546),(471,529,471,546),(702,529,702,546),(738,529,738,546),(969,529,969,546),(1200,529,1200,546),(0,600,1200,600),(0,625,1200,625),(0,604,0,621),(204,604,204,621),(471,604,471,621),(702,604,702,621),(969,604,969,621),(1173,604,1173,621),(1200,604,1200,621),(0,675,1200,675),(0,700,1200,700),(0,679,0,696),(155,679,155,696),(386,679,386,696),(471,679,471,696),(702,679,702,696),(857,679,857,696),(969,679,969,696),(1088,679,1088,696),(1200,679,1200,696)]
 -}
-efg_diagram_set :: (Enum n,Real n) => (Cents -> n,n,n,n) -> [Efg n] -> [(n,n,n,n)]
-efg_diagram_set (to_f,h,m,k) e =
-    let f = (++ [1200]) . sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
-        g (c,y) = let y' = y + h
-                      b = [(0,y,1200,y),(0,y',1200,y')]
-                  in b ++ map (\x -> (x,y + m,x,y' - m)) c
-    in concatMap g (zip (map f e) [0,k ..])
+efg_diagram_set :: (Enum n, Real n) => (Cents -> n, n, n, n) -> [Efg n] -> [(n, n, n, n)]
+efg_diagram_set (to_f, h, m, k) e =
+  let f = (++ [1200]) . sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
+      g (c, y) =
+        let y' = y + h
+            b = [(0, y, 1200, y), (0, y', 1200, y')]
+        in b ++ map (\x -> (x, y + m, x, y' - m)) c
+  in concatMap g (zip (map f e) [0, k ..])

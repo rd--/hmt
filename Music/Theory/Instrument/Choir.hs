@@ -9,7 +9,7 @@ import qualified Music.Theory.Pitch.Name as Pitch {- hmt -}
 
 -- | Voice types.
 data Voice = Bass | Tenor | Alto | Soprano
-           deriving (Eq,Ord,Enum,Bounded,Show)
+  deriving (Eq, Ord, Enum, Bounded, Show)
 
 -- | Single character abbreviation for 'Voice'.
 voice_abbrev :: Voice -> Char
@@ -18,62 +18,65 @@ voice_abbrev = List.head_err . show
 -- | Standard 'Clef' for 'Voice'.
 voice_clef :: Integral i => Voice -> Clef.Clef i
 voice_clef v =
-    case v of
-      Bass -> Clef.Clef Clef.Bass 0
-      Tenor -> Clef.Clef Clef.Treble (-1)
-      Alto -> Clef.Clef Clef.Treble 0
-      Soprano -> Clef.Clef Clef.Treble 0
+  case v of
+    Bass -> Clef.Clef Clef.Bass 0
+    Tenor -> Clef.Clef Clef.Treble (-1)
+    Alto -> Clef.Clef Clef.Treble 0
+    Soprano -> Clef.Clef Clef.Treble 0
 
 -- | Table giving ranges for 'Voice's.
-type Voice_Rng_Tbl = [(Voice,(Pitch.Pitch,Pitch.Pitch))]
+type Voice_Rng_Tbl = [(Voice, (Pitch.Pitch, Pitch.Pitch))]
 
 -- | More or less standard choir ranges, /inclusive/.
 voice_rng_tbl_std :: Voice_Rng_Tbl
 voice_rng_tbl_std =
-    [(Bass,(Pitch.d2,Pitch.c4))
-    ,(Tenor,(Pitch.c3,Pitch.a4))
-    ,(Alto,(Pitch.f3,Pitch.f5))
-    ,(Soprano,(Pitch.c4,Pitch.a5))]
+  [ (Bass, (Pitch.d2, Pitch.c4))
+  , (Tenor, (Pitch.c3, Pitch.a4))
+  , (Alto, (Pitch.f3, Pitch.f5))
+  , (Soprano, (Pitch.c4, Pitch.a5))
+  ]
 
 -- | More conservative ranges, /inclusive/.
 voice_rng_tbl_safe :: Voice_Rng_Tbl
 voice_rng_tbl_safe =
-    [(Bass,(Pitch.g2,Pitch.c4))
-    ,(Tenor,(Pitch.c3,Pitch.f4))
-    ,(Alto,(Pitch.g3,Pitch.c5))
-    ,(Soprano,(Pitch.c4,Pitch.f5))]
+  [ (Bass, (Pitch.g2, Pitch.c4))
+  , (Tenor, (Pitch.c3, Pitch.f4))
+  , (Alto, (Pitch.g3, Pitch.c5))
+  , (Soprano, (Pitch.c4, Pitch.f5))
+  ]
 
 -- | Lookup voice range table.
-voice_rng :: Voice_Rng_Tbl -> Voice -> (Pitch.Pitch,Pitch.Pitch)
+voice_rng :: Voice_Rng_Tbl -> Voice -> (Pitch.Pitch, Pitch.Pitch)
 voice_rng tbl v = List.lookup_err v tbl
 
 -- | Lookup 'voice_rng_tbl_std'.
-voice_rng_std :: Voice -> (Pitch.Pitch,Pitch.Pitch)
+voice_rng_std :: Voice -> (Pitch.Pitch, Pitch.Pitch)
 voice_rng_std = voice_rng voice_rng_tbl_std
 
 -- | Lookup 'voice_rng_tbl_safe'.
-voice_rng_safe :: Voice -> (Pitch.Pitch,Pitch.Pitch)
+voice_rng_safe :: Voice -> (Pitch.Pitch, Pitch.Pitch)
 voice_rng_safe = voice_rng voice_rng_tbl_safe
 
 -- | Is /p/ '>=' /l/ and '<=' /r/.
-in_range_inclusive :: Ord a => a -> (a,a) -> Bool
-in_range_inclusive p (l,r) = p >= l && p <= r
+in_range_inclusive :: Ord a => a -> (a, a) -> Bool
+in_range_inclusive p (l, r) = p >= l && p <= r
 
 {- | Is /p/ in range for /v/, (/std/ & /safe/).
 
 >>> map (in_voice_rng Pitch.c4) [Bass .. Soprano]
 [(True,True),(True,True),(True,True),(True,True)]
 -}
-in_voice_rng :: Pitch.Pitch -> Voice -> (Bool,Bool)
+in_voice_rng :: Pitch.Pitch -> Voice -> (Bool, Bool)
 in_voice_rng p v =
-    (in_range_inclusive p (voice_rng_std v)
-    ,in_range_inclusive p (voice_rng_safe v))
+  ( in_range_inclusive p (voice_rng_std v)
+  , in_range_inclusive p (voice_rng_safe v)
+  )
 
 -- | Given /tbl/ list 'Voice's that can sing 'Pitch.Pitch'.
 possible_voices :: Voice_Rng_Tbl -> Pitch.Pitch -> [Voice]
 possible_voices tbl p =
-    let f = in_range_inclusive p . voice_rng tbl
-    in filter f [Bass .. Soprano]
+  let f = in_range_inclusive p . voice_rng tbl
+  in filter f [Bass .. Soprano]
 
 -- | /std/ variant.
 possible_voices_std :: Pitch.Pitch -> [Voice]
@@ -85,7 +88,7 @@ possible_voices_safe = possible_voices voice_rng_tbl_safe
 
 -- | Enumeration of SATB voices.
 satb :: [Voice]
-satb = [Soprano,Alto,Tenor,Bass]
+satb = [Soprano, Alto, Tenor, Bass]
 
 -- | Names of 'satb'.
 satb_name :: [String]
@@ -96,11 +99,11 @@ satb_abbrev :: [String]
 satb_abbrev = map (return . voice_abbrev) satb
 
 -- | Voice & part number.
-type Part = (Voice,Int)
+type Part = (Voice, Int)
 
 -- | /k/ part choir, ordered by voice.
 ch_satb_seq :: Int -> [Part]
-ch_satb_seq k = [(vc,n) | vc <- satb, n <- [1..k]]
+ch_satb_seq k = [(vc, n) | vc <- satb, n <- [1 .. k]]
 
 {- | 'ch_satb_seq' grouped in parts.
 
@@ -116,7 +119,7 @@ ch_parts k = chunksOf k (ch_satb_seq k)
 "S1"
 -}
 part_nm :: Part -> String
-part_nm (v,n) = voice_abbrev v : show n
+part_nm (v, n) = voice_abbrev v : show n
 
 {- | /k/ SATB choirs, grouped by choir.
 
@@ -125,8 +128,8 @@ part_nm (v,n) = voice_abbrev v : show n
 -}
 k_ch_groups :: Int -> [[Part]]
 k_ch_groups k =
-    let f n = map (\p -> (p,n)) satb
-    in map f [1 .. k]
+  let f n = map (\p -> (p, n)) satb
+  in map f [1 .. k]
 
 -- | 'concat' of 'k_ch_groups'.
 k_ch_groups' :: Int -> [Part]
@@ -139,10 +142,10 @@ k_ch_groups' = concat . k_ch_groups
 -}
 dbl_ch_parts :: Int -> [[Part]]
 dbl_ch_parts k =
-    let v = satb
-        f p = map (\n -> (p,n))
-        g = zipWith f v . replicate 4
-    in concatMap g (chunksOf (k `div` 2) [1 .. k])
+  let v = satb
+      f p = map (\n -> (p, n))
+      g = zipWith f v . replicate 4
+  in concatMap g (chunksOf (k `div` 2) [1 .. k])
 
 -- | 'voice_clef' for 'Part's.
 mk_clef_seq :: [Part] -> [Clef.Clef Int]

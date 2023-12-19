@@ -1,8 +1,9 @@
--- | Godfried T. Toussaint et. al.
--- \"The distance geometry of music\"
--- /Journal of Computational Geometry: Theory and Applications/
--- Volume 42, Issue 5, July, 2009
--- (<http://dx.doi.org/10.1016/j.comgeo.2008.04.005>)
+{- | Godfried T. Toussaint et. al.
+\"The distance geometry of music\"
+/Journal of Computational Geometry: Theory and Applications/
+Volume 42, Issue 5, July, 2009
+(<http://dx.doi.org/10.1016/j.comgeo.2008.04.005>)
+-}
 module Music.Theory.Bjorklund where
 
 import Data.List.Split {- split -}
@@ -14,23 +15,23 @@ type Bjorklund a = ((Int, Int), ([[a]], [[a]]))
 
 -- | Bjorklund left process
 bjorklund_left_f :: Bjorklund a -> Bjorklund a
-bjorklund_left_f ((i,j),(xs,ys)) =
-    let (xs',xs'') = splitAt j xs
-    in ((j,i-j),(zipWith (++) xs' ys,xs''))
+bjorklund_left_f ((i, j), (xs, ys)) =
+  let (xs', xs'') = splitAt j xs
+  in ((j, i - j), (zipWith (++) xs' ys, xs''))
 
 -- | Bjorklund right process
 bjorklund_right_f :: Bjorklund a -> Bjorklund a
-bjorklund_right_f ((i,j),(xs,ys)) =
-    let (ys',ys'') = splitAt i ys
-    in ((i,j-i),(zipWith (++) xs ys',ys''))
+bjorklund_right_f ((i, j), (xs, ys)) =
+  let (ys', ys'') = splitAt i ys
+  in ((i, j - i), (zipWith (++) xs ys', ys''))
 
 -- | Bjorklund process, left & recur or right & recur or halt.
 bjorklund_f :: Bjorklund a -> Bjorklund a
-bjorklund_f (n,x) =
-    let (i,j) = n
-    in if min i j <= 1
-       then (n,x)
-       else bjorklund_f (if i > j then bjorklund_left_f (n,x) else bjorklund_right_f (n,x))
+bjorklund_f (n, x) =
+  let (i, j) = n
+  in if min i j <= 1
+      then (n, x)
+      else bjorklund_f (if i > j then bjorklund_left_f (n, x) else bjorklund_right_f (n, x))
 
 {- | Bjorklund's algorithm to construct a binary sequence of /n/ bits
 with /k/ ones such that the /k/ ones are distributed as evenly as
@@ -93,12 +94,12 @@ E(15,34) [×··×·×·×·×··×·×·×·×··×·×·×·×··×·×·] 
 @
 -}
 bjorklund :: (Int, Int) -> [Bool]
-bjorklund (i,j') =
-    let j = j' - i
-        x = replicate i [True]
-        y = replicate j [False]
-        (_,(x',y')) = bjorklund_f ((i,j),(x,y))
-    in concat x' ++ concat y'
+bjorklund (i, j') =
+  let j = j' - i
+      x = replicate i [True]
+      y = replicate j [False]
+      (_, (x', y')) = bjorklund_f ((i, j), (x, y))
+  in concat x' ++ concat y'
 
 {- | 'List.rotate_right' of 'bjorklund'.
 
@@ -109,10 +110,10 @@ bjorklund_r :: Int -> (Int, Int) -> [Bool]
 bjorklund_r n = List.rotate_right n . bjorklund
 
 -- | Pretty printer, generalise.
-euler_pp_f :: (Bool -> Char) -> (Int,Int) -> String
+euler_pp_f :: (Bool -> Char) -> (Int, Int) -> String
 euler_pp_f f e =
-    let r = bjorklund e
-    in concat ["E",show e," [",map f r,"] ",iseq_str r]
+  let r = bjorklund e
+  in concat ["E", show e, " [", map f r, "] ", iseq_str r]
 
 {- | Unicode form, ie. @×·@.
 

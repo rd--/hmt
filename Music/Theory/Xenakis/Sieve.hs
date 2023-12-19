@@ -1,6 +1,7 @@
--- | \"Sieves\" by Iannis Xenakis and John Rahn
--- /Perspectives of New Music/
--- Vol. 28, No. 1 (Winter, 1990), pp. 58-78
+{- | \"Sieves\" by Iannis Xenakis and John Rahn
+/Perspectives of New Music/
+Vol. 28, No. 1 (Winter, 1990), pp. 58-78
+-}
 module Music.Theory.Xenakis.Sieve where
 
 import qualified Data.List {- base -}
@@ -8,12 +9,18 @@ import qualified Data.List {- base -}
 import qualified Music.Theory.List as List
 
 -- | A Sieve.
-data Sieve = Empty -- ^ 'Empty' 'Sieve'
-           | L (Integer, Integer) -- ^ Primitive 'Sieve' of /modulo/ and /index/
-           | Union Sieve Sieve -- ^ 'Union' of two 'Sieve's
-           | Intersection Sieve Sieve -- ^ 'Intersection' of two 'Sieve's
-           | Complement Sieve -- ^ 'Complement' of a 'Sieve'
-             deriving (Eq,Show)
+data Sieve
+  = -- | 'Empty' 'Sieve'
+    Empty
+  | -- | Primitive 'Sieve' of /modulo/ and /index/
+    L (Integer, Integer)
+  | -- | 'Union' of two 'Sieve's
+    Union Sieve Sieve
+  | -- | 'Intersection' of two 'Sieve's
+    Intersection Sieve Sieve
+  | -- | 'Complement' of a 'Sieve'
+    Complement Sieve
+  deriving (Eq, Show)
 
 -- | The 'Union' of a list of 'Sieve's, ie. 'foldl1' 'Union'.
 union :: [Sieve] -> Sieve
@@ -38,16 +45,17 @@ c = Complement
 -- | Pretty-print sieve.  Fully parenthesised.
 sieve_pp :: Sieve -> String
 sieve_pp s =
-    case s of
-      Empty -> "∅"
-      L (p,q) -> concat [show p,".",show q]
-      Union p q -> concat ["(",sieve_pp p," ∪ ",sieve_pp q,")"]
-      Intersection p q -> concat ["(",sieve_pp p," ∩ ",sieve_pp q,")"]
-      Complement p -> concat ["(∁ ",sieve_pp p,")"]
+  case s of
+    Empty -> "∅"
+    L (p, q) -> concat [show p, ".", show q]
+    Union p q -> concat ["(", sieve_pp p, " ∪ ", sieve_pp q, ")"]
+    Intersection p q -> concat ["(", sieve_pp p, " ∩ ", sieve_pp q, ")"]
+    Complement p -> concat ["(∁ ", sieve_pp p, ")"]
 
--- | Variant of 'L', ie. 'curry' 'L'.
---
--- > l 15 19 == L (15,19)
+{- | Variant of 'L', ie. 'curry' 'L'.
+
+> l 15 19 == L (15,19)
+-}
 l :: Integer -> Integer -> Sieve
 l = curry L
 
@@ -69,12 +77,12 @@ L (11,2)
 -}
 normalise :: Sieve -> Sieve
 normalise s =
-    case s of
-      Empty -> Empty
-      L (m,i) -> L (m,i `mod` m)
-      Union s0 s1 -> Union (normalise s0) (normalise s1)
-      Intersection s0 s1 -> Intersection (normalise s0) (normalise s1)
-      Complement s' -> Complement (normalise s')
+  case s of
+    Empty -> Empty
+    L (m, i) -> L (m, i `mod` m)
+    Union s0 s1 -> Union (normalise s0) (normalise s1)
+    Intersection s0 s1 -> Intersection (normalise s0) (normalise s1)
+    Complement s' -> Complement (normalise s')
 
 {- | Predicate to test if a 'Sieve' is /normal/.
 
@@ -97,12 +105,12 @@ is_normal s = s == normalise s
 -}
 element :: Sieve -> Integer -> Bool
 element s n =
-    case s of
-      Empty -> False
-      L (m,i) -> n `mod` m == i `mod` m && n >= i
-      Union s0 s1 -> element s0 n || element s1 n
-      Intersection s0 s1 -> element s0 n && element s1 n
-      Complement s' -> not (element s' n)
+  case s of
+    Empty -> False
+    L (m, i) -> n `mod` m == i `mod` m && n >= i
+    Union s0 s1 -> element s0 n || element s1 n
+    Intersection s0 s1 -> element s0 n && element s1 n
+    Complement s' -> not (element s' n)
 
 {- | 'I' not in set.
 
@@ -111,13 +119,13 @@ True
 -}
 i_complement :: [Integer] -> [Integer]
 i_complement =
-    let f x s = case s of
-                [] -> [x ..]
-                e:s' -> case compare x e of
-                          LT -> x : f (x + 1) s
-                          EQ -> f (x + 1) s'
-                          GT -> error "i_complement"
-    in f 0
+  let f x s = case s of
+        [] -> [x ..]
+        e : s' -> case compare x e of
+          LT -> x : f (x + 1) s
+          EQ -> f (x + 1) s'
+          GT -> error "i_complement"
+  in f 0
 
 {- | Construct the sequence defined by a 'Sieve'.  Note that building
      a sieve that contains an intersection clause that has no elements
@@ -130,16 +138,17 @@ True
 -}
 build :: Sieve -> [Integer]
 build s =
-    let u_f = map List.head_err . Data.List.group
-        i_f = let g [x,_] = [x]
-                  g _ = []
-              in concatMap g . Data.List.group
-    in case s of
-         Empty -> []
-         L (m,i) -> [i, i+m ..]
-         Union s0 s1 -> u_f (List.merge (build s0) (build s1))
-         Intersection s0 s1 -> i_f (List.merge (build s0) (build s1))
-         Complement s' -> i_complement (build s')
+  let u_f = map List.head_err . Data.List.group
+      i_f =
+        let g [x, _] = [x]
+            g _ = []
+        in concatMap g . Data.List.group
+  in case s of
+      Empty -> []
+      L (m, i) -> [i, i + m ..]
+      Union s0 s1 -> u_f (List.merge (build s0) (build s1))
+      Intersection s0 s1 -> i_f (List.merge (build s0) (build s1))
+      Complement s' -> i_complement (build s')
 
 {- | Variant of 'build' that gives the first /n/ places of the 'reduce' of 'Sieve'.
 
@@ -210,7 +219,7 @@ Agon et. al. p.155
 >>> differentiate [0,1,2,6,9,13,14,19,22,24,26,27,32]
 [1,1,4,3,4,1,5,3,2,2,1,5]
 
-> import Music.Theory.Pitch {- hmt -}
+> import Music.Theory.Pitch
 > let n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
 > let r = "C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E"
 > unwords (map (pitch_class_pp . pc24et_to_pitch . (`mod` 24)) n) == r
@@ -224,7 +233,7 @@ True
 
 > let a2 = octpc_to_midi (2,9)
 > let m = scanl (+) a2 r
-> import Music.Theory.Pitch.Spelling.Table {- hmt -}
+> import Music.Theory.Pitch.Spelling.Table
 > let p = "A2 A#2 C#3 D3 E3 G#3 A3 C#4 D4 D#4 F#4 G4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D6 F#6 G6 B6 C7"
 > unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
 
@@ -237,7 +246,7 @@ True
 
 > let a0 = octpc_to_midi (0,9)
 > let m = scanl (+) a0 r
-> import Music.Theory.Pitch.Spelling.Table {- hmt -}
+> import Music.Theory.Pitch.Spelling.Table
 > let p = "A0 B0 C1 C#1 E1 F#1 G1 A#1 B1 C#2 D2 F#2 A2 A#2 D3 D#3 G3 G#3 B3 C4 E4 F4 G#4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D#6 E6 F#6 A6 A#6 D7 D#7 G7 B7 C8"
 > unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
 
@@ -256,7 +265,6 @@ Nomos Alpha:
 >> let s = (c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9) ∩ 11⋄2) ∪ (c (11⋄4 ∪ 11⋄8) ∩ 13⋄9) ∪ (13⋄0 ∪ 13⋄1 ∪ 13⋄6)
 >> buildn 32 s
 [0,1,2,6,9,13,14,19,22,24,26,27,32,35,39,40,45,52,53,58,61,65,66,71,78,79,84,87,90,91,92,97]
-
 -}
 buildn :: Int -> Sieve -> [Integer]
 buildn n = take n . build . reduce
@@ -279,8 +287,8 @@ differentiate x = zipWith (-) (List.tail_err x) x
 -}
 euclid :: (Integral a) => a -> a -> a
 euclid i j =
-    let k = i `mod` j
-    in if k == 0 then j else euclid j k
+  let k = i `mod` j
+  in if k == 0 then j else euclid j k
 
 {- | Bachet De Méziriac's algorithm.
 
@@ -292,10 +300,11 @@ euclid i j =
 -}
 de_meziriac :: (Integral a) => a -> a -> a
 de_meziriac i j =
-    let f t = if (t * i) `mod` j /= 1
-              then f (t + 1)
-              else t
-    in if j == 1 then 1 else f 1
+  let f t =
+        if (t * i) `mod` j /= 1
+          then f (t + 1)
+          else t
+  in if j == 1 then 1 else f 1
 
 {- | Attempt to reduce the 'Intersection' of two 'L' nodes to a singular 'L' node.
 
@@ -308,19 +317,19 @@ Just (12,11)
 >>> reduce_intersection (12,11) (8,7)
 Just (24,23)
 -}
-reduce_intersection :: (Integral t) => (t,t) -> (t,t) -> Maybe (t,t)
-reduce_intersection (m1,i1) (m2,i2) =
-    let d = euclid m1 m2
-        i1' = i1 `mod` m1
-        i2' = i2 `mod` m2
-        c1 = m1 `div` d
-        c2 = m2 `div` d
-        m3 = d * c1 * c2
-        t = de_meziriac c1 c2
-        i3 = (i1' + t * (i2' - i1') * c1) `mod` m3
-    in if d /= 1 && (i1' - i2') `mod` d /= 0
-       then Nothing
-       else Just (m3,i3)
+reduce_intersection :: (Integral t) => (t, t) -> (t, t) -> Maybe (t, t)
+reduce_intersection (m1, i1) (m2, i2) =
+  let d = euclid m1 m2
+      i1' = i1 `mod` m1
+      i2' = i2 `mod` m2
+      c1 = m1 `div` d
+      c2 = m2 `div` d
+      m3 = d * c1 * c2
+      t = de_meziriac c1 c2
+      i3 = (i1' + t * (i2' - i1') * c1) `mod` m3
+  in if d /= 1 && (i1' - i2') `mod` d /= 0
+      then Nothing
+      else Just (m3, i3)
 
 {- | Reduce the number of nodes at a 'Sieve'.
 
@@ -346,38 +355,37 @@ True
 >>> let s = 3⋄2∩4⋄7∩6⋄11∩8⋄7 ∪ 6⋄9∩15⋄18 ∪ 13⋄5∩8⋄6∩4⋄2 ∪ 6⋄9∩15⋄19
 >>> reduce s == (24⋄23 ∪ 30⋄3 ∪ 104⋄70)
 True
-
 -}
 reduce :: Sieve -> Sieve
 reduce s =
-    let f g s1 s2 =
-            let s1' = reduce s1
-                s2' = reduce s2
-                s' = g s1' s2'
-            in if s1 == s1' && s2 == s2'
-               then s'
-               else reduce s'
-    in case s of
-         Empty -> Empty
-         L _ -> s
-         Union s1 Empty -> s1
-         Union s1 s2 -> f Union s1 s2
-         Intersection s1 Empty -> s1
-         Intersection (L p) (L q) -> maybe Empty L (reduce_intersection p q)
-         Intersection s1 s2 -> f Intersection s1 s2
-         Complement s' -> Complement (reduce s')
+  let f g s1 s2 =
+        let s1' = reduce s1
+            s2' = reduce s2
+            s' = g s1' s2'
+        in if s1 == s1' && s2 == s2'
+            then s'
+            else reduce s'
+  in case s of
+      Empty -> Empty
+      L _ -> s
+      Union s1 Empty -> s1
+      Union s1 s2 -> f Union s1 s2
+      Intersection s1 Empty -> s1
+      Intersection (L p) (L q) -> maybe Empty L (reduce_intersection p q)
+      Intersection s1 s2 -> f Intersection s1 s2
+      Complement s' -> Complement (reduce s')
 
 -- * Literature
 
 psappha_flint_c :: [Sieve]
 psappha_flint_c =
-  let s0 = (8⋄0∪8⋄1∪8⋄7)∩(5⋄1∪5⋄3)
-      s1 = (8⋄0∪8⋄1∪8⋄2)∩5⋄0
-      s2 = 8⋄3∩(5⋄0∪5⋄1∪5⋄2∪5⋄3∪5⋄4)
-      s3 = 8⋄4∩(5⋄0∪5⋄1∪5⋄2∪5⋄3∪5⋄4)
-      s4 = (8⋄5∪8⋄6)∩(5⋄2∪5⋄3∪5⋄4)
-      s5 = 8⋄1∩5⋄2
-      s6 = 8⋄6∩5⋄1
+  let s0 = (8 ⋄ 0 ∪ 8 ⋄ 1 ∪ 8 ⋄ 7) ∩ (5 ⋄ 1 ∪ 5 ⋄ 3)
+      s1 = (8 ⋄ 0 ∪ 8 ⋄ 1 ∪ 8 ⋄ 2) ∩ 5 ⋄ 0
+      s2 = 8 ⋄ 3 ∩ (5 ⋄ 0 ∪ 5 ⋄ 1 ∪ 5 ⋄ 2 ∪ 5 ⋄ 3 ∪ 5 ⋄ 4)
+      s3 = 8 ⋄ 4 ∩ (5 ⋄ 0 ∪ 5 ⋄ 1 ∪ 5 ⋄ 2 ∪ 5 ⋄ 3 ∪ 5 ⋄ 4)
+      s4 = (8 ⋄ 5 ∪ 8 ⋄ 6) ∩ (5 ⋄ 2 ∪ 5 ⋄ 3 ∪ 5 ⋄ 4)
+      s5 = 8 ⋄ 1 ∩ 5 ⋄ 2
+      s6 = 8 ⋄ 6 ∩ 5 ⋄ 1
   in [s0, s1, s2, s3, s4, s5, s6]
 
 {- | /Psappha/ (Flint)
@@ -390,14 +398,15 @@ psappha_flint = union psappha_flint_c
 
 a_r_squibbs_c :: [Sieve]
 a_r_squibbs_c =
-  [8⋄0∩(11⋄0∪11⋄4∪11⋄5∪11⋄6∪11⋄10)
-  ,8⋄1∩(11⋄2∪11⋄3∪11⋄6∪11⋄7∪11⋄9)
-  ,8⋄2∩(11⋄0∪11⋄1∪11⋄2∪11⋄3∪11⋄5∪11⋄10)
-  ,8⋄3∩(11⋄1∪11⋄2∪11⋄3∪11⋄4∪11⋄10)
-  ,8⋄4∩(11⋄0∪11⋄4∪11⋄8)
-  ,8⋄5∩(11⋄0∪11⋄2∪11⋄3∪11⋄7∪11⋄9∪11⋄10)
-  ,8⋄6∩(11⋄1∪11⋄3∪11⋄5∪11⋄7∪11⋄8∪11⋄9)
-  ,8⋄7∩(11⋄1∪11⋄3∪11⋄6∪11⋄7∪11⋄8∪11⋄10)]
+  [ 8 ⋄ 0 ∩ (11 ⋄ 0 ∪ 11 ⋄ 4 ∪ 11 ⋄ 5 ∪ 11 ⋄ 6 ∪ 11 ⋄ 10)
+  , 8 ⋄ 1 ∩ (11 ⋄ 2 ∪ 11 ⋄ 3 ∪ 11 ⋄ 6 ∪ 11 ⋄ 7 ∪ 11 ⋄ 9)
+  , 8 ⋄ 2 ∩ (11 ⋄ 0 ∪ 11 ⋄ 1 ∪ 11 ⋄ 2 ∪ 11 ⋄ 3 ∪ 11 ⋄ 5 ∪ 11 ⋄ 10)
+  , 8 ⋄ 3 ∩ (11 ⋄ 1 ∪ 11 ⋄ 2 ∪ 11 ⋄ 3 ∪ 11 ⋄ 4 ∪ 11 ⋄ 10)
+  , 8 ⋄ 4 ∩ (11 ⋄ 0 ∪ 11 ⋄ 4 ∪ 11 ⋄ 8)
+  , 8 ⋄ 5 ∩ (11 ⋄ 0 ∪ 11 ⋄ 2 ∪ 11 ⋄ 3 ∪ 11 ⋄ 7 ∪ 11 ⋄ 9 ∪ 11 ⋄ 10)
+  , 8 ⋄ 6 ∩ (11 ⋄ 1 ∪ 11 ⋄ 3 ∪ 11 ⋄ 5 ∪ 11 ⋄ 7 ∪ 11 ⋄ 8 ∪ 11 ⋄ 9)
+  , 8 ⋄ 7 ∩ (11 ⋄ 1 ∪ 11 ⋄ 3 ∪ 11 ⋄ 6 ∪ 11 ⋄ 7 ∪ 11 ⋄ 8 ∪ 11 ⋄ 10)
+  ]
 
 {- | À R. (Hommage à Maurice Ravel) (Squibbs, 1996)
 

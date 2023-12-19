@@ -13,3 +13,6 @@ clean:
 
 push-all:
 	r.gitlab-push.sh hmt
+
+indent:
+	fourmolu -i Music

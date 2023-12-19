@@ -62,7 +62,7 @@ kk_char_to_alteration c = fromMaybe (error "kk_char_to_alteration?") (lookup c (
 ["c","c+","d","e-","e","f","f+","g","a-","a","b-","b"]
 -}
 kk_note_number_to_name :: Int -> String
-kk_note_number_to_name k = fromMaybe (error "kk_note_number_to_name?") (lookup k (zip [0..] (words "c c+ d e- e f f+ g a- a b- b")))
+kk_note_number_to_name k = fromMaybe (error "kk_note_number_to_name?") (lookup k (zip [0 ..] (words "c c+ d e- e f f+ g a- a b- b")))
 
 kk_named_note_number_p :: P Int
 kk_named_note_number_p = do
@@ -89,14 +89,14 @@ kk_modifiers_p = P.many kk_modifier_p
 If the note number is absent it indicates a rest.
 All other fields infer values from the phrase context.
 -}
-data Kk_Contextual_Note =
-  Kk_Contextual_Note
-  {kk_contextual_note_number :: Maybe Int
-  ,kk_contextual_note_octave :: Maybe Int
-  ,kk_contextual_note_volume :: Maybe Int
-  ,kk_contextual_note_duration :: Maybe Int
-  ,kk_contextual_note_channel :: Maybe Int
-  ,kk_contextual_note_time :: Maybe Int}
+data Kk_Contextual_Note = Kk_Contextual_Note
+  { kk_contextual_note_number :: Maybe Int
+  , kk_contextual_note_octave :: Maybe Int
+  , kk_contextual_note_volume :: Maybe Int
+  , kk_contextual_note_duration :: Maybe Int
+  , kk_contextual_note_channel :: Maybe Int
+  , kk_contextual_note_time :: Maybe Int
+  }
   deriving (Eq, Ord, Show)
 
 kk_empty_contextual_note :: Kk_Contextual_Note
@@ -114,10 +114,10 @@ kk_empty_contextual_rest n = kk_empty_contextual_note {kk_contextual_note_durati
 kk_contextual_note_pp :: (Int, Kk_Contextual_Note) -> String
 kk_contextual_note_pp (t', Kk_Contextual_Note n o v d c t) =
   let f i j = maybe "" ((if i == 'o' then id else (i :)) . show) j
-      (pre, t'') = if t == Just t' then (", ","") else ("", f 't' t)
+      (pre, t'') = if t == Just t' then (", ", "") else ("", f 't' t)
   in case n of
-          Nothing -> concat [pre, "r", f 'd' d, t'']
-          Just k -> concat [pre, kk_note_number_to_name k, f 'o' o, f 'v' v, f 'd' d, f 'c' c, t'']
+      Nothing -> concat [pre, "r", f 'd' d, t'']
+      Just k -> concat [pre, kk_note_number_to_name k, f 'o' o, f 'v' v, f 'd' d, f 'c' c, t'']
 
 {- | If the note number is given as p60, then derive octave of and set it, ignoring any modifier.
 Note that in KeyKit c3 is p60 or middle c.
@@ -132,10 +132,10 @@ kk_contextual_note_p = do
         case n of
           Just n'' ->
             if n'' > 11
-            then
-              let (o', n''') = n'' `divMod` 12
-              in (Just n''', Just (o' - 2))
-            else (n, get 'o')
+              then
+                let (o', n''') = n'' `divMod` 12
+                in (Just n''', Just (o' - 2))
+              else (n, get 'o')
           Nothing -> (Nothing, Nothing)
   return (Kk_Contextual_Note n' o (get 'v') (get 'd') (get 'c') (get 't'))
 
@@ -158,14 +158,14 @@ kk_contextual_phrase_p = P.many kk_contextual_phrase_element_p
 -- * Note
 
 -- | A note with all fields required.
-data Kk_Note =
-  Kk_Note
-  {kk_note_number :: Int
-  ,kk_note_octave :: Int
-  ,kk_note_volume :: Int
-  ,kk_note_duration :: Int
-  ,kk_note_channel :: Int
-  ,kk_note_time :: Int}
+data Kk_Note = Kk_Note
+  { kk_note_number :: Int
+  , kk_note_octave :: Int
+  , kk_note_volume :: Int
+  , kk_note_duration :: Int
+  , kk_note_channel :: Int
+  , kk_note_time :: Int
+  }
   deriving (Eq, Ord, Show)
 
 kk_default_note :: Kk_Note
@@ -189,10 +189,10 @@ kk_decontextualise_note :: Kk_Note -> Bool -> Kk_Contextual_Note -> Either Kk_No
 kk_decontextualise_note (Kk_Note _ o v d c t) is_par (Kk_Contextual_Note k' o' v' d' c' t') =
   let t'' = fromMaybe (if is_par then t else t + d) t'
   in case k' of
-    Just k'' -> Left (Kk_Note k'' (fromMaybe o o') (fromMaybe v v') (fromMaybe d d') (fromMaybe c c') t'')
-    Nothing -> Right t''
+      Just k'' -> Left (Kk_Note k'' (fromMaybe o o') (fromMaybe v v') (fromMaybe d d') (fromMaybe c c') t'')
+      Nothing -> Right t''
 
-data Kk_Phrase = Kk_Phrase { kk_phrase_notes :: [Kk_Note], kk_phrase_length :: Int } deriving (Eq, Show)
+data Kk_Phrase = Kk_Phrase {kk_phrase_notes :: [Kk_Note], kk_phrase_length :: Int} deriving (Eq, Show)
 
 -- | This should, but does not, append a trailing rest as required.
 kk_phrase_pp :: Kk_Phrase -> String
@@ -204,7 +204,7 @@ kk_decontextualise_phrase =
   let f r c p l =
         case l of
           [] -> Kk_Phrase (reverse r) (kk_note_time c + kk_note_duration c)
-          (n,p'):l' ->
+          (n, p') : l' ->
             case kk_decontextualise_note c p n of
               Left c' -> f (c' : r) c' p' l'
               Right t' -> f r (c {kk_note_time = t'}) p' l'
@@ -218,10 +218,10 @@ kk_recontextualise_phrase p =
           [] -> []
           n1 : n' -> kk_note_to_contextual_note n0 n1 : f n1 n'
   in case p of
-    Kk_Phrase [] l -> [(0, kk_empty_contextual_rest l)]
-    Kk_Phrase (n1 : n') _ ->
-      let c1 = kk_note_to_initial_contextual_note n1
-      in (0, c1) : f n1 n'
+      Kk_Phrase [] l -> [(0, kk_empty_contextual_rest l)]
+      Kk_Phrase (n1 : n') _ ->
+        let c1 = kk_note_to_initial_contextual_note n1
+        in (0, c1) : f n1 n'
 
 {- | Read KeyKit phrase constant.
 

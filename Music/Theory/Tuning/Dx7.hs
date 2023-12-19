@@ -9,7 +9,6 @@ The TX817 manual states a resolution of 768 parts per octave (steps of 1.5625 ce
 Others have a resolution of 1024 parts per octave (steps of 1.1719 cents).
 
 Here a "point" is the finest of these, 1/4096 of an octave.
-
 -}
 module Music.Theory.Tuning.Dx7 where
 

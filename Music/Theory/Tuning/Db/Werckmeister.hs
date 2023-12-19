@@ -1,9 +1,9 @@
-{- | Andreas Werckmeister (1645-1706). -}
+-- | Andreas Werckmeister (1645-1706).
 module Music.Theory.Tuning.Db.Werckmeister where
 
 import Music.Theory.Tuning {- hmt -}
-import Music.Theory.Tuning.Type {- hmt -}
 import Music.Theory.Tuning.Scala {- hmt -}
+import Music.Theory.Tuning.Type {- hmt -}
 
 {- | Approximate ratios for 'werckmeister_iii'.
 
@@ -12,18 +12,24 @@ import Music.Theory.Tuning.Scala {- hmt -}
 -}
 werckmeister_iii_ar :: [Approximate_Ratio]
 werckmeister_iii_ar =
-    let c0 = 2 ** (1/2)
-        c1 = 2 ** (1/4)
-        c2 = 8 ** (1/4)
-    in [1,256/243
-       ,64/81 * c0,32/27
-       ,256/243 * c1
-       ,4/3,1024/729
-       ,8/9 * c2,128/81
-       ,1024/729 * c1,16/9
-       ,128/81 * c1]
+  let c0 = 2 ** (1 / 2)
+      c1 = 2 ** (1 / 4)
+      c2 = 8 ** (1 / 4)
+  in [ 1
+     , 256 / 243
+     , 64 / 81 * c0
+     , 32 / 27
+     , 256 / 243 * c1
+     , 4 / 3
+     , 1024 / 729
+     , 8 / 9 * c2
+     , 128 / 81
+     , 1024 / 729 * c1
+     , 16 / 9
+     , 128 / 81 * c1
+     ]
 
-{- | Cents for 'werckmeister_iii'. -}
+-- | Cents for 'werckmeister_iii'.
 werckmeister_iii_ar_c :: [Cents]
 werckmeister_iii_ar_c = map approximate_ratio_to_cents werckmeister_iii_ar
 
@@ -53,17 +59,23 @@ werckmeister_iii = Tuning (Right werckmeister_iii_ar_c) Nothing
 -}
 werckmeister_iv_ar :: [Approximate_Ratio]
 werckmeister_iv_ar =
-    let c0 = 2 ** (1/3)
-        c1 = 4 ** (1/3)
-    in [1,16384/19683 * c0
-       ,8/9 * c0,32/27
-       ,64/81 * c1
-       ,4/3,1024/729
-       ,32/27 * c0,8192/6561 * c0
-       ,256/243 * c1,9/(4*c0)
-       ,4096/2187]
+  let c0 = 2 ** (1 / 3)
+      c1 = 4 ** (1 / 3)
+  in [ 1
+     , 16384 / 19683 * c0
+     , 8 / 9 * c0
+     , 32 / 27
+     , 64 / 81 * c1
+     , 4 / 3
+     , 1024 / 729
+     , 32 / 27 * c0
+     , 8192 / 6561 * c0
+     , 256 / 243 * c1
+     , 9 / (4 * c0)
+     , 4096 / 2187
+     ]
 
-{- | Cents for 'werckmeister_iv'. -}
+-- | Cents for 'werckmeister_iv'.
 werckmeister_iv_c :: [Cents]
 werckmeister_iv_c = map approximate_ratio_to_cents werckmeister_iv_ar
 
@@ -89,18 +101,24 @@ werckmeister_iv = Tuning (Right werckmeister_iv_c) Nothing
 -}
 werckmeister_v_ar :: [Approximate_Ratio]
 werckmeister_v_ar =
-    let c0 = 2 ** (1/4)
-        c1 = 2 ** (1/2)
-        c2 = 8 ** (1/4)
-    in [1,8/9 * c0
-       ,9/8,c0
-       ,8/9 * c1
-       ,9/8 * c0,c1
-       ,3/2,128/81
-       ,c2,3/c2
-       ,4/3 * c1]
+  let c0 = 2 ** (1 / 4)
+      c1 = 2 ** (1 / 2)
+      c2 = 8 ** (1 / 4)
+  in [ 1
+     , 8 / 9 * c0
+     , 9 / 8
+     , c0
+     , 8 / 9 * c1
+     , 9 / 8 * c0
+     , c1
+     , 3 / 2
+     , 128 / 81
+     , c2
+     , 3 / c2
+     , 4 / 3 * c1
+     ]
 
-{- | Cents for 'werckmeister_v'. -}
+-- | Cents for 'werckmeister_v'.
 werckmeister_v_c :: [Cents]
 werckmeister_v_c = map approximate_ratio_to_cents werckmeister_v_ar
 
@@ -126,13 +144,19 @@ werckmeister_v = Tuning (Right werckmeister_v_c) Nothing
 -}
 werckmeister_vi_r :: [Rational]
 werckmeister_vi_r =
-    [1,98/93
-    ,49/44 {- 28/25 -},196/165
-    ,49/39
-    ,4/3,196/139
-    ,196/131,49/31
-    ,196/117,98/55
-    ,49/26]
+  [ 1
+  , 98 / 93
+  , 49 / 44 {- 28/25 -}
+  , 196 / 165
+  , 49 / 39
+  , 4 / 3
+  , 196 / 139
+  , 196 / 131
+  , 49 / 31
+  , 196 / 117
+  , 98 / 55
+  , 49 / 26
+  ]
 
 werckmeister_vi_scl :: IO Scale
 werckmeister_vi_scl = scl_load "werck6"

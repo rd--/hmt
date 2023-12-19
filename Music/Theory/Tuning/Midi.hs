@@ -1,4 +1,4 @@
-{- | Midi + Tuning -}
+-- | Midi + Tuning
 module Music.Theory.Tuning.Midi where
 
 import Data.List {- base -}
@@ -20,26 +20,26 @@ The incoming note number is the key pressed, which may be distant from the note 
 -}
 type Midi_Tuning_f = Pitch.Midi -> Pitch.Midi_Detune
 
-{- | Variant for tunings that are incomplete. -}
+-- | Variant for tunings that are incomplete.
 type Sparse_Midi_Tuning_f = Pitch.Midi -> Maybe Pitch.Midi_Detune
 
-{- | Variant for sparse tunings that require state. -}
-type Sparse_Midi_Tuning_St_f st = st -> Pitch.Midi -> (st,Maybe Pitch.Midi_Detune)
+-- | Variant for sparse tunings that require state.
+type Sparse_Midi_Tuning_St_f st = st -> Pitch.Midi -> (st, Maybe Pitch.Midi_Detune)
 
-{- | Lift 'Midi_Tuning_f' to 'Sparse_Midi_Tuning_f'. -}
+-- | Lift 'Midi_Tuning_f' to 'Sparse_Midi_Tuning_f'.
 lift_tuning_f :: Midi_Tuning_f -> Sparse_Midi_Tuning_f
 lift_tuning_f tn_f = Just . tn_f
 
-{- | Lift 'Sparse_Midi_Tuning_f' to 'Sparse_Midi_Tuning_St_f'. -}
+-- | Lift 'Sparse_Midi_Tuning_f' to 'Sparse_Midi_Tuning_St_f'.
 lift_sparse_tuning_f :: Sparse_Midi_Tuning_f -> Sparse_Midi_Tuning_St_f st
-lift_sparse_tuning_f tn_f st k = (st,tn_f k)
+lift_sparse_tuning_f tn_f st k = (st, tn_f k)
 
 {- | (t,c,k) where
 t=tuning (must have 12 divisions of octave),
 c=cents deviation (ie. constant detune offset),
 k=midi offset (ie. value to be added to incoming midi note number).
- -}
-type D12_Midi_Tuning = (Tuning,Cents,Pitch.Midi)
+-}
+type D12_Midi_Tuning = (Tuning, Cents, Pitch.Midi)
 
 {- | 'Midi_Tuning_f' for 'D12_Midi_Tuning'.
 
@@ -48,19 +48,19 @@ type D12_Midi_Tuning = (Tuning,Cents,Pitch.Midi)
 True
 -}
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_f
-d12_midi_tuning_f (t,c_diff,k) n =
-    let (_,pc) = Pitch.midi_to_octpc (n + k)
-        dt = zipWith (-) (tn_cents t) [0,100 .. 1200]
-    in if tn_divisions t /= 12
-       then error "d12_midi_tuning_f: not d12"
-       else case dt `Safe.atMay` pc of
-              Nothing -> error "d12_midi_tuning_f: pc?"
-              Just c -> (n,c + c_diff)
+d12_midi_tuning_f (t, c_diff, k) n =
+  let (_, pc) = Pitch.midi_to_octpc (n + k)
+      dt = zipWith (-) (tn_cents t) [0, 100 .. 1200]
+  in if tn_divisions t /= 12
+      then error "d12_midi_tuning_f: not d12"
+      else case dt `Safe.atMay` pc of
+        Nothing -> error "d12_midi_tuning_f: pc?"
+        Just c -> (n, c + c_diff)
 
 {- | (t,f0,k,g) where
 t=tuning, f0=fundamental-frequency, k=midi-note-number (for f0), g=gamut
 -}
-type Cps_Midi_Tuning = (Tuning,Double,Pitch.Midi,Int)
+type Cps_Midi_Tuning = (Tuning, Double, Pitch.Midi, Int)
 
 {- | 'Midi_Tuning_f' for 'Cps_Midi_Tuning'.
 The function is sparse, it is only valid for /g/ values from /k/.
@@ -70,27 +70,27 @@ The function is sparse, it is only valid for /g/ values from /k/.
 [59,59,59,59,59,59,60,60,60,60,60,60,61,61,61,61,61,61,62,62,62,62,62,62,63,63,63,63,63,63,64,64,64,64,64,64,65,65,65,65,65,65,66,66,66,66,66,66,67,67,67,67,67,67,68,68,68,68,68,68,69,69,69,69,69,69,70,70,70,70,70,70,71]
 -}
 cps_midi_tuning_f :: Cps_Midi_Tuning -> Sparse_Midi_Tuning_f
-cps_midi_tuning_f (t,f0,k,g) n =
-    let r = tn_approximate_ratios_cyclic t
-        m = take g (map (Pitch.cps_to_midi_detune . (* f0)) r)
-    in m `Safe.atMay` Pitch.midi_to_int (n - k)
+cps_midi_tuning_f (t, f0, k, g) n =
+  let r = tn_approximate_ratios_cyclic t
+      m = take g (map (Pitch.cps_to_midi_detune . (* f0)) r)
+  in m `Safe.atMay` Pitch.midi_to_int (n - k)
 
 -- * Midi tuning tables.
 
-{- | midi-note-number -> fractional-midi-note-number table, possibly sparse. -}
-type Mnn_Fmnn_Table = [(Int,Double)]
+-- | midi-note-number -> fractional-midi-note-number table, possibly sparse.
+type Mnn_Fmnn_Table = [(Int, Double)]
 
-{- | Load 'Mnn_Fmnn_Table' from two-column Csv file. -}
+-- | Load 'Mnn_Fmnn_Table' from two-column Csv file.
 mnn_fmnn_table_load_csv :: FilePath -> IO Mnn_Fmnn_Table
 mnn_fmnn_table_load_csv fn = do
   s <- readFile fn
   let f x = case break (== ',') x of
-              (lhs,_:rhs) -> (read lhs,read rhs)
-              _ -> error "mnn_fmidi_table_load_csv?"
+        (lhs, _ : rhs) -> (read lhs, read rhs)
+        _ -> error "mnn_fmidi_table_load_csv?"
   return (map f (lines s))
 
-{- | Midi-note-number -> Cps table, possibly sparse. -}
-type Mnn_Cps_Table = [(Pitch.Midi,Double)]
+-- | Midi-note-number -> Cps table, possibly sparse.
+type Mnn_Cps_Table = [(Pitch.Midi, Double)]
 
 {- | Generates 'Mnn_Cps_Table' given 'Midi_Tuning_f' with keys for all valid @Mnn@.
 
@@ -100,10 +100,10 @@ type Mnn_Cps_Table = [(Pitch.Midi,Double)]
 -}
 gen_cps_tuning_tbl :: Sparse_Midi_Tuning_f -> Mnn_Cps_Table
 gen_cps_tuning_tbl tn_f =
-    let f n = case tn_f n of
-                Just r -> Just (n,Pitch.midi_detune_to_cps r)
-                Nothing -> Nothing
-    in mapMaybe f [0 .. 127]
+  let f n = case tn_f n of
+        Just r -> Just (n, Pitch.midi_detune_to_cps r)
+        Nothing -> Nothing
+  in mapMaybe f [0 .. 127]
 
 -- * Derived (secondary) tuning table (DTT) lookup.
 
@@ -111,26 +111,26 @@ gen_cps_tuning_tbl tn_f =
 find the @Cps@ in /c/ that is nearest to the @Cps@ in /t/ for /m/.
 In equal distance cases bias left.
 -}
-dtt_lookup :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (Maybe v,Maybe v)
+dtt_lookup :: (Eq k, Num v, Ord v) => [(k, v)] -> [v] -> k -> (Maybe v, Maybe v)
 dtt_lookup tbl cps n =
-    let f = lookup n tbl
-    in (f,fmap (List.find_nearest_err True cps) f)
+  let f = lookup n tbl
+  in (f, fmap (List.find_nearest_err True cps) f)
 
-{- | Require table be non-sparse. -}
-dtt_lookup_err :: (Eq k, Num v, Ord v) => [(k,v)] -> [v] -> k -> (k,v,v)
+-- | Require table be non-sparse.
+dtt_lookup_err :: (Eq k, Num v, Ord v) => [(k, v)] -> [v] -> k -> (k, v, v)
 dtt_lookup_err tbl cps n =
-    case dtt_lookup tbl cps n of
-      (Just f,Just g) -> (n,f,g)
-      _ -> error "dtt_lookup"
+  case dtt_lookup tbl cps n of
+    (Just f, Just g) -> (n, f, g)
+    _ -> error "dtt_lookup"
 
-{- | Given two tuning tables generate the @dtt@ table. -}
+-- | Given two tuning tables generate the @dtt@ table.
 gen_dtt_lookup_tbl :: Mnn_Cps_Table -> Mnn_Cps_Table -> Mnn_Cps_Table
 gen_dtt_lookup_tbl t0 t1 =
-    let ix = [0..127]
-        cps = sort (map (Tuple.p3_third . dtt_lookup_err t0 (map snd t1)) ix)
-    in zip ix cps
+  let ix = [0 .. 127]
+      cps = sort (map (Tuple.p3_third . dtt_lookup_err t0 (map snd t1)) ix)
+  in zip ix cps
 
 gen_dtt_lookup_f :: Mnn_Cps_Table -> Mnn_Cps_Table -> Midi_Tuning_f
 gen_dtt_lookup_f t0 t1 =
-    let m = Map.fromList (gen_dtt_lookup_tbl t0 t1)
-    in Pitch.cps_to_midi_detune . Map.map_ix_err m
+  let m = Map.fromList (gen_dtt_lookup_tbl t0 t1)
+  in Pitch.cps_to_midi_detune . Map.map_ix_err m

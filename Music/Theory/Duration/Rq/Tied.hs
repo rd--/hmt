@@ -13,11 +13,11 @@ import Music.Theory.Duration.Rq {- hmt -}
 type Tied_Right = Bool
 
 -- | 'Rq' with /tie right/.
-type Rq_Tied = (Rq,Tied_Right)
+type Rq_Tied = (Rq, Tied_Right)
 
 -- | If Rq_Tied is not tied, get Rq.
 rqt_to_rq :: Rq_Tied -> Maybe Rq
-rqt_to_rq (rq,x) = if x then Nothing else Just rq
+rqt_to_rq (rq, x) = if x then Nothing else Just rq
 
 -- | Erroring variant of rqt_to_rq.
 rqt_to_rq_err :: Rq_Tied -> Rq
@@ -25,7 +25,7 @@ rqt_to_rq_err = fromMaybe (error "rqt_to_rq") . rqt_to_rq
 
 -- | Construct 'Rq_Tied'.
 rqt :: Tied_Right -> Rq -> Rq_Tied
-rqt t d = (d,t)
+rqt t d = (d, t)
 
 -- | 'Rq' field of 'Rq_Tied'.
 rqt_rq :: Rq_Tied -> Rq
@@ -48,8 +48,8 @@ is_tied_right = snd
 >>> map f [(2/7,False),(4/7,True),(1/7,False)]
 [(1 % 2,False),(1 % 1,True),(1 % 4,False)]
 -}
-rqt_un_tuplet :: (Integer,Integer) -> Rq_Tied -> Rq_Tied
-rqt_un_tuplet i (d,t) = (rq_un_tuplet i d,t)
+rqt_un_tuplet :: (Integer, Integer) -> Rq_Tied -> Rq_Tied
+rqt_un_tuplet i (d, t) = (rq_un_tuplet i d, t)
 
 {- | Transform 'Rq' to untied 'Rq_Tied'.
 
@@ -57,7 +57,7 @@ rqt_un_tuplet i (d,t) = (rq_un_tuplet i d,t)
 (3 % 1,False)
 -}
 rq_rqt :: Rq -> Rq_Tied
-rq_rqt n = (n,False)
+rq_rqt n = (n, False)
 
 {- | Tie last element only of list of 'Rq'.
 
@@ -65,7 +65,7 @@ rq_rqt n = (n,False)
 [(1 % 1,False),(2 % 1,False),(3 % 1,True)]
 -}
 rq_tie_last :: [Rq] -> [Rq_Tied]
-rq_tie_last = at_last rq_rqt (\d -> (d,True))
+rq_tie_last = at_last rq_rqt (\d -> (d, True))
 
 {- | Transform a list of 'Rq_Tied' to a list of 'Duration_A'.
 The flag indicates if the initial value is tied left.
@@ -75,16 +75,16 @@ The flag indicates if the initial value is tied left.
 -}
 rqt_to_duration_a :: Bool -> [Rq_Tied] -> [Annotation.Duration_A]
 rqt_to_duration_a z x =
-    let rt = map is_tied_right x
-        lt = z : rt
-        f p e = if p then Just e else Nothing
-        g r l = catMaybes [f r Annotation.Tie_Right,f l Annotation.Tie_Left]
-        h = rq_to_duration_err (show ("rqt_to_duration_a",z,x)) 2 . rqt_rq
-    in zip (map h x) (zipWith g rt lt)
+  let rt = map is_tied_right x
+      lt = z : rt
+      f p e = if p then Just e else Nothing
+      g r l = catMaybes [f r Annotation.Tie_Right, f l Annotation.Tie_Left]
+      h = rq_to_duration_err (show ("rqt_to_duration_a", z, x)) 2 . rqt_rq
+  in zip (map h x) (zipWith g rt lt)
 
-{- | 'Rq_Tied' variant of 'rq_can_notate'. -}
+-- | 'Rq_Tied' variant of 'rq_can_notate'.
 rqt_can_notate :: Dots -> [Rq_Tied] -> Bool
-rqt_can_notate k = rq_can_notate k  . map rqt_rq
+rqt_can_notate k = rq_can_notate k . map rqt_rq
 
 {- | 'Rq_Tied' variant of 'rq_to_cmn'.
 
@@ -97,10 +97,10 @@ Just ((1 % 1,True),(1 % 4,True))
 >>> rqt_to_cmn (5/7,False)
 Just ((4 % 7,True),(1 % 7,False))
 -}
-rqt_to_cmn :: Rq_Tied -> Maybe (Rq_Tied,Rq_Tied)
-rqt_to_cmn (k,t) =
-    let f (i,j) = ((i,True),(j,t))
-    in fmap f (rq_to_cmn k)
+rqt_to_cmn :: Rq_Tied -> Maybe (Rq_Tied, Rq_Tied)
+rqt_to_cmn (k, t) =
+  let f (i, j) = ((i, True), (j, t))
+  in fmap f (rq_to_cmn k)
 
 {- | List variant of 'rqt_to_cmn'.
 
@@ -108,7 +108,7 @@ rqt_to_cmn (k,t) =
 [(4 % 1,True),(1 % 1,True)]
 -}
 rqt_to_cmn_l :: Rq_Tied -> [Rq_Tied]
-rqt_to_cmn_l x = maybe [x] (\(i,j) -> [i,j]) (rqt_to_cmn x)
+rqt_to_cmn_l x = maybe [x] (\(i, j) -> [i, j]) (rqt_to_cmn x)
 
 {- | 'concatMap' 'rqt_to_cmn_l'.
 

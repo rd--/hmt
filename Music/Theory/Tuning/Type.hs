@@ -1,4 +1,4 @@
-{- | Tuning type -}
+-- | Tuning type
 module Music.Theory.Tuning.Type where
 
 import Data.List {- base -}
@@ -17,31 +17,33 @@ or as a sequence of possibly inexact 'Cents', and an octave if not 2:1 or 1200.
 In both cases, the values are given in relation to the first degree of the scale,
 which for ratios is 1 and for cents 0.
 -}
-data Tuning = Tuning {tn_ratios_or_cents :: Either [Rational] [Tuning.Cents]
-                     ,tn_octave :: Maybe (Either Rational Tuning.Cents)}
-              deriving (Eq,Show)
+data Tuning = Tuning
+  { tn_ratios_or_cents :: Either [Rational] [Tuning.Cents]
+  , tn_octave :: Maybe (Either Rational Tuning.Cents)
+  }
+  deriving (Eq, Show)
 
-{- | Default epsilon for recovering ratios from cents. -}
+-- | Default epsilon for recovering ratios from cents.
 tn_epsilon :: Double
 tn_epsilon = 0.001
 
-{- | Tuning value as rational, reconstructed if required. -}
+-- | Tuning value as rational, reconstructed if required.
 tn_as_ratio :: Double -> Either Rational Tuning.Cents -> Rational
 tn_as_ratio epsilon = either id (Tuning.reconstructed_ratio epsilon)
 
-{- | Tuning value as cents. -}
+-- | Tuning value as cents.
 tn_as_cents :: Either Rational Tuning.Cents -> Tuning.Cents
 tn_as_cents = either Tuning.ratio_to_cents id
 
-{- | Tuning octave, defaulting to 2:1. -}
+-- | Tuning octave, defaulting to 2:1.
 tn_octave_def :: Tuning -> Either Rational Tuning.Cents
 tn_octave_def = fromMaybe (Left 2) . tn_octave
 
-{- | Tuning octave in cents. -}
+-- | Tuning octave in cents.
 tn_octave_cents :: Tuning -> Tuning.Cents
 tn_octave_cents = tn_as_cents . tn_octave_def
 
-{- | Tuning octave as ratio cents. -}
+-- | Tuning octave as ratio cents.
 tn_octave_ratio :: Double -> Tuning -> Rational
 tn_octave_ratio epsilon = tn_as_ratio epsilon . tn_octave_def
 
@@ -53,77 +55,77 @@ tn_octave_ratio epsilon = tn_as_ratio epsilon . tn_octave_def
 tn_divisions :: Tuning -> Int
 tn_divisions = either length length . tn_ratios_or_cents
 
-{- | 'Maybe' exact ratios of 'Tuning', NOT including the octave. -}
+-- | 'Maybe' exact ratios of 'Tuning', NOT including the octave.
 tn_ratios :: Tuning -> Maybe [Rational]
 tn_ratios = Either.from_left . tn_ratios_or_cents
 
-{- | Limit of JI tuning. -}
+-- | Limit of JI tuning.
 tn_limit :: Tuning -> Maybe Integer
 tn_limit = fmap (maximum . map Math.Prime.rational_prime_limit) . tn_ratios
 
-{- | 'error'ing variant. -}
+-- | 'error'ing variant.
 tn_ratios_err :: Tuning -> [Rational]
 tn_ratios_err = fromMaybe (error "ratios") . tn_ratios
 
-{- | Possibly inexact 'Cents' of tuning, NOT including the octave. -}
+-- | Possibly inexact 'Cents' of tuning, NOT including the octave.
 tn_cents :: Tuning -> [Tuning.Cents]
 tn_cents = either (map Tuning.ratio_to_cents) id . tn_ratios_or_cents
 
-{- | 'map' 'round' '.' 'cents'. -}
+-- | 'map' 'round' '.' 'cents'.
 tn_cents_i :: Integral i => Tuning -> [i]
 tn_cents_i = map round . tn_cents
 
-{- | Variant of 'tn_cents' that includes octave at right. -}
+-- | Variant of 'tn_cents' that includes octave at right.
 tn_cents_octave :: Tuning -> [Tuning.Cents]
 tn_cents_octave t = tn_cents t ++ [tn_octave_cents t]
 
-{- | 'tn_cents' / 100 -}
+-- | 'tn_cents' / 100
 tn_fmidi :: Tuning -> [Double]
 tn_fmidi = map (* 0.01) . tn_cents
 
-{- | Possibly inexact 'Approximate_Ratio's of tuning. -}
+-- | Possibly inexact 'Approximate_Ratio's of tuning.
 tn_approximate_ratios :: Tuning -> [Tuning.Approximate_Ratio]
 tn_approximate_ratios =
-    either (map Tuning.approximate_ratio) (map Tuning.cents_to_fratio) .
-    tn_ratios_or_cents
+  either (map Tuning.approximate_ratio) (map Tuning.cents_to_fratio)
+    . tn_ratios_or_cents
 
-{- | Cyclic form, taking into consideration 'octave_ratio'. -}
+-- | Cyclic form, taking into consideration 'octave_ratio'.
 tn_approximate_ratios_cyclic :: Tuning -> [Tuning.Approximate_Ratio]
 tn_approximate_ratios_cyclic t =
-    let r = tn_approximate_ratios t
-        m = Tuning.cents_to_fratio (tn_octave_cents t)
-        g = iterate (* m) 1
-        f n = map (* n) r
-    in concatMap f g
+  let r = tn_approximate_ratios t
+      m = Tuning.cents_to_fratio (tn_octave_cents t)
+      g = iterate (* m) 1
+      f n = map (* n) r
+  in concatMap f g
 
-{- | Lookup function that allows both negative & multiple octave indices. -}
+-- | Lookup function that allows both negative & multiple octave indices.
 tn_ratios_lookup :: Tuning -> Int -> Maybe Rational
 tn_ratios_lookup t n =
-    let (o,pc) = n `divMod` tn_divisions t
-        o_ratio = Tuning.oct_diff_to_ratio (tn_octave_ratio tn_epsilon t) o
-    in fmap (\r -> o_ratio * (r !! pc)) (tn_ratios t)
+  let (o, pc) = n `divMod` tn_divisions t
+      o_ratio = Tuning.oct_diff_to_ratio (tn_octave_ratio tn_epsilon t) o
+  in fmap (\r -> o_ratio * (r !! pc)) (tn_ratios t)
 
-{- | Lookup function that allows both negative & multiple octave indices. -}
+-- | Lookup function that allows both negative & multiple octave indices.
 tn_approximate_ratios_lookup :: Tuning -> Int -> Tuning.Approximate_Ratio
 tn_approximate_ratios_lookup t n =
-    let (o,pc) = n `divMod` tn_divisions t
-        o_ratio = fromRational (Tuning.oct_diff_to_ratio (tn_octave_ratio tn_epsilon t) o)
-    in o_ratio * (tn_approximate_ratios t !! pc)
+  let (o, pc) = n `divMod` tn_divisions t
+      o_ratio = fromRational (Tuning.oct_diff_to_ratio (tn_octave_ratio tn_epsilon t) o)
+  in o_ratio * (tn_approximate_ratios t !! pc)
 
-{- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents' of 'Tuning'. -}
+-- | 'Maybe' exact ratios reconstructed from possibly inexact 'Cents' of 'Tuning'.
 tn_reconstructed_ratios :: Double -> Tuning -> Maybe [Rational]
 tn_reconstructed_ratios epsilon =
-    fmap (map (Tuning.reconstructed_ratio epsilon)) .
-    Either.from_right .
-    tn_ratios_or_cents
+  fmap (map (Tuning.reconstructed_ratio epsilon))
+    . Either.from_right
+    . tn_ratios_or_cents
 
 -- * Equal temperaments
 
-{- | Make /n/ division equal temperament. -}
+-- | Make /n/ division equal temperament.
 tn_equal_temperament :: Integral n => n -> Tuning
 tn_equal_temperament n =
-    let c = genericTake n [0,1200 / fromIntegral n ..]
-    in Tuning (Right c) Nothing
+  let c = genericTake n [0, 1200 / fromIntegral n ..]
+  in Tuning (Right c) Nothing
 
 {- | 12-tone equal temperament.
 
@@ -131,7 +133,7 @@ tn_equal_temperament n =
 True
 -}
 tn_equal_temperament_12 :: Tuning
-tn_equal_temperament_12 = tn_equal_temperament (12::Int)
+tn_equal_temperament_12 = tn_equal_temperament (12 :: Int)
 
 {- | 19-tone equal temperament.
 
@@ -139,15 +141,15 @@ tn_equal_temperament_12 = tn_equal_temperament (12::Int)
 [0,63,126,189,253,316,379,442,505,568,632,695,758,821,884,947,1011,1074,1137]
 -}
 tn_equal_temperament_19 :: Tuning
-tn_equal_temperament_19 = tn_equal_temperament (19::Int)
+tn_equal_temperament_19 = tn_equal_temperament (19 :: Int)
 
-{- | 31-tone equal temperament. -}
+-- | 31-tone equal temperament.
 tn_equal_temperament_31 :: Tuning
-tn_equal_temperament_31 = tn_equal_temperament (31::Int)
+tn_equal_temperament_31 = tn_equal_temperament (31 :: Int)
 
-{- | 53-tone equal temperament. -}
+-- | 53-tone equal temperament.
 tn_equal_temperament_53 :: Tuning
-tn_equal_temperament_53 = tn_equal_temperament (53::Int)
+tn_equal_temperament_53 = tn_equal_temperament (53 :: Int)
 
 {- | 72-tone equal temperament.
 
@@ -155,8 +157,8 @@ tn_equal_temperament_53 = tn_equal_temperament (53::Int)
 [0,17,33,50,67,83,100]
 -}
 tn_equal_temperament_72 :: Tuning
-tn_equal_temperament_72 = tn_equal_temperament (72::Int)
+tn_equal_temperament_72 = tn_equal_temperament (72 :: Int)
 
-{- | 96-tone equal temperament. -}
+-- | 96-tone equal temperament.
 tn_equal_temperament_96 :: Tuning
-tn_equal_temperament_96 = tn_equal_temperament (96::Int)
+tn_equal_temperament_96 = tn_equal_temperament (96 :: Int)
