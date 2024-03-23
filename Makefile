@@ -16,3 +16,6 @@ push-all:
 
 indent:
 	fourmolu -i Music
+
+doctest:
+	doctest -Wno-x-partial -Wno-incomplete-uni-patterns Music/Theory
