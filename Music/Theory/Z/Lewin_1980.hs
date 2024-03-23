@@ -25,10 +25,15 @@ rel ncv x y =
 
 Kuusi 2001, 7.5.2
 
-> let (~=) p q = abs (p - q) < 0.001
-> t_rel [0,1,2,3,4] [0,2,3,6,7] ~= 0.429
-> t_rel [0,1,2,3,4] [0,2,4,6,8] ~= 0.253
-> t_rel [0,2,3,6,7] [0,2,4,6,8] ~= 0.324
+>>> let (~=) p q = abs (p - q) < 0.001
+>>> t_rel [0,1,2,3,4] [0,2,3,6,7] ~= 0.429
+True
+
+>>> t_rel [0,1,2,3,4] [0,2,4,6,8] ~= 0.253
+True
+
+>>> t_rel [0,2,3,6,7] [0,2,4,6,8] ~= 0.324
+True
 -}
 t_rel :: Floating n => [Z12] -> [Z12] -> n
 t_rel = rel Castren.t_n_class_vector
@@ -37,17 +42,28 @@ t_rel = rel Castren.t_n_class_vector
 
 Buchler 1998, Fig. 3.38
 
-> let (~=) p q = abs (p - q) < 0.001
-> let a = [0,2,3,5,7]::[Z12]
-> let b = [0,2,3,4,5,8]::[Z12]
-> let g = [0,1,2,3,5,6,8,10]::[Z12]
-> let j = [0,2,3,4,5,6,8]::[Z12]
-> ti_rel a b ~= 0.593
-> ti_rel a g ~= 0.648
-> ti_rel a j ~= 0.509
-> ti_rel b g ~= 0.712
-> ti_rel b j ~= 0.892
-> ti_rel g j ~= 0.707
+>>> let (~=) p q = abs (p - q) < 0.001
+>>> let a = [0,2,3,5,7]::[Z12]
+>>> let b = [0,2,3,4,5,8]::[Z12]
+>>> let g = [0,1,2,3,5,6,8,10]::[Z12]
+>>> let j = [0,2,3,4,5,6,8]::[Z12]
+>>> ti_rel a b ~= 0.593
+True
+
+>>> ti_rel a g ~= 0.648
+True
+
+>>> ti_rel a j ~= 0.509
+True
+
+>>> ti_rel b g ~= 0.712
+True
+
+>>> ti_rel b j ~= 0.892
+True
+
+>>> ti_rel g j ~= 0.707
+True
 -}
 ti_rel :: Floating n => [Z12] -> [Z12] -> n
 ti_rel = rel Castren.ti_n_class_vector

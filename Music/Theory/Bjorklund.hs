@@ -123,7 +123,7 @@ True
 euler_pp_unicode :: (Int, Int) -> String
 euler_pp_unicode = euler_pp_f xdot_unicode
 
-{- | ASCII form, ie. @x.@.
+{- | Ascii form, ie. @x.@.
 
 >>> euler_pp_ascii (7,12)
 "E(7,12) [x.xx.x.xx.x.] (2122122)"

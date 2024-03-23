@@ -11,23 +11,31 @@ import qualified Control.Monad.Logic as L {- logict -}
 
 {- | 'msum' '.' 'map' 'return'.
 
-> L.observeAll (fromList [1..7]) == [1..7]
+>>> L.observeAll (fromList [1..7])
+[1,2,3,4,5,6,7]
 -}
 fromList :: MonadPlus m => [a] -> m a
 fromList = msum . map return
 
 {- | Interval from /i/ to /j/ in modulo-/n/.
 
-> let f = int_n 12 in (f 0 11,f 11 0) == (11,1)
+>>> let f = int_n 12
+>>> (f 0 11,f 11 0)
+(11,1)
 -}
 int_n :: Integral a => a -> a -> a -> a
 int_n n i j = abs ((j - i) `mod` n)
 
 {- | 'L.MonadLogic' all-interval series.
 
-> map (length . L.observeAll . all_interval_m) [4,6,8,10] == [2,4,24,288]
-> [0,1,3,2,9,5,10,4,7,11,8,6] `elem` L.observeAll (all_interval_m 12)
-> length (L.observeAll (all_interval_m 12)) == 3856
+>>> map (length . L.observeAll . all_interval_m) [4,6,8,10]
+[2,4,24,288]
+
+>>> [0,1,3,2,9,5,10,4,7,11,8,6] `elem` L.observeAll (all_interval_m 12)
+True
+
+>>> length (L.observeAll (all_interval_m 12))
+3856
 -}
 all_interval_m :: (MonadPlus m, L.MonadLogic m) => Int -> m [Int]
 all_interval_m n =
@@ -46,11 +54,13 @@ all_interval_m n =
 
 {- | 'L.observeAll' of 'all_interval_m'.
 
-> let r = [[0,1,5,2,4,3],[0,2,1,4,5,3],[0,4,5,2,1,3],[0,5,1,4,2,3]]
-> all_interval 6 == r
+>>> let r = [[0,1,5,2,4,3],[0,2,1,4,5,3],[0,4,5,2,1,3],[0,5,1,4,2,3]]
+>>> all_interval 6 == r
+True
 
-> d_dx_n n l = zipWith (int_n n) l (tail l)
-> map (d_dx_n 6) r == [[1,4,3,2,5],[2,5,3,1,4],[4,1,3,5,2],[5,2,3,4,1]]
+>>> let d_dx_n n l = zipWith (int_n n) l (List.tail_err l)
+>>> map (d_dx_n 6) r
+[[1,4,3,2,5],[2,5,3,1,4],[4,1,3,5,2],[5,2,3,4,1]]
 -}
 all_interval :: Int -> [[Int]]
 all_interval = L.observeAll . all_interval_m

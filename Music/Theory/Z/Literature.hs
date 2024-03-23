@@ -4,8 +4,11 @@ module Music.Theory.Z.Literature where
 {- | Set class database with descriptors for historically and
 theoretically significant set classes, indexed by Forte name.
 
-> lookup "6-Z17" sc_db == Just "All-Trichord Hexachord"
-> lookup "7-35" sc_db == Just "diatonic collection (d)"
+>>> lookup "6-Z17" sc_db
+Just "All-Trichord Hexachord"
+
+>>> lookup "7-35" sc_db
+Just "diatonic collection (d)"
 -}
 sc_db :: [(String, String)]
 sc_db =
