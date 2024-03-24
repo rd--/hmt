@@ -16,34 +16,60 @@ import qualified Music.Theory.List as List {- hmt-base -}
 type Bjorklund a = ((Int, Int), ([[a]], [[a]]))
 
 -- | Bjorklund left process
-bjorklund_left_f :: Bjorklund a -> Bjorklund a
-bjorklund_left_f ((i, j), (xs, ys)) =
+bjorklund_left_step :: Bjorklund a -> Bjorklund a
+bjorklund_left_step ((i, j), (xs, ys)) =
   let (xs', xs'') = splitAt j xs
   in ((j, i - j), (zipWith (++) xs' ys, xs''))
 
 -- | Bjorklund right process
-bjorklund_right_f :: Bjorklund a -> Bjorklund a
-bjorklund_right_f ((i, j), (xs, ys)) =
+bjorklund_right_step :: Bjorklund a -> Bjorklund a
+bjorklund_right_step ((i, j), (xs, ys)) =
   let (ys', ys'') = splitAt i ys
   in ((i, j - i), (zipWith (++) xs ys', ys''))
 
 -- | Bjorklund process, left or right or halt.
-bjorklund_f :: Bjorklund a -> Maybe (Bjorklund a)
-bjorklund_f (n, x) =
+bjorklund_step :: Bjorklund a -> Maybe (Bjorklund a)
+bjorklund_step (n, x) =
   let (i, j) = n
   in if min i j <= 1
-     then Nothing
-     else Just (if i > j then bjorklund_left_f (n, x) else bjorklund_right_f (n, x))
+      then Nothing
+      else
+        Just
+          ( if i > j
+              then bjorklund_left_step (n, x)
+              else bjorklund_right_step (n, x)
+          )
 
 -- | All intermediate states of Bjorklund process.
-bjorklund_sequences :: Bjorklund a -> [Bjorklund a]
-bjorklund_sequences =
+bjorklund_sequences :: (t, t) -> (Int, Int) -> [Bjorklund t]
+bjorklund_sequences tf =
   let recur r st =
-        case bjorklund_f st of
+        case bjorklund_step st of
           Nothing -> reverse (st : r)
           Just st' -> recur (st : r) st'
-  in recur []
+  in recur [] . bjorklund_init tf
 
+-- | Bjorklund initial state.
+bjorklund_init :: (t, t) -> (Int, Int) -> Bjorklund t
+bjorklund_init (t, f) (i, j') =
+  let j = j' - i
+      x = replicate i [t]
+      y = replicate j [f]
+  in ((i, j), (x, y))
+
+{- | Bjorklund state to sequence.
+
+>>> let sq = bjorklund_sequences (True, False) (5, 13)
+>>> mapM_ (putStrLn . map xdot_unicode . bjorklund_seq) sq
+×××××········
+×·×·×·×·×····
+×··×··×··×·×·
+×··×·×··×·×··
+-}
+bjorklund_seq :: Bjorklund t -> [t]
+bjorklund_seq (_, (x, y)) = concat x ++ concat y
+
+-- | (k,n) -> sequence
 type EuclideanAlgorithm = (Int, Int) -> [Bool]
 
 {- | Bjorklund's algorithm to construct a binary sequence of /n/ bits
@@ -107,12 +133,10 @@ E(15,34) [×··×·×·×·×··×·×·×·×··×·×·×·×··×·×·] 
 @
 -}
 bjorklund :: EuclideanAlgorithm
-bjorklund (i, j') =
-  let j = j' - i
-      x = replicate i [True]
-      y = replicate j [False]
-      (_, (x', y')) = List.last_err (bjorklund_sequences ((i, j), (x, y)))
-  in concat x' ++ concat y'
+bjorklund =
+  bjorklund_seq
+    . List.last_err
+    . bjorklund_sequences (True, False)
 
 {- | 'List.rotate_right' of 'bjorklund'.
 
@@ -253,11 +277,12 @@ bresenham (s, n) =
 [[1,1,1,1,0,0,0,0,0,0,0],[0,0,0,0]]
 -}
 bjorklund_matrix_init :: (t, t) -> (Int, Int) -> [[t]]
-bjorklund_matrix_init (t,f) (k, n) =
+bjorklund_matrix_init (t, f) (k, n) =
   let i = n - k
       m = max (i - k) 0
-  in [replicate k t ++ replicate (i - k) f
-     ,replicate (i - m) f]
+  in [ replicate k t ++ replicate (i - k) f
+     , replicate (i - m) f
+     ]
 
 {- | Step intermediate matrix, or halt.
 
@@ -268,7 +293,7 @@ Just [[1,1,1,1,1],[0,0,0,0,0],[0,0,0]]
 Just [[1,1,1],[0,0,0],[0,0,0],[1,1],[0,0]]
 
 >>> bjorklund_matrix_step [[1,1,1],[0,0,0],[0,0,0],[1,1],[0,0]]
-Just [[1,1],[0,0],[0,0],[1,1],[0,0],[1],[0],[0]]
+Nothing
 
 >>> bjorklund_matrix_step [[1,1],[0]]
 Nothing
@@ -281,13 +306,15 @@ Just [[1,1,1,1],[0,0,0,0],[0,0,0,0,0,0,0]]
 -}
 bjorklund_matrix_step :: [[t]] -> Maybe [[t]]
 bjorklund_matrix_step m =
-  let l = nub (map length m)
+  let l = sort (nub (map length m))
       p = minimum l
-  in if p == 1 || (length l == 1)
-     then Nothing
-     else let a = map (take p) m
-              b = filter (not . null) (map (drop p) m)
-          in Just (a ++ b)
+      q = maximum l
+  in if p == 1 || (q - p <= 1)
+      then Nothing
+      else
+        let a = map (take p) m
+            b = filter (not . null) (map (drop p) m)
+        in Just (a ++ b)
 
 {- | The sequence of matrices.
 
@@ -295,15 +322,18 @@ bjorklund_matrix_step m =
 >>> m !! 0
 [[1,1,1,1,1,0,0,0],[0,0,0,0,0]]
 
->>> m !! 3
-[[1,1],[0,0],[0,0],[1,1],[0,0],[1],[0],[0]]
+>>> m !! 2
+[[1,1,1],[0,0,0],[0,0,0],[1,1],[0,0]]
+
+>>> let pp = concat . map show
+>>> mapM_ (putStrLn . unlines . map pp) m
 -}
 bjorklund_matrices :: (t, t) -> (Int, Int) -> [[[t]]]
 bjorklund_matrices tf kn =
   let m0 = bjorklund_matrix_init tf kn
       recur r m = case bjorklund_matrix_step m of
-                    Just m' -> recur (m' : r) m'
-                    Nothing -> reverse r
+        Just m' -> recur (m' : r) m'
+        Nothing -> reverse r
   in recur [m0] m0
 
 {- | Each matrix of bjorklund_matrices, as a sequence.
@@ -313,7 +343,6 @@ bjorklund_matrices tf kn =
 ×·×·×·×·×····
 ×··×··×··×·×·
 ×··×·×··×·×··
-×··×·×··×··×·
 -}
 bjorklund_matrices_sequences :: (t, t) -> (Int, Int) -> [[t]]
 bjorklund_matrices_sequences tf =
@@ -326,7 +355,7 @@ bjorklund_matrices_sequences tf =
 "E(5,9) [x.x.x.x.x] (22221)"
 
 >>> euler_pp_ascii bjorklundM (5,9)
-"E(5,9) [x.xx.x.x.] (21222)"
+"E(5,9) [x.x.x.x.x] (22221)"
 
 Given es' above compare algorithms:
 
@@ -334,42 +363,42 @@ Given es' above compare algorithms:
 
 @
 E(2,3) [×·×] (21)
-E(2,5) [×··×·] (32)
+E(2,5) [×·×··] (23)
 E(3,4) [×·××] (211)
-E(3,5) [×·××·] (212)
-E(3,8) [×··×·×··] (323)
-E(4,7) [×·××·×·] (2122)
-E(4,9) [×··×·×·×·] (3222)
+E(3,5) [×·×·×] (221)
+E(3,8) [×··×··×·] (332)
+E(4,7) [×·×·×·×] (2221)
+E(4,9) [×·×·×·×··] (2223)
 E(4,12) [×··×··×··×··] (3333)
-E(4,15) [×···×··×···×···] (4344)
+E(4,15) [×···×···×···×··] (4443)
 E(5,6) [×·××××] (21111)
-E(5,7) [×·×××·×] (21121)
-E(5,8) [×·××·×·×] (21221)
-E(5,9) [×·××·×·×·] (21222)
-E(5,11) [×··×·×·×·×·] (32222)
-E(5,12) [×··×·×·×··×·] (32232)
-E(5,13) [×··×·×··×··×·] (32332)
-E(5,16) [×···×··×··×··×··] (43333)
+E(5,7) [×·××·××] (21211)
+E(5,8) [×·××·××·] (21212)
+E(5,9) [×·×·×·×·×] (22221)
+E(5,11) [×·×·×·×·×··] (22223)
+E(5,12) [×··×·×··×·×·] (32322)
+E(5,13) [×··×·×··×·×··] (32323)
+E(5,16) [×··×··×··×··×···] (33334)
 E(6,7) [×·×××××] (211111)
-E(6,13) [×··×·×·×·×·×·] (322222)
+E(6,13) [×·×·×·×·×·×··] (222223)
 E(7,8) [×·××××××] (2111111)
-E(7,9) [×·××××·××] (2111211)
-E(7,10) [×·×××·××·×] (2112121)
-E(7,12) [×·××·×·×·××·] (2122212)
-E(7,15) [×··×·×·×·×·×·×·] (3222222)
-E(7,16) [×··×·×·×·×··×·×·] (3222322)
-E(7,17) [×··×·×·×··×·×··×·] (3223232)
-E(7,18) [×··×·×··×··×·×··×·] (3233232)
-E(8,17) [×··×·×·×·×·×·×·×·] (32222222)
-E(8,19) [×··×·×·×··×·×··×·×·] (32232322)
-E(9,14) [×·××·×·××·××·×] (212212121)
-E(9,16) [×·××·×·×·×·××·×·] (212222122)
-E(9,22) [×··×·×·×··×·×··×·×··×·] (322323232)
-E(9,23) [×··×·×··×··×·×··×·×··×·] (323323232)
+E(7,9) [×·×××·×××] (2112111)
+E(7,10) [×·××·××·××] (2121211)
+E(7,12) [×·××·×·××·×·] (2122122)
+E(7,15) [×·×·×·×·×·×·×··] (2222223)
+E(7,16) [×··×·×·×··×·×·×·] (3223222)
+E(7,17) [×··×·×··×·×··×·×·] (3232322)
+E(7,18) [×··×·×··×·×··×·×··] (3232323)
+E(8,17) [×·×·×·×·×·×·×·×··] (22222223)
+E(8,19) [×··×·×·×··×·×·×··×·] (32232232)
+E(9,14) [×·××·××·××·××·] (212121212)
+E(9,16) [×·××·×·×·××·×·×·] (212221222)
+E(9,22) [×··×·×··×·×··×·×··×·×·] (323232322)
+E(9,23) [×··×·×··×·×··×·×··×·×··] (323232323)
 E(11,12) [×·××××××××××] (21111111111)
-E(11,24) [×··×·×·×·×·×·×··×·×·×·×·] (32222232222)
-E(13,24) [×·××·×·×·×·×·×·××·×·×·×·] (2122222212222)
-E(15,34) [×··×·×·×·×··×·×·×··×·×·×·×··×·×·×·] (322232232223222)
+E(11,24) [×··×·×·×·×·×··×·×·×·×·×·] (32222322222)
+E(13,24) [×·××·×·×·×·×·××·×·×·×·×·] (2122222122222)
+E(15,34) [×··×·×·×·×··×·×·×·×··×·×·×·×··×·×·] (322232223222322)
 @
 -}
 bjorklundM :: EuclideanAlgorithm
