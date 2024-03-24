@@ -3,6 +3,11 @@
 /Journal of Computational Geometry: Theory and Applications/
 Volume 42, Issue 5, July, 2009
 (<http://dx.doi.org/10.1016/j.comgeo.2008.04.005>)
+
+Erik D. Demaine, et. al..
+\"The Distance Geometry of Deep Rhythms and Scales\".
+/CCCG/ 2005: 163-166
+(<https://erikdemaine.org/papers/DeepRhythms_CCCG2005/paper.pdf>)
 -}
 module Music.Theory.Bjorklund where
 
@@ -403,3 +408,74 @@ E(15,34) [×··×·×·×·×··×·×·×·×··×·×·×·×··×·×·] 
 -}
 bjorklundM :: EuclideanAlgorithm
 bjorklundM = List.last_err . bjorklund_matrices_sequences (True, False)
+
+{- | The oriented distance from onset i to onset j in R/n.
+The length of the counterclockwise arc starting at i and ending at j
+on the circle of circumference n.
+-}
+orientedDistance :: (Ord a, Num a) => a -> a -> a -> a
+orientedDistance i j n =
+  if i < j
+  then j - i
+  else n + j - i
+
+{- | The distance between two onsets i and j in R.
+The minimum of the oriented distance from i to j
+and the oriented distance from j to i.
+I.e. the length of the shortest arc connecting points i and j
+on the circle of circumference n.
+-}
+distance :: (Ord a, Num a) => a -> a -> a -> a
+distance i j n = min (abs (i - j)) (n - abs (i - j))
+
+{- | The distance multiset of a rhythm R
+is the multiset of all nonzero pairwise distances.
+-}
+distanceMultiset :: (Ord a, Num a) => [a] -> a -> [a]
+distanceMultiset l n =
+  [distance i j n |
+    i <- l,
+    j <- l,
+    i < j]
+
+{- | A rhythm is Erdos-deep if it has (exactly) one distance of multiplicity i,
+for i in 1 to k−1.
+
+>>> isErdosDeep [0,4,5,9,10,14,15] 16
+True
+
+>>> isErdosDeep [0,2,4,5,7,9,11] 12
+True
+
+>>> isErdosDeep [0,4,7] 10
+True
+-}
+isErdosDeep :: (Num a, Ord a) => [a] -> a -> Bool
+isErdosDeep l n =
+  let k = length l
+      d = distanceMultiset l n
+      h = List.histogram d
+      q = sort (map snd h)
+  in q == [1 .. k - 1]
+
+{- | A rhythm is Winograd-deep if every two possible distances in (1 .. n/2)
+have different multiplicity.
+
+>>> isWinogradDeep [0,4,5,9,10,14,15] 16
+False
+
+>>> isWinogradDeep [0,2,4,5,7,9,11] 12
+True
+
+>>> isWinogradDeep [0,4,7] 10
+False
+
+>>> isWinogradDeep [0,2,3,5,7,9,11,13,15] 17
+True
+-}
+isWinogradDeep :: Integral t => [t] -> t -> Bool
+isWinogradDeep l n =
+  let d = distanceMultiset l n
+      h = List.generic_histogram d
+      q = sort (map snd h)
+  in q == [1 .. n `div` 2]
