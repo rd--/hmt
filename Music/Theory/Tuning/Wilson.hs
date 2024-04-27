@@ -540,6 +540,23 @@ ew_scl_find_r_eq r =
       then error "ew_scl_find_r_eq?: r'0 /= 1"
       else map Scala.scale_name . Scala.scl_find_ji False (==) r'
 
+{- | Find scale in Scala db.
+
+>>> ew_scl_find_r_rot [1/1, 13/12, 9/8, 7/6, 5/4, 4/3, 11/8, 3/2, 13/8, 5/3, 7/4, 11/6] db
+["secor_bicycle"]
+
+>>> ew_scl_find_r_rot [1/1, 3/1, 5/1, 7/1, 9/1, 11/1, 13/1] db
+["harm_bastinv","harmd-mix"]
+
+>>> ew_scl_find_r_rot [1/1, 21/20, 9/8, 7/6, 5/4, 4/3, 7/5, 3/2, 14/9, 5/3, 7/4, 15/8] db
+["grady_centaur"]
+
+>>> ew_scl_find_r_rot [1/1, 6/5, 5/4, 4/3, 3/2, 8/5, 5/3] db
+["cons_5","kring1"]
+
+>>> ew_scl_find_r_rot [1/1, 8/7, 7/6, 6/5, 5/4, 4/3, 7/5, 10/7, 3/2, 8/5, 5/3, 12/7, 7/4] db
+["diamond7"]
+-}
 ew_scl_find_r_rot :: [Rational] -> [Scala.Scale] -> [String]
 ew_scl_find_r_rot r db = concatMap (\s -> ew_scl_find_r_eq s db) (r_seq_rotations r)
 

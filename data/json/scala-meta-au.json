@@ -99,6 +99,9 @@
 		"burt_forks",
 		"burt_primes"
 	],
+	"Canright, David": [
+		"secor_bicycle"
+	],
 	"Chalmers, John": [
 		"chalmers",
 		"chalmers_17",
@@ -124,6 +127,12 @@
 		"prodq13",
 		"slen_pel_jc"
 	],
+	"Danielou, Alain": [
+		"dan_semantic",
+		"danielou5_53",
+		"danielou_53",
+		"gunkali"
+	],
 	"Didymus": [
 		"didy_chrom",
 		"didy_chrom1",
@@ -132,6 +141,11 @@
 		"didy_diat",
 		"didy_enh",
 		"didy_enh2"
+	],
+	"Doty, David": [
+		"doty_14",
+		"meyer",
+		"meyer_29"
 	],
 	"Eratosthenes": [
 		"eratos_chrom",
@@ -499,6 +513,7 @@
 		"hexany13",
 		"hexany_union",
 		"hypol_diatinv",
+		"indian",
 		"indian-magrama",
 		"malcolme",
 		"malkauns",

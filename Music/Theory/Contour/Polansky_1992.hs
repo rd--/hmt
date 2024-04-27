@@ -113,6 +113,9 @@ data Contour_Description = Contour_Description
 
 {- | Construct 'Contour_Description' of contour (p.264).
 
+>>> contour_description "abdc"
+000 00 2
+
 >>> map (show . contour_description) [[3,2,4,1],[3,2,1,4]]
 ["202 02 2","220 20 0"]
 -}
@@ -470,7 +473,7 @@ build_contour_set f c z n st =
     (Nothing, _) -> []
     (Just r, st') -> r : build_contour_set f c z n st'
 
-{- | Variant of 'build_contour_set' that halts when an generated
+{- | Variant of 'build_contour_set' that halts when a generated
 sequence is a duplicate of an already generated sequence.
 
 >>> import System.Random

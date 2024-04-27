@@ -132,6 +132,12 @@ It is an error if /n/ is less than or equal to zero.
 
 >>> map fold_ratio_to_octave_err [2/2,2/3,3/4,4/5,4/7] == [1/1,4/3,3/2,8/5,8/7]
 True
+
+>>> map (fold_ratio_to_octave_err . (% 1)) [1, 5, 3]
+[1 % 1,5 % 4,3 % 2]
+
+>>> map (Tuning.fold_ratio_to_octave_err . (1 %)) [1, 5, 3]
+[1 % 1,8 % 5,4 % 3]
 -}
 fold_ratio_to_octave_err :: (Ord n, Fractional n) => n -> n
 fold_ratio_to_octave_err =

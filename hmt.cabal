@@ -5,12 +5,12 @@ Synopsis:          Haskell Music Theory
 Description:       Haskell library for Music Theory
 License:           GPL-3.0-only
 Category:          Music
-Copyright:         Rohan Drape, 2006-2023
+Copyright:         Rohan Drape, 2006-2024
 Author:            Rohan Drape
 Maintainer:        rd@rohandrape.net
 Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
-Tested-With:       GHC == 9.6.1
+Tested-With:       GHC == 9.8.1
 Build-Type:        Simple
 
 Data-files:        README.md
