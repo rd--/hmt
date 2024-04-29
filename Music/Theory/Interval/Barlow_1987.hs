@@ -8,9 +8,9 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import qualified Music.Theory.Math as T {- hmt -}
-import qualified Music.Theory.Math.Prime as T {- hmt -}
-import qualified Music.Theory.Tuning as T {- hmt -}
+import qualified Music.Theory.Math as Math {- hmt -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
 
 {- | Barlow's /indigestibility/ function for prime numbers.
 
@@ -19,9 +19,11 @@ True
 -}
 barlow :: (Integral a, Fractional b) => a -> b
 barlow p =
-  let p' = fromIntegral p
-      square n = n * n
-  in 2 * (square (p' - 1) / p')
+  if Prime.is_prime p
+  then let p' = fromIntegral p
+           square n = n * n
+       in 2 * (square (p' - 1) / p')
+  else sum (map barlow (Prime.prime_factors p))
 
 {- | Compute the disharmonicity of the interval /(p,q)/ using the prime valuation function /pv/.
 
@@ -30,7 +32,7 @@ True
 -}
 disharmonicity :: (Integral a, Num b) => (a -> b) -> (a, a) -> b
 disharmonicity pv (p, q) =
-  let n = T.rat_prime_factors_m (p, q)
+  let n = Prime.rat_prime_factors_m (p, q)
   in sum [abs (fromIntegral j) * pv i | (i, j) <- n]
 
 {- | The reciprocal of 'disharmonicity'.
@@ -42,7 +44,7 @@ harmonicity :: (Integral a, Fractional b) => (a -> b) -> (a, a) -> b
 harmonicity pv = recip . disharmonicity pv
 
 harmonicity_m :: (Eq b, Integral a, Fractional b) => (a -> b) -> (a, a) -> Maybe b
-harmonicity_m pv = T.recip_m . disharmonicity pv
+harmonicity_m pv = Math.recip_m . disharmonicity pv
 
 {- | Variant of 'harmonicity' with 'Ratio' input.
 
@@ -50,12 +52,12 @@ harmonicity_m pv = T.recip_m . disharmonicity pv
 True
 -}
 harmonicity_r :: (Integral a, Fractional b) => (a -> b) -> Ratio a -> b
-harmonicity_r pv = harmonicity pv . T.rational_nd
+harmonicity_r pv = harmonicity pv . Math.rational_nd
 
 -- | Variant of 'harmonicity_r' with output in (0,100), infinity maps to 100.
 harmonicity_r_100 :: (RealFrac b, Integral a) => (a -> b) -> Ratio a -> Int
 harmonicity_r_100 pv x =
-  case harmonicity_m pv (T.rational_nd x) of
+  case harmonicity_m pv (Math.rational_nd x) of
     Nothing -> 100
     Just y -> round (y * 100)
 
@@ -67,8 +69,8 @@ type Table_2_Row = (Double, [Int], Rational, Double)
 -- | Given ratio /r/ generate 'Table_2_Row'
 mk_table_2_row :: Rational -> Table_2_Row
 mk_table_2_row r =
-  ( T.fratio_to_cents r
-  , T.rat_prime_factors_t 6 (T.rational_nd r)
+  ( Tuning.fratio_to_cents r
+  , Prime.rat_prime_factors_t 6 (Math.rational_nd r)
   , r
   , harmonicity_r barlow r
   )
@@ -123,6 +125,6 @@ table_2_pp :: Table_2_Row -> String
 table_2_pp (i, j, k, l) =
   let i' = printf "%8.3f" i
       j' = unwords (map (printf "%2d") j)
-      k' = let (p, q) = T.rational_nd k in printf "%2d:%-2d" q p
+      k' = let (p, q) = Math.rational_nd k in printf "%2d:%-2d" q p
       l' = printf "%1.6f" l
   in intercalate " | " [i', j', k', l']
