@@ -44,6 +44,9 @@ at1_bnd_err m x i =
 >>> mod_pos_err (-1) 2
 1
 
+>>> zipWith mod_pos_err [5,17,-5,-5] [3,5,3,4]
+[2,2,1,3]
+
 > mod_pos_err 1 (-2) == undefined
 -}
 mod_pos_err :: (Integral a, Show a) => a -> a -> a
@@ -57,14 +60,17 @@ mod_pos_err a b =
 to_r :: Integral n => n -> Double
 to_r = fromIntegral
 
--- | Variant on 'div' with input constraints.
+{- | Variant on 'div' with input constraints. -}
 div_pos_err :: (Integral a, Show a) => String -> a -> a -> a
 div_pos_err m i j =
   if i < 0 || j < 0
     then error (show ("div_pos_err", m, i, j))
     else truncate (to_r i / to_r j)
 
--- | A stratification is a tree of integral subdivisions.
+{- | A stratification is a tree of integral subdivisions.
+[3,2,2] indicates (((..)(..))((..)(..))((..)(..))).
+[2,3,2] indicates (((..)(..)(..))((..)(..)(..))).
+-}
 type Stratification t = [t]
 
 {- | Indispensibilities from stratification.
@@ -82,9 +88,12 @@ type Stratification t = [t]
 [14,0,9,3,6,12,1,10,4,7,13,2,11,5,8]
 -}
 indispensibilities :: (Integral n, Show n) => Stratification n -> [n]
-indispensibilities x = map (lower_psi x (genericLength x)) [1 .. product x]
+indispensibilities x =
+  let n = genericLength x
+      k = product x
+  in map (lower_psi x n) [1 .. k]
 
-{- | The indispensibility measure (ψ).
+{- | The indispensibility measure (lower case psi, ψ).
 
 >>> map (lower_psi [2] 1) [1..2]
 [1,0]
@@ -103,24 +112,27 @@ indispensibilities x = map (lower_psi x (genericLength x)) [1 .. product x]
 
 >>> map (lower_psi [2,3] 2) [1..6]
 [5,0,2,4,1,3]
+
+>>> lower_psi [2,3] 2 1
+5
 -}
 lower_psi :: (Integral a, Show a) => Stratification a -> a -> a -> a
 lower_psi q z n =
-  let s8 r =
-        let s1 = product q
-            s2 = (n - 2) `mod_pos_err` s1
-            s3 =
-              let f k = at1_bnd_err "s3" q (z + 1 - k)
-              in product (map f [0 .. r])
-            s4 = 1 + div_pos_err "s4" s2 s3
-            c = at1_bnd_err "c" q (z - r)
-            s5 = s4 `mod_pos_err` c
-            s6 = upper_psi c (1 + s5)
-            s7 =
-              let f = at1_bnd_err "s7" q
-              in product (map f [0 .. z - r - 1])
-        in traceShow ("lower_psi:s", s1, s2, s3, s4, s5, s6, s7) (s7 * s6)
-  in traceShow ("lower_psi", q, z, n) (sum (map s8 [0 .. z - 1]))
+  let m = product q
+      u = (n - 2) `mod_pos_err` m
+      f r =
+        let m2 =
+              let ix k = at1_bnd_err "m2" q (z + 1 - k)
+              in product (map ix [0 .. r])
+            a = at1_bnd_err "a" q (z - r)
+            b = 1 + div_pos_err "b" u m2
+            c = 1 + (b `mod_pos_err` a)
+            d = upper_psi a c
+            e =
+              let ix = at1_bnd_err "e" q
+              in product (map ix [0 .. z - r - 1])
+        in traceShow ("lower_psi:m,u,m2,a-e", m, u, m2, a, b, c, d, e) (e * d)
+  in traceShow ("lower_psi", q, z, n) (sum (map f [0 .. z - 1]))
 
 {- | The first /n/ primes, reversed.
 
@@ -134,6 +146,7 @@ reverse_primes :: Integral n => n -> [n]
 reverse_primes n = reverse (genericTake n Primes.primes)
 
 {- | Generate prime stratification for /n/.
+This is the prime factors sorted from largest to smallest.
 
 >>> map prime_stratification [2,3,5,7,11]
 [[2],[3],[5],[7],[11]]
@@ -146,6 +159,10 @@ reverse_primes n = reverse (genericTake n Primes.primes)
 
 >>> map prime_stratification [18,16,12]
 [[3,3,2],[2,2,2,2],[3,2,2]]
+
+>>> let f x = prime_stratification x == reverse (sort (Primes.primeFactors x))
+>>> all id (map f [1 .. 22])
+True
 -}
 prime_stratification :: (Integral n, Show n) => n -> Stratification n
 prime_stratification =
@@ -158,7 +175,7 @@ prime_stratification =
           [] -> []
   in go (reverse_primes 14)
 
-{- | Fundamental indispensibilities for prime numbers (Ψ).
+{- | Fundamental (basic) indispensibilities for prime numbers (upper case Psi, Ψ).
 
 >>> map (upper_psi 2) [1..2]
 [1,0]
@@ -177,6 +194,15 @@ prime_stratification =
 
 >>> map (upper_psi 13) [1..13]
 [12,0,7,4,10,1,8,5,11,2,9,3,6]
+
+>>> map (upper_psi 17) [1..17]
+[16,0,9,5,13,2,11,7,15,1,10,6,14,3,12,4,8]
+
+>>> map (upper_psi 19) [1..19]
+[18,0,10,3,13,7,16,1,11,5,14,8,17,2,12,6,15,4,9]
+
+>>> map (upper_psi 23) [1..23]
+[22,0,12,7,18,4,16,10,21,1,13,8,19,3,15,9,20,2,14,6,17,5,11]
 -}
 upper_psi :: (Integral a, Show a) => a -> a -> a
 upper_psi p n =
@@ -194,7 +220,7 @@ upper_psi p n =
                   q = lower_psi s (genericLength s) n'
                   q' = to_r q
                   p' = to_r p
-              in truncate (q' + 2 * sqrt ((q' + 1) / p'))
+              in truncate (q' + (2 * sqrt ((q' + 1) / p')))
 
 {- | Table such that each subsequent row deletes the least indispensibile pulse.
 
@@ -251,7 +277,7 @@ relative_indispensibilities = relative_to_length . indispensibilities
 {- | Align two meters (given as stratifications) to least common multiple of their degrees.
 The 'indispensibilities' function is given as an argument so that it may be relative if required.
 This generates Table 7 (p.58).
---
+
 >>> align_meters indispensibilities [2,3] [3,2]
 [(5,5),(0,0),(2,3),(4,1),(1,4),(3,2)]
 
@@ -277,7 +303,7 @@ align_meters f s1 s2 =
 -- | Type pairing a stratification and a tempo.
 type S_MM t = ([t], t)
 
--- | Variant of 'div' that requires 'mod_pos_err be @0@.
+-- | Variant of 'div' that requires 'mod_pos_err' be @0@.
 whole_div :: Integral a => a -> a -> a
 whole_div i j =
   case i `divMod` j of

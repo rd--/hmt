@@ -341,6 +341,9 @@ mos_2 p g = (g, p - g)
 >>> mos_step (5,7)
 (5,2)
 
+>>> mos_step (7,5)
+(2,5)
+
 >>> mos_step (5,2)
 (3,2)
 
@@ -354,6 +357,9 @@ mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 
 >>> mos_unfold (5,7)
 [(5,7),(5,2),(3,2),(1,2)]
+
+>>> mos_unfold (7,5)
+[(7,5),(2,5),(2,3),(2,1)]
 
 >>> mos_unfold (41,17)
 [(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
@@ -403,10 +409,21 @@ mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos
 [2,3,5,7,9,11,20,29]
 -}
 mos_seq :: (Ord b, Num b) => b -> b -> [[b]]
-mos_seq p g =
+mos_seq p g = mos_seq_m (mos p g)
+
+{- | Mos.
+
+>>> mos_seq_m (mos_unfold (5, 7))
+[[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
+
+>>> mos_seq_m (mos_unfold (7, 5))
+[[7,5],[2,5,5],[2,2,3,2,3],[2,2,2,1,2,2,1]]
+-}
+mos_seq_m :: (Eq b, Num b) => [(b, b)] -> [[b]]
+mos_seq_m m =
   let step_f (i, j) = concatMap (\x -> if x == i + j then [i, j] else [x])
       recur_f x l = if null x then [l] else l : recur_f (List.tail_err x) (step_f (List.head_err x) l)
-      ((i0, j0), r) = List.headTail (mos p g)
+      ((i0, j0), r) = List.headTail m
   in recur_f r [i0, j0]
 
 mos_cell_pp :: (Integral i, Show i) => i -> String
