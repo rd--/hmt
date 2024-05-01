@@ -19,7 +19,6 @@ import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math as Math {- hmt-base -}
 import qualified Music.Theory.Math.Convert as Convert {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
-import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
@@ -314,6 +313,7 @@ zz_seq k_seq = zz_recur k_seq [(0, 1), (1, 1)]
 
 -- * Mos
 
+-- | Are integers co-prime.
 are_coprime :: Integral i => i -> i -> Bool
 are_coprime x y = gcd x y == 1
 
@@ -353,6 +353,20 @@ mos_2 p g = (g, p - g)
 mos_step :: (Ord a, Num a) => (a, a) -> (a, a)
 mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 
+{- | Mos unfold to.  z=limit.  limit is of sum, and for integers is ordinarily 1+2.
+
+>>> let m = mos_2 1 0.5833333
+>>> length (mos_unfold_to 0.1 m)
+6
+-}
+mos_unfold_to :: (Ord t, Num t) => t -> (t, t) -> [(t, t)]
+mos_unfold_to z x =
+  let y = mos_step x
+      (y0,y1) = y
+  in if (y0 + y1) <= z
+     then [x, y]
+     else x : mos_unfold_to z y
+
 {- | Given an interval pair, generate the subsequent pairs ending at (1,2).
 
 >>> mos_unfold (5,7)
@@ -364,12 +378,11 @@ mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 >>> mos_unfold (41,17)
 [(41,17),(24,17),(7,17),(7,10),(7,3),(4,3),(1,3),(1,2)]
 -}
-mos_unfold :: (Ord b, Num b) => (b, b) -> [(b, b)]
-mos_unfold x =
-  let y = mos_step x
-  in if Tuple.t2_sum y <= 3 then [x, y] else x : mos_unfold y
+mos_unfold :: (Ord t, Num t) => (t, t) -> [(t, t)]
+mos_unfold = mos_unfold_to 3
 
-{- | Mos. p = period, g = generator.  This omits the two trivial cases ([p], and [1*p])
+{- | Mos = moment of symmetry.
+This omits the two trivial cases ([p], and [1*p])
 
 >>> mos 12 5
 [(5,7),(5,2),(3,2),(1,2)]
@@ -383,8 +396,18 @@ mos_unfold x =
 >>> mos 49 27 == map (\(i, j) -> (j, i)) (mos 49 22)
 True
 -}
-mos :: (Ord b, Num b) => b -> b -> [(b, b)]
-mos p g = mos_unfold (mos_2 p g)
+mos :: (Ord t, Num t) => t -> t -> [(t, t)]
+mos = mos_to 3
+
+{- | Mos to. z = limit, p = period, g = generator.
+This omits the trivial case [p].
+
+>>> let m = mos_to 1 100 38.1966011
+>>> (last m, length m)
+((0.31055840000033186,0.5025020999997949),11)
+-}
+mos_to :: (Ord t, Num t) => t -> t -> t -> [(t, t)]
+mos_to z p g = mos_unfold_to z (mos_2 p g)
 
 mos_verify :: Integral a => a -> a -> Bool
 mos_verify p g =
@@ -434,11 +457,21 @@ mos_row_pp = concatMap mos_cell_pp
 
 {- | Pretty print Mos sequence table (mono-space font)
 
->>> mos_tbl_pp (mos_seq 12 5)
-["5----7------","5----5----2-","3--2-3--2-2-","12-2-12-2-2-"]
+>>> putStr $ unlines $ mos_tbl_pp (mos_seq 12 5)
+5----7------
+5----5----2-
+3--2-3--2-2-
+12-2-12-2-2-
 
->>> mos_tbl_pp (mos_seq 49 27)
-["27-------------------------22--------------------","5----22--------------------22--------------------","5----5----17---------------5----17---------------","5----5----5----12----------5----5----12----------","5----5----5----5----7------5----5----5----7------","5----5----5----5----5----2-5----5----5----5----2-","3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-","12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-"]
+>>> putStr $ unlines $ mos_tbl_pp (mos_seq 49 27)
+27-------------------------22--------------------
+5----22--------------------22--------------------
+5----5----17---------------5----17---------------
+5----5----5----12----------5----5----12----------
+5----5----5----5----7------5----5----5----7------
+5----5----5----5----5----2-5----5----5----5----2-
+3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-
+12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-
 -}
 mos_tbl_pp :: (Integral i, Show i) => [[i]] -> [String]
 mos_tbl_pp = map mos_row_pp
@@ -451,11 +484,19 @@ mos_tbl_wr = putStrLn . unlines . mos_tbl_pp
 mos_recip_seq :: Double -> [(Int, Double)]
 mos_recip_seq x = let y = truncate x in (y, x) : mos_recip_seq (recip (x - fromIntegral y))
 
--- > take 3 (mos_log (5/4)) == [(3,3.10628371950539),(9,9.408778735385603),(2,2.4463112031908785)]
+{- | Mos log
+
+>>> take 3 (mos_log (5/4))
+[(3,3.10628371950539),(9,9.408778735385603),(2,2.4463112031908785)]
+-}
 mos_log :: Double -> [(Int, Double)]
 mos_log r = mos_recip_seq (recip (logBase 2 r))
 
--- > take 9 (mos_log_kseq 1.465571232) == [1,1,4,2,1,3,1,6,2]
+{- | Mos log kseq
+
+>>> take 9 (mos_log_kseq 1.465571232)
+[1,1,4,2,1,3,1,6,2]
+-}
 mos_log_kseq :: Double -> [Int]
 mos_log_kseq = map fst . mos_log
 
@@ -525,7 +566,16 @@ type M3_Gen = (Rational, Int)
 m3_to_m :: M3_Gen -> M_Gen
 m3_to_m (r, n) = (r, 3, n)
 
--- > map m3_gen_unfold [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
+{- | M3 gen unfold
+
+>>> mapM_ (print . m3_gen_unfold) [(3,4),(21/9,4),(15/9,4),(35/9,3),(21/5,4),(27/5,3)]
+[3 % 1,9 % 1,27 % 1,81 % 1]
+[7 % 3,7 % 1,21 % 1,63 % 1]
+[5 % 3,5 % 1,15 % 1,45 % 1]
+[35 % 9,35 % 3,35 % 1]
+[21 % 5,63 % 5,189 % 5,567 % 5]
+[27 % 5,81 % 5,243 % 5]
+-}
 m3_gen_unfold :: M3_Gen -> [Rational]
 m3_gen_unfold = m_gen_unfold . m3_to_m
 
