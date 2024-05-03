@@ -44,12 +44,15 @@ isNSmooth n i =
   let k = Primes.primeFactors i
   in null k || maximum k <= n
 
+-- | Given f0 in Hertz determine frequency of harmonic k.
 kToHz :: Double -> Integer -> Double
 kToHz f0 k = fromIntegral k * f0
 
+-- | Given f0 in Hertz determine midi note number of harmonic k.
 kToMidi :: Double -> Integer -> Integer
 kToMidi f0 k = Pitch.cps_to_midi (kToHz f0 k)
 
+-- | Given f0 in Hertz determine pitch of harmonic k.
 kToPitch :: Double -> Integer -> Pitch.Pitch
 kToPitch f0 k = Pitch.midi_to_pitch Pitch.pc_spell_ks (kToMidi f0 k)
 
@@ -68,9 +71,11 @@ kToName f0 k = Pitch.pitch_pp_iso (kToPitch f0 k)
 kC1 :: Integer -> String
 kC1 = kToName (Pitch.octpc_to_cps (1 :: Integer, 0))
 
+-- | Pitch names of harmonics given f0 of C1.
 c1Names :: [Integer] -> String
 c1Names = unwords . map kC1
 
+-- | Pitch names of divisors.
 divisorsC1Names :: Integer -> String
 divisorsC1Names = c1Names . divisors
 
@@ -85,7 +90,7 @@ divisorsC1Names = c1Names . divisors
 divisors :: Integral a => a -> [a]
 divisors n = [x | x <- [1 .. n], n `rem` x == 0]
 
-{- | Count the integers that divide n.
+{- | Count the integers that divide n. (divisorSigma)
 
 >>> numberOfDivisors 1729 == length (divisors 1729)
 True
@@ -108,6 +113,7 @@ True
 numberOfDivisors :: Integral a => a -> Int
 numberOfDivisors n = product (map ((+ 1) . length) (group (Primes.primeFactors n)))
 
+-- | The tonal rotation matrix.
 rotationMatrix :: Matrix.M33 Double
 rotationMatrix =
   ( (0.335136, 0.531178, 0.778161)
@@ -115,9 +121,11 @@ rotationMatrix =
   , (0, -0.825924, 0.563781)
   )
 
+-- | log of integer.
 ilog :: Integer -> Double
 ilog = log . fromIntegral
 
+-- | Linear to linear rescaling
 linlin :: Fractional n => (n, n) -> (n, n) -> n -> n
 linlin (sl, sr) (dl, dr) n =
   let m = (dr - dl) / (sr - sl)
@@ -183,6 +191,7 @@ nthMultiplicity f i =
   let p = nthPrime i
   in genericLength (filter (== p) (Primes.primeFactors f))
 
+-- | Is i/j an integer, and is the integer prime.
 rationalDividesImmediately :: Rational -> Rational -> Bool
 rationalDividesImmediately i j =
   let r = i / j
