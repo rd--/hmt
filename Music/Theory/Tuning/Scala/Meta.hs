@@ -5,7 +5,8 @@ import qualified Music.Theory.Json as Json {- hmt-base -}
 
 {- | Just-intonation (ie. all rational) scales, collected by author.
 
->>> scl_ji_au "/home/rohan/sw/hmt/data/json/scala-meta-au.json"
+> db <- scl_ji_au "/home/rohan/sw/hmt/data/json/scala-meta-au.json"
+> map fst db
 -}
 scl_ji_au :: FilePath -> IO [(String, [String])]
 scl_ji_au fn = do

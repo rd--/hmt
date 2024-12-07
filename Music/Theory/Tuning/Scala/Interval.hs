@@ -8,6 +8,11 @@ import Data.Maybe {- base -}
 import qualified Music.Theory.Read as Read {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
+{- $setup
+>>> db <- load_intnam
+-}
+
+
 -- | Interval and name, ie. (3/2,"perfect fifth")
 type Interval = (Rational, String)
 
@@ -16,13 +21,23 @@ type IntNam = (Int, [Interval])
 
 {- | Lookup ratio in 'IntNam'.
 
-> db <- load_intnam
-> intnam_search_ratio db (3/2) == Just (3/2,"perfect fifth")
-> intnam_search_ratio db (2/3) == Nothing
-> intnam_search_ratio db (4/3) == Just (4/3,"perfect fourth")
-> intnam_search_ratio db (31/16) == Just (31/16,"=31st harmonic")
-> intnam_search_ratio db (64/49) == Just (64 % 49,"=2 septatones or septatonic major third")
+>>> intnam_search_ratio db (3/2)
+Just (3 % 2,"perfect fifth")
+
+>>> intnam_search_ratio db (2/3)
+Nothing
+
+>>> intnam_search_ratio db (4/3)
+Just (4 % 3,"perfect fourth")
+
+>>> intnam_search_ratio db (31/16)
+Just (31 % 16,"=31st harmonic")
+
+>>> intnam_search_ratio db (64/49)
+Just (64 % 49,"=2 septatones or septatonic major third")
+
 > map (intnam_search_ratio db) [3/2,4/3,7/4,7/6,9/7,9/8,12/7,14/9]
+
 > import Data.Maybe
 > mapMaybe (intnam_search_ratio db) [567/512,147/128,21/16,1323/1024,189/128,49/32,441/256,63/32]
 -}
@@ -31,8 +46,8 @@ intnam_search_ratio (_, i) x = find ((== x) . fst) i
 
 {- | Lookup approximate ratio in 'IntNam' given espilon.
 
-> r = [Just (3/2,"perfect fifth"),Just (64/49,"=2 septatones or septatonic major third")]
-> map (intnam_search_fratio 0.0001 db) [1.5,1.3061] == r
+>>> map (intnam_search_fratio 0.0001 db) [1.5,1.3061]
+[Just (3 % 2,"perfect fifth"),Just (64 % 49,"=2 septatones or septatonic major third")]
 -}
 intnam_search_fratio :: (Fractional n, Ord n) => n -> IntNam -> n -> Maybe Interval
 intnam_search_fratio epsilon (_, i) x =
@@ -45,8 +60,8 @@ intnam_search_ratio_name_err db = snd . fromJust . intnam_search_ratio db
 
 {- | Lookup interval name in 'IntNam', ci = case-insensitive.
 
-> db <- load_intnam
-> intnam_search_description_ci db "didymus" == [(81/80,"syntonic comma, Didymus comma")]
+> intnam_search_description_ci db "didymus"
+[(81 % 80,"syntonic comma, Didymus comma")]
 -}
 intnam_search_description_ci :: IntNam -> String -> [Interval]
 intnam_search_description_ci (_, i) x =
@@ -77,10 +92,15 @@ parse_intnam l =
 
 {- | 'parse_intnam' of 'Scala.load_dist_file_ln' of "intnam.par".
 
-> intnam <- load_intnam
-> fst intnam == 516 -- Scala 2.42p
-> fst intnam == length (snd intnam)
-> lookup (129140163/128000000) (snd intnam) == Just "gravity comma"
+>>> intnam <- load_intnam
+>>> fst intnam
+547
+
+>>> fst intnam == length (snd intnam)
+True
+
+>>> lookup (129140163/128000000) (snd intnam)
+Just "graviton, gravity comma"
 -}
 load_intnam :: IO IntNam
 load_intnam = do

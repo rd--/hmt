@@ -6,7 +6,9 @@ module Music.Theory.Xenakis.Sieve where
 
 import qualified Data.List {- base -}
 
-import qualified Music.Theory.List as List
+import qualified Music.Theory.List as List {- hmt-base -}
+
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
 
 -- | A Sieve.
 data Sieve
@@ -54,7 +56,8 @@ sieve_pp s =
 
 {- | Variant of 'L', ie. 'curry' 'L'.
 
-> l 15 19 == L (15,19)
+>>> l 15 19
+L (15,19)
 -}
 l :: Integer -> Integer -> Sieve
 l = curry L
@@ -126,6 +129,9 @@ i_complement =
           EQ -> f (x + 1) s'
           GT -> error "i_complement"
   in f 0
+
+mnn_pp :: Integral i => i -> String
+mnn_pp = Pitch.pitch_pp_iso . Pitch.midi_to_pitch Pitch.pc_spell_sharp
 
 {- | Construct the sequence defined by a 'Sieve'.  Note that building
      a sieve that contains an intersection clause that has no elements
@@ -219,40 +225,37 @@ Agon et. al. p.155
 >>> differentiate [0,1,2,6,9,13,14,19,22,24,26,27,32]
 [1,1,4,3,4,1,5,3,2,2,1,5]
 
-> import Music.Theory.Pitch
-> let n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
-> let r = "C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E"
-> unwords (map (pitch_class_pp . pc24et_to_pitch . (`mod` 24)) n) == r
+>>> let n = [0,1,2,6,9,13,14,19,22,24,26,27,32]
+>>> putStr $ unwords (map (Pitch.pitch_class_pp . Pitch.pc24et_to_pitch . (`mod` 24)) n)
+C C𝄲 C♯ D♯ E𝄲 F𝄰 G A𝄲 B C C♯ C𝄰 E
 
 Jonchaies
 
 >>> let s = map (17⋄) [0,1,4,5,7,11,12,16]
->>> let r = [1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1]
->>> differentiate (buildn 25 (union s)) == r
-True
+>>> differentiate (buildn 25 (union s))
+[1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1]
 
-> let a2 = octpc_to_midi (2,9)
-> let m = scanl (+) a2 r
-> import Music.Theory.Pitch.Spelling.Table
-> let p = "A2 A#2 C#3 D3 E3 G#3 A3 C#4 D4 D#4 F#4 G4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D6 F#6 G6 B6 C7"
-> unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
+>>> let a2 = Pitch.octpc_to_midi (2,9)
+>>> let r = [1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1,1,3,1,2,4,1,4,1]
+>>> let m = scanl (+) a2 r
+>>> unwords (map mnn_pp m)
+"A2 A#2 C#3 D3 E3 G#3 A3 C#4 D4 D#4 F#4 G4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D6 F#6 G6 B6 C7"
 
 Nekuïa
 
 >>> let s = [24⋄0,14⋄2,22⋄3,31⋄4,28⋄7,29⋄9,19⋄10,25⋄13,24⋄14,26⋄17,23⋄21,24⋄10,30⋄9,35⋄17,29⋄24,32⋄25,30⋄29,26⋄21,30⋄17,31⋄16]
->>> let r = [2,1,1,3,2,1,3,1,2,1,4,3,1,4,1,4,1,3,1,4,1,3,1,4,1,4,1,1,3,1,3,1,2,3,1,4,1,4,4,1]
->>> differentiate (buildn 41 (union s)) == r
-True
+>>> differentiate (buildn 41 (union s))
+[2,1,1,3,2,1,3,1,2,1,4,3,1,4,1,4,1,3,1,4,1,3,1,4,1,4,1,1,3,1,3,1,2,3,1,4,1,4,4,1]
 
-> let a0 = octpc_to_midi (0,9)
-> let m = scanl (+) a0 r
-> import Music.Theory.Pitch.Spelling.Table
-> let p = "A0 B0 C1 C#1 E1 F#1 G1 A#1 B1 C#2 D2 F#2 A2 A#2 D3 D#3 G3 G#3 B3 C4 E4 F4 G#4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D#6 E6 F#6 A6 A#6 D7 D#7 G7 B7 C8"
-> unwords (map (pitch_pp_iso . midi_to_pitch pc_spell_sharp) m) == p
+>>> let a0 = Pitch.octpc_to_midi (0,9)
+>>> let r = [2,1,1,3,2,1,3,1,2,1,4,3,1,4,1,4,1,3,1,4,1,3,1,4,1,4,1,1,3,1,3,1,2,3,1,4,1,4,4,1]
+>>> let m = scanl (+) a0 r
+>>> unwords (map mnn_pp m)
+"A0 B0 C1 C#1 E1 F#1 G1 A#1 B1 C#2 D2 F#2 A2 A#2 D3 D#3 G3 G#3 B3 C4 E4 F4 G#4 A4 C#5 D5 F#5 G5 G#5 B5 C6 D#6 E6 F#6 A6 A#6 D7 D#7 G7 B7 C8"
 
 >>> let s = [8⋄0∩3⋄0,2⋄0∩7⋄2,2⋄1∩11⋄3,31⋄4,4⋄3∩7⋄0,29⋄9,19⋄10,25⋄13,8⋄6∩3⋄2,2⋄1∩13⋄4,23⋄21,8⋄2∩3⋄1,2⋄1∩3⋄0∩5⋄4,5⋄2∩7⋄3,29⋄24,32⋄25,2⋄1∩3⋄2∩5⋄4,2⋄1∩13⋄8,2⋄1∩3⋄2∩5⋄2,31⋄16]
->>> differentiate (buildn 41 (union s)) == r
-True
+>>> differentiate (buildn 41 (union s))
+[2,1,1,3,2,1,3,1,2,1,4,3,1,4,1,4,1,3,1,4,1,3,1,4,1,4,1,1,3,1,3,1,2,3,1,4,1,4,4,1]
 
 Major scale:
 
@@ -262,8 +265,8 @@ Major scale:
 
 Nomos Alpha:
 
->> let s = (c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9) ∩ 11⋄2) ∪ (c (11⋄4 ∪ 11⋄8) ∩ 13⋄9) ∪ (13⋄0 ∪ 13⋄1 ∪ 13⋄6)
->> buildn 32 s
+>>> let s = (c (13⋄3 ∪ 13⋄5 ∪ 13⋄7 ∪ 13⋄9) ∩ 11⋄2) ∪ (c (11⋄4 ∪ 11⋄8) ∩ 13⋄9) ∪ (13⋄0 ∪ 13⋄1 ∪ 13⋄6)
+>>> buildn 32 s
 [0,1,2,6,9,13,14,19,22,24,26,27,32,35,39,40,45,52,53,58,61,65,66,71,78,79,84,87,90,91,92,97]
 -}
 buildn :: Int -> Sieve -> [Integer]
@@ -295,7 +298,7 @@ euclid i j =
 >>> de_meziriac 15 4
 3
 
->> euclid 15 4
+>>> euclid 15 4
 1
 -}
 de_meziriac :: (Integral a) => a -> a -> a

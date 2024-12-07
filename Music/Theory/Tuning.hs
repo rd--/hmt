@@ -62,6 +62,9 @@ cents_to_fratio n = 2 ** (n / 1200)
 
 >>> map (round . fratio_to_cents) [1,4/3,3/2,2]
 [0,498,702,1200]
+
+>>> fratio_to_cents (6/5)
+315.64128700055255
 -}
 fratio_to_cents :: (Real r, Floating n) => r -> n
 fratio_to_cents = (1200 *) . logBase 2 . realToFrac
@@ -136,7 +139,7 @@ True
 >>> map (fold_ratio_to_octave_err . (% 1)) [1, 5, 3]
 [1 % 1,5 % 4,3 % 2]
 
->>> map (Tuning.fold_ratio_to_octave_err . (1 %)) [1, 5, 3]
+>>> map (fold_ratio_to_octave_err . (1 %)) [1, 5, 3]
 [1 % 1,8 % 5,4 % 3]
 -}
 fold_ratio_to_octave_err :: (Ord n, Fractional n) => n -> n

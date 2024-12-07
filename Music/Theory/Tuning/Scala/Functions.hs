@@ -13,9 +13,14 @@ import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 
 {- | <http://www.huygens-fokker.org/scala/help.htm#EQUALTEMP>
 
-> map round (equaltemp 12 2 13) == [0,100,200,300,400,500,600,700,800,900,1000,1100,1200]
-> map round (equaltemp 13 3 14) == [0,146,293,439,585,732,878,1024,1170,1317,1463,1609,1756,1902]
-> map round (equaltemp 12.5 3 14) == [0,152,304,456,609,761,913,1065,1217,1369,1522,1674,1826,1978]
+>>> map round (equaltemp 12 2 13)
+[0,100,200,300,400,500,600,700,800,900,1000,1100,1200]
+
+>>> map round (equaltemp 13 3 14)
+[0,146,293,439,585,732,878,1024,1170,1317,1463,1609,1756,1902]
+
+>>> map round (equaltemp 12.5 3 14)
+[0,152,304,456,609,761,913,1065,1217,1369,1522,1674,1826,1978]
 -}
 equaltemp :: Double -> Double -> Int -> [Double]
 equaltemp division octave scale_size =
@@ -24,8 +29,8 @@ equaltemp division octave scale_size =
 
 {- | <http://www.huygens-fokker.org/scala/help.htm#LINEARTEMP>
 
-> let py = lineartemp 12 2 () (3/2 :: Rational) 3
-> py == [1/1,2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
+>>> lineartemp 12 2 () (3/2 :: Rational) 3
+[1 % 1,2187 % 2048,9 % 8,32 % 27,81 % 64,4 % 3,729 % 512,3 % 2,6561 % 4096,27 % 16,16 % 9,243 % 128,2 % 1]
 -}
 lineartemp :: (Fractional n, Ord n) => Int -> n -> () -> n -> Int -> [n]
 lineartemp scale_size octave _degree_of_fifth fifth down =

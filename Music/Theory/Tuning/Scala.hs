@@ -2,7 +2,7 @@
 
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
-This module succesfully parses all scales in v.91 of the scale library.
+This module succesfully parses all scales in v.92 of the scale library.
 -}
 module Music.Theory.Tuning.Scala where
 
@@ -14,6 +14,7 @@ import Data.Ratio {- base -}
 import System.Directory {- directory -}
 import System.Environment {- base -}
 import System.FilePath {- filepath -}
+import Text.Printf {- base -}
 
 import qualified Music.Theory.Array.Csv as Csv {- hmt-base -}
 import qualified Music.Theory.Directory as Directory {- hmt-base -}
@@ -151,7 +152,11 @@ scale_verify (_, _, n, p) = n == length p
 
 -- | Raise error if scale doesn't verify, else 'id'.
 scale_verify_err :: Scale -> Scale
-scale_verify_err scl = if scale_verify scl then scl else error ("invalid scale: " ++ scale_name scl)
+scale_verify_err scl =
+  if scale_verify scl
+  then scl
+  else let (_, _, n, p) = scl
+       in error (printf "invalid scale: %s: %d != %d" (scale_name scl) n (length p))
 
 -- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale -> Maybe Pitch
@@ -331,7 +336,7 @@ parse_scl nm s =
 
 This is the directory of the standard Scala scale database.
 
-> setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/91/scl"
+> setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/92/scl"
 -}
 scl_get_dir :: IO FilePath
 scl_get_dir = getEnv "SCALA_SCL_DIR"
@@ -340,7 +345,7 @@ scl_get_dir = getEnv "SCALA_SCL_DIR"
 
 This is a sequence of colon separated directories used to locate scala files on.
 
-> setEnv "SCALA_SCL_PATH" "/home/rohan/data/scala/91/scl:/home/rohan/sw/hmt/data/scl"
+> setEnv "SCALA_SCL_PATH" "/home/rohan/data/scala/92/scl:/home/rohan/sw/hmt/data/scl"
 -}
 scl_get_path :: IO [FilePath]
 scl_get_path = fmap splitSearchPath (getEnv "SCALA_SCL_PATH")
@@ -349,7 +354,7 @@ scl_get_path = fmap splitSearchPath (getEnv "SCALA_SCL_PATH")
 It is an error if the name has a file extension.
 
 >>> mapM scl_derive_filename ["young-lm_piano","et12"]
-["/home/rohan/data/scala/91/scl/young-lm_piano.scl","/home/rohan/sw/hmt/data/scl/et12.scl"]
+["/home/rohan/data/scala/92/scl/young-lm_piano.scl","/home/rohan/sw/hmt/data/scl/et12.scl"]
 -}
 scl_derive_filename :: FilePath -> IO FilePath
 scl_derive_filename nm = do
@@ -393,8 +398,8 @@ scl_load nm = do
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
-> db <- scl_load_dir_fn "/home/rohan/data/scala/91/scl"
-> length db == 5176 -- v.91
+> db <- scl_load_dir_fn "/home/rohan/data/scala/92/scl"
+> length db == 5233 -- v.92
 > map (\(fn,s) -> (takeFileName fn,scale_name s)) db
 -}
 scl_load_dir_fn :: FilePath -> IO [(FilePath, Scale)]
@@ -421,7 +426,7 @@ scl_load_db_dir = do
 >>> db_dir <- scl_load_db_dir
 >>> db_path <- scl_load_db_path
 >>> (length db_dir, length db_path)
-(5176,5194)
+(5233,5233)
 -}
 scl_load_db_path :: IO [Scale]
 scl_load_db_path = do
