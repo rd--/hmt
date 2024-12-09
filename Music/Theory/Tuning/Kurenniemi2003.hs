@@ -121,7 +121,11 @@ rotationMatrix =
   , (0, -0.825924, 0.563781)
   )
 
--- | log of integer.
+{- | log of integer.
+
+>>> map ilog [1, 2, 3, 5, 7]
+[0.0,0.6931471805599453,1.0986122886681098,1.6094379124341003,1.9459101490553132]
+-}
 ilog :: Integer -> Double
 ilog = log . fromIntegral
 
