@@ -6,10 +6,12 @@ import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
 import qualified Music.Theory.Json as Json {- hmt-base -}
-import Music.Theory.List {- hmt-base -}
-import Music.Theory.Math.Prime {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
 
 import Music.Theory.Tuning.Scala {- hmt -}
+import Music.Theory.Tuning.Scala.Interval {- hmt -}
 
 type Name = String
 type Description = String
@@ -28,7 +30,7 @@ ji_tuning_degree :: JiTuning -> Int
 ji_tuning_degree (_, _, x, _, _) = length x
 
 ji_tuning_limit :: JiTuning -> Integer
-ji_tuning_limit (_, _, x, _, _) = maximum (concatMap prime_factors x)
+ji_tuning_limit (_, _, x, _, _) = maximum (concatMap Prime.prime_factors x)
 
 rational_to_integer :: Rational -> Integer
 rational_to_integer r =
@@ -38,7 +40,7 @@ rational_to_integer r =
 
 scale_ji_tuning :: Scale -> JiTuning
 scale_ji_tuning scl =
-  let (r, o) = separate_last (scale_ratios_req True scl)
+  let (r, o) = List.separate_last (scale_ratios_req True scl)
       d = map denominator r
       m = foldr1 lcm d % 1
       s = map (rational_to_integer . (* m)) r
@@ -67,7 +69,7 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
         ( [ ("name", Json.string nm)
           , ("description", Json.string dsc)
           , ("degree", Json.int (length iseq))
-          , ("limit", Json.integer (maximum (concatMap prime_factors iseq)))
+          , ("limit", Json.integer (maximum (concatMap Prime.prime_factors iseq)))
           , ("tuning", integerArray iseq)
           ]
             ++ catMaybes
@@ -92,6 +94,7 @@ write_ji_tuning_db fn = do
       e = map ji_tuning_json lm
   Json.writeFile fn (Json.object e)
 
+-- | A pitch can be Json if the numerator and denominator can be respresented as small (53-bit) integers.
 pitch_can_be_json :: Pitch -> Bool
 pitch_can_be_json p =
   case p of
@@ -116,7 +119,7 @@ scale_json (nm, dsc, k, p) =
       [ ("name", Json.string nm)
       , ("description", Json.string dsc)
       , ("degree", Json.int k)
-      , ("pitches", Json.array (map pitch_json (drop_last p)))
+      , ("pitches", Json.array (map pitch_json (List.drop_last p)))
       , ("octave", pitch_json (last p))
       ]
   )
@@ -130,16 +133,31 @@ write_scala_db_json fn = do
   db <- scl_load_db_dir
   Json.writeFile fn (Json.object (map scale_json (filter scale_can_be_json db)))
 
+intnam_by_ratio_json :: (Rational, String) -> Json.Association
+intnam_by_ratio_json (r, n) = (Show.rational_pp r, Json.string n)
+
+intnam_by_name_json :: (Rational, String) -> Json.Association
+intnam_by_name_json (r, n) = (n, pitch_json (Right r))
+
+{- | Write intnam as Json.
+
+> write_scala_intnam_json "/home/rohan/sw/hmt/data/json/scala-intnam.json"
+-}
+write_scala_intnam_json :: FilePath -> IO ()
+write_scala_intnam_json fn = do
+  (_k, intnam) <- load_intnam
+  Json.writeFile fn (Json.object (map intnam_by_name_json intnam))
+
 {-
 
-db <- scl_load_db_dir -- v.91
-length db == 5176
+db <- scl_load_db_dir -- v.92
+length db == 5233
 
 filter (not . scale_can_be_json) db
 
 ji = map scale_ji_tuning (filter scl_is_ji db)
-length ji == 2729
+length ji == 2740
 lm = filter ji_tuning_requires_large_integer ji
 length lm == 63
-
+map ji_tuning_name lm
 -}

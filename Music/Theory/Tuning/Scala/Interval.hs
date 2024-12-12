@@ -31,10 +31,10 @@ Nothing
 Just (4 % 3,"perfect fourth")
 
 >>> intnam_search_ratio db (31/16)
-Just (31 % 16,"=31st harmonic")
+Just (31 % 16,"31st harmonic")
 
 >>> intnam_search_ratio db (64/49)
-Just (64 % 49,"=2 septatones or septatonic major third")
+Just (64 % 49,"2 septatones or septatonic major third")
 
 > map (intnam_search_ratio db) [3/2,4/3,7/4,7/6,9/7,9/8,12/7,14/9]
 
@@ -47,7 +47,7 @@ intnam_search_ratio (_, i) x = find ((== x) . fst) i
 {- | Lookup approximate ratio in 'IntNam' given espilon.
 
 >>> map (intnam_search_fratio 0.0001 db) [1.5,1.3061]
-[Just (3 % 2,"perfect fifth"),Just (64 % 49,"=2 septatones or septatonic major third")]
+[Just (3 % 2,"perfect fifth"),Just (64 % 49,"2 septatones or septatonic major third")]
 -}
 intnam_search_fratio :: (Fractional n, Ord n) => n -> IntNam -> n -> Maybe Interval
 intnam_search_fratio epsilon (_, i) x =
@@ -60,7 +60,7 @@ intnam_search_ratio_name_err db = snd . fromJust . intnam_search_ratio db
 
 {- | Lookup interval name in 'IntNam', ci = case-insensitive.
 
-> intnam_search_description_ci db "didymus"
+>>> intnam_search_description_ci db "didymus"
 [(81 % 80,"syntonic comma, Didymus comma")]
 -}
 intnam_search_description_ci :: IntNam -> String -> [Interval]
@@ -71,11 +71,17 @@ intnam_search_description_ci (_, i) x =
 
 -- * Parser
 
+drop_leading_equals_sign :: String -> String
+drop_leading_equals_sign s =
+  case s of
+    '=' : s' -> s'
+    _ -> s
+
 -- | Parse line from intnam.par
 parse_intnam_entry :: String -> Interval
 parse_intnam_entry str =
   case words str of
-    r : w -> (Read.read_ratio_with_div_err False r, unwords w)
+    r : w -> (Read.read_ratio_with_div_err False r, drop_leading_equals_sign (unwords w))
     _ -> error "parse_intnam_entry"
 
 -- | Parse non-comment lines from intnam.par

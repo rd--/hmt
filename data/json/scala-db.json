@@ -1077,6 +1077,30 @@
 			1177.35849
 		]
 	},
+	"17wtn": {
+		"degree": 17,
+		"description": "Alternating 14-tET and 3rd root of 9/8, well tempered nonet",
+		"name": "17wtn",
+		"octave": [9, 4],
+		"pitches": [
+			85.71429,
+			171.42857,
+			257.14286,
+			342.85714,
+			428.57143,
+			514.28571,
+			600,
+			685.71429,
+			771.42857,
+			857.14286,
+			942.85714,
+			1028.57143,
+			1114.28571,
+			[2, 1],
+			1267.97,
+			1335.94
+		]
+	},
 	"19-31": {
 		"degree": 19,
 		"description": "19 out of 31-tET, meantone Gb-B#",
@@ -1311,6 +1335,33 @@
 			981.81818,
 			1003.63636,
 			1090.90909
+		]
+	},
+	"20wtn": {
+		"degree": 20,
+		"description": "Alternating 17-tET and 3rd root of 9/8, well tempered nonet",
+		"name": "20wtn",
+		"octave": [9, 4],
+		"pitches": [
+			70.58824,
+			141.17647,
+			211.76471,
+			282.35294,
+			352.94118,
+			423.52941,
+			494.11765,
+			564.70588,
+			635.29412,
+			705.88235,
+			776.47059,
+			847.05882,
+			917.64706,
+			988.23529,
+			1058.82353,
+			1129.41176,
+			[2, 1],
+			1267.97,
+			1335.94
 		]
 	},
 	"21-any": {
@@ -3787,6 +3838,13 @@
 			1091.775
 		]
 	},
+	"amogussussybaka": {
+		"degree": 6,
+		"description": "7-limit scale to play the Among Us theme",
+		"name": "amogussussybaka",
+		"octave": [2, 1],
+		"pitches": [[8, 7], [7, 6], [21, 16], [7, 5], [7, 4]]
+	},
 	"angklung": {
 		"degree": 8,
 		"description": "Scale of an anklung set from Tasikmalaya. 1/1=174 Hz",
@@ -6009,6 +6067,26 @@
 			[11, 6]
 		]
 	},
+	"barton13": {
+		"degree": 13,
+		"description": "Barton[13] 2.5.11.13 subgroup scale in 559-tET tuning",
+		"name": "barton13",
+		"octave": [2, 1],
+		"pitches": [
+			96.60107,
+			193.20215,
+			289.80322,
+			358.49732,
+			455.09839,
+			551.69946,
+			648.30054,
+			744.90161,
+			841.50268,
+			910.19678,
+			1006.79785,
+			1103.39893
+		]
+	},
 	"barton2": {
 		"degree": 11,
 		"description": "Jacob Barton, mode of 88CET, TL 17-01-2007",
@@ -6366,29 +6444,29 @@
 			1101.955
 		]
 	},
-	"berthier": {
+	"bertier": {
 		"degree": 12,
-		"description": "Jérôme Berthier, elliptical temperament (2014)",
-		"name": "berthier",
+		"description": "Jérôme Bertier, elliptical temperament (2014)",
+		"name": "bertier",
 		"octave": [2, 1],
 		"pitches": [
-			94.6151,
-			196.6,
-			298.52511,
-			393.2,
-			500.48096,
-			593.18376,
-			698.555,
-			796.57011,
-			894.645,
-			999.95645,
-			1092.65925
+			94.65884,
+			196.61384,
+			298.56884,
+			393.22768,
+			500.52384,
+			593.22768,
+			698.56884,
+			796.61384,
+			894.65884,
+			1000,
+			1092.70384
 		]
 	},
-	"berthier2": {
+	"bertier2": {
 		"degree": 12,
-		"description": "Jérôme Berthier, elliptical temperament (2015)",
-		"name": "berthier2",
+		"description": "Jérôme Bertier, elliptical temperament (2015)",
+		"name": "bertier2",
 		"octave": [2, 1],
 		"pitches": [
 			100.3799,
@@ -10522,6 +10600,31 @@
 			1365
 		]
 	},
+	"carlos_alphab": {
+		"degree": 18,
+		"description": "Dave Benson optimized version of Carlos Alpha",
+		"name": "carlos_alphab",
+		"octave": 1148.99279,
+		"pitches": [
+			63.83293,
+			127.66587,
+			191.4988,
+			255.33173,
+			319.16466,
+			382.9976,
+			446.83053,
+			510.66346,
+			574.4964,
+			638.32933,
+			702.16226,
+			765.9952,
+			829.82813,
+			893.66106,
+			957.49399,
+			1021.32693,
+			1085.15986
+		]
+	},
 	"carlos_beta": {
 		"degree": 22,
 		"description": "Wendy Carlos' Beta scale with perfect fifth divided by eleven",
@@ -11194,6 +11297,29 @@
 			[89915392, 48828125],
 			[390625, 200704],
 			[125, 64]
+		]
+	},
+	"catfish7": {
+		"degree": 7,
+		"description": "Catfish[7] in 20ed11/5 tuning",
+		"name": "catfish7",
+		"octave": [11, 5],
+		"pitches": [136.5, 273.001, 409.501, 750.752, 887.253, 1023.753]
+	},
+	"catfish9": {
+		"degree": 9,
+		"description": "Catfish[9] in 20ed11/5 tuning",
+		"name": "catfish9",
+		"octave": [11, 5],
+		"pitches": [
+			136.50042,
+			273.00085,
+			409.50127,
+			546.00169,
+			750.75233,
+			887.25275,
+			1023.75317,
+			1160.25359
 		]
 	},
 	"catler": {
@@ -11911,6 +12037,24 @@
 			1790.07529
 		]
 	},
+	"cet111b": {
+		"degree": 11,
+		"description": "16/15 equal step",
+		"name": "cet111b",
+		"octave": 1229.04414,
+		"pitches": [
+			[16, 15],
+			[256, 225],
+			[4096, 3375],
+			[65536, 50625],
+			[1048576, 759375],
+			[16777216, 11390625],
+			[268435456, 170859375],
+			893.85028,
+			1005.58157,
+			1117.31285
+		]
+	},
 	"cet112": {
 		"degree": 53,
 		"description": "53rd root of 31. McLaren 'Microtonal Music', volume 4, track 16",
@@ -12089,6 +12233,73 @@
 			3251.6129,
 			3367.74194,
 			3483.87097
+		]
+	},
+	"cet116a": {
+		"degree": 24,
+		"description": "24th root of 5",
+		"name": "cet116a",
+		"octave": [5, 1],
+		"pitches": [
+			116.0964,
+			232.19281,
+			348.28921,
+			464.38562,
+			580.48202,
+			696.57843,
+			812.67483,
+			928.77124,
+			1044.86764,
+			1160.96405,
+			1277.06045,
+			1393.15686,
+			1509.25326,
+			1625.34967,
+			1741.44607,
+			1857.54248,
+			1973.63888,
+			2089.73529,
+			2205.83169,
+			2321.92809,
+			2438.0245,
+			2554.1209,
+			2670.21731
+		]
+	},
+	"cet116b": {
+		"degree": 29,
+		"description": "29th root of 7",
+		"name": "cet116b",
+		"octave": [7, 1],
+		"pitches": [
+			116.16641,
+			232.33282,
+			348.49923,
+			464.66564,
+			580.83205,
+			696.99846,
+			813.16487,
+			929.33128,
+			1045.4977,
+			1161.66411,
+			1277.83052,
+			1393.99693,
+			1510.16334,
+			1626.32975,
+			1742.49616,
+			1858.66257,
+			1974.82898,
+			2090.99539,
+			2207.1618,
+			2323.32821,
+			2439.49462,
+			2555.66103,
+			2671.82744,
+			2787.99385,
+			2904.16026,
+			3020.32667,
+			3136.49309,
+			3252.6595
 		]
 	},
 	"cet117": {
@@ -12274,6 +12485,21 @@
 			2406.36184,
 			2533.01247,
 			2659.66309
+		]
+	},
+	"cet13": {
+		"degree": 8,
+		"description": "8th root of 16/15 called Delta scale",
+		"name": "cet13",
+		"octave": [16, 15],
+		"pitches": [
+			13.96641,
+			27.93282,
+			41.89923,
+			55.86564,
+			69.83205,
+			83.79846,
+			97.76487
 		]
 	},
 	"cet133": {
@@ -13622,6 +13848,66 @@
 			3079.31299
 		]
 	},
+	"cet22c": {
+		"degree": 53,
+		"description": "31th root of 3/2, almost equal to 53-tET",
+		"name": "cet22c",
+		"octave": 1200.11661,
+		"pitches": [
+			22.64371,
+			45.28742,
+			67.93113,
+			90.57484,
+			113.21855,
+			135.86226,
+			158.50597,
+			181.14968,
+			203.79339,
+			226.4371,
+			249.08081,
+			271.72452,
+			294.36823,
+			317.01194,
+			339.65565,
+			362.29936,
+			384.94306,
+			407.58677,
+			430.23048,
+			452.87419,
+			475.5179,
+			498.16161,
+			520.80532,
+			543.44903,
+			566.09274,
+			588.73645,
+			611.38016,
+			634.02387,
+			656.66758,
+			679.31129,
+			[3, 2],
+			724.59871,
+			747.24242,
+			769.88613,
+			792.52984,
+			815.17355,
+			837.81726,
+			860.46097,
+			883.10468,
+			905.74839,
+			928.3921,
+			951.03581,
+			973.67952,
+			996.32323,
+			1018.96694,
+			1041.61065,
+			1064.25436,
+			1086.89807,
+			1109.54178,
+			1132.18549,
+			1154.82919,
+			1177.4729
+		]
+	},
 	"cet231": {
 		"degree": 11,
 		"description": "8/7 equal temperament",
@@ -14434,6 +14720,44 @@
 			1162.45676
 		]
 	},
+	"cet39h": {
+		"degree": 31,
+		"description": "18th root of 3/2",
+		"name": "cet39h",
+		"octave": 1208.9225,
+		"pitches": [
+			38.9975,
+			77.995,
+			116.9925,
+			155.99,
+			194.9875,
+			233.985,
+			272.9825,
+			311.98,
+			350.9775,
+			389.975,
+			428.9725,
+			467.97,
+			506.9675,
+			545.965,
+			584.9625,
+			623.96,
+			662.9575,
+			[3, 2],
+			740.9525,
+			779.95,
+			818.9475,
+			857.945,
+			896.9425,
+			935.94,
+			974.9375,
+			1013.935,
+			1052.9325,
+			1091.93,
+			1130.9275,
+			1169.925
+		]
+	},
 	"cet43": {
 		"degree": 28,
 		"description": "9th root of 5/4, Samuel Pellman",
@@ -15241,6 +15565,35 @@
 			1144.39896
 		]
 	},
+	"cet54e": {
+		"degree": 22,
+		"description": "13th root of 3/2",
+		"name": "cet54e",
+		"octave": 1187.92385,
+		"pitches": [
+			53.99654,
+			107.99308,
+			161.98962,
+			215.98615,
+			269.98269,
+			323.97923,
+			377.97577,
+			431.97231,
+			485.96885,
+			539.96539,
+			593.96192,
+			647.95846,
+			[3, 2],
+			755.95154,
+			809.94808,
+			863.94462,
+			917.94115,
+			971.93769,
+			1025.93423,
+			1079.93077,
+			1133.92731
+		]
+	},
 	"cet55": {
 		"degree": 51,
 		"description": "51th root of 5",
@@ -16044,6 +16397,33 @@
 			3162.57126,
 			3231.32281,
 			3300.07436
+		]
+	},
+	"cet68b": {
+		"degree": 20,
+		"description": "20th root of 11/5",
+		"name": "cet68b",
+		"octave": [11, 5],
+		"pitches": [
+			68.25021,
+			136.50042,
+			204.75063,
+			273.00085,
+			341.25106,
+			409.50127,
+			477.75148,
+			546.00169,
+			614.2519,
+			682.50211,
+			750.75233,
+			819.00254,
+			887.25275,
+			955.50296,
+			1023.75317,
+			1092.00338,
+			1160.25359,
+			1228.50381,
+			1296.75402
 		]
 	},
 	"cet69": {
@@ -16948,6 +17328,27 @@
 			1040.152,
 			1126.83133,
 			1213.51067
+		]
+	},
+	"cet87a": {
+		"degree": 14,
+		"description": "8th root of 3/2",
+		"name": "cet87a",
+		"octave": 1228.42125,
+		"pitches": [
+			87.74438,
+			175.48875,
+			263.23313,
+			350.9775,
+			438.72188,
+			526.46625,
+			614.21063,
+			[3, 2],
+			789.69938,
+			877.44375,
+			965.18813,
+			1052.9325,
+			1140.67688
 		]
 	},
 	"cet88": {
@@ -20573,6 +20974,49 @@
 			[15, 8]
 		]
 	},
+	"cotoneum12": {
+		"degree": 12,
+		"description": "Cotoneum[12] in 217-tET tuning",
+		"name": "cotoneum12",
+		"octave": [2, 1],
+		"pitches": [
+			88.47926,
+			204.60829,
+			293.08756,
+			409.21659,
+			497.69585,
+			613.82488,
+			702.30415,
+			790.78341,
+			906.91244,
+			995.39171,
+			1111.52074
+		]
+	},
+	"cotoneum17": {
+		"degree": 17,
+		"description": "Cotoneum[17] in 217-tET tuning",
+		"name": "cotoneum17",
+		"octave": [2, 1],
+		"pitches": [
+			88.47926,
+			116.12903,
+			204.60829,
+			293.08756,
+			381.56682,
+			409.21659,
+			497.69585,
+			586.17512,
+			613.82488,
+			702.30415,
+			790.78341,
+			818.43318,
+			906.91244,
+			995.39171,
+			1083.87097,
+			1111.52074
+		]
+	},
 	"cotoneum7": {
 		"degree": 7,
 		"description": "Cotoneum[7] in 217-tET tuning",
@@ -21992,7 +22436,7 @@
 	},
 	"dcon9marvwoo": {
 		"degree": 21,
-		"description": "convex closure in marvel of 9-limit diamond, marvel woo tuning",
+		"description": "Convex closure in marvel of 9-limit diamond, marvel woo tuning",
 		"name": "dcon9marvwoo",
 		"octave": 1200.64322,
 		"pitches": [
@@ -24094,6 +24538,30 @@
 			1017.8739
 		]
 	},
+	"diam7plusmarvwoo": {
+		"degree": 17,
+		"description": "Contains 7-limit diamond; in [10/3 7/2 11] marvel woo tuning",
+		"name": "diam7plusmarvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			116.23027,
+			200.69746,
+			232.46054,
+			267.51234,
+			316.92773,
+			383.74261,
+			499.97288,
+			584.44007,
+			616.20315,
+			700.67034,
+			816.90061,
+			883.71549,
+			933.13088,
+			968.18268,
+			999.94576,
+			1084.41295
+		]
+	},
 	"diamin7": {
 		"degree": 18,
 		"description": "permutation epimorphic scale with 7-limit diamond, Hahn and TM reduced <18 29 42 50|",
@@ -24986,6 +25454,30 @@
 			[5, 3],
 			[7, 4],
 			[20, 11]
+		]
+	},
+	"diamond_chess11marvwoo": {
+		"degree": 17,
+		"description": "Marvel woo version of Op de Coul's 11-limit chessboard pattern diamond",
+		"name": "diamond_chess11marvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			165.64566,
+			232.46054,
+			316.92773,
+			348.69081,
+			433.158,
+			499.97288,
+			549.38827,
+			584.44007,
+			616.20315,
+			651.25495,
+			700.67034,
+			767.48522,
+			851.95241,
+			883.71549,
+			968.18268,
+			1034.99756
 		]
 	},
 	"diamond_dup": {
@@ -30868,6 +31360,25 @@
 			[253, 128]
 		]
 	},
+	"edskes": {
+		"degree": 12,
+		"description": "Edskes reconstruction of organ temperament of Liebfrauenkirche Bremen (1996)",
+		"name": "edskes",
+		"octave": [2, 1],
+		"pitches": [
+			84.11386,
+			193.15686,
+			299.51157,
+			[5, 4],
+			503.42157,
+			579.47057,
+			696.57843,
+			783.38057,
+			889.73529,
+			998.77828,
+			1085.58043
+		]
+	},
 	"edson17": {
 		"degree": 17,
 		"description": "Edson[17] 2.3.7/5.11/5.13/5 subgroup MOS in 17\\29 tuning",
@@ -33212,6 +33723,30 @@
 			[27, 14]
 		]
 	},
+	"elf17marvwoo": {
+		"degree": 17,
+		"description": "17 patent val elf, marvel woo tuning",
+		"name": "elf17marvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			116.23027,
+			151.28207,
+			232.46054,
+			267.51234,
+			383.74261,
+			433.158,
+			499.97288,
+			584.44007,
+			616.20315,
+			700.67034,
+			767.48522,
+			816.90061,
+			933.13088,
+			968.18268,
+			1084.41295,
+			1133.82835
+		]
+	},
 	"elf87": {
 		"degree": 87,
 		"description": "Elf[87], a strictly proper MOS of elf, the 224&311 temperament",
@@ -33607,6 +34142,20 @@
 			889.01479,
 			951.21183,
 			1137.80296
+		]
+	},
+	"elfsensus7": {
+		"degree": 7,
+		"description": "Sensus tempering of [13/12, 9/7, 7/5, 10/7, 14/9, 13/7, 2], 46-tET tuning, 13-limit patent val elf",
+		"name": "elfsensus7",
+		"octave": [2, 1],
+		"pitches": [
+			130.43478,
+			443.47826,
+			573.91304,
+			626.08696,
+			756.52174,
+			1069.56522
 		]
 	},
 	"elfthrush10": {
@@ -39982,6 +40531,30 @@
 			1092.18
 		]
 	},
+	"freivald-lazysunday": {
+		"degree": 17,
+		"description": "Jake Freivald's Lazy Sunday scale",
+		"name": "freivald-lazysunday",
+		"octave": [2, 1],
+		"pitches": [
+			50,
+			150,
+			216.666667,
+			283.333333,
+			350,
+			416.666667,
+			500,
+			583.333333,
+			650,
+			700,
+			783.333333,
+			850,
+			916.666667,
+			1000,
+			1050,
+			1116.666667
+		]
+	},
 	"freivald-star": {
 		"degree": 12,
 		"description": "Jake Freivald, starling scale, approximately 8, 15, 20, 25, 28, 32, 40, 45, 60, 65, 72, 77 steps of 77-tET",
@@ -41437,6 +42010,30 @@
 			[405, 208]
 		]
 	},
+	"garibaldi17": {
+		"degree": 17,
+		"description": "Garibaldi[17] in 94-tET tuning",
+		"name": "garibaldi17",
+		"octave": [2, 1],
+		"pitches": [
+			89.3617,
+			178.7234,
+			204.25532,
+			293.61702,
+			382.97872,
+			472.34043,
+			497.87234,
+			587.23404,
+			676.59574,
+			702.12766,
+			791.48936,
+			880.85106,
+			970.21277,
+			995.74468,
+			1085.10638,
+			1174.46809
+		]
+	},
 	"garibaldi24opt": {
 		"degree": 24,
 		"description": "13-limit lesfip optimization, 5 cent tolerance",
@@ -41537,6 +42134,25 @@
 			[11, 6],
 			[13, 7],
 			[15, 8]
+		]
+	},
+	"genus1125marvwoo": {
+		"degree": 12,
+		"description": "Genus(3^2*5^3) in marvel temperament, woo tuning",
+		"name": "genus1125marvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			66.81488,
+			116.23027,
+			267.51234,
+			316.92773,
+			383.74261,
+			499.97288,
+			700.67034,
+			767.48522,
+			816.90061,
+			883.71549,
+			1084.41295
 		]
 	},
 	"gerle": {
@@ -41751,6 +42367,25 @@
 			897.0675,
 			999.0225,
 			1097.0675
+		]
+	},
+	"glummamarvwoo": {
+		"degree": 12,
+		"description": "Marvel woo version of glumma = reca1b2",
+		"name": "glummamarvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			49.41539,
+			232.46054,
+			316.92773,
+			383.74261,
+			549.38827,
+			616.20315,
+			700.67034,
+			883.71549,
+			933.13088,
+			968.18268,
+			1165.59142
 		]
 	},
 	"godmeankeeflat1": {
@@ -45606,7 +46241,7 @@
 	},
 	"hexany1": {
 		"degree": 6,
-		"description": "Two out of 1 3 5 7 hexany on 1.3",
+		"description": "Two out of 1 3 5 7 hexany on 1.3 Also Ternary-nessus-baba-decimal wakalix",
 		"name": "hexany1",
 		"octave": [2, 1],
 		"pitches": [[7, 6], [5, 4], [35, 24], [5, 3], [7, 4]]
@@ -46773,6 +47408,43 @@
 			890.009,
 			1004.813,
 			1085.279
+		]
+	},
+	"homothetic11": {
+		"degree": 30,
+		"description": "Homothetic JI, calculated from 11-limit JI",
+		"name": "homothetic11",
+		"octave": [2, 1],
+		"pitches": [
+			[546, 517],
+			[241, 220],
+			[243, 220],
+			[2213, 1980],
+			[1981, 1748],
+			[97, 84],
+			[569, 480],
+			[1201, 990],
+			[977, 792],
+			[1223, 968],
+			[281, 220],
+			[573, 437],
+			[511, 376],
+			[1107, 800],
+			[99, 70],
+			[159, 110],
+			[761, 517],
+			[6001, 3933],
+			[1973, 1260],
+			[1219, 770],
+			[981, 605],
+			[399, 242],
+			[27, 16],
+			[97, 56],
+			[3085, 1748],
+			[4429, 2475],
+			[2191, 1210],
+			[241, 132],
+			[535, 282]
 		]
 	},
 	"honkyoku": {
@@ -50935,6 +51607,88 @@
 			[160, 81]
 		]
 	},
+	"johnston_unt": {
+		"degree": 12,
+		"description": "Johnston first draft for \"The Un-tempered Pianos\" and \"K\"",
+		"name": "johnston_unt",
+		"octave": [2, 1],
+		"pitches": [
+			[33, 32],
+			[35, 32],
+			[19, 16],
+			[5, 4],
+			[21, 16],
+			[11, 8],
+			[3, 2],
+			[13, 8],
+			[105, 64],
+			[7, 4],
+			[15, 8]
+		]
+	},
+	"johnston_unt2": {
+		"degree": 24,
+		"description": "Johnston second draft for \"The Un-tempered Pianos\" and \"K\"",
+		"name": "johnston_unt2",
+		"octave": [2, 1],
+		"pitches": [
+			[1029, 1024],
+			[33, 32],
+			[35, 32],
+			[36015, 32768],
+			[147, 128],
+			[2401, 2048],
+			[19, 16],
+			[5, 4],
+			[5145, 4096],
+			[21, 16],
+			[343, 256],
+			[11, 8],
+			[735, 512],
+			[12005, 8192],
+			[3, 2],
+			[49, 32],
+			[13, 8],
+			[105, 64],
+			[1715, 1024],
+			[7, 4],
+			[7203, 4096],
+			[15, 8],
+			[245, 128]
+		]
+	},
+	"johnston_unt3": {
+		"degree": 25,
+		"description": "Johnston final lattice for \"The Un-tempered Pianos\" and \"K\"",
+		"name": "johnston_unt3",
+		"octave": [2, 1],
+		"pitches": [
+			[1029, 1024],
+			[33, 32],
+			[35, 32],
+			[36015, 32768],
+			[147, 128],
+			[2401, 2048],
+			[19, 16],
+			[5, 4],
+			[5145, 4096],
+			[21, 16],
+			[343, 256],
+			[11, 8],
+			[735, 512],
+			[12005, 8192],
+			[3, 2],
+			[49, 32],
+			[49, 32],
+			[13, 8],
+			[105, 64],
+			[1715, 1024],
+			[7, 4],
+			[7203, 4096],
+			[15, 8],
+			[245, 128]
+		]
+	},
 	"jonsson1": {
 		"degree": 12,
 		"description": "Magnus Jonsson [1 3 5 7] x [1 3 5 9] cross set (2005)",
@@ -51030,6 +51784,13 @@
 			1100.61914
 		]
 	},
+	"jove3": {
+		"degree": 6,
+		"description": "Jove tempering of [9/8, 9/7, 3/2, 18/11, 11/6, 2], 202-tET tuning",
+		"name": "jove3",
+		"octave": [2, 1],
+		"pitches": [201.9802, 433.66337, 700.9901, 849.50495, 1051.48515]
+	},
 	"jove41": {
 		"degree": 41,
 		"description": "Jove[41] 17-limit hobbit in 243-tET, commas 243/242, 441/440, 364/363, 595/594",
@@ -51097,7 +51858,7 @@
 	},
 	"julius22": {
 		"degree": 22,
-		"description": "Julius[22] hobbit (176/175&896/891) in POTE tuning",
+		"description": "Julius[22] (aka Varda) hobbit (176/175&896/891) in POTE tuning",
 		"name": "julius22",
 		"octave": [2, 1],
 		"pitches": [
@@ -51126,7 +51887,7 @@
 	},
 	"julius24": {
 		"degree": 24,
-		"description": "Julius[24] hobbit (176/175&896/891) in POTE tuning",
+		"description": "Julius[24] (aka Varda) hobbit (176/175&896/891) in POTE tuning",
 		"name": "julius24",
 		"octave": [2, 1],
 		"pitches": [
@@ -51316,6 +52077,97 @@
 			[61, 32],
 			[31, 16]
 		]
+	},
+	"kartvelian": {
+		"degree": 8,
+		"description": "Kartvelian octatonic, 4th root of 3/2 and next 4th root of 4/3",
+		"name": "kartvelian",
+		"octave": [2, 1],
+		"pitches": [
+			175.48875,
+			350.9775,
+			526.46625,
+			[3, 2],
+			826.46625,
+			950.9775,
+			1075.48875
+		]
+	},
+	"kartvelian2": {
+		"degree": 8,
+		"description": "Kartvelian octatonic, 5th root of 3/2 and next 3th root of 4/3",
+		"name": "kartvelian2",
+		"octave": [2, 1],
+		"pitches": [140.391, 280.782, 421.173, 561.564, [3, 2], 867.97, 1033.985]
+	},
+	"kartvelian3": {
+		"degree": 24,
+		"description": "Kartvelian 24-tonic, 13th root of 3/2 and next 11th root of 4/3",
+		"name": "kartvelian3",
+		"octave": [2, 1],
+		"pitches": [
+			53.99654,
+			107.99308,
+			161.98962,
+			215.98615,
+			269.98269,
+			323.97923,
+			377.97577,
+			431.97231,
+			485.96885,
+			539.96539,
+			593.96192,
+			647.95846,
+			[3, 2],
+			747.23182,
+			792.50864,
+			837.78546,
+			883.06227,
+			928.33909,
+			973.61591,
+			1018.89273,
+			1064.16955,
+			1109.44636,
+			1154.72318
+		]
+	},
+	"kartvelian4": {
+		"degree": 24,
+		"description": "Kartvelian 24-tonic, 14th root of 3/2 and next 10th root of 4/3",
+		"name": "kartvelian4",
+		"octave": [2, 1],
+		"pitches": [
+			50.13964,
+			100.27929,
+			150.41893,
+			200.55857,
+			250.69821,
+			300.83786,
+			350.9775,
+			401.11714,
+			451.25679,
+			501.39643,
+			551.53607,
+			601.67572,
+			651.81536,
+			[3, 2],
+			751.7595,
+			801.564,
+			851.3685,
+			901.173,
+			950.9775,
+			1000.782,
+			1050.5865,
+			1100.391,
+			1150.1955
+		]
+	},
+	"karvelian5": {
+		"degree": 4,
+		"description": "Kartvelian tetratonic, 2th root of 3/2 and next 2th root of 4/3",
+		"name": "karvelian5",
+		"octave": [2, 1],
+		"pitches": [350.9775, [3, 2], 950.9775]
 	},
 	"kayolonian": {
 		"degree": 19,
@@ -51893,6 +52745,25 @@
 			[15, 8]
 		]
 	},
+	"kelber": {
+		"degree": 12,
+		"description": "kelber-Jacobi reconstruction of organ temperament Liebfrauenkirche Bremen (1995)",
+		"name": "kelber",
+		"octave": [2, 1],
+		"pitches": [
+			87.87746,
+			195.30749,
+			[1215, 1024],
+			390.61497,
+			502.14935,
+			585.92246,
+			697.65374,
+			789.83246,
+			892.96123,
+			1000.19435,
+			[15, 8]
+		]
+	},
 	"kelletat": {
 		"degree": 12,
 		"description": "Herbert Kelletat's Bach-tuning (1966), Ein Beitrag zur musikalischen Temperatur p. 26-27.",
@@ -52215,7 +53086,7 @@
 	},
 	"kirnberger1": {
 		"degree": 12,
-		"description": "Kirnberger's temperament 1 (1766)",
+		"description": "Kirnbergersche Temperatur (1766). Also 12 Indian shrutis",
 		"name": "kirnberger1",
 		"octave": [2, 1],
 		"pitches": [
@@ -52227,7 +53098,7 @@
 			[45, 32],
 			[3, 2],
 			[128, 81],
-			895.112,
+			[5, 3],
 			[16, 9],
 			[15, 8]
 		]
@@ -53636,6 +54507,26 @@
 		"octave": 1436,
 		"pitches": [157, 227, 311, 459, 633, 715, 820, 939, 1096, [2, 1], 1370]
 	},
+	"laz13": {
+		"degree": 13,
+		"description": "Laz[13] 2.5.7/3.11/3.13/3 subgroup MOS in 557-tET tuning",
+		"name": "laz13",
+		"octave": [2, 1],
+		"pitches": [
+			122.80072,
+			146.4991,
+			269.29982,
+			392.10054,
+			514.90126,
+			538.59964,
+			661.40036,
+			784.20108,
+			807.89946,
+			930.70018,
+			1053.5009,
+			1077.19928
+		]
+	},
 	"leapday46": {
 		"degree": 29,
 		"description": "13-limit temperament, minimax g=495.66296 cents",
@@ -54071,6 +54962,25 @@
 			[32, 19],
 			[16, 9],
 			[32, 17]
+		]
+	},
+	"lewis": {
+		"degree": 12,
+		"description": "H. Spencer Lewis scale based on colours (1918), 1/1=273 Hz",
+		"name": "lewis",
+		"octave": [2, 1],
+		"pitches": [
+			[290, 273],
+			[102, 91],
+			[323, 273],
+			[341, 273],
+			[361, 273],
+			[382, 273],
+			[31, 21],
+			[142, 91],
+			[452, 273],
+			[68, 39],
+			[505, 273]
 		]
 	},
 	"ligon": {
@@ -57451,7 +58361,7 @@
 	},
 	"mandela": {
 		"degree": 14,
-		"description": "One of the 195 other denizens of the dome of mandala, <14 23 36 40| weakly epimorphic",
+		"description": "One of the 195 other denizens of the dome of Mandala (stelhex1.scl), <14 23 36 40| weakly epimorphic",
 		"name": "mandela",
 		"octave": [2, 1],
 		"pitches": [
@@ -57915,21 +58825,21 @@
 	},
 	"marpurg-t1": {
 		"degree": 12,
-		"description": "Marpurg's temperament nr.1, Kirnbergersche Temperatur (1766). Also 12 Indian shrutis",
+		"description": "Marpurg's temperament nr.1, almost equal to Kirnberger 1 (1766)",
 		"name": "marpurg-t1",
 		"octave": [2, 1],
 		"pitches": [
 			[256, 243],
 			[9, 8],
 			[32, 27],
-			[5, 4],
+			386.31499,
 			[4, 3],
-			[45, 32],
+			590.225,
 			[3, 2],
 			[128, 81],
-			[5, 3],
+			884.35999,
 			[16, 9],
-			[15, 8]
+			1088.26999
 		]
 	},
 	"marpurg-t11": {
@@ -58409,6 +59319,23 @@
 			816.24365,
 			931.9797,
 			1084.26396
+		]
+	},
+	"marvel_dipentatonic": {
+		"degree": 10,
+		"description": "Marvel tempered dipentatonic Step-Nested Scale",
+		"name": "marvel_dipentatonic",
+		"octave": 1200.598,
+		"pitches": [
+			84.903,
+			200.915,
+			383.829,
+			499.841,
+			584.744,
+			700.757,
+			883.67,
+			999.683,
+			1084.585
 		]
 	},
 	"marveldene": {
@@ -69286,6 +70213,30 @@
 		"octave": [2, 1],
 		"pitches": [[18, 17], [9, 7], [4, 3], [3, 2], [18, 11], [9, 5]]
 	},
+	"panflute1": {
+		"degree": 17,
+		"description": "Observed pan flute tuning, 1/1=294 Hz. From Fluids in Music: The Mathematics of Pans Flutes, 2019",
+		"name": "panflute1",
+		"octave": [16, 3],
+		"pitches": [
+			[55, 49],
+			[185, 147],
+			[4, 3],
+			[220, 147],
+			[247, 147],
+			[523, 294],
+			[587, 294],
+			[659, 294],
+			[370, 147],
+			[8, 3],
+			[440, 147],
+			[494, 147],
+			[349, 98],
+			[1175, 294],
+			[1319, 294],
+			[740, 147]
+		]
+	},
 	"panpipe1": {
 		"degree": 6,
 		"description": "Palina panpipe of Solomon Islands, 1/1=f+45c, from Ocora CD Guadalcanal",
@@ -79568,6 +80519,25 @@
 			[24, 1]
 		]
 	},
+	"polyhymnia12": {
+		"degree": 12,
+		"description": "3-Distributional even 12-note scale in Polyhymnia temperament",
+		"name": "polyhymnia12",
+		"octave": [2, 1],
+		"pitches": [
+			149.79147,
+			192.46099,
+			342.25247,
+			384.92198,
+			534.71346,
+			653.56098,
+			696.2305,
+			846.02197,
+			888.69149,
+			1038.48296,
+			1081.15248
+		]
+	},
 	"ponsford1": {
 		"degree": 12,
 		"description": "David Ponsford Bach temperament I (2005)",
@@ -79904,6 +80874,13 @@
 			1095.86635,
 			1139.1608
 		]
+	},
+	"porcusmine": {
+		"degree": 8,
+		"description": "5-limit JI version of Porcusmine, this mode Octopus or Octzothic",
+		"name": "porcusmine",
+		"octave": [2, 1],
+		"pitches": [[10, 9], [6, 5], [4, 3], [36, 25], [8, 5], [216, 125], [48, 25]]
 	},
 	"porcutone_13-limit_supermagic": {
 		"degree": 12,
@@ -81312,6 +82289,13 @@
 			1131.96193
 		]
 	},
+	"ptolemismic_diatonic": {
+		"degree": 7,
+		"description": "Ptolemismic diatonic as a 3-SN scale",
+		"name": "ptolemismic_diatonic",
+		"octave": 1199.269,
+		"pitches": [174.055, 320.69, 494.745, 704.524, 878.579, 1025.214]
+	},
 	"ptolemy": {
 		"degree": 7,
 		"description": "Ptolemy's Intense Diatonic Syntonon, also Zarlino's scale",
@@ -81579,6 +82563,20 @@
 			[16, 9],
 			[9, 5],
 			[15, 8]
+		]
+	},
+	"ptolemy_perfbal": {
+		"degree": 7,
+		"description": "Ptolemy's diatonic scale approximated with perfect balance",
+		"name": "ptolemy_perfbal",
+		"octave": [2, 1],
+		"pitches": [
+			212.52435,
+			406.31588,
+			521.64958,
+			721.98247,
+			894.32815,
+			1088.98922
 		]
 	},
 	"ptolemy_perm": {
@@ -82684,7 +83682,7 @@
 	},
 	"rameau-flat": {
 		"degree": 12,
-		"description": "Rameau bemols, see Pierre-Yves Asselin in \"Musique et temperament\"",
+		"description": "Rameau Si bémol, see Pierre-Yves Asselin in \"Musique et temperament\"",
 		"name": "rameau-flat",
 		"octave": [2, 1],
 		"pitches": [
@@ -82807,6 +83805,25 @@
 			587.68234,
 			696.57843,
 			797.26274,
+			889.73529,
+			1006.84314,
+			1082.89214
+		]
+	},
+	"rameau-righ": {
+		"degree": 12,
+		"description": "Rameau's temperament, after Benjamin Righetti (2016)",
+		"name": "rameau-righ",
+		"octave": [2, 1],
+		"pitches": [
+			80.82817,
+			193.15686,
+			293.91706,
+			[5, 4],
+			503.42157,
+			581.26276,
+			696.57843,
+			780.99098,
 			889.73529,
 			1006.84314,
 			1082.89214
@@ -85433,6 +86450,25 @@
 			[15, 8]
 		]
 	},
+	"scheidemann": {
+		"degree": 12,
+		"description": "Vogels reconstruction of Scheidemann/Praetorius organ temperament",
+		"name": "scheidemann",
+		"octave": [2, 1],
+		"pitches": [
+			86.80214,
+			193.15686,
+			[32, 27],
+			391.69029,
+			503.42157,
+			584.84714,
+			696.57843,
+			783.38057,
+			895.11186,
+			1001.46657,
+			[15, 8]
+		]
+	},
 	"schiassi": {
 		"degree": 12,
 		"description": "Filippo Schiassi",
@@ -85943,8 +86979,27 @@
 	},
 	"schroeter": {
 		"degree": 12,
-		"description": "Christoph Gottlieb Schröter, approximation of ET by a 2nd order difference series, Leipzig (1747)",
+		"description": "Christoph Gottlieb Schröter, approximation of ET by the first order difference series 1 2 2 2 2 2 2 2 3 3 3 3. Also from Zarlino",
 		"name": "schroeter",
+		"octave": [2, 1],
+		"pitches": [
+			[28, 27],
+			[10, 9],
+			[32, 27],
+			[34, 27],
+			[4, 3],
+			[38, 27],
+			[40, 27],
+			[14, 9],
+			[5, 3],
+			[16, 9],
+			[17, 9]
+		]
+	},
+	"schroeter2": {
+		"degree": 12,
+		"description": "Christoph Gottlieb Schröter, approximation of ET by a 2nd order difference series, Leipzig (1747)",
+		"name": "schroeter2",
 		"octave": [2, 1],
 		"pitches": [
 			[478, 451],
@@ -89737,6 +90792,23 @@
 			1101.955
 		]
 	},
+	"shaka10": {
+		"degree": 10,
+		"description": "10-tone scale tempered with 2.3.35.11.29.41 shaka",
+		"name": "shaka10",
+		"octave": [2, 1],
+		"pitches": [
+			102.211002,
+			204.422004,
+			327.021867,
+			429.232869,
+			600,
+			702.211002,
+			804.422004,
+			927.021867,
+			1029.232869
+		]
+	},
 	"shalfun": {
 		"degree": 24,
 		"description": "d'Erlanger vol.5, p. 40. After Alexandre ^Salfun (Chalfoun)",
@@ -90520,7 +91592,7 @@
 	},
 	"silver_15": {
 		"degree": 15,
-		"description": "Sqrt(2) + 1 equal division by 15, Brouncker (1653)",
+		"description": "1+sqr(2) equal division by 15, Brouncker (1653)",
 		"name": "silver_15",
 		"octave": 1525.86396,
 		"pitches": [
@@ -91104,7 +92176,7 @@
 	},
 	"slendro5_2": {
 		"degree": 5,
-		"description": "A slendro type pentatonic which is based on intervals of 7, no. 2",
+		"description": "A slendro type pentatonic which is based on intervals of 7, no. 2. Also trienstonic-semaphore-archy wakalix",
 		"name": "slendro5_2",
 		"octave": [2, 1],
 		"pitches": [[7, 6], [4, 3], [3, 2], [7, 4]]
@@ -97566,7 +98638,7 @@
 	},
 	"stelhex1": {
 		"degree": 14,
-		"description": "Stellated two out of 1 3 5 7 hexany <14 23 36 40| weakly epimorphic, also dekatesserany, tetradekany, Fokblock 288/245, 56/45, 63/50",
+		"description": "Stellated two out of 1 3 5 7 hexany <14 23 36 40| weakly epimorphic, also dekatesserany, tetradekany, a.k.a. Mandala, Fokblock 288/245, 56/45, 63/50",
 		"name": "stelhex1",
 		"octave": [2, 1],
 		"pitches": [
@@ -98464,6 +99536,30 @@
 		"name": "sub8",
 		"octave": [2, 1],
 		"pitches": [[16, 15], [8, 7], [16, 13], [4, 3], [16, 11], [8, 5], [16, 9]]
+	},
+	"subaru": {
+		"degree": 17,
+		"description": "Schismatic[17] in 41-tET, named Subaru by Declan Paul Boushy",
+		"name": "subaru",
+		"octave": [2, 1],
+		"pitches": [
+			87.80488,
+			175.60976,
+			204.87805,
+			292.68293,
+			380.4878,
+			468.29268,
+			497.56098,
+			585.36585,
+			673.17073,
+			702.43902,
+			790.2439,
+			878.04878,
+			907.31707,
+			995.12195,
+			1082.92683,
+			1170.73171
+		]
 	},
 	"sullivan7": {
 		"degree": 7,
@@ -104712,6 +105808,25 @@
 			[15, 8]
 		]
 	},
+	"tertiadie3marvwoo": {
+		"degree": 12,
+		"description": "Marvel woo tempering of third tertiadie 262144/253125 128/125 scale = Descartes(2, [5, 15], [2, 3])",
+		"name": "tertiadie3marvwoo",
+		"octave": 1200.64322,
+		"pitches": [
+			116.23027,
+			151.28207,
+			267.51234,
+			383.74261,
+			499.97288,
+			584.44007,
+			700.67034,
+			816.90061,
+			933.13088,
+			968.18268,
+			1084.41295
+		]
+	},
 	"tet3a": {
 		"degree": 8,
 		"description": "Eight notes, two major one minor tetrad",
@@ -105035,6 +106150,34 @@
 			[35, 18]
 		]
 	},
+	"thai-flute": {
+		"degree": 7,
+		"description": "Observed middle range flute tuning from Thailand. Morton, 1968.",
+		"name": "thai-flute",
+		"octave": 1127.56589,
+		"pitches": [
+			162.43555,
+			310.92913,
+			447.65727,
+			614.66578,
+			748.62577,
+			972.89713
+		]
+	},
+	"thai-xylo": {
+		"degree": 7,
+		"description": "Observed tenor xylophone tuning from Thailand. Morton, 1968.",
+		"name": "thai-xylo",
+		"octave": 1214.15226,
+		"pitches": [
+			188.08592,
+			357.69514,
+			512.18803,
+			692.46795,
+			855.75527,
+			1036.41993
+		]
+	},
 	"thailand": {
 		"degree": 7,
 		"description": "Observed ranat tuning from Thailand, Helmholtz/Ellis p. 518, nr.85",
@@ -105177,6 +106320,25 @@
 			907.82,
 			1009.76,
 			1119.55
+		]
+	},
+	"thrasher_chromatic": {
+		"degree": 12,
+		"description": "Thrasher chromatic as a 3-SN scale",
+		"name": "thrasher_chromatic",
+		"octave": 1196.944,
+		"pitches": [
+			46.507,
+			179.086,
+			311.664,
+			358.171,
+			490.749,
+			573.616,
+			706.195,
+			752.702,
+			885.28,
+			1017.858,
+			1064.366
 		]
 	},
 	"thrush12": {
@@ -106213,6 +107375,13 @@
 			[15, 8],
 			[253, 128]
 		]
+	},
+	"triangulharmonic1": {
+		"degree": 6,
+		"description": "First triangulharmonic mode",
+		"name": "triangulharmonic1",
+		"octave": [2, 1],
+		"pitches": [[8, 7], [136, 105], [51, 35], [57, 35], [38, 21]]
 	},
 	"triaphonic_12": {
 		"degree": 12,
@@ -109848,6 +111017,25 @@
 			[32768, 16807]
 		]
 	},
+	"wallis": {
+		"degree": 12,
+		"description": "John Wallis, gamut, Oxford (June 1698). Mode of Andreas Reinhard's Monochord",
+		"name": "wallis",
+		"octave": [2, 1],
+		"pitches": [
+			[20, 19],
+			[10, 9],
+			[20, 17],
+			[5, 4],
+			[4, 3],
+			[24, 17],
+			[3, 2],
+			[30, 19],
+			[5, 3],
+			[16, 9],
+			[32, 17]
+		]
+	},
 	"wang-pho": {
 		"degree": 12,
 		"description": "Wang Pho, Pythagorean-type Monochord (10th cent.)",
@@ -111979,7 +113167,7 @@
 	},
 	"wilson_17": {
 		"degree": 17,
-		"description": "Wilson 17-tone 5-limit scale",
+		"description": "Wilson 17-tone 5-limit scale. Also called Superzarlino, the only trivalent Zarlino extension",
 		"name": "wilson_17",
 		"octave": [2, 1],
 		"pitches": [
