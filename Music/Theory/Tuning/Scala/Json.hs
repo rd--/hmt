@@ -111,18 +111,20 @@ pitch_json p =
 scale_can_be_json :: Scale -> Bool
 scale_can_be_json (_, _, _, p) = all pitch_can_be_json p
 
--- | Format Scale as Json string.  Pitches are written as a string.
+-- | Format Scale as Json string.
 scale_json :: Scale -> Json.Association
-scale_json (nm, dsc, k, p) =
-  ( nm
-  , Json.object
-      [ ("name", Json.string nm)
-      , ("description", Json.string dsc)
-      , ("degree", Json.int k)
-      , ("pitches", Json.array (map pitch_json (List.drop_last p)))
-      , ("octave", pitch_json (last p))
-      ]
-  )
+scale_json scl =
+  let (nm, dsc, k, p) = scl
+      assoc = [ ("name", Json.string nm)
+              , ("description", Json.string dsc)
+              , ("degree", Json.int k)
+              , ("pitches", Json.array (map pitch_json (List.drop_last p)))
+              , ("octave", pitch_json (last p))
+              ]
+      ext = if scl_is_ji scl
+            then [ ("limit", Json.integer (scl_ji_limit scl)) ]
+            else []
+  in (nm, Json.object (assoc ++ ext))
 
 {- | Write Scala database to Json.
 

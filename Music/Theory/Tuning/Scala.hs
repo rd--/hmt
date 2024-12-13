@@ -177,11 +177,19 @@ perfect_octave s =
     Just (Left 1200.0) -> True
     _ -> False
 
--- | Are all pitches, excluding the octave, of the same type.
+{- | Are all pitches, excluding the octave, of the same type.
+
+>>> length (filter (not . is_scale_uniform) db)
+518
+-}
 is_scale_uniform :: Scale -> Bool
 is_scale_uniform = isJust . uniform_pitch_type . scale_pitches_excluding_octave
 
--- | Are the pitches, excluding the octave, in ascending sequence.
+{- | Are the pitches, excluding the octave, in ascending sequence.
+
+>>> length (filter (not . is_scale_ascending) db)
+164
+-}
 is_scale_ascending :: Scale -> Bool
 is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches_excluding_octave
 
@@ -528,7 +536,11 @@ load_dist_file_ln = fmap lines . load_dist_file
 
 -- * Query
 
--- | Is scale just-intonation (ie. are all pitches ratios, including the octave)
+{- | Is scale just-intonation (ie. are all pitches ratios, including the octave)
+
+>>> length (filter (not . scl_is_ji) db)
+2493
+-}
 scl_is_ji :: Scale -> Bool
 scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches_including_octave
 
