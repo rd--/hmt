@@ -317,7 +317,8 @@ zz_seq k_seq = zz_recur k_seq [(0, 1), (1, 1)]
 are_coprime :: Integral i => i -> i -> Bool
 are_coprime x y = gcd x y == 1
 
-{- | List of numbers that are co-prime to x (includes 1 but not x)
+{- | List of numbers that are co-prime to x (includes 1 but not x).
+Stops at mid-point.
 
 >>> gen_coprime 12
 [1,5]
@@ -328,7 +329,8 @@ True
 gen_coprime :: Integral a => a -> [a]
 gen_coprime x = filter (are_coprime x) [1 .. (x `div` 2)]
 
-{- | p = period, g = generator
+{- | p = period, g = generator.
+Generator is at left.
 
 >>> mos_2 12 5
 (5,7)
@@ -354,6 +356,9 @@ mos_step :: (Ord a, Num a) => (a, a) -> (a, a)
 mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 
 {- | Mos unfold to.  z=limit.  limit is of sum, and for integers is ordinarily 1+2.
+
+>>> mos_unfold_to 3 (5, 7)
+[(5,7),(5,2),(3,2),(1,2)]
 
 >>> let m = mos_2 1 0.5833333
 >>> length (mos_unfold_to 0.1 m)
@@ -387,6 +392,9 @@ This omits the two trivial cases ([p], and [1*p])
 >>> mos 12 5
 [(5,7),(5,2),(3,2),(1,2)]
 
+>>> mos 17 8
+[(8,9),(8,1),(7,1),(6,1),(5,1),(4,1),(3,1),(2,1)]
+
 >>> mos 41 17
 [(17,24),(17,7),(10,7),(3,7),(3,4),(3,1),(2,1)]
 
@@ -419,7 +427,7 @@ mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos
 
 {- | Mos. p = period, g = generator
 
->>> mos_seq 12 5
+>>> mos_seq 12 5 -- 5L2s
 [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
 
 >>> map length (mos_seq 12 5)
@@ -430,6 +438,21 @@ mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos
 
 >>> map length (mos_seq 49 27)
 [2,3,5,7,9,11,20,29]
+
+>>> mos_seq 13 11 -- 6L1s
+[[11,2],[9,2,2],[7,2,2,2],[5,2,2,2,2],[3,2,2,2,2,2],[1,2,2,2,2,2,2]]
+
+>>> mos_seq 8 1 -- 1L6s
+[[1,7],[1,1,6],[1,1,1,5],[1,1,1,1,4],[1,1,1,1,1,3],[1,1,1,1,1,1,2]]
+
+>>> mos_seq 12 7 -- 5L2s
+[[7,5],[2,5,5],[2,2,3,2,3],[2,2,2,1,2,2,1]]
+
+>>> mos_seq 9 4 -- 2L5s
+[[4,5],[4,4,1],[3,1,3,1,1],[2,1,1,2,1,1,1]]
+
+>>> mos_seq 17 8
+[[8,9],[8,8,1],[7,1,7,1,1],[6,1,1,6,1,1,1],[5,1,1,1,5,1,1,1,1],[4,1,1,1,1,4,1,1,1,1,1],[3,1,1,1,1,1,3,1,1,1,1,1,1],[2,1,1,1,1,1,1,2,1,1,1,1,1,1,1]]
 -}
 mos_seq :: (Ord b, Num b) => b -> b -> [[b]]
 mos_seq p g = mos_seq_m (mos p g)
@@ -455,15 +478,19 @@ mos_cell_pp x = let s = show x in s ++ genericReplicate (x - genericLength s) '-
 mos_row_pp :: (Integral i, Show i) => [i] -> String
 mos_row_pp = concatMap mos_cell_pp
 
-{- | Pretty print Mos sequence table (mono-space font)
+{- | Pretty print Mos sequence table (mono-space font).
+This is also called a "Rectangular Horogram",
+see <https://en.xen.wiki/w/Horogram>.
+See also <https://anaphoria.com/mos.pdf>
 
->>> putStr $ unlines $ mos_tbl_pp (mos_seq 12 5)
+>>> let pp p = putStr . unlines . mos_tbl_pp . mos_seq p
+>>> pp 12 5
 5----7------
 5----5----2-
 3--2-3--2-2-
 12-2-12-2-2-
 
->>> putStr $ unlines $ mos_tbl_pp (mos_seq 49 27)
+>>> pp 49 27
 27-------------------------22--------------------
 5----22--------------------22--------------------
 5----5----17---------------5----17---------------
@@ -472,6 +499,73 @@ mos_row_pp = concatMap mos_cell_pp
 5----5----5----5----5----2-5----5----5----5----2-
 3--2-3--2-3--2-3--2-3--2-2-3--2-3--2-3--2-3--2-2-
 12-2-12-2-12-2-12-2-12-2-2-12-2-12-2-12-2-12-2-2-
+
+>>> pp 17 8
+8-------9--------
+8-------8-------1
+7------17------11
+6-----116-----111
+5----1115----1111
+4---11114---11111
+3--111113--111111
+2-1111112-1111111
+
+>>> pp 17 7
+7------10--------
+7------7------3--
+4---3--4---3--3--
+13--3--13--3--3--
+112-12-112-12-12-
+
+>>> pp 17 6
+6-----11---------
+6-----6-----5----
+15----15----5----
+114---114---14---
+1113--1113--113--
+11112-11112-1112-
+
+>>> pp 17 5
+5----12----------
+5----5----7------
+5----5----5----2-
+3--2-3--2-3--2-2-
+12-2-12-2-12-2-2-
+
+>>> pp 17 4
+4---13-----------
+4---4---9--------
+4---4---4---5----
+4---4---4---4---1
+3--13--13--13--11
+2-112-112-112-111
+
+>>> pp 17 3
+3--14------------
+3--3--11---------
+3--3--3--8-------
+3--3--3--3--5----
+3--3--3--3--3--2-
+12-12-12-12-12-2-
+
+>>> pp 15 4
+4---11---------
+4---4---7------
+4---4---4---3--
+13--13--13--3--
+112-112-112-12-
+
+>>> pp 7 3
+3--4---
+3--3--1
+2-12-11
+
+>>> pp 17 7
+7------10--------
+7------7------3--
+4---3--4---3--3--
+13--3--13--3--3--
+112-12-112-12-12-
 -}
 mos_tbl_pp :: (Integral i, Show i) => [[i]] -> [String]
 mos_tbl_pp = map mos_row_pp
