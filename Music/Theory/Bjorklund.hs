@@ -331,7 +331,17 @@ bjorklund_matrix_step m =
 [[1,1,1],[0,0,0],[0,0,0],[1,1],[0,0]]
 
 >>> let pp = concat . map show
->>> mapM_ (putStrLn . unlines . map pp) m
+>>> mapM_ (putStr . unlines . map pp) m
+11111000
+00000
+11111
+00000
+000
+111
+000
+000
+11
+00
 -}
 bjorklund_matrices :: (t, t) -> (Int, Int) -> [[[t]]]
 bjorklund_matrices tf kn =

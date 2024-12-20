@@ -360,9 +360,9 @@ mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 >>> mos_unfold_to 3 (5, 7)
 [(5,7),(5,2),(3,2),(1,2)]
 
->>> let m = mos_2 1 0.5833333
->>> length (mos_unfold_to 0.1 m)
-6
+>>> let m = mos_2 100 58.33333
+>>> map (\(i,j) -> (round i, round j)) (mos_unfold_to 30 m)
+[(58,42),(17,42),(17,25),(17,8)]
 -}
 mos_unfold_to :: (Ord t, Num t) => t -> (t, t) -> [(t, t)]
 mos_unfold_to z x =
@@ -409,6 +409,9 @@ mos = mos_to 3
 
 {- | Mos to. z = limit, p = period, g = generator.
 This omits the trivial case [p].
+
+>>> mos_to 3 12 5
+[(5,7),(5,2),(3,2),(1,2)]
 
 >>> let m = mos_to 1 100 38.1966011
 >>> (last m, length m)

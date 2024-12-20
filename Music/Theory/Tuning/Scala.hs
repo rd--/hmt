@@ -375,12 +375,12 @@ scl_derive_filename nm = do
 then return it, else run 'scl_derive_filename'.
 
 >>> scl_resolve_name "young-lm_piano"
-"/home/rohan/data/scala/91/scl/young-lm_piano.scl"
+"/home/rohan/data/scala/92/scl/young-lm_piano.scl"
 
->>> scl_resolve_name "/home/rohan/data/scala/90/scl/young-lm_piano.scl"
-"/home/rohan/data/scala/90/scl/young-lm_piano.scl"
+>>> scl_resolve_name "/home/rohan/data/scala/92/scl/young-lm_piano.scl"
+"/home/rohan/data/scala/92/scl/young-lm_piano.scl"
 
-> scl_resolve_name "/home/rohan/data/scala/90/scl/unknown-tuning.scl" -- error
+> scl_resolve_name "/home/rohan/data/scala/92/scl/unknown-tuning.scl" -- error
 -}
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
@@ -434,7 +434,7 @@ scl_load_db_dir = do
 >>> db_dir <- scl_load_db_dir
 >>> db_path <- scl_load_db_path
 >>> (length db_dir, length db_path)
-(5233,5233)
+(5233,5251)
 -}
 scl_load_db_path :: IO [Scale]
 scl_load_db_path = do
