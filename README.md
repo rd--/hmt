@@ -23,7 +23,7 @@ related:
 [ply](http://rohandrape.net/?t=hmt&e=md/ply.md),
 [scala](http://rohandrape.net/?t=hmt&e=md/scala.md)
 
-© [rohan drape](http://rohandrape.net/), 2006-2024, [gpl](http://gnu.org/copyleft/).
+© [rohan drape](http://rohandrape.net/), 2006-2025, [gpl](http://gnu.org/copyleft/).
 
 * * *
 

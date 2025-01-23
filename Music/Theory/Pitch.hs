@@ -211,6 +211,15 @@ fmidi_in_octave o m = let (_, pc) = fmidi_to_foctpc m in foctpc_to_fmidi (o, pc)
 
 >>> fmidi_et12_cents_pp pc_spell_ks 66.5 == "F♯4(+50)"
 True
+
+>>> mapM_ putStrLn $ map (fmidi_et12_cents_pp pc_spell_ks) [24.25, 60, 60.5, 62.5, 64, 66.5, 69.5]
+C1(+25)
+C4
+C4(+50)
+D4(+50)
+E4
+F♯4(+50)
+A4(+50)
 -}
 fmidi_et12_cents_pp :: Spelling PitchClass -> FMidi -> String
 fmidi_et12_cents_pp sp =
@@ -368,6 +377,14 @@ octpc_to_pitch_ks = octpc_to_pitch pc_spell_ks
 midi_to_pitch_ks :: Integral i => i -> Pitch
 midi_to_pitch_ks = midi_to_pitch (pc_spell_ks :: Spelling Int)
 
+{- | Fractional midi to Pitch, spelling according to 'pc_spell_ks'.
+
+>>> fmidi_to_pitch_ks 66.5
+Pitch {note = F, alteration = ThreeQuarterToneSharp, octave = 4}
+
+>>> fmidi_to_pitch_ks 63.5
+Pitch {note = E, alteration = QuarterToneFlat, octave = 4}
+-}
 fmidi_to_pitch_ks :: (Show n, RealFrac n) => n -> Pitch
 fmidi_to_pitch_ks = fmidi_to_pitch_err pc_spell_ks
 

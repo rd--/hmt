@@ -225,6 +225,7 @@ alteration_clear_quarter_tone x =
     _ -> x
 
 -- | Table of Unicode characters for alterations.
+-- Use Gould arrow quartertone accidentals.
 alteration_symbol_tbl :: [(Alteration, Char)]
 alteration_symbol_tbl =
   [ (DoubleFlat, '𝄫')
