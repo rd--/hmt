@@ -10,7 +10,7 @@ Author:            Rohan Drape
 Maintainer:        rd@rohandrape.net
 Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
-Tested-With:       GHC == 9.12.1
+Tested-With:       GHC == 9.12.2
 Build-Type:        Simple
 
 Data-files:        README.md
