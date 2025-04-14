@@ -111,8 +111,7 @@ gen_cps_tuning_tbl tn_f =
 
 > import Music.Theory.Tuning.Scala
 > t <- scl_load_tuning "bohlen-p"
-> let f = cps_midi_tuning_f (t,midi_to_cps 0,0,128)
-> map (\n -> let m = fromJust (f n) in (n, Pitch.midi_detune_to_fmidi m)) [0 .. 127]
+> gen_fmnn_tuning_tbl (cps_midi_tuning_f (t,midi_to_cps 0,0,128))
 -}
 gen_fmnn_tuning_tbl :: Sparse_Midi_Tuning_f -> Mnn_Fmnn_Table
 gen_fmnn_tuning_tbl tn_f =
