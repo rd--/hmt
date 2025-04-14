@@ -2,17 +2,18 @@
 module Music.Theory.Tuning.Midi where
 
 import Data.List {- base -}
-import qualified Data.Map as Map {- containers -}
 import Data.Maybe {- base -}
+
+import qualified Data.Map as Map {- containers -}
 import qualified Safe {- safe -}
 
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Map as Map {- hmt -}
-import qualified Music.Theory.Pitch as Pitch {- hmt -}
-import qualified Music.Theory.Tuple as Tuple {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Map as Map {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
-import Music.Theory.Tuning {- hmt -}
-import Music.Theory.Tuning.Type {- hmt -}
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 {- | (/n/ -> /dt/).
 Function from midi note number /n/ to 'Midi_Detune' /dt/.
@@ -39,7 +40,7 @@ t=tuning (must have 12 divisions of octave),
 c=cents deviation (ie. constant detune offset),
 k=midi offset (ie. value to be added to incoming midi note number).
 -}
-type D12_Midi_Tuning = (Tuning, Cents, Pitch.Midi)
+type D12_Midi_Tuning = (Tuning.Tuning, Tuning.Cents, Pitch.Midi)
 
 {- | 'Midi_Tuning_f' for 'D12_Midi_Tuning'.
 
@@ -50,8 +51,8 @@ True
 d12_midi_tuning_f :: D12_Midi_Tuning -> Midi_Tuning_f
 d12_midi_tuning_f (t, c_diff, k) n =
   let (_, pc) = Pitch.midi_to_octpc (n + k)
-      dt = zipWith (-) (tn_cents t) [0, 100 .. 1200]
-  in if tn_divisions t /= 12
+      dt = zipWith (-) (Tuning.tn_cents t) [0, 100 .. 1200]
+  in if Tuning.tn_divisions t /= 12
       then error "d12_midi_tuning_f: not d12"
       else case dt `Safe.atMay` pc of
         Nothing -> error "d12_midi_tuning_f: pc?"
@@ -60,7 +61,7 @@ d12_midi_tuning_f (t, c_diff, k) n =
 {- | (t,f0,k,g) where
 t=tuning, f0=fundamental-frequency, k=midi-note-number (for f0), g=gamut
 -}
-type Cps_Midi_Tuning = (Tuning, Double, Pitch.Midi, Int)
+type Cps_Midi_Tuning = (Tuning.Tuning, Double, Pitch.Midi, Int)
 
 {- | 'Midi_Tuning_f' for 'Cps_Midi_Tuning'.
 The function is sparse, it is only valid for /g/ values from /k/.
@@ -71,7 +72,7 @@ The function is sparse, it is only valid for /g/ values from /k/.
 -}
 cps_midi_tuning_f :: Cps_Midi_Tuning -> Sparse_Midi_Tuning_f
 cps_midi_tuning_f (t, f0, k, g) n =
-  let r = tn_approximate_ratios_cyclic t
+  let r = Tuning.tn_approximate_ratios_cyclic t
       m = take g (map (Pitch.cps_to_midi_detune . (* f0)) r)
   in m `Safe.atMay` Pitch.midi_to_int (n - k)
 
@@ -92,16 +93,31 @@ mnn_fmnn_table_load_csv fn = do
 -- | Midi-note-number -> Cps table, possibly sparse.
 type Mnn_Cps_Table = [(Pitch.Midi, Double)]
 
-{- | Generates 'Mnn_Cps_Table' given 'Midi_Tuning_f' with keys for all valid @Mnn@.
+{- | Generates 'Mnn_Cps_Table' given 'Sparse_Midi_Tuning_f' with keys for all valid @Mnn@.
 
 > import Sound.Sc3.Plot
 > let f = cps_midi_tuning_f (equal_temperament 12,midi_to_cps 0,0,127)
 > plot_p2_ln [map (fmap round) (gen_cps_tuning_tbl f)]
+
 -}
 gen_cps_tuning_tbl :: Sparse_Midi_Tuning_f -> Mnn_Cps_Table
 gen_cps_tuning_tbl tn_f =
   let f n = case tn_f n of
         Just r -> Just (n, Pitch.midi_detune_to_cps r)
+        Nothing -> Nothing
+  in mapMaybe f [0 .. 127]
+
+{- | Generates 'Mnn_Fmnn_Table' given 'Sparse_Midi_Tuning_f' with keys for all valid @Mnn@.
+
+> import Music.Theory.Tuning.Scala
+> t <- scl_load_tuning "bohlen-p"
+> let f = cps_midi_tuning_f (t,midi_to_cps 0,0,128)
+> map (\n -> let m = fromJust (f n) in (n, Pitch.midi_detune_to_fmidi m)) [0 .. 127]
+-}
+gen_fmnn_tuning_tbl :: Sparse_Midi_Tuning_f -> Mnn_Fmnn_Table
+gen_fmnn_tuning_tbl tn_f =
+  let f n = case tn_f n of
+        Just r -> Just (n, Pitch.midi_detune_to_fmidi r)
         Nothing -> Nothing
   in mapMaybe f [0 .. 127]
 

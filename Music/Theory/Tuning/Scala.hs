@@ -23,12 +23,12 @@ import qualified Music.Theory.Function as Function {- hmt-base -}
 import qualified Music.Theory.Io as Io {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
-import qualified Music.Theory.Read as T {- hmt-base -}
-import qualified Music.Theory.Show as T {- hmt-base -}
-import qualified Music.Theory.String as T {- hmt-base -}
+import qualified Music.Theory.Read as Read {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
+import qualified Music.Theory.String as String {- hmt-base -}
 
-import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Type as T {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 {- $setup
 >>> db <- scl_load_db_dir
@@ -37,7 +37,7 @@ import qualified Music.Theory.Tuning.Type as T {- hmt -}
 -- * Pitch
 
 -- | A @.scl@ pitch is either in 'Cents' or is a 'Ratio'.
-type Pitch = Either T.Cents Rational
+type Pitch = Either Tuning.Cents Rational
 
 -- | An enumeration type for @.scl@ pitch classification.
 data Pitch_Type = Pitch_Cents | Pitch_Ratio deriving (Eq, Show)
@@ -49,12 +49,12 @@ type Epsilon = Double
 pitch_type :: Pitch -> Pitch_Type
 pitch_type = either (const Pitch_Cents) (const Pitch_Ratio)
 
--- | Pitch as 'T.Cents', conversion by 'T.ratio_to_cents' if necessary.
-pitch_cents :: Pitch -> T.Cents
+-- | Pitch as 'Tuning.Cents', conversion by 'Tuning.ratio_to_cents' if necessary.
+pitch_cents :: Pitch -> Tuning.Cents
 pitch_cents p =
   case p of
     Left c -> c
-    Right r -> T.ratio_to_cents r
+    Right r -> Tuning.ratio_to_cents r
 
 {- | Pitch is 1:1 or 0c
 
@@ -64,13 +64,13 @@ pitch_cents p =
 pitch_is_zero :: Pitch -> Bool
 pitch_is_zero p = pitch_cents p == 0
 
-{- | Pitch as 'Rational', conversion by 'T.reconstructed_ratio' if
+{- | Pitch as 'Rational', conversion by 'Tuning.reconstructed_ratio' if
 necessary, hence /epsilon/.
 -}
 pitch_ratio :: Epsilon -> Pitch -> Rational
 pitch_ratio epsilon p =
   case p of
-    Left c -> T.reconstructed_ratio epsilon c
+    Left c -> Tuning.reconstructed_ratio epsilon c
     Right r -> r
 
 -- | A pair giving the number of 'Cents' and number of 'Ratio' pitches.
@@ -200,22 +200,22 @@ scale_uniform epsilon (nm, d, n, p) =
     Pitch_Cents -> (nm, d, n, map (Left . pitch_cents) p)
     Pitch_Ratio -> (nm, d, n, map (Right . pitch_ratio epsilon) p)
 
--- | Scale as list of 'T.Cents' (ie. 'pitch_cents') with @0@ prefix (if scale does not have 0), either including or excluding octave.
-scale_cents :: Bool -> Scale -> [T.Cents]
+-- | Scale as list of 'Tuning.Cents' (ie. 'pitch_cents') with @0@ prefix (if scale does not have 0), either including or excluding octave.
+scale_cents :: Bool -> Scale -> [Tuning.Cents]
 scale_cents includingOctave s =
   let c = map pitch_cents (scale_pitches includingOctave s)
   in if scale_has_zero s then c else 0 : c
 
 -- | 'map' 'round' of 'scale_cents'.
-scale_cents_i :: Bool -> Scale -> [T.Cents_I]
+scale_cents_i :: Bool -> Scale -> [Tuning.Cents_I]
 scale_cents_i includingOctave = map round . scale_cents includingOctave
 
 -- | Scale cents, including octave.
-scale_cents_including_octave :: Scale -> [T.Cents]
+scale_cents_including_octave :: Scale -> [Tuning.Cents]
 scale_cents_including_octave = scale_cents True
 
 -- | 'map' 'round' of 'scale_cents'.
-scale_cents_including_octave_i :: Scale -> [T.Cents_I]
+scale_cents_including_octave_i :: Scale -> [Tuning.Cents_I]
 scale_cents_including_octave_i = scale_cents_i True
 
 -- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix (if scale does not have 1) and either including or excluding octave.
@@ -257,7 +257,7 @@ scale_ratios_excluding_octave_req = scale_ratios_req False
 
 'scale_eqv' provides an approximate equality function.
 
->>> let c = map T.ratio_to_cents r
+>>> let c = map Tuning.ratio_to_cents r
 >>> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
 >>> scale_name py'
 "pyth_12"
@@ -314,8 +314,8 @@ filter_comments =
 parse_pitch :: String -> Pitch
 parse_pitch p =
   if '.' `elem` p
-    then Left (T.read_fractional_allow_trailing_point_err p)
-    else Right (T.read_ratio_with_div_err False p)
+    then Left (Read.read_fractional_allow_trailing_point_err p)
+    else Right (Read.read_ratio_with_div_err False p)
 
 -- | Pitch lines may contain commentary.
 parse_pitch_ln :: String -> Pitch
@@ -327,12 +327,12 @@ parse_pitch_ln x =
 -- | Parse @.scl@ file.
 parse_scl :: String -> String -> Scale
 parse_scl nm s =
-  case filter_comments (lines (T.filter_cr s)) of
+  case filter_comments (lines (String.filter_cr s)) of
     t : n : p ->
       let scl =
             ( nm
-            , T.delete_trailing_whitespace t
-            , T.read_err_msg "degree" n
+            , String.delete_trailing_whitespace t
+            , Read.read_err_msg "degree" n
             , map parse_pitch_ln p
             )
       in scale_verify_err scl
@@ -476,7 +476,7 @@ scale_stat s =
      , "octave      : " ++ pitch_pp (scale_octave_err s)
      , "cents-i     : " ++ show (scale_cents_i False s)
      , if scl_is_ji s
-        then "ratios      : " ++ intercalate "," (map T.rational_pp (scale_ratios_req False s))
+        then "ratios      : " ++ intercalate "," (map Show.rational_pp (scale_ratios_req False s))
         else ""
      ]
 
@@ -549,7 +549,7 @@ scl_ji_limit :: Scale -> Integer
 scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . scale_ratios_req True
 
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
-scl_cdiff_abs_sum :: [T.Cents] -> Scale -> [(Double, [T.Cents], Int)]
+scl_cdiff_abs_sum :: [Tuning.Cents] -> Scale -> [(Double, [Tuning.Cents], Int)]
 scl_cdiff_abs_sum c scl =
   let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents_including_octave scl))))
       ndiff x i = let d = zipWith (-) c x in (sum (map abs d), d, i)
@@ -566,7 +566,7 @@ scl_cdiff_abs_sum c scl =
 >>> r
 [0,2,-1,1,0,-1,0,-1,0,0,0,0,0]
 -}
-scl_cdiff_abs_sum_1 :: (Double -> n) -> [T.Cents] -> Scale -> (Double, [n], Int)
+scl_cdiff_abs_sum_1 :: (Double -> n) -> [Tuning.Cents] -> Scale -> (Double, [n], Int)
 scl_cdiff_abs_sum_1 pp c scl =
   case scl_cdiff_abs_sum c scl of
     [] -> error "scl_cdiff_abs_sum_1"
@@ -583,7 +583,7 @@ scl_cdiff_abs_sum_1 pp c scl =
 
 > mapM_ (putStrLn . unlines . scale_stat . snd) (take 10 r)
 -}
-scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [T.Cents] -> [((Double, [n], Int), Scale)]
+scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [Tuning.Cents] -> [((Double, [n], Int), Scale)]
 scl_db_query_cdiff_asc pp db c =
   let n = length c - 1
       db_n = filter ((== n) . scale_degree) db
@@ -599,7 +599,7 @@ scale_cmp_ji includingOctave cmp x scl =
 {- | Find scale(s) that are 'scale_cmp_ji' to /x/.
 Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
 
->>> let inv = nub . sort . map (T.fold_ratio_to_octave_err . recip)
+>>> let inv = nub . sort . map (Tuning.fold_ratio_to_octave_err . recip)
 >>> let cmp p q = p == q || p == inv q
 >>> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
 [("malkauns","Raga Malkauns, inverse of prime_5.scl",5,[Right (6 % 5),Right (4 % 3),Right (8 % 5),Right (16 % 9),Right (2 % 1)]),("prime_5","What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale",5,[Right (9 % 8),Right (5 % 4),Right (3 % 2),Right (5 % 3),Right (2 % 1)])]
@@ -609,52 +609,61 @@ scl_find_ji includingOctave cmp x = filter (scale_cmp_ji includingOctave cmp x)
 
 -- * Tuning
 
-{- | Translate 'Scale' to 'T.Tuning'.
-If 'Scale' is uniformly rational, 'T.Tuning' is rational, else it is in 'T.Cents'.
+{- | Translate 'Scale' to 'Tuning.Tuning'.
+If 'Scale' is uniformly rational, 'Tuning.Tuning' is rational, else it is in 'Tuning.Cents'.
 
 >>> let s59 = filter (\s -> scl_is_ji s && scl_ji_limit s == 59) db
 >>> length s59
 15
 
 >>> let tn = map scale_to_tuning db
->>> let t59 = filter (\t -> T.tn_limit t == Just 59) tn
+>>> let t59 = filter (\t -> Tuning.tn_limit t == Just 59) tn
 >>> length t59
 15
 
->>> let tn_scl_rat t = T.tn_ratios_err t
+>>> let tn_scl_rat t = Tuning.tn_ratios_err t
 >>> concatMap (\t -> scl_find_ji False (==) (tn_scl_rat t) db) t59 == s59
 True
 -}
-scale_to_tuning :: Scale -> T.Tuning
+scale_to_tuning :: Scale -> Tuning.Tuning
 scale_to_tuning s@(_, _, _, p) =
   case partitionEithers p of
     ([], r) ->
       let (r', o) = List.separate_last r
           r'' = if scale_has_zero s then r' else 1 : r'
-      in T.Tuning (Left r'') (if o == 2 then Nothing else Just (Left o))
+      in Tuning.Tuning (Left r'') (if o == 2 then Nothing else Just (Left o))
     _ ->
       let (p', o) = List.separate_last p
           c = map pitch_cents p'
           c' = if scale_has_zero s then c else 0 : c
           o' = if o == Left 1200 || o == Right 2 then Nothing else Just (Either.either_swap o)
-      in T.Tuning (Right c') o'
+      in Tuning.Tuning (Right c') o'
 
-{- | Convert 'T.Tuning' to 'Scale'.
+{- | Convert 'Tuning.Tuning' to 'Scale'.
 
->>> tuning_to_scale ("et12","12 tone equal temperament") (T.tn_equal_temperament 12)
+>>> tuning_to_scale ("et12","12 tone equal temperament") (Tuning.tn_equal_temperament 12)
 ("et12","12 tone equal temperament",12,[Left 100.0,Left 200.0,Left 300.0,Left 400.0,Left 500.0,Left 600.0,Left 700.0,Left 800.0,Left 900.0,Left 1000.0,Left 1100.0,Right (2 % 1)])
 -}
-tuning_to_scale :: (String, String) -> T.Tuning -> Scale
-tuning_to_scale (nm, dsc) tn@(T.Tuning p _) =
+tuning_to_scale :: (String, String) -> Tuning.Tuning -> Scale
+tuning_to_scale (nm, dsc) tn@(Tuning.Tuning p _) =
   let n = either length length p
       p' =
         either
           (map Right . List.tail_err)
           (map Left . List.tail_err)
           p
-          ++ [Either.either_swap (T.tn_octave_def tn)]
+          ++ [Either.either_swap (Tuning.tn_octave_def tn)]
   in (nm, dsc, n, p')
 
--- | 'scale_to_tuning' of 'scl_load'.
-scl_load_tuning :: String -> IO T.Tuning
+{- | 'scale_to_tuning' of 'scl_load'.
+
+>>> t <- scl_load_tuning "bohlen-p"
+>>> map round (Tuning.tn_cents t)
+[0,133,302,435,583,737,884,1018,1165,1319,1467,1600,1769]
+
+>>> t <- scl_load_tuning "bohlen_l_ji"
+>>> map round (Tuning.tn_cents t)
+[0,302,435,583,884,1018,1319,1467,1769]
+-}
+scl_load_tuning :: String -> IO Tuning.Tuning
 scl_load_tuning = fmap scale_to_tuning . scl_load
