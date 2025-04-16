@@ -292,7 +292,7 @@ rq_can_notate k x =
 
 {- | Duration in seconds of Rq given qpm
 
---   qpm = pulses-per-minute, rq = rational-quarter-note
+qpm = pulses-per-minute, rq = rational-quarter-note
 
 >>> map (\sd -> rq_to_seconds_qpm (90 * sd) 1) [1,2,4,8,16] == [2/3,1/3,1/6,1/12,1/24]
 True

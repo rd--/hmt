@@ -8,8 +8,9 @@ import Data.List {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
-import qualified Music.Theory.Math as Math {- hmt -}
-import qualified Music.Theory.Math.Prime as Prime {- hmt -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
+import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
+
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 
 {- | Barlow's /indigestibility/ function for prime numbers.

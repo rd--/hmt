@@ -3,12 +3,12 @@ module Music.Theory.List.Logic where
 
 import Control.Monad {- base -}
 
-import qualified Control.Monad.Logic as L {- logict -}
+import qualified Control.Monad.Logic as Logic {- logict -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 
--- | 'L.MonadLogic' value to enumerate indices for all embeddings of /q/ in /p/.
-all_embeddings_m :: (Eq t, MonadPlus m, L.MonadLogic m) => [t] -> [t] -> m [Int]
+-- | 'Logic.MonadLogic' value to enumerate indices for all embeddings of /q/ in /p/.
+all_embeddings_m :: (Eq t, MonadPlus m, Logic.MonadLogic m) => [t] -> [t] -> m [Int]
 all_embeddings_m p q =
   let q_n = length q
       recur p' q' n k =
@@ -25,10 +25,10 @@ all_embeddings_m p q =
             recur p'' q'' (n + 1) (m : k)
   in recur (zip [0 ..] p) q 0 []
 
-{- | 'L.observeAll' of 'all_embeddings_m'
+{- | 'Logic.observeAll' of 'all_embeddings_m'
 
 >> all_embeddings "all_embeddings" "leg"
 [[1,4,12],[1,7,12],[2,4,12],[2,7,12]]
 -}
 all_embeddings :: Eq t => [t] -> [t] -> [[Int]]
-all_embeddings p = L.observeAll . all_embeddings_m p
+all_embeddings p = Logic.observeAll . all_embeddings_m p

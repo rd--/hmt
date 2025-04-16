@@ -24,6 +24,11 @@ import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 
 type Param = [(String, Double)]
 
+{- | Parse parameter string given separator characters.
+
+>>> param_parse (';','=') "x=1;y=2"
+[("x",1.0),("y",2.0)]
+-}
 param_parse :: (Char, Char) -> String -> Param
 param_parse (c1, c2) str =
   let f x = case splitOn [c2] x of
@@ -31,6 +36,11 @@ param_parse (c1, c2) str =
         _ -> error ("param_parse: " ++ x)
   in if null str then [] else map f (splitOn [c1] str)
 
+{- | Pretty print parameters given separator characters and number of decimal places.
+
+>>> param_pp (';','=') 1 [("x",1.0),("y",2.0)]
+"x=1.0;y=2.0"
+-}
 param_pp :: (Char, Char) -> Int -> Param -> String
 param_pp (c1, c2) k =
   let f (lhs, rhs) = concat [lhs, [c2], Show.double_pp k rhs]
@@ -38,7 +48,11 @@ param_pp (c1, c2) k =
 
 -- * Mnd
 
--- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
+{- | If /r/ is whole to /k/ places then show as integer, else as float to /k/ places.
+
+>>> map (data_value_pp 1) [2, 2.5]
+["2","2.5"]
+-}
 data_value_pp :: Real t => Int -> t -> String
 data_value_pp k r =
   if Math.whole_to_precision k r
@@ -100,7 +114,7 @@ load_csv = Csv.csv_table_read (True, ',', False, Csv.Csv_No_Align) id
 csv_mnd_read :: (Read t, Real t, Read n, Real n) => FilePath -> IO [Mnd t n]
 csv_mnd_read = fmap csv_mnd_parse . load_csv
 
--- | Writer.
+-- | Writer. r_prec=decimal-places, nm=file-name
 csv_mnd_write :: (Real t, Real n) => Int -> FilePath -> [Mnd t n] -> IO ()
 csv_mnd_write r_prec nm =
   let un_node (st, msg, mnn, vel, ch, pm) =
@@ -168,7 +182,7 @@ mnd_to_tseq =
 csv_mnd_read_tseq :: (Read t, Real t, Read n, Real n) => FilePath -> IO (Seq.Tseq t (Seq.Begin_End (Event n)))
 csv_mnd_read_tseq = fmap mnd_to_tseq . csv_mnd_read
 
--- | 'Tseq' form of 'csv_mnd_write', data is .
+-- | 'Tseq' form of 'csv_mnd_write', being and end are translated to on and off.
 csv_mnd_write_tseq :: (Real t, Real n) => Int -> FilePath -> Seq.Tseq t (Seq.Begin_End (Event n)) -> IO ()
 csv_mnd_write_tseq r_prec nm sq =
   let f (t, e) = case e of
@@ -226,7 +240,7 @@ csv_mndd_parse = csv_mndd_parse_f id
 csv_mndd_read :: (Read t, Real t, Read n, Real n) => FilePath -> IO [Mndd t n]
 csv_mndd_read = fmap csv_mndd_parse . load_csv
 
--- | Writer.
+-- | Writer. r_prec=decimal-places, nm=file-name
 csv_mndd_write :: (Real t, Real n) => Int -> FilePath -> [Mndd t n] -> IO ()
 csv_mndd_write r_prec nm =
   let un_node (st, du, msg, mnn, vel, ch, pm) =

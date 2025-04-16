@@ -7,18 +7,18 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Control.Monad.Logic as Logic {- logict -}
-import qualified Data.Graph.Inductive as G {- fgl -}
+import qualified Data.Graph.Inductive as Fgl {- fgl -}
 import qualified Data.Map as Map {- containers -}
 
 import qualified Music.Theory.Combinations as Combinations {- hmt-base -}
+import qualified Music.Theory.Graph.Dot as Graph.Dot {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Set.List as Set.List {- hmt-base -}
 import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
-import qualified Music.Theory.Graph.Dot as Graph.Dot {- hmt -}
 import qualified Music.Theory.Graph.Fgl as Graph.Fgl {- hmt -}
 import qualified Music.Theory.Key as Key {- hmt -}
 import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
-import qualified Music.Theory.Set.List as Set.List {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as Tuning.Graph.Euler {- hmt -}
 import qualified Music.Theory.Z as Z {- hmt -}
@@ -435,8 +435,8 @@ p172_nd_e_set = Graph.Fgl.e_univ_select_u_edges (m_doi_of p172_nd_map 0) [0 .. 2
 p172_nd_e_set_alt :: [Graph.Fgl.Edge Int]
 p172_nd_e_set_alt = concatMap (Graph.Fgl.e_path_to_edges . List.close 1) p172_cyc0
 
-p172_gr :: G.Gr () ()
-p172_gr = G.mkUGraph [0 .. 23] p172_nd_e_set
+p172_gr :: Fgl.Gr () ()
+p172_gr = Fgl.mkUGraph [0 .. 23] p172_nd_e_set
 
 p172_set_pp :: Int -> String
 p172_set_pp = set_pp . m_get p172_nd_map

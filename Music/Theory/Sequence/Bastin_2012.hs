@@ -4,8 +4,8 @@ import Data.Bits {- base -}
 import Data.Char {- base -}
 import Numeric {- base -}
 
-import qualified Music.Theory.List as List
-import qualified Music.Theory.Set.List as Set.List
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Set.List as Set.List {- hmt-base -}
 
 -- | Set of elements.
 type Set = [Int]
