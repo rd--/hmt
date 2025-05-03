@@ -61,6 +61,7 @@ Library
                    Music.Theory.Duration.Rq.Division
                    Music.Theory.Duration.Rq.Tied
                    Music.Theory.Duration.Sequence.Notate
+                   Music.Theory.Duration.Sequence.Notate.Rules
                    Music.Theory.Dynamic_Mark
                    Music.Theory.Gamelan
                    Music.Theory.Graph.Deacon_1934
