@@ -72,7 +72,7 @@ spell_cluster_table =
   , ([10, 11, 1], [ais, b, cis])
   , ([10, 11, 2, 3], [bes, ces, d, ees])
   , ([10, 11, 2], [ais, b, d])
-  , ([10, 11], [ais, b])
+  , ([10, 11], [ais, b]) -- [bes, ces]
   , ([10], [bes])
   , ([11, 0, 1, 2], [aisis, bis, cis, d])
   , ([11, 0, 1, 3], [b, c, des, ees])

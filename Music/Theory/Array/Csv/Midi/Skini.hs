@@ -54,7 +54,7 @@ skini_pp_csv k (msg, t, ch, d1, d2) =
 {- | Write Skini
 
 >>> let fileName = "/home/rohan/sw/hmt/data/csv/mnd/1080-C01.csv"
->>> mnd <- Seq.csv_mnd_read_tseq fileName :: IO (Seq.Tseq Double (Seq.Begin_End (Seq.Event Int)))
+>>> mnd <- Mnd.csv_mnd_read_tseq fileName :: IO (Seq.Tseq Double (Seq.Begin_End (Mnd.Event Int)))
 >>> length mnd
 1800
 

@@ -75,7 +75,7 @@ syntonic_697 = T.Tuning (Right (mk_syntonic_tuning 697)) Nothing
 
 {- | 'mk_syntonic_tuning' of @702@.
 
->> T.tn_divisions syntonic_702
+>>> T.tn_divisions syntonic_702
 17
 
 >>> T.tn_cents_i syntonic_702

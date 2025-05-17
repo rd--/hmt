@@ -99,9 +99,23 @@ kbm_load_file = fmap kbm_parse . readFile
 
 {- | 'kbm_parse' of 'Scala.load_dist_file'
 
-> pp nm = kbm_load_dist nm >>= \x -> putStrLn (kbm_pp x)
-> pp "example"
-> pp "bp"
+>>> pp nm = kbm_load_dist nm >>= \x -> putStr (kbm_pp x)
+>>> pp "example"
+size = 12
+note-range = (0,127)
+note-center = 60
+note-reference = (69,440.0)
+formal-octave = 12
+map = [0,1,2,3,4,5,6,7,8,9,10,11] #12
+
+>>> pp "bp"
+size = 19
+note-range = (0,127)
+note-center = 60
+note-reference = (60,261.6256)
+formal-octave = 13
+map = [0,1,1,2,2,3,4,5,5,6,7,7,8,9,10,10,11,12,12] #19
+
 > pp "7" -- error -- 12/#13
 > pp "8" -- error -- 12/#13
 > pp "white" -- error -- 12/#13

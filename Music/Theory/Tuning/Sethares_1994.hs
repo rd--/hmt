@@ -10,7 +10,7 @@ import qualified Music.Theory.List as List {- hmt-base -}
 
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 
-{- | Plomp-Levelt consonance curve.
+{- | Plomp-Levelt consonance curve, (f, v) = (frequency, amplitude).
 
 R. Plomp and W. J. M. Levelt,
 "Tonal Consonance and Critical Bandwidth,"
@@ -19,8 +19,8 @@ Journal of the Acoustical Society of America.38, 548-560 (1965).
 "Relating Tuning and Timbre" <http://sethares.engr.wisc.edu/consemi.html>
 MATLAB: <https://sethares.engr.wisc.edu/comprog.html>
 
-> import Sound.Sc3.Plot
-> plot_p1_ln [map (\f -> pl_dissonance (220,1) (f,1)) [220 .. 440]]
+>> import Sound.Sc3.Plot
+>> plot_p1_ln [map (\f -> pl_dissonance (220,1) (f,1)) [220 .. 440]]
 -}
 pl_dissonance :: (Floating n, Ord n) => (n, n) -> (n, n) -> n
 pl_dissonance (f1, v1) (f2, v2) =
@@ -35,7 +35,7 @@ pl_dissonance (f1, v1) (f2, v2) =
       f_dif = abs (f2 - f1)
       e1 = c1 * exp (a1 * s * f_dif)
       e2 = c2 * exp (a2 * s * f_dif)
-  in v1 * v2 * (e1 + e2)
+  in min v1 v2 * (e1 + e2)
 
 -- | Sum of 'pl_dissonance' for all p in s1 and all q in s2.
 pl_dissonance_h :: (Floating n, Ord n) => [(n, n)] -> [(n, n)] -> n
@@ -52,7 +52,8 @@ local_minima =
 
 {- | William A. Sethares "Adaptive Tunings for Musical Scales".
 
-> plot_p1_ln atms_fig_1
+>> import Sound.Sc3.Plot
+>> plot_p1_ln atms_fig_1
 -}
 atms_fig_1 :: (Floating n, Enum n, Ord n) => [[n]]
 atms_fig_1 =
@@ -60,16 +61,28 @@ atms_fig_1 =
       r_seq = map Tuning.cents_to_fratio [0 .. 1200]
   in map (\f -> map (\r -> pl_dissonance (f, 1) (f * r, 1)) r_seq) f0
 
--- > plot_p1_ln [atms_fig_2 880]
--- > map fst (local_minima (atms_fig_2 880)) == [204,231,267,316,386,435,498,583,702,814,884,969,1018]
+{- | Figure 2.
+
+>> import Sound.Sc3.Plot
+>> plot_p1_ln [atms_fig_2 880]
+
+>>> map fst (local_minima (atms_fig_2 880))
+[204,231,267,316,386,435,498,583,702,814,884,969,1018]
+-}
 atms_fig_2 :: (Ord t, Floating t, Enum t) => t -> [t]
 atms_fig_2 f0 =
   let gen fq = map (\r -> (fq * r, 1)) [1 .. 9]
       r_seq = map Tuning.cents_to_fratio [0, 1 .. 1200]
   in map (\r -> pl_dissonance_h (gen f0) (gen (f0 * r))) r_seq
 
--- > Sound.SC3.Plot.plot_p1_ln [atms_fig_3 880]
--- > map fst (local_minima (atms_fig_3 880)) == [267,400,533,667,800,933,1043]
+{- | Figure 3.
+
+>> import Sound.Sc3.Plot
+>> plot_p1_ln [atms_fig_3 880]
+
+>>> map fst (local_minima (atms_fig_3 880))
+[267,400,533,667,800,933,1043]
+-}
 atms_fig_3 :: (Ord t, Floating t, Enum t) => t -> [t]
 atms_fig_3 f0 =
   let b = 2 ** (1 / 9)
@@ -79,8 +92,11 @@ atms_fig_3 f0 =
 
 {- | "Relating Tuning and Timbre" <http://sethares.engr.wisc.edu/consemi.html>
 
-> plot_p1_ln [rtt_fig_2 880]
-> map fst (local_minima (rtt_fig_2 880)) == [267,316,386,498,582,702,884,969]
+>> import Sound.Sc3.Plot
+>> plot_p1_ln [rtt_fig_2 880]
+
+>>> map fst (local_minima (rtt_fig_2 880))
+[218,267,316,386,498,582,702,884,969,1023]
 -}
 rtt_fig_2 :: (Ord t, Floating t, Enum t) => t -> [t]
 rtt_fig_2 f0 =
