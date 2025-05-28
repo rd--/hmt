@@ -2,7 +2,7 @@
 
 Masina 2022, doi:10.1140/epjp/s13360-022-03456-2
 
-Fields: f2 f1 mean σ (σ = standard deviation)
+Fields: f2,f1,mean,sd (sd = σ = standard deviation)
 
 # scala-ji-tuning
 
