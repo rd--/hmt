@@ -19,7 +19,7 @@ import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
 -- * Types
 
--- | Sequence of elements with uniform duration.
+-- | Sequence of elements of type /a/ each with uniform duration of type /t/.
 type Useq t a = (t, [a])
 
 {- | Duration sequence.

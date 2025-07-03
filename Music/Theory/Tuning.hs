@@ -150,6 +150,14 @@ fold_ratio_to_octave_err =
           else if n >= 2 then f (n / 2) else if n < 1 then f (n * 2) else n
   in f
 
+{- | Octave reduced ratio.
+
+>>> octaveReduced (2 % 3)
+4 % 3
+-}
+octaveReduced :: (Ord n, Fractional n) => n -> n
+octaveReduced = fold_ratio_to_octave_err
+
 {- | In /n/ is greater than zero, 'fold_ratio_to_octave_err', else 'Nothing'.
 
 >>> map fold_ratio_to_octave [0,1]

@@ -1,3 +1,4 @@
+-- | Time
 module Music.Theory.Time where
 
 -- | Time point.

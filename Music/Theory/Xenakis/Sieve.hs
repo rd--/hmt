@@ -130,8 +130,15 @@ i_complement =
           GT -> error "i_complement"
   in f 0
 
+{- | Midi-note-number pretty-printer.
+
+>>> mnn_pp 69
+"A4"
+-}
 mnn_pp :: Integral i => i -> String
-mnn_pp = Pitch.pitch_pp_iso . Pitch.midi_to_pitch Pitch.pc_spell_sharp
+mnn_pp =
+  Pitch.pitch_pp_iso
+  . Pitch.midi_to_pitch (Pitch.pc_spell_sharp :: Pitch.Spelling Integer)
 
 {- | Construct the sequence defined by a 'Sieve'.  Note that building
      a sieve that contains an intersection clause that has no elements

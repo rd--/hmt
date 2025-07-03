@@ -15,7 +15,7 @@ import qualified Music.Theory.Pitch as Pitch {- hmt -}
 
 {- | In a divisibility network, two numbers are connected if they share a common divisor.
 
->>> [(i, j) | i <- [1..9], j <- [1 .. 9], i < j, areDivisible i j]
+>>> [(i, j) | i <- [1..9], j <- [1..9], i < j, areDivisible i j]
 [(2,4),(2,6),(2,8),(3,6),(3,9),(4,6),(4,8),(6,8),(6,9)]
 -}
 areDivisible :: Integral a => a -> a -> Bool
@@ -71,11 +71,37 @@ kToName f0 k = Pitch.pitch_pp_iso (kToPitch f0 k)
 kC1 :: Integer -> String
 kC1 = kToName (Pitch.octpc_to_cps (1 :: Integer, 0))
 
--- | Pitch names of harmonics given f0 of C1.
+{- | Pitch names of harmonics given f0 of C1.
+
+>>> c1Names (divisors 30)
+"C1 C2 G2 E3 G3 E4 B4 B5"
+
+>>> c1Names (divisors 60)
+"C1 C2 G2 C3 E3 G3 E4 G4 B4 E5 B5 B6"
+
+>>> c1Names (divisors 90)
+"C1 C2 G2 E3 G3 D4 E4 B4 D5 B5 F#6 F#7"
+
+>>> c1Names (divisors 120)
+"C1 C2 G2 C3 E3 G3 C4 E4 G4 B4 E5 G5 B5 E6 B6 B7"
+
+>>> c1Names (divisors 150)
+"C1 C2 G2 E3 G3 E4 B4 Ab5 B5 Ab6 Eb7 Eb8"
+
+>>> c1Names (divisors 180)
+"C1 C2 G2 C3 E3 G3 D4 E4 G4 B4 D5 E5 B5 D6 F#6 B6 F#7 F#8"
+
+>>> c1Names (divisors 300)
+"C1 C2 G2 C3 E3 G3 E4 G4 B4 E5 Ab5 B5 Ab6 B6 Eb7 Ab7 Eb8 Eb9"
+-}
 c1Names :: [Integer] -> String
 c1Names = unwords . map kC1
 
--- | Pitch names of divisors.
+{- | Pitch names of divisors.
+
+>>> divisorsC1Names 8640
+"C1 C2 G2 C3 E3 G3 C4 D4 E4 G4 B4 C5 D5 E5 G5 A5 B5 C6 D6 E6 F#6 G6 A6 B6 C7 D7 E7 F#7 G7 A7 B7 C#8 D8 E8 F#8 G8 A8 B8 C#9 D9 E9 F#9 A9 B9 C#10 D10 F#10 A10 B10 C#11 F#11 A11 C#12 F#12 C#13 C#14"
+-}
 divisorsC1Names :: Integer -> String
 divisorsC1Names = c1Names . divisors
 
@@ -86,6 +112,42 @@ divisorsC1Names = c1Names . divisors
 
 >>> divisors 60
 [1,2,3,4,5,6,10,12,15,20,30,60]
+
+>>> divisors 90
+[1,2,3,5,6,9,10,15,18,30,45,90]
+
+>>> divisors 120
+[1,2,3,4,5,6,8,10,12,15,20,24,30,40,60,120]
+
+>>> divisors 150
+[1,2,3,5,6,10,15,25,30,50,75,150]
+
+>>> divisors 180
+[1,2,3,4,5,6,9,10,12,15,18,20,30,36,45,60,90,180]
+
+>>> divisors 300
+[1,2,3,4,5,6,10,12,15,20,25,30,50,60,75,100,150,300]
+
+>>> length (divisors 8640)
+56
+
+>>> length (divisors 345600)
+120
+
+>>> length (divisors 1382400)
+144
+
+>>> Music.Theory.List.slice 51 13 (divisors 345600)
+[360,384,400,432,450,480,512,540,576,600,640,675,720]
+
+>>> map (\x -> x % 360) [360,384,400,432,450,480,512,540,576,600,640,675,720]
+[1 % 1,16 % 15,10 % 9,6 % 5,5 % 4,4 % 3,64 % 45,3 % 2,8 % 5,5 % 3,16 % 9,15 % 8,2 % 1]
+
+>>> Music.Theory.List.slice 56 13 (divisors 345600)
+[480,512,540,576,600,640,675,720,768,800,864,900,960]
+
+>>> map (\x -> x % 480) [480,512,540,576,600,640,675,720,768,800,864,900,960]
+[1 % 1,16 % 15,9 % 8,6 % 5,5 % 4,4 % 3,45 % 32,3 % 2,8 % 5,5 % 3,9 % 5,15 % 8,2 % 1]
 -}
 divisors :: Integral a => a -> [a]
 divisors n = [x | x <- [1 .. n], n `rem` x == 0]
