@@ -123,7 +123,11 @@ type Midi = Int
 midi_to_int :: Midi -> Int
 midi_to_int = id
 
--- | Type-specialise /f/, ie. round, ceiling, truncate
+{- | Type-specialise /f/, ie. round, ceiling, truncate
+
+>>> double_to_midi round 60.5
+60
+-}
 double_to_midi :: (Double -> Midi) -> Double -> Midi
 double_to_midi = Math.Convert.double_to_int
 
@@ -525,7 +529,7 @@ cps_in_octave_nearest = lift_fmidi_binop_to_cps fmidi_in_octave_nearest
 cps_in_octave_above :: (Floating f, RealFrac f) => f -> f -> f
 cps_in_octave_above = lift_fmidi_binop_to_cps fmidi_in_octave_above
 
--- | CPS form of 'fmidi_in_octave_above'.
+-- | Cps form of 'fmidi_in_octave_above'.
 cps_in_octave_below :: (Floating f, RealFrac f) => f -> f -> f
 cps_in_octave_below = lift_fmidi_binop_to_cps fmidi_in_octave_below
 

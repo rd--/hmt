@@ -31,6 +31,12 @@ fmidi_to_cps_f0 f0 = fmidi_to_cps_k0 (69, f0)
 
 >>> map fmidi_to_cps [69,69.1]
 [440.0,442.5488940698553]
+
+>>> map fmidi_to_cps [12,17]
+[16.351597831287414,21.826764464562746]
+
+>>> map fmidi_to_cps [24,29]
+[32.70319566257483,43.65352892912549]
 -}
 fmidi_to_cps :: Floating a => a -> a
 fmidi_to_cps = fmidi_to_cps_k0 (69, 440)

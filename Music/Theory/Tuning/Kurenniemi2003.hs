@@ -61,8 +61,11 @@ kToPitch f0 k = Pitch.midi_to_pitch Pitch.pc_spell_ks (kToMidi f0 k)
 >>> kToName 0.4 1
 "Ab-6"
 
->>> kToName 32.70 1
-"C1"
+>>> map (kToName 32.70) [1, 300, 720, 960]
+["C1","Eb9","F#10","B10"]
+
+>>> map (kToName 43.65) [1, 300, 720, 960]
+["F1","Ab9","B10","E11"]
 -}
 kToName :: Double -> Integer -> String
 kToName f0 k = Pitch.pitch_pp_iso (kToPitch f0 k)
