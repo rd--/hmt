@@ -8,14 +8,14 @@ module Music.Theory.Tuning.Rosenboom_1979 where
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.Function as Function
-import qualified Music.Theory.List as List
-import qualified Music.Theory.Tuple as Tuple
+import qualified Music.Theory.Function as Function {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
-import qualified Music.Theory.Pitch as Pitch
-import qualified Music.Theory.Pitch.Name as Pitch.Name
-import qualified Music.Theory.Tuning.Et as Et
-import qualified Music.Theory.Tuning.Scala as Scala
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Pitch.Name as Pitch.Name {- hmt -}
+import qualified Music.Theory.Tuning.Et as Et {- hmt -}
+import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 t2_to_ratio :: (Integer, Integer) -> Rational
 t2_to_ratio (n, d) = n % d
@@ -44,6 +44,12 @@ dr_tuning = concat (zipWith (\o -> map ((* o) . t2_to_ratio)) [1, 2, 4] dr_tunin
 
 >>> map round dr_scale
 [52,69,76,83,92,104,119,138,156,166,185,208,234,260,277,286,311,332,363]
+
+>>> map Pitch.cps_to_midi dr_scale
+[32,37,38,40,42,44,46,49,51,52,54,56,58,60,61,62,63,64,66]
+
+>>> map (\x -> (Pitch.cps_to_midi x, x)) dr_scale
+[(32,51.91308719749315),(37,69.21744959665753),(38,75.50994501453549),(40,83.06093951598905),(42,92.28993279554336),(44,103.8261743949863),(46,118.65848502284148),(49,138.43489919331506),(51,155.73926159247944),(52,166.1218790319781),(54,184.57986559108673),(56,207.6523487899726),(58,233.60889238871917),(60,259.5654359874657),(61,276.8697983866301),(62,285.5219795862123),(63,311.4785231849589),(64,332.2437580639562),(66,363.39161038245203)]
 -}
 dr_scale :: [Double]
 dr_scale =
@@ -53,9 +59,7 @@ dr_scale =
 
 {- | 12et
 
-> putStrLn (unlines (map (unwords . Pitch.hs_r_pitch_pp 1)  dr_scale_tbl_12et))
-
-@
+>>> putStr (unlines (map (unwords . Et.hs_r_pitch_pp 1)  dr_scale_tbl_12et))
 51.9 A♭1 51.9 0.0
 69.2 C♯2 69.3 -2.0
 75.5 D2 73.4 48.7
@@ -75,7 +79,6 @@ dr_scale =
 311.5 E♭4 311.1 2.0
 332.2 E4 329.6 13.7
 363.4 F♯4 370.0 -31.2
-@
 
 >>> map (\(f,p,_,_,_) -> (Pitch.pitch_to_midi p,round f)) dr_scale_tbl_12et
 [(32,52),(37,69),(38,76),(40,83),(42,92),(44,104),(46,119),(49,138),(51,156),(52,166),(54,185),(56,208),(58,234),(60,260),(61,277),(62,286),(63,311),(64,332),(66,363)]
@@ -184,7 +187,7 @@ dr_ratio_seq =
   , [(8, 1), (1, 10)]
   ]
 
-{- | Hisotogram
+{- | Histogram
 
 >>> import Data.Function
 >>> import Data.List

@@ -121,10 +121,10 @@ Library
                    Music.Theory.Tuning.Graph.Euler
                    Music.Theory.Tuning.Graph.Iset
                    Music.Theory.Tuning.Hs
-                   Music.Theory.Tuning.Load
                    Music.Theory.Tuning.Kurenniemi2003
                    Music.Theory.Tuning.Meyer_1929
                    Music.Theory.Tuning.Midi
+                   Music.Theory.Tuning.Midi.Load
                    Music.Theory.Tuning.Partch
                    Music.Theory.Tuning.Polansky_1978
                    Music.Theory.Tuning.Polansky_1984

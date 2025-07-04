@@ -90,15 +90,6 @@ scala_cps_midi_tuning_f (nm, f0, k, g) = do
 -- | midi-note-number -> fractional-midi-note-number table, possibly sparse.
 type Mnn_Fmnn_Table = [(Int, Double)]
 
--- | Load 'Mnn_Fmnn_Table' from two-column Csv file.
-mnn_fmnn_table_load_csv :: FilePath -> IO Mnn_Fmnn_Table
-mnn_fmnn_table_load_csv fn = do
-  s <- readFile fn
-  let f x = case break (== ',') x of
-        (lhs, _ : rhs) -> (read lhs, read rhs)
-        _ -> error "mnn_fmidi_table_load_csv?"
-  return (map f (lines s))
-
 -- | Pretty print Mnn_Fmnn_Table
 mnn_fmnn_table_pp :: Mnn_Fmnn_Table -> [String]
 mnn_fmnn_table_pp tbl =

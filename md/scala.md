@@ -10,7 +10,7 @@
 
 ## cps-tbl <a id="cps-tbl"></a>
 
-Simple `CPS` table for tuning, indicating ET12 A=440 as reference.
+Simple `cps` table for tuning, indicating ET12 A=440 as reference.
 Table format can be `csv` or `md`.
 The table is printed for indicated midi note number range (A0 = 21, C8 = 108).
 

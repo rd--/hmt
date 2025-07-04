@@ -89,7 +89,12 @@ tn_approximate_ratios =
   either (map Tuning.approximate_ratio) (map Tuning.cents_to_fratio)
     . tn_ratios_or_cents
 
--- | Cyclic form, taking into consideration 'octave_ratio'.
+{- | Cyclic form, taking into consideration 'octave_ratio'.
+
+>>> let r = tn_approximate_ratios_cyclic (tn_equal_temperament 12)
+>>> map (round . Tuning.fratio_to_cents) (take 15 r)
+[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400]
+-}
 tn_approximate_ratios_cyclic :: Tuning -> [Tuning.Approximate_Ratio]
 tn_approximate_ratios_cyclic t =
   let r = tn_approximate_ratios t

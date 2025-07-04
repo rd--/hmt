@@ -603,6 +603,12 @@ Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons c
 >>> let cmp p q = p == q || p == inv q
 >>> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
 [("malkauns","Raga Malkauns, inverse of prime_5.scl",5,[Right (6 % 5),Right (4 % 3),Right (8 % 5),Right (16 % 9),Right (2 % 1)]),("prime_5","What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale",5,[Right (9 % 8),Right (5 % 4),Right (3 % 2),Right (5 % 3),Right (2 % 1)])]
+
+>>> scl_find_ji False (==) [1/1,16/15,10/9,6/5,5/4,4/3,64/45,3/2,8/5,5/3,16/9,15/8] db
+[("mersen_s1","Mersenne spinet 1, Trait\233 de l'orgue, 1635, p. 43",12,[Right (16 % 15),Right (10 % 9),Right (6 % 5),Right (5 % 4),Right (4 % 3),Right (64 % 45),Right (3 % 2),Right (8 % 5),Right (5 % 3),Right (16 % 9),Right (15 % 8),Right (2 % 1)])]
+
+>>> scl_find_ji False (==) [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8] db
+[("duodene","Ellis's Duodene : genus [33355]",12,[Right (16 % 15),Right (9 % 8),Right (6 % 5),Right (5 % 4),Right (4 % 3),Right (45 % 32),Right (3 % 2),Right (8 % 5),Right (5 % 3),Right (9 % 5),Right (15 % 8),Right (2 % 1)])]
 -}
 scl_find_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> [Scale] -> [Scale]
 scl_find_ji includingOctave cmp x = filter (scale_cmp_ji includingOctave cmp x)
@@ -658,11 +664,11 @@ tuning_to_scale (nm, dsc) tn@(Tuning.Tuning p _) =
 {- | 'scale_to_tuning' of 'scl_load'.
 
 >>> t <- scl_load_tuning "bohlen-p"
->>> map round (Tuning.tn_cents t)
+>>> Tuning.tn_cents_i t
 [0,133,302,435,583,737,884,1018,1165,1319,1467,1600,1769]
 
 >>> t <- scl_load_tuning "bohlen_l_ji"
->>> map round (Tuning.tn_cents t)
+>>> Tuning.tn_cents_i t
 [0,302,435,583,884,1018,1319,1467,1769]
 -}
 scl_load_tuning :: String -> IO Tuning.Tuning

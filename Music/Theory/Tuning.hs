@@ -47,8 +47,8 @@ midi_to_cps_k0 o = fmidi_to_cps_k0 o . fromIntegral
 
 {- | 'midi_to_cps_k0' (69,440).
 
->>> map (round . midi_to_cps) [59,60,69]
-[247,262,440]
+>>> map (round . midi_to_cps) [0,59,60,69,127]
+[8,247,262,440,12544]
 -}
 midi_to_cps :: (Integral i, Floating f) => i -> f
 midi_to_cps = midi_to_cps_k0 (69, 440)

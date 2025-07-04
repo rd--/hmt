@@ -146,11 +146,15 @@ divisorsC1Names = c1Names . divisors
 >>> map (\x -> x % 360) [360,384,400,432,450,480,512,540,576,600,640,675,720]
 [1 % 1,16 % 15,10 % 9,6 % 5,5 % 4,4 % 3,64 % 45,3 % 2,8 % 5,5 % 3,16 % 9,15 % 8,2 % 1]
 
+This is "mersen_s1" in Scala, "Mersenne spinet 1, Trait\233 de l'orgue, 1635, p. 43".
+
 >>> Music.Theory.List.slice 56 13 (divisors 345600)
 [480,512,540,576,600,640,675,720,768,800,864,900,960]
 
 >>> map (\x -> x % 480) [480,512,540,576,600,640,675,720,768,800,864,900,960]
 [1 % 1,16 % 15,9 % 8,6 % 5,5 % 4,4 % 3,45 % 32,3 % 2,8 % 5,5 % 3,9 % 5,15 % 8,2 % 1]
+
+This is "duodene" in Scala, "Ellis's Duodene : genus [33355]".
 -}
 divisors :: Integral a => a -> [a]
 divisors n = [x | x <- [1 .. n], n `rem` x == 0]

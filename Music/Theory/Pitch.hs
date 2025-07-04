@@ -392,6 +392,7 @@ Pitch {note = E, alteration = QuarterToneFlat, octave = 4}
 fmidi_to_pitch_ks :: (Show n, RealFrac n) => n -> Pitch
 fmidi_to_pitch_ks = fmidi_to_pitch_err pc_spell_ks
 
+-- | `midi_detune_to_pitch` of `pc_spell_ks`
 midi_detune_to_pitch_ks :: (Integral m, Real c) => (m, c) -> Pitch
 midi_detune_to_pitch_ks = midi_detune_to_pitch pc_spell_ks
 
