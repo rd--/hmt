@@ -440,6 +440,9 @@ distance i j n = min (abs (i - j)) (n - abs (i - j))
 
 {- | The distance multiset of a rhythm R
 is the multiset of all nonzero pairwise distances.
+
+>>> distanceMultiset [0,4,5,9,10,14,15] 16
+[4,5,7,6,2,1,1,5,6,6,5,4,5,7,6,1,5,6,4,5,1]
 -}
 distanceMultiset :: (Ord a, Num a) => [a] -> a -> [a]
 distanceMultiset l n =

@@ -482,6 +482,7 @@
 		"diamond7",
 		"diamond9",
 		"diamond17b",
+		"diamond19",
 		"novaro15",
 		"partch_29-av",
 		"partch_29",
@@ -536,6 +537,9 @@
 	"Riley, Terry": [
 		"riley_albion",
 		"riley_rosary"
+	],
+	"Sabat, Marc": [
+		"tuneable3"
 	],
 	"Schulter, Margo": [
 		"schulter_10",
@@ -630,6 +634,9 @@
 		"smithgw_wiz28",
 		"smithgw_wiz34",
 		"smithgw_wiz38"
+	],
+	"Snyder, Jeff": [
+		"snyder"
 	],
 	"Tenney, James": [
 		"mund45",
