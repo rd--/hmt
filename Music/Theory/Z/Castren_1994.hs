@@ -9,9 +9,10 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.List as List
-import Music.Theory.Z
-import qualified Music.Theory.Z.Forte_1973 as Forte
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z
+
+import qualified Music.Theory.Z.Forte_1973 as Forte {- hmt -}
 import qualified Music.Theory.Z.Sro as Sro
 
 type Z12 = Int8
@@ -25,7 +26,7 @@ type Z12 = Int8
 [1,0,0,0,0,1,0,0,1,1,0,1]
 -}
 inv_sym :: [Z12] -> Bool
-inv_sym x = x `elem` map (\i -> sort (Sro.z_sro_tn z12 i (Sro.z_sro_invert z12 0 x))) [0 .. 11]
+inv_sym x = x `elem` map (\i -> sort (Sro.z_sro_tn Z.z12 i (Sro.z_sro_invert Z.z12 0 x))) [0 .. 11]
 
 {- | If /p/ is not 'inv_sym' then @(p,invert 0 p)@ else 'Nothing'.
 
@@ -39,7 +40,7 @@ sc_t_ti :: [Z12] -> Maybe ([Z12], [Z12])
 sc_t_ti p =
   if inv_sym p
     then Nothing
-    else Just (p, Forte.z_t_prime z12 (Sro.z_sro_invert z12 0 p))
+    else Just (p, Forte.z_t_prime Z.z12 (Sro.z_sro_invert Z.z12 0 p))
 
 {- | Transpositional equivalence variant of Forte's 'sc_table'.
 The inversionally related classes are distinguished by labels @A@ and @B@;
@@ -71,7 +72,7 @@ t_sc_table =
 -}
 t_sc_name :: [Z12] -> Forte.Sc_Name
 t_sc_name p =
-  let n = find (\(_, q) -> Forte.z_t_prime z12 p == q) t_sc_table
+  let n = find (\(_, q) -> Forte.z_t_prime Z.z12 p == q) t_sc_table
   in fst (fromJust n)
 
 {- | Lookup a set-class given a set-class name.
@@ -106,7 +107,7 @@ t_scs_n n = filter ((== n) . genericLength) t_scs
 [[2,3,6]]
 -}
 t_subsets :: [Z12] -> [Z12] -> [[Z12]]
-t_subsets x a = filter (`List.is_subset` x) (map sort (Sro.z_sro_t_related z12 a))
+t_subsets x a = filter (`List.is_subset` x) (map sort (Sro.z_sro_t_related Z.z12 a))
 
 {- | T\/I-related /q/ that are subsets of /p/.
 
@@ -120,7 +121,7 @@ t_subsets x a = filter (`List.is_subset` x) (map sort (Sro.z_sro_t_related z12 a
 [[2,3,6],[3,6,7]]
 -}
 ti_subsets :: [Z12] -> [Z12] -> [[Z12]]
-ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (Sro.z_sro_ti_related z12 a)))
+ti_subsets x a = filter (`List.is_subset` x) (nub (map sort (Sro.z_sro_ti_related Z.z12 a)))
 
 {- | Trivial run length encoder.
 
@@ -192,7 +193,7 @@ ti_n_class_vector n x =
 -}
 dyad_class_percentage_vector :: Integral i => [Z12] -> [i]
 dyad_class_percentage_vector p =
-  let p' = Forte.z_icv z12 p
+  let p' = Forte.z_icv Z.z12 p
   in map (sum p' *) p'
 
 {- | /rel/ metric.

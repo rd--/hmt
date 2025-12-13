@@ -3,8 +3,8 @@ Compositional Design/. Yale University Press, New Haven, 1987.
 -}
 module Music.Theory.Z.Morris_1987 where
 
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Z as Z {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
 
 {- | @INT@ operator.
 

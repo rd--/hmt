@@ -13,6 +13,7 @@ import qualified Data.Map as Map {- containers -}
 import qualified Music.Theory.Combinations as Combinations {- hmt-base -}
 import qualified Music.Theory.Graph.Dot as Graph.Dot {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
 import qualified Music.Theory.Set.List as Set.List {- hmt-base -}
 import qualified Music.Theory.Tuple as Tuple {- hmt-base -}
 
@@ -21,7 +22,6 @@ import qualified Music.Theory.Key as Key {- hmt -}
 import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Graph.Euler as Tuning.Graph.Euler {- hmt -}
-import qualified Music.Theory.Z as Z {- hmt -}
 import qualified Music.Theory.Z.Forte_1973 as Z.Forte_1973 {- hmt -}
 import qualified Music.Theory.Z.Sro as Z.Sro {- hmt -}
 import qualified Music.Theory.Z.Tto as Z.Tto {- hmt -}

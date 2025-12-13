@@ -5,15 +5,16 @@ module Music.Theory.Metric.Morris_1980 where
 
 import Data.Ratio {- base -}
 
-import Music.Theory.Z {- hmt -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
+
 import qualified Music.Theory.Z.Forte_1973 as Forte {- hmt -}
 
 {- | Sim
 
->>> Forte.z_icv z12 [0,1,3,6]
+>>> Forte.z_icv Z.z12 [0,1,3,6]
 [1,1,2,0,1,1]
 
->>> Forte.z_icv z12 [0,2,4,7]
+>>> Forte.z_icv Z.z12 [0,2,4,7]
 [0,2,1,1,2,0]
 
 >>> sim [0,1,3,6] [0,2,4,7]
@@ -24,8 +25,8 @@ import qualified Music.Theory.Z.Forte_1973 as Forte {- hmt -}
 -}
 sim :: (Integral i, Num n) => [i] -> [i] -> n
 sim r s =
-  let r' = Forte.z_icv z12 r
-      s' = Forte.z_icv z12 s
+  let r' = Forte.z_icv Z.z12 r
+      s' = Forte.z_icv Z.z12 s
       t = zipWith (-) r' s'
   in sum (map abs t)
 
@@ -48,6 +49,6 @@ True
 -}
 asim :: Integral i => [i] -> [i] -> Ratio i
 asim r s =
-  let r' = Forte.z_icv z12 r
-      s' = Forte.z_icv z12 s
+  let r' = Forte.z_icv Z.z12 r
+      s' = Forte.z_icv Z.z12 s
   in sim r s % (sum r' + sum s')

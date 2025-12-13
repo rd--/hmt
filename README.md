@@ -29,6 +29,6 @@ related:
 
 ```
 $ doctest Music/Theory/
-Examples: 1833 Tried: 1833  Errors: 0  Failures: 0
+Examples: 1890 Tried: 1890  Errors: 0  Failures: 0
 $
 ```

@@ -3,7 +3,8 @@ module Music.Theory.Z.Drape_1999.Cli where
 import Data.Char {- base -}
 import Data.Int {- base -}
 
-import Music.Theory.Z {- hmt -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
+
 import Music.Theory.Z.Drape_1999 {- hmt -}
 import Music.Theory.Z.Forte_1973 {- hmt -}
 import Music.Theory.Z.Sro {- hmt -}
@@ -30,7 +31,7 @@ pco_parse :: String -> [Z12]
 pco_parse = map fromIntegral . z16_seq_parse
 
 pco_pp :: [Z12] -> String
-pco_pp = map (toUpper . integral_to_digit)
+pco_pp = map (toUpper . Z.integral_to_digit)
 
 {- | Cset
 
@@ -54,7 +55,7 @@ mk_cmd_many f = unlines . map pco_pp . f . pco_parse
 "923507A\n2B013A9\n"
 -}
 ess_cmd :: String -> Cmd
-ess_cmd p = mk_cmd_many (ess z12 (pco_parse p))
+ess_cmd p = mk_cmd_many (ess Z.z12 (pco_parse p))
 
 z12_sc_name :: [Z12] -> Sc_Name
 z12_sc_name = sc_name
@@ -68,10 +69,10 @@ frg_cmd p =
   in unlines [frg_pp p', ic_cycle_vector_pp (ic_cycle_vector p')]
 
 pi_cmd :: String -> Cmd
-pi_cmd p = mk_cmd_many (pci z12 (z16_seq_parse p))
+pi_cmd p = mk_cmd_many (pci Z.z12 (z16_seq_parse p))
 
 scc_cmd :: String -> Cmd
-scc_cmd p = mk_cmd_many (scc z12 (sc p))
+scc_cmd p = mk_cmd_many (scc Z.z12 (sc p))
 
 si_cmd :: Cmd
 si_cmd = unlines . si . pco_parse
@@ -85,13 +86,13 @@ z12_sc_name_long = sc_name_long
 "5-26[02458]\n"
 -}
 spsc_cmd :: [String] -> String
-spsc_cmd = unlines . map z12_sc_name_long . spsc z12 . map sc
+spsc_cmd = unlines . map z12_sc_name_long . spsc Z.z12 . map sc
 
 sra_cmd :: Cmd
-sra_cmd = mk_cmd_many (sra z12)
+sra_cmd = mk_cmd_many (sra Z.z12)
 
 sro_cmd :: String -> Cmd
-sro_cmd o = mk_cmd (sro z12 (sro_parse 5 o))
+sro_cmd o = mk_cmd (sro Z.z12 (sro_parse 5 o))
 
 {- | T-matrix
 
@@ -99,11 +100,11 @@ sro_cmd o = mk_cmd (sro z12 (sro_parse 5 o))
 "1258\n0147\n9A14\n67A1\n"
 -}
 tmatrix_cmd :: Cmd
-tmatrix_cmd = mk_cmd_many (tmatrix z12)
+tmatrix_cmd = mk_cmd_many (tmatrix Z.z12)
 
 {- | Trs
 
->>> trs_cmd (trs z12) "024579" "642"
+>>> trs_cmd (trs Z.z12) "024579" "642"
 "6421B9\nB97642\n531642\n642753\n"
 -}
 trs_cmd :: ([Z12] -> [Z12] -> [[Z12]]) -> String -> Cmd
@@ -127,6 +128,6 @@ pct_cli arg = do
     ["sra"] -> interact_ln sra_cmd
     ["sro", o] -> interact_ln (sro_cmd o)
     ["tmatrix", p] -> putStr (tmatrix_cmd p)
-    ["trs", p] -> interact_ln (trs_cmd (trs z12) p)
-    ["trs", "-m", p] -> interact_ln (trs_cmd (trs_m z12) p)
+    ["trs", p] -> interact_ln (trs_cmd (trs Z.z12) p)
+    ["trs", "-m", p] -> interact_ln (trs_cmd (trs_m Z.z12) p)
     _ -> putStrLn (unlines pct_cli_help)

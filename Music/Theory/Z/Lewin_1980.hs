@@ -6,7 +6,7 @@ module Music.Theory.Z.Lewin_1980 where
 import Data.Int {- base -}
 import Data.List {- base -}
 
-import qualified Music.Theory.Z.Castren_1994 as Castren
+import qualified Music.Theory.Z.Castren_1994 as Castren {- hmt -}
 
 type Z12 = Int8
 

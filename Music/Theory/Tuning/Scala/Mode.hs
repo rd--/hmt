@@ -90,9 +90,6 @@ modenam_search_seq (_, _, m) x = filter ((== x) . mode_intervals) m
 
 >>> sq (replicate 12 1)
 "Twelve-tone Chromatic (1/11-comma)"
-
->>> sq [1,1,2,1,1,2,1,1]
-
 -}
 modenam_search_seq1 :: ModeNam -> [Int] -> Maybe Mode
 modenam_search_seq1 mn = List.unlist1 . modenam_search_seq mn

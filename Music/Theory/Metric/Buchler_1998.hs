@@ -8,11 +8,11 @@ import Data.Int {- base -}
 import Data.List {- base -}
 import Data.Ratio {- base -}
 
-import qualified Music.Theory.List as List
-import qualified Music.Theory.Set.List as Set.List
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
+import qualified Music.Theory.Set.List as Set.List {- hmt-base -}
 
-import qualified Music.Theory.Z as Z
-import qualified Music.Theory.Z.Forte_1973 as Z
+import qualified Music.Theory.Z.Forte_1973 as Forte {- hmt -}
 
 -- | Predicate for list with cardinality /n/.
 of_c :: Integral n => n -> [a] -> Bool
@@ -24,7 +24,7 @@ of_c n = (== n) . genericLength
 [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6]]
 -}
 sc_table_n :: (Integral n) => n -> [[Int8]]
-sc_table_n n = filter (of_c n) (map snd Z.sc_table)
+sc_table_n n = filter (of_c n) (map snd Forte.sc_table)
 
 {- | Minima and maxima of ICV of SCs of cardinality /n/.
 
@@ -34,7 +34,7 @@ sc_table_n n = filter (of_c n) (map snd Z.sc_table)
 icv_minmax :: (Integral n, Integral b) => n -> ([b], [b])
 icv_minmax n =
   let t = sc_table_n n
-      i = transpose (map (Z.z_icv Z.z12) t)
+      i = transpose (map (Forte.z_icv Z.z12) t)
   in (map minimum i, map maximum i)
 
 data R = Min | Max deriving (Eq, Show)
@@ -55,7 +55,7 @@ r_pp r =
 satv_f :: (Integral n) => ((n, n, n) -> D n) -> [Int8] -> [D n]
 satv_f f p =
   let n = length p
-      i = Z.z_icv Z.z12 p
+      i = Forte.z_icv Z.z12 p
       (l, r) = icv_minmax n
   in map f (zip3 l i r)
 
@@ -237,7 +237,7 @@ satsim p q =
 satsim_table :: Integral i => [(([Int8], [Int8]), Ratio i)]
 satsim_table =
   let f (i, j) = ((i, j), satsim i j)
-      t = filter ((`notElem` [0, 1, 12]) . length) (map snd Z.sc_table)
+      t = filter ((`notElem` [0, 1, 12]) . length) (map snd Forte.sc_table)
   in map f (Set.List.pairs t)
 
 {- | Histogram of values at 'satsim_table'.

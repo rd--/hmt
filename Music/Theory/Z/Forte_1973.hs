@@ -7,11 +7,11 @@ import Data.Bifunctor {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Set.List as Set {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
+import qualified Music.Theory.Set.List as Set {- hmt-base -}
 
 import qualified Music.Theory.Unicode as Unicode {- hmt -}
-import qualified Music.Theory.Z as Z {- hmt -}
 import qualified Music.Theory.Z.Sro as Sro {- hmt -}
 
 -- * Prime form

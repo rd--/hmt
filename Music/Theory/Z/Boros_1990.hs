@@ -18,11 +18,11 @@ import qualified Music.Theory.Combinations as Combinations
 import qualified Music.Theory.Graph.Dot as Graph.Dot
 import qualified Music.Theory.Graph.Fgl as Graph.Fgl
 import qualified Music.Theory.List as List
+import qualified Music.Theory.Math.Z as Z
 import qualified Music.Theory.Set.List as Set.List
 import qualified Music.Theory.Tuple as Tuple
 
-import qualified Music.Theory.Z as Z {- hmt -}
-import qualified Music.Theory.Z.Forte_1973 as Z.Forte_1973
+import qualified Music.Theory.Z.Forte_1973 as Z.Forte_1973 {- hmt -}
 import qualified Music.Theory.Z.Tto as Z.Tto
 
 -- * Util

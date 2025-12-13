@@ -7,11 +7,11 @@ import Data.Function {- base -}
 import Data.List {- base -}
 import Data.Maybe {- base -}
 
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Set.List as T {- hmt -}
-import qualified Music.Theory.Tuple as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math.Z as Z {- hmt-base -}
+import qualified Music.Theory.Set.List as T {- hmt-base -}
+import qualified Music.Theory.Tuple as T {- hmt-base -}
 
-import Music.Theory.Z
 import Music.Theory.Z.Forte_1973
 import Music.Theory.Z.Sro
 import Music.Theory.Z.Tto
@@ -56,15 +56,15 @@ cg_r n = cf [n] . cg
 
 echo 024579 | pct chn T0 3 | sort -u
 
->>> chn_t0 z12 3 [0,2,4,5,7,9]
+>>> chn_t0 Z.z12 3 [0,2,4,5,7,9]
 [[5,7,9,10,0,2],[5,7,9,4,6,8]]
 
 echo 02457t | pct chn T0 2
 
->>> chn_t0 z12 2 [0,2,4,5,7,10]
+>>> chn_t0 Z.z12 2 [0,2,4,5,7,10]
 [[7,10,0,1,3,5],[7,10,8,1,11,9]]
 -}
-chn_t0 :: Integral i => Z i -> Int -> [i] -> [[i]]
+chn_t0 :: Integral i => Z.Z i -> Int -> [i] -> [[i]]
 chn_t0 z n p =
   let f q = List.take_right n p == take n q
   in filter f (z_sro_rtmi_related z p)
@@ -73,21 +73,21 @@ chn_t0 z n p =
 
 echo 014295e38t76 | pct cisg
 
->>> ciseg z12 [0,1,4,2,9,5,11,3,8,10,7,6]
+>>> ciseg Z.z12 [0,1,4,2,9,5,11,3,8,10,7,6]
 [1,3,10,7,8,6,4,5,2,9,11,6]
 -}
-ciseg :: Integral i => Z i -> [i] -> [i]
-ciseg z = List.d_dx_by (z_sub z) . cyc
+ciseg :: Integral i => Z.Z i -> [i] -> [i]
+ciseg z = List.d_dx_by (Z.z_sub z) . cyc
 
 {- | Synonynm for 'z_complement'.
 
 pct cmpl 02468t
 
->>> cmpl z12 [0,2,4,6,8,10]
+>>> cmpl Z.z12 [0,2,4,6,8,10]
 [1,3,5,7,9,11]
 -}
-cmpl :: Integral i => Z i -> [i] -> [i]
-cmpl = z_complement
+cmpl :: Integral i => Z.Z i -> [i] -> [i]
+cmpl = Z.z_complement
 
 {- | Form cycle.
 
@@ -116,7 +116,7 @@ d_nm x =
 -- | Diatonic implications.
 dim :: Integral i => [i] -> [(i, [i])]
 dim p =
-  let g (i, q) = List.is_subset p (z_tto_tn z12 i q)
+  let g (i, q) = List.is_subset p (z_tto_tn Z.z12 i q)
       f = filter g . zip [0 .. 11] . repeat
       d = [0, 2, 4, 5, 7, 9, 11]
       m = [0, 2, 3, 5, 7, 9, 11]
@@ -154,28 +154,28 @@ dis =
 echo 024579e | pct doi 6 | sort -u
 
 >>> let p = [0,2,4,5,7,9,11]
->>> doi z12 6 p p
+>>> doi Z.z12 6 p p
 [[0,2,4,5,7,9,10],[0,2,4,6,7,9,11]]
 
 echo 01234 | pct doi 2 7-35 | sort -u
 
->>> doi z12 2 (sc "7-35") [0,1,2,3,4]
+>>> doi Z.z12 2 (sc "7-35") [0,1,2,3,4]
 [[1,3,5,6,8,10,11]]
 -}
-doi :: Integral i => Z i -> Int -> [i] -> [i] -> [[i]]
+doi :: Integral i => Z.Z i -> Int -> [i] -> [i] -> [[i]]
 doi z n p q =
   let f j = [z_tto_tn z j p, z_tto_tni z j p]
-      xs = concatMap f [0 .. z_modulus z - 1]
+      xs = concatMap f [0 .. Z.z_modulus z - 1]
   in T.set (filter (\x -> length (x `intersect` q) == n) xs)
 
 {- | Embedded segment search.
 
 echo 23A | pct ess 0164325
 
->>> ess z12 [0,1,6,4,3,2,5] [2,3,10]
+>>> ess Z.z12 [0,1,6,4,3,2,5] [2,3,10]
 [[9,2,3,5,0,7,10],[2,11,0,1,3,10,9]]
 -}
-ess :: Integral i => Z i -> [i] -> [i] -> [[i]]
+ess :: Integral i => Z.Z i -> [i] -> [i] -> [[i]]
 ess z p q = filter (`List.is_embedding` q) (z_sro_rtmi_related z p)
 
 -- | Forte name (ie 'sc_name').
@@ -185,8 +185,8 @@ fn = sc_name
 -- | Z-12 cycles.
 frg_cyc :: Integral i => T.T6 [[i]]
 frg_cyc =
-  let add = z_add z12
-      mul = z_mul z12
+  let add = Z.z_add Z.z12
+      mul = Z.z_mul Z.z12
       c1 = [[0 .. 11]]
       c2 = map (\n -> map (add n) [0, 2 .. 10]) [0 .. 1]
       c3 = map (\n -> map (add n) [0, 3 .. 9]) [0 .. 2]
@@ -198,7 +198,7 @@ frg_cyc =
 -- | Fragmentation of cycles.
 frg :: Integral i => [i] -> T.T6 [String]
 frg p =
-  let f = map (\n -> if n `elem` p then z16_to_char n else '-')
+  let f = map (\n -> if n `elem` p then Z.z16_to_char n else '-')
   in T.t6_map (map f) frg_cyc
 
 -- | Header sequence for 'frg_pp'.
@@ -227,11 +227,11 @@ has_sc_pf pf p q =
 {- | 'has_sc_pf' of 'forte_prime'
 
 > let d = [0,2,4,5,7,9,11]
-> has_sc z12 d (z_complement z12 d) == True
+> has_sc Z.z12 d (Z.z_complement Z.z12 d) == True
 
-> has_sc z12 [] [] == True
+> has_sc Z.z12 [] [] == True
 -}
-has_sc :: Integral i => Z i -> [i] -> [i] -> Bool
+has_sc :: Integral i => Z.Z i -> [i] -> [i] -> Bool
 has_sc z = has_sc_pf (z_forte_prime z)
 
 -- | Interval-class cycle vector.
@@ -248,7 +248,7 @@ ic_cycle_vector p =
 > ic_cycle_vector_pp (ic_cycle_vector [0,2,4,5,7,9]) == r
 -}
 ic_cycle_vector_pp :: T.T6 [Int] -> String
-ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_to_list . T.t6_map z16_seq_pp
+ic_cycle_vector_pp = ("IC cycle vector: " ++) . unwords . T.t6_to_list . T.t6_map Z.z16_seq_pp
 
 {- | Interval cycle filter.
 
@@ -282,8 +282,8 @@ ici_c [] = []
 ici_c (x : xs) = map (x :) (ici xs)
 
 -- | Interval segment (INT).
-iseg :: Integral i => Z i -> [i] -> [i]
-iseg z = List.d_dx_by (z_sub z)
+iseg :: Integral i => Z.Z i -> [i] -> [i]
+iseg z = List.d_dx_by (Z.z_sub z)
 
 {- | Imbrications.
 
@@ -307,17 +307,17 @@ pct issb 3-7 6-32
 issb :: Integral i => [i] -> [i] -> [String]
 issb p q =
   let k = length q - length p
-      f = any (\x -> z_forte_prime z12 (nub (p ++ x)) == q) . z_tto_ti_related z12
+      f = any (\x -> z_forte_prime Z.z12 (nub (p ++ x)) == q) . z_tto_ti_related Z.z12
   in map sc_name (filter f (cf [k] scs))
 
 {- | Matrix search.
 
 pct mxs 024579 642 | sort -u
 
->>> mxs z12 [0,2,4,5,7,9] [6,4,2]
+>>> mxs Z.z12 [0,2,4,5,7,9] [6,4,2]
 [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 -}
-mxs :: Integral i => Z i -> [i] -> [i] -> [[i]]
+mxs :: Integral i => Z.Z i -> [i] -> [i] -> [[i]]
 mxs z p q = filter (q `isInfixOf`) (z_sro_rti_related z p)
 
 {- | Normalize (synonym for 'set')
@@ -339,10 +339,10 @@ nrm_r = sort
 
 pct pi 0236 12
 
->>> pci z12 [1,2] [0,2,3,6]
+>>> pci Z.z12 [1,2] [0,2,3,6]
 [[0,2,3,6],[5,3,2,11],[6,3,2,0],[11,2,3,5]]
 -}
-pci :: Integral i => Z i -> [Int] -> [i] -> [[i]]
+pci :: Integral i => Z.Z i -> [Int] -> [i] -> [[i]]
 pci z i p =
   let f q = T.set (map (q !!) i)
   in filter (\q -> f q == f p) (z_sro_rti_related z p)
@@ -351,10 +351,10 @@ pci z i p =
 
 pct rs 0123 641B
 
->>> map tto_pp (rs 5 z12 [0,1,2,3] [6,4,1,11])
+>>> map tto_pp (rs 5 Z.z12 [0,1,2,3] [6,4,1,11])
 ["T1M","T4MI"]
 -}
-rs :: Integral t => t -> Z t -> [t] -> [t] -> [Tto t]
+rs :: Integral t => t -> Z.Z t -> [t] -> [t] -> [Tto t]
 rs m z p q = z_tto_rel m z (T.set p) (T.set q)
 
 {- | Relate segments.
@@ -365,26 +365,26 @@ pct rsg 0123 4B61 = RT1M
 pct rsg 0123 B614 = r3RT1M
 
 >>> let sros = map (sro_parse 5) . words
->>> rsg 5 z12 [1,5,6] [3,11,10] == sros "T4I r1RT4MI"
+>>> rsg 5 Z.z12 [1,5,6] [3,11,10] == sros "T4I r1RT4MI"
 True
 
->>> rsg 5 z12 [0,1,2,3] [0,5,10,3] == sros "T0M RT3MI"
+>>> rsg 5 Z.z12 [0,1,2,3] [0,5,10,3] == sros "T0M RT3MI"
 True
 
->>> rsg 5 z12 [0,1,2,3] [4,11,6,1] == sros "T4MI RT1M"
+>>> rsg 5 Z.z12 [0,1,2,3] [4,11,6,1] == sros "T4MI RT1M"
 True
 
->>> rsg 5 z12 [0,1,2,3] [11,6,1,4] == sros "r1T4MI r1RT1M"
+>>> rsg 5 Z.z12 [0,1,2,3] [11,6,1,4] == sros "r1T4MI r1RT1M"
 True
 -}
-rsg :: Integral i => i -> Z i -> [i] -> [i] -> [Sro i]
+rsg :: Integral i => i -> Z.Z i -> [i] -> [i] -> [Sro i]
 rsg = z_sro_rel
 
 {- | Subsets.
 
-> cf [4] (sb z12 [sc "6-32",sc "6-8"]) == [[0,2,3,5],[0,1,3,5],[0,2,3,7],[0,2,4,7],[0,2,5,7]]
+> cf [4] (sb Z.z12 [sc "6-32",sc "6-8"]) == [[0,2,3,5],[0,1,3,5],[0,2,3,7],[0,2,4,7],[0,2,5,7]]
 -}
-sb :: Integral i => Z i -> [[i]] -> [[i]]
+sb :: Integral i => Z.Z i -> [[i]] -> [[i]]
 sb z xs =
   let f p = all (\q -> has_sc z q p) xs
   in filter f scs
@@ -393,10 +393,10 @@ sb z xs =
 
 pct scc 6-32 168
 
->>> scc z12 (sc "6-32") [1,6,8]
+>>> scc Z.z12 (sc "6-32") [1,6,8]
 [[3,5,10],[4,9,11],[3,10,11],[3,4,11]]
 -}
-scc :: Integral i => Z i -> [i] -> [i] -> [[i]]
+scc :: Integral i => Z.Z i -> [i] -> [i] -> [[i]]
 scc z r p = map (\\ p) (filter (List.is_subset p) (z_tto_ti_related z r))
 
 -- | Header fields for 'si'.
@@ -420,12 +420,12 @@ type Si i = ([i], Tto i, [i])
 si_calc :: Integral i => [i] -> (Si i, [i], [Int], Si i, Si i)
 si_calc p =
   let n = length p
-      p_icv = fromIntegral n : z_icv z12 p
+      p_icv = fromIntegral n : z_icv Z.z12 p
       gen_si x =
-        let x_f = z_forte_prime z12 x
-            x_o = List.head_err (rs 5 z12 x_f x)
+        let x_f = z_forte_prime Z.z12 x
+            x_o = List.head_err (rs 5 Z.z12 x_f x)
         in (nub (sort x), x_o, x_f)
-  in (gen_si p, p_icv, tics z12 p, gen_si (z_complement z12 p), gen_si (map (z_mul z12 5) p))
+  in (gen_si p, p_icv, tics Z.z12 p, gen_si (Z.z_complement Z.z12 p), gen_si (map (Z.z_mul Z.z12 5) p))
 
 {- | Pretty printer for RHS for si.
 
@@ -438,14 +438,14 @@ si_rhs_pp p =
           [ tto_pp x_o
           , " "
           , sc_name x_f
-          , if concise then "" else z16_vec_pp x_f
+          , if concise then "" else Z.z16_vec_pp x_f
           ]
-      si_pp (x, x_o, x_f) = concat [z16_set_pp x, " (", pf_pp True (x_o, x_f), ")"]
+      si_pp (x, x_o, x_f) = concat [Z.z16_set_pp x, " (", pf_pp True (x_o, x_f), ")"]
       ((p', p_o, p_f), p_icv, p_tics, c, m) = si_calc p
-  in [ z16_set_pp p'
+  in [ Z.z16_set_pp p'
      , pf_pp False (p_o, p_f)
-     , z16_vec_pp p_icv
-     , z16_vec_pp p_tics
+     , Z.z16_vec_pp p_icv
+     , Z.z16_vec_pp p_tics
      , si_pp c
      , si_pp m
      ]
@@ -470,20 +470,20 @@ si p = zipWith (\k v -> concat [k, ": ", v]) si_hdr (si_rhs_pp p)
 
 pct spsc 4-11 4-12 = 5-26[02458]
 
->>> spsc z12 [sc "4-11",sc "4-12"]
+>>> spsc Z.z12 [sc "4-11",sc "4-12"]
 [[0,2,4,5,8]]
 
 pct spsc 3-11 3-8
 
->>> spsc z12 [sc "3-11",sc "3-8"]
+>>> spsc Z.z12 [sc "3-11",sc "3-8"]
 [[0,2,5,8],[0,1,3,7]]
 
 pct spsc `pct fl 3` = 6-Z17[012478]
 
->>> spsc z12 (cf [3] scs)
+>>> spsc Z.z12 (cf [3] scs)
 [[0,1,2,4,7,8]]
 -}
-spsc :: Integral i => Z i -> [[i]] -> [[i]]
+spsc :: Integral i => Z.Z i -> [[i]] -> [[i]]
 spsc z xs =
   let f y = all (has_sc z y) xs
       g = (==) `on` length
@@ -493,70 +493,70 @@ spsc z xs =
 
 echo 019BA7 | pct sra
 
->>> sra z12 [0,1,9,11,10,7]
+>>> sra Z.z12 [0,1,9,11,10,7]
 [[0,1,9,11,10,7],[0,8,10,9,6,11],[0,2,1,10,3,4],[0,11,8,1,2,10],[0,9,2,3,11,1],[0,5,6,2,4,3]]
 -}
-sra :: Integral i => Z i -> [i] -> [[i]]
+sra :: Integral i => Z.Z i -> [i] -> [[i]]
 sra z = map (z_sro_tn_to z 0) . List.rotations
 
 {- | Serial operation.
 
 echo 156 | pct sro T4 = 59A
 
->>> sro z12 (sro_parse 5 "T4") [1,5,6]
+>>> sro Z.z12 (sro_parse 5 "T4") [1,5,6]
 [5,9,10]
 
 echo 024579 | pct sro RT4I = 79B024
 
->>> sro z12 (Sro 0 True 4 1 True) [0,2,4,5,7,9]
+>>> sro Z.z12 (Sro 0 True 4 1 True) [0,2,4,5,7,9]
 [7,9,11,0,2,4]
 
 echo 156 | pct sro T4I = 3BA
 
->>> sro z12 (sro_parse 5 "T4I") [1,5,6]
+>>> sro Z.z12 (sro_parse 5 "T4I") [1,5,6]
 [3,11,10]
 
->>> sro z12 (Sro 0 False 4 1 True) [1,5,6]
+>>> sro Z.z12 (Sro 0 False 4 1 True) [1,5,6]
 [3,11,10]
 
 echo 156 | pct sro T4  | pct sro T0I = 732
 
->>> (sro z12 (sro_parse 5 "T0I") . sro z12 (sro_parse 5 "T4")) [1,5,6]
+>>> (sro Z.z12 (sro_parse 5 "T0I") . sro Z.z12 (sro_parse 5 "T4")) [1,5,6]
 [7,3,2]
 
 echo 024579 | pct sro RT4I = 79B024
 
->>> sro z12 (sro_parse 5 "RT4I") [0,2,4,5,7,9]
+>>> sro Z.z12 (sro_parse 5 "RT4I") [0,2,4,5,7,9]
 [7,9,11,0,2,4]
 -}
-sro :: Integral i => Z i -> Sro i -> [i] -> [i]
+sro :: Integral i => Z.Z i -> Sro i -> [i] -> [i]
 sro = z_sro_apply
 
 {- | tmatrix
 
 pct tmatrix 1258
 
->>> tmatrix z12 [1,2,5,8]
+>>> tmatrix Z.z12 [1,2,5,8]
 [[1,2,5,8],[0,1,4,7],[9,10,1,4],[6,7,10,1]]
 -}
-tmatrix :: Integral i => Z i -> [i] -> [[i]]
+tmatrix :: Integral i => Z.Z i -> [i] -> [[i]]
 tmatrix z p =
-  let i = map (z_negate z) (List.d_dx_by (z_sub z) p)
-  in map (\n -> map (z_add z n) p) (List.dx_d 0 i)
+  let i = map (Z.z_negate z) (List.d_dx_by (Z.z_sub z) p)
+  in map (\n -> map (Z.z_add z n) p) (List.dx_d 0 i)
 
 {- | trs = transformations search.  Search all RTnMI of /p/ for /q/.
 
 echo 642 | pct trs 024579 | sort -u
 
->>> sort (trs z12 [0,2,4,5,7,9] [6,4,2])
+>>> sort (trs Z.z12 [0,2,4,5,7,9] [6,4,2])
 [[5,3,1,6,4,2],[6,4,2,1,11,9],[6,4,2,7,5,3],[11,9,7,6,4,2]]
 -}
-trs :: Integral i => Z i -> [i] -> [i] -> [[i]]
+trs :: Integral i => Z.Z i -> [i] -> [i] -> [[i]]
 trs z p q = filter (q `isInfixOf`) (z_sro_rtmi_related z p)
 
 {- | Like 'trs', but of 'z_sro_rti_related'.
 
-> trs_m z12 [0,2,4,5,7,9] [6,4,2] == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
+> trs_m Z.z12 [0,2,4,5,7,9] [6,4,2] == [[6,4,2,1,11,9],[11,9,7,6,4,2]]
 -}
-trs_m :: Integral i => Z i -> [i] -> [i] -> [[i]]
+trs_m :: Integral i => Z.Z i -> [i] -> [i] -> [[i]]
 trs_m z p q = filter (q `isInfixOf`) (z_sro_rti_related z p)
