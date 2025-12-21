@@ -2,13 +2,14 @@
 module Music.Theory.Wyschnegradsky where
 
 import Data.Char {- base -}
-import Data.List {- list -}
+import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Data.List.Split as Split {- split -}
 
-import qualified Music.Theory.List as List {- hmt -}
-import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Colour as Colour {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Pitch as Pitch {- hmt-base -}
 
 {- | In a modulo /m/ system, normalise step increments to be either -1 or 1.  Non steps raise an error.
 
@@ -67,24 +68,12 @@ add_m n p q = (p + q) `mod` n
 >>> parse_hex_clr "#e14630"
 (225,70,48)
 -}
-parse_hex_clr :: (Read n, Num n) => String -> (n, n, n)
-parse_hex_clr clr =
-  let f p q = read ("0x" ++ [p, q])
-  in case clr of
-      ['#', p, q, r, s, t, u] -> (f p q, f r s, f t u)
-      _ -> error "parse_hex"
+parse_hex_clr :: (Read n, Num n, Eq n) => String -> Colour.Rgb n
+parse_hex_clr = Colour.hex_colour_parse
 
 -- | Type specialised.
-parse_hex_clr_int :: String -> (Int, Int, Int)
+parse_hex_clr_int :: String -> Colour.Rgb Int
 parse_hex_clr_int = parse_hex_clr
-
-{- | Normalise colour by dividing each component by /m/.
-
->>> clr_normalise 255 (parse_hex_clr "#ff0066")
-(1.0,0.0,0.4)
--}
-clr_normalise :: (Real r, Fractional f) => f -> (r, r, r) -> (f, f, f)
-clr_normalise m (r, g, b) = let f x = realToFrac x / m in (f r, f g, f b)
 
 -- | Sequences are either in 'Radial' or 'Circumferential' order.
 data Seq a = Radial [a] | Circumferential [a]
@@ -458,7 +447,7 @@ u3_clr_hex = words "#e14630 #e06e30 #e2c48e #498b43 #2a5a64 #cb7b74"
 
 -- | Rgb form of 'u3_clr_hex'.
 u3_clr_rgb :: Fractional n => [(n, n, n)]
-u3_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u3_clr_hex
+u3_clr_rgb = map (Colour.rgb8_to_rgb . parse_hex_clr_int) u3_clr_hex
 
 {- | Notated radial color sequence, transcribed from drawing.
 
@@ -569,7 +558,7 @@ dc9_clr_hex =
 
 -- | Rgb form of colours.
 dc9_clr_rgb :: Fractional n => [(n, n, n)]
-dc9_clr_rgb = map (clr_normalise 255 . parse_hex_clr_int) dc9_clr_hex
+dc9_clr_rgb = map (Colour.rgb8_to_rgb . parse_hex_clr_int) dc9_clr_hex
 
 -- * U11
 
@@ -688,6 +677,7 @@ u11_rad =
   let f c = if c == '-' then Nothing else Just (read [c])
   in map (u11_seq_rule . f) ull_rad_text
 
+-- | Hex triplets for U11 colours
 u11_clr_hex :: [String]
 u11_clr_hex =
   let c =
@@ -707,5 +697,6 @@ u11_clr_hex =
       n = reverse ([4 .. 11] ++ [0 .. 3]) :: [Int]
   in map snd (sort (zip n c))
 
-u11_clr_rgb :: Fractional n => [(n, n, n)]
-u11_clr_rgb = map (clr_normalise 256 . parse_hex_clr_int) u11_clr_hex
+-- | 0-1 (r,g,b) triplets for U11 colours
+u11_clr_rgb :: (Fractional n) => [(n, n, n)]
+u11_clr_rgb = map (Colour.rgb8_to_rgb . parse_hex_clr_int) u11_clr_hex
