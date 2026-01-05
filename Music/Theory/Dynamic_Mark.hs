@@ -87,32 +87,6 @@ dynamic_mark_db r m =
       f i = negate r + (fromIntegral i * k)
   in fmap f (elemIndex m u)
 
-{- | <http://www.csounds.com/manual/html/ampmidid.html>
-
-> import Sound.Sc3.Plot
-> plot_p1_ln [map (ampmidid 20) [0 .. 127],map (ampmidid 60) [0 .. 127]]
--}
-ampmidid :: Floating a => a -> a -> a
-ampmidid db v =
-  let r = 10 ** (db / 20)
-      b = 127 / (126 * sqrt r) - 1 / 126
-      m = (1 - b) / 127
-  in (m * v + b) ** 2
-
-{- | JMcC (Sc3) equation.
-
-> plot_p1_ln [map amp_db [0,0.005 .. 1]]
--}
-amp_db :: Floating a => a -> a
-amp_db a = logBase 10 a * 20
-
-{- | JMcC (Sc3) equation.
-
-> plot_p1_ln [map db_amp [-60,-59 .. 0]]
--}
-db_amp :: Floating a => a -> a
-db_amp a = 10 ** (a * 0.05)
-
 -- | Enumeration of hairpin indicators.
 data Hairpin = Crescendo | Diminuendo | End_Hairpin
   deriving (Eq, Ord, Enum, Bounded, Show)

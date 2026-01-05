@@ -6,25 +6,27 @@ import Data.List {- base -}
 import System.Environment {- base -}
 import Text.Printf {- base -}
 
+import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt-base -}
 import qualified Music.Theory.Array.Text as Array.Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
-import Music.Theory.Math (R {- hmt-base -})
 import qualified Music.Theory.Read as Read {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
 
-import qualified Music.Theory.Array.Csv.Midi.Mnd as T {- hmt -}
-import qualified Music.Theory.Pitch as T {- hmt -}
-import qualified Music.Theory.Time.Seq as T {- hmt -}
-import qualified Music.Theory.Tuning as T {- hmt -}
-import qualified Music.Theory.Tuning.Et as T {- hmt -}
-import qualified Music.Theory.Tuning.Midi as T {- hmt -}
+import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
+import qualified Music.Theory.Tuning.Et as Et {- hmt -}
+import qualified Music.Theory.Tuning.Midi as Midi {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Functions as Functions {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Kbm as Kbm {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 import qualified Music.Theory.Tuning.Type as T {- hmt -}
+
+-- | Real
+type R = Double
 
 db_stat :: IO ()
 db_stat = do
@@ -94,21 +96,21 @@ stat_by_name lm nm = do
 rng_enum :: Enum t => (t, t) -> [t]
 rng_enum (l, r) = [l .. r]
 
-cps_tbl :: String -> T.Mnn_Cps_Table -> (T.Midi, T.Midi) -> IO ()
+cps_tbl :: String -> Midi.Mnn_Cps_Table -> (Pitch.Midi, Pitch.Midi) -> IO ()
 cps_tbl fmt tbl mnn_rng = do
   let cps_pp = Show.double_pp 2
       cents_pp = Show.double_pp 1
-      gen_t i = (i, T.midi_to_pitch_ks i, List.lookup_err i tbl)
+      gen_t i = (i, Pitch.midi_to_pitch_ks i, List.lookup_err i tbl)
       t_pp (i, p, cps) =
-        let ref = T.midi_to_cps i
-            (_, nr, nr_cps, _, _) = T.nearest_12et_tone_k0 (69, 440) cps
+        let ref = Tuning.midi_to_cps i
+            (_, nr, nr_cps, _, _) = Et.nearest_12et_tone_k0 (69, 440) cps
         in [ show i
            , cps_pp cps
-           , T.pitch_pp_iso nr
-           , cents_pp (T.cps_difference_cents nr_cps cps)
+           , Pitch.pitch_pp_iso nr
+           , cents_pp (Tuning.cps_difference_cents nr_cps cps)
            , cps_pp ref
-           , T.pitch_pp_iso p
-           , cents_pp (T.cps_difference_cents ref cps)
+           , Pitch.pitch_pp_iso p
+           , cents_pp (Tuning.cps_difference_cents ref cps)
            ]
       hdr =
         [ "MNN"
@@ -127,32 +129,32 @@ cps_tbl fmt tbl mnn_rng = do
   putStr (unlines ln)
 
 -- > cps_tbl_d12 "md" ("young-lm_piano",-74.7,-3) (60,72)
-cps_tbl_d12 :: String -> (String, T.Cents, T.Midi) -> (T.Midi, T.Midi) -> IO ()
+cps_tbl_d12 :: String -> (String, Tuning.Cents, Pitch.Midi) -> (Pitch.Midi, Pitch.Midi) -> IO ()
 cps_tbl_d12 fmt (nm, c, k) mnn_rng = do
   t <- Scala.scl_load_tuning nm :: IO T.Tuning
-  let tbl = T.gen_cps_tuning_tbl (T.lift_tuning_f (T.d12_midi_tuning_f (t, c, k)))
+  let tbl = Midi.gen_cps_tuning_tbl (Midi.lift_tuning_f (Midi.d12_midi_tuning_f (t, c, k)))
   cps_tbl fmt tbl mnn_rng
 
 -- > cps_tbl_cps "md" ("cet111",27.5,9,127-9) (69,69+25)
-cps_tbl_cps :: String -> (String, R, T.Midi, Int) -> (T.Midi, T.Midi) -> IO ()
+cps_tbl_cps :: String -> (String, R, Pitch.Midi, Int) -> (Pitch.Midi, Pitch.Midi) -> IO ()
 cps_tbl_cps fmt (nm, f0, k, n) mnn_rng = do
   t <- Scala.scl_load_tuning nm
-  let tbl = T.gen_cps_tuning_tbl (T.cps_midi_tuning_f (t, f0, k, n))
+  let tbl = Midi.gen_cps_tuning_tbl (Midi.cps_midi_tuning_f (t, f0, k, n))
   cps_tbl fmt tbl mnn_rng
 
-csv_mnd_retune_d12 :: (String, T.Cents, T.Midi) -> FilePath -> FilePath -> IO ()
+csv_mnd_retune_d12 :: (String, Tuning.Cents, Pitch.Midi) -> FilePath -> FilePath -> IO ()
 csv_mnd_retune_d12 (nm, c, k) in_fn out_fn = do
   t <- Scala.scl_load_tuning nm
-  let retune_f = T.midi_detune_to_fmidi . T.d12_midi_tuning_f (t, c, k)
-  m <- T.csv_midi_read_wseq in_fn :: IO (T.Wseq R (R, R, T.Channel, T.Param))
+  let retune_f = Pitch.midi_detune_to_fmidi . Midi.d12_midi_tuning_f (t, c, k)
+  m <- Mnd.csv_midi_read_wseq in_fn :: IO (Seq.Wseq R (R, R, Mnd.Channel, Mnd.Param))
   let f (tm, (mnn, vel, ch, pm)) = (tm, (retune_f (floor mnn), vel, ch, pm))
-  T.csv_mndd_write_wseq 4 out_fn (map f m)
+  Mnd.csv_mndd_write_wseq 4 out_fn (map f m)
 
 -- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,-3)
-fluidsynth_tuning_d12 :: (String, Int, Int) -> (String, T.Cents, T.Midi) -> IO ()
+fluidsynth_tuning_d12 :: (String, Int, Int) -> (String, Tuning.Cents, Pitch.Midi) -> IO ()
 fluidsynth_tuning_d12 (fs_name, fs_bank, fs_prog) (nm, c, k) = do
   t <- Scala.scl_load_tuning nm :: IO T.Tuning
-  let tun_f = T.d12_midi_tuning_f (t, c, k)
+  let tun_f = Midi.d12_midi_tuning_f (t, c, k)
       pp_f n =
         let (mnn, dt) = tun_f n
             cents = fromIntegral mnn * 100 + dt
@@ -171,7 +173,7 @@ int_to_int8 = fromIntegral
 int8_to_word8 :: Int8 -> Word8
 int8_to_word8 = fromIntegral
 
-midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,T.Cents,Int) -> IO ()
+midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,Tuning.Cents,Int) -> IO ()
 midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
   t <- Scala.scl_load_tuning nm :: IO T.Tuning
   let tun_f = T.d12_midi_tuning_f (t,c,k)
@@ -185,22 +187,22 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 > midi_tbl_tuning_d12 "fmidi" ("meanquar",0,0)
 > midi_tbl_tuning_d12 "mts" ("young-lm_piano",-74.7,-3)
 -}
-midi_tbl_tuning_d12 :: String -> (String, T.Cents, T.Midi) -> IO ()
+midi_tbl_tuning_d12 :: String -> (String, Tuning.Cents, Pitch.Midi) -> IO ()
 midi_tbl_tuning_d12 typ (nm, c, k) = do
   t <- Scala.scl_load_tuning nm :: IO T.Tuning
-  let tun_f = T.d12_midi_tuning_f (t, c, k)
+  let tun_f = Midi.d12_midi_tuning_f (t, c, k)
       pp_f n =
         case typ of
-          "fmidi" -> printf "%3d,%10.6f" n (T.midi_detune_to_fmidi (tun_f n))
-          "freq" -> printf "%3d,%10.4f" n (T.midi_detune_to_cps (tun_f n))
+          "fmidi" -> printf "%3d,%10.6f" n (Pitch.midi_detune_to_fmidi (tun_f n))
+          "freq" -> printf "%3d,%10.4f" n (Pitch.midi_detune_to_cps (tun_f n))
           "mts" ->
-            let (mnn, dt) = T.midi_detune_normalise_positive (tun_f n)
+            let (mnn, dt) = Pitch.midi_detune_normalise_positive (tun_f n)
             in printf "%3d,%3d,%7.4f" n (mnn `mod` 0x80) dt
           _ -> error "midi_tbl_tuning_d12"
   putStr (unlines (map pp_f [0 .. 127]))
 
 ratio_cents_pp :: Rational -> String
-ratio_cents_pp = show . (round :: Double -> Int) . T.ratio_to_cents
+ratio_cents_pp = show . (round :: Double -> Int) . Tuning.ratio_to_cents
 
 -- > intnam_lookup [7/4,7/6,9/8,13/8]
 intnam_lookup :: [Rational] -> IO ()

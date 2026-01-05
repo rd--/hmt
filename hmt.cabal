@@ -1,16 +1,16 @@
 cabal-version:     2.4
 Name:              hmt
-Version:           0.22
+Version:           0.23
 Synopsis:          Haskell Music Theory
 Description:       Haskell library for Music Theory
 License:           GPL-3.0-only
 Category:          Music
-Copyright:         Rohan Drape, 2006-2025
+Copyright:         Rohan Drape, 2006-2026
 Author:            Rohan Drape
 Maintainer:        rd@rohandrape.net
 Stability:         Experimental
 Homepage:          http://rohandrape.net/t/hmt
-Tested-With:       GHC == 9.12.2
+Tested-With:       GHC == 9.14.2
 Build-Type:        Simple
 
 Data-files:        README.md
@@ -28,7 +28,8 @@ Library
                    directory,
                    fgl,
                    filepath,
-                   hmt-base == 0.22.*,
+                   hmt-base == 0.23.*,
+                   html-minus == 0.23.*,
                    lazy-csv,
                    logict,
                    multiset-comb,
@@ -51,6 +52,8 @@ Library
                    Music.Theory.Block_Design.Johnson_2007
                    Music.Theory.Clef
                    Music.Theory.Contour.Polansky_1992
+                   Music.Theory.Diagram.Grid
+                   Music.Theory.Diagram.Sequencer
                    Music.Theory.Duration
                    Music.Theory.Duration.Annotation
                    Music.Theory.Duration.ClickTrack

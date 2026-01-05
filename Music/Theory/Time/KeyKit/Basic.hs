@@ -4,8 +4,8 @@ module Music.Theory.Time.KeyKit.Basic where
 import Data.List {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
+import Music.Theory.Time {- hmt-base -}
 
-import Music.Theory.Time {- hmt -}
 import Music.Theory.Time.KeyKit {- hmt -}
 
 {- | Returns an arpeggiated version of the phrase.
