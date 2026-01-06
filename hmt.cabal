@@ -44,7 +44,8 @@ Library
                    time
   Default-Language:Haskell2010
   GHC-Options:     -Wall -fwarn-tabs
-  Exposed-modules: Music.Theory.Array.Csv.Midi.Cli
+  Exposed-modules: Music.Theory.Amplitude
+                   Music.Theory.Array.Csv.Midi.Cli
                    Music.Theory.Array.Csv.Midi.Mnd
                    Music.Theory.Array.Csv.Midi.Skini
                    Music.Theory.Array.Direction
