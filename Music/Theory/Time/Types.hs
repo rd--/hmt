@@ -1,5 +1,5 @@
--- | Time
-module Music.Theory.Time where
+-- | Time types
+module Music.Theory.Time.Types where
 
 -- | Time point.
 type Time = Rational

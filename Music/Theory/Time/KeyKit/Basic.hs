@@ -4,7 +4,7 @@ module Music.Theory.Time.KeyKit.Basic where
 import Data.List {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
-import Music.Theory.Time {- hmt-base -}
+import Music.Theory.Time.Types {- hmt-base -}
 
 import Music.Theory.Time.KeyKit {- hmt -}
 

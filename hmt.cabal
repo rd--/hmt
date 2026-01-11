@@ -102,12 +102,12 @@ Library
                    Music.Theory.Tiling.Canon
                    Music.Theory.Tiling.Johnson_2004
                    Music.Theory.Tiling.Johnson_2009
-                   Music.Theory.Time
                    Music.Theory.Time.Bel1990.R
                    Music.Theory.Time.KeyKit
                    Music.Theory.Time.KeyKit.Basic
                    Music.Theory.Time.KeyKit.Parser
                    Music.Theory.Time.Seq
+                   Music.Theory.Time.Types
                    Music.Theory.Time_Signature
                    Music.Theory.Tuning
                    Music.Theory.Tuning.Alves_1997
