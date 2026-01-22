@@ -10,3 +10,7 @@ Just-intontation tunings from the Scala tuning database.
 Pitches are written as integers.
 To derive ratios divide each pitch by the first pitch.
 Octaves are implicitly a ratio of two.
+
+# forte-table, rahn-table
+
+Set class tables giving Forte name and Forte and Rahn prime forms respectively.

@@ -172,7 +172,7 @@ z_sc_univ z =
 -- | Synonym for 'String'.
 type Sc_Name = String
 
--- | Table of (SC-NAME,PCSET).
+-- | Table of (Sc-Name,Pc-Set).
 type Sc_Table n = [(Sc_Name, [n])]
 
 {- | The Z12 set-class table (Forte prime forms).
@@ -488,7 +488,7 @@ scs_n n = filter ((== n) . genericLength) scs
 >>> tics Z.z12 [0,2,4,5,7,9]
 [3,2,5,0,5,2,3,4,1,6,1,4]
 
-> map (tics z12) scs
+> map (tics Z.z12) scs
 -}
 tics :: Integral i => Z.Z i -> [i] -> [Int]
 tics z p =
