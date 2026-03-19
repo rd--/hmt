@@ -62,6 +62,9 @@ forte_cmp p q =
 
 {- | Forte prime form, ie. 'z_ti_cmp_prime' of 'forte_cmp'.
 
+>>> z_forte_prime Z.z12 [0,4,7]
+[0,3,7]
+
 >>> z_forte_prime Z.z12 [0,1,3,6,8,9]
 [0,1,3,6,8,9]
 
