@@ -429,7 +429,7 @@ orientedDistance i j n =
   then j - i
   else n + j - i
 
-{- | The distance between two onsets i and j in R.
+{- | The distance between two onsets i and j in R/n.
 The minimum of the oriented distance from i to j
 and the oriented distance from j to i.
 I.e. the length of the shortest arc connecting points i and j

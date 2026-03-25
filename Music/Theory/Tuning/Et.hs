@@ -22,7 +22,7 @@ octpc_to_pitch_cps = octpc_to_pitch_cps_k0 (69, 440)
 {- | 12-tone equal temperament table equating 'Pitch' and frequency
 over range of human hearing, where @A4@ has given frequency.
 
-> tbl_12et_k0 (69,440)
+> map (\(p, d) -> (pitch_pp_iso p,d)) (tbl_12et_k0 (69,440))
 -}
 tbl_12et_k0 :: (Double, Double) -> [(Pitch, Double)]
 tbl_12et_k0 zero =
@@ -31,8 +31,11 @@ tbl_12et_k0 zero =
 
 {- | 'tbl_12et_k0' @(69,440)@.
 
-> length tbl_12et == 192
-> T.minmax (map (round . snd) tbl_12et) == (1,31609)
+>>> length tbl_12et
+192
+
+>>> T.minmax (map (round . snd) tbl_12et)
+(1,31609)
 -}
 tbl_12et :: [(Pitch, Double)]
 tbl_12et = tbl_12et_k0 (69, 440)
@@ -49,25 +52,29 @@ tbl_24et_k0 zero =
 
 {- | 'tbl_24et_k0' @(69,440)@.
 
-> length tbl_24et == 360
-> T.minmax (map (round . snd) tbl_24et) == (1,32535)
+>>> length tbl_24et
+360
+
+>>> T.minmax (map (round . snd) tbl_24et)
+(1,32535)
 -}
 tbl_24et :: [(Pitch, Double)]
 tbl_24et = tbl_24et_k0 (69, 440)
 
 {- | Given an @Et@ table (or like) find bounds of frequency.
 
-> import qualified Music.Theory.Tuple as T
-> let r = Just (T.t2_map octpc_to_pitch_cps ((3,11),(4,0)))
-> bounds_et_table tbl_12et 256 == r
+>>> import qualified Music.Theory.Tuple as Tuple
+>>> let r = Just (Tuple.t2_map octpc_to_pitch_cps ((3,11),(4,0)))
+>>> bounds_et_table tbl_12et 256 == r
+True
 -}
 bounds_et_table :: Ord s => [(t, s)] -> s -> Maybe ((t, s), (t, s))
 bounds_et_table = T.find_bounds True (compare . snd)
 
 {- | 'bounds_et_table' of 'tbl_12et'.
 
-> import qualified Music.Theory.Tuning.Hs as T
-> map bounds_12et_tone (T.harmonic_series_cps_n 17 55)
+> import qualified Music.Theory.Tuning.Hs as Hs
+> map bounds_12et_tone (Hs.harmonic_series_cps_n 17 55)
 -}
 bounds_12et_tone :: Double -> Maybe ((Pitch, Double), (Pitch, Double))
 bounds_12et_tone = bounds_et_table tbl_12et
@@ -81,7 +88,8 @@ type HS_R p = (Double, p, Double, Double, Cents)
 
 {- | /n/-decimal places.
 
-> ndp 3 (1/3) == "0.333"
+>>> ndp 3 (1/3)
+"0.333"
 -}
 ndp :: Int -> Double -> String
 ndp = printf "%.*f"
@@ -96,10 +104,11 @@ hs_r_pitch_pp = hs_r_pp pitch_pp
 
 {- | Form 'HS_R' for /frequency/ by consulting table.
 
-> let f = 256
-> let f' = octpc_to_cps (4,0)
-> let r = (f,Pitch C Natural 4,f',f-f',fratio_to_cents (f/f'))
-> nearest_et_table_tone tbl_12et 256 == r
+>>> let f = 256
+>>> let f' = octpc_to_cps (4,0)
+>>> let r = (f,Pitch C Natural 4,f',f - f',fratio_to_cents (f / f'))
+>>> nearest_et_table_tone tbl_12et 256 == r
+True
 -}
 nearest_et_table_tone :: [(p, Double)] -> Double -> HS_R p
 nearest_et_table_tone tbl f =
@@ -118,8 +127,8 @@ nearest_12et_tone_k0 zero = nearest_et_table_tone (tbl_12et_k0 zero)
 
 {- | 'nearest_et_table_tone' for 'tbl_24et'.
 
-> let r = "55.0 A1 55.0 0.0"
-> unwords (hs_r_pitch_pp 1 (nearest_24et_tone_k0 (69,440) 55)) == r
+>>> unwords (hs_r_pitch_pp 1 (nearest_24et_tone_k0 (69,440) 55))
+"55.0 A1 55.0 0.0"
 -}
 nearest_24et_tone_k0 :: (Double, Double) -> Double -> HS_R Pitch
 nearest_24et_tone_k0 zero = nearest_et_table_tone (tbl_24et_k0 zero)
@@ -129,11 +138,11 @@ nearest_24et_tone_k0 zero = nearest_et_table_tone (tbl_24et_k0 zero)
 {- | Monzo 72-edo HEWM notation.  The domain is (-9,9).
 <http://www.tonalsoft.com/enc/number/72edo.aspx>
 
-> let r = ["+",">","^","#<","#-","#","#+","#>","#^"]
-> map alteration_72et_monzo [1 .. 9] == r
+>>> map alteration_72et_monzo [1 .. 9]
+["+",">","^","#<","#-","#","#+","#>","#^"]
 
-> let r = ["-","<","v","b>","b+","b","b-","b<","bv"]
-> map alteration_72et_monzo [-1,-2 .. -9] == r
+>>> map alteration_72et_monzo [-1,-2 .. -9]
+["-","<","v","b>","b+","b","b-","b<","bv"]
 -}
 alteration_72et_monzo :: Integral n => n -> String
 alteration_72et_monzo n =
@@ -148,15 +157,15 @@ alteration_72et_monzo n =
 {- | Given a midi note number and @1/6@ deviation determine 'Pitch''
 and frequency.
 
-> let f = pitch_r_pp . fst . pitch_72et_k0 (69,440)
-> let r = "C4 C+4 C>4 C^4 C#<4 C#-4 C#4 C#+4 C#>4 C#^4"
-> unwords (map f (zip (repeat 60) [0..9])) == r
+>>> let f = pitch_r_pp . fst . pitch_72et_k0 (69,440)
+>>> unwords (map f (zip (repeat 60) [0..9]))
+"C4 C+4 C>4 C^4 C#<4 C#-4 C#4 C#+4 C#>4 C#^4"
 
-> let r = "A4 A+4 A>4 A^4 Bb<4 Bb-4 Bb4 Bb+4 Bb>4 Bv4"
-> unwords (map f (zip (repeat 69) [0..9])) == r
+>>> unwords (map f (zip (repeat 69) [0..9]))
+"A4 A+4 A>4 A^4 Bb<4 Bb-4 Bb4 Bb+4 Bb>4 Bv4"
 
-> let r = "Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"
-> unwords (map f (zip (repeat 70) [0..9])) == r
+>>> unwords (map f (zip (repeat 70) [0..9]))
+"Bb4 Bb+4 Bb>4 Bv4 B<4 B-4 B4 B+4 B>4 B^4"
 -}
 pitch_72et_k0 :: (Double, Double) -> (Midi, Int) -> (Pitch_R, Double)
 pitch_72et_k0 zero (x, n) =
@@ -185,8 +194,11 @@ pitch_72et_k0 zero (x, n) =
 {- | 72-tone equal temperament table equating 'Pitch'' and frequency
 over range of human hearing, where @A4@ = @440@hz.
 
-> length (tbl_72et_k0 (69,440)) == 792
-> T.minmax (map (round . snd) (tbl_72et_k0 (69,440))) == (16,33167)
+>>> length (tbl_72et_k0 (69,440))
+792
+
+>>> T.minmax (map (round . snd) (tbl_72et_k0 (69,440)))
+(16,33167)
 -}
 tbl_72et_k0 :: (Double, Double) -> [(Pitch_R, Double)]
 tbl_72et_k0 zero =
@@ -195,8 +207,8 @@ tbl_72et_k0 zero =
 
 {- | 'nearest_et_table_tone' for 'tbl_72et'.
 
-> let r = "324.0 E<4 323.3 0.7 3.5"
-> unwords (hs_r_pp pitch_r_pp 1 (nearest_72et_tone_k0 (69,440) 324))
+>>> unwords (hs_r_pp pitch_r_pp 1 (nearest_72et_tone_k0 (69,440) 324))
+"324.0 E<4 323.3 3.5"
 
 > let f = take 2 . hs_r_pp pitch_r_pp 1 . nearest_72et_tone_k0 (69,440) . snd
 > mapM_ (print . unwords . f) (tbl_72et_k0 (69,440))
@@ -215,14 +227,16 @@ hsr_to_pitch_detune (_, p, _, _, c) = (p, c)
 
 {- | Nearest 12-Et 'Pitch_Detune' to indicated frequency (hz).
 
-> nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365
+>>> nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365
+(Pitch {note = A, alteration = Natural, octave = 4},50.00000000000007)
 -}
 nearest_pitch_detune_12et_k0 :: (Double, Double) -> Double -> Pitch_Detune
 nearest_pitch_detune_12et_k0 zero = hsr_to_pitch_detune . nearest_12et_tone_k0 zero
 
 {- | Nearest 24-Et 'Pitch_Detune' to indicated frequency (hz).
 
-> nearest_pitch_detune_24et_k0 (69,440) 452.8929841231365
+>>> nearest_pitch_detune_24et_k0 (69,440) 452.8929841231365
+(Pitch {note = A, alteration = QuarterToneSharp, octave = 4},0.0)
 -}
 nearest_pitch_detune_24et_k0 :: (Double, Double) -> Double -> Pitch_Detune
 nearest_pitch_detune_24et_k0 zero = hsr_to_pitch_detune . nearest_24et_tone_k0 zero
@@ -236,7 +250,8 @@ ratio_to_pitch_detune near_f f0 r =
 
 {- | Frequency (hz) of 'Pitch_Detune'.
 
-> pitch_detune_to_cps (octpc_to_pitch pc_spell_ks (4,9),50)
+>>> pitch_detune_to_cps (octpc_to_pitch pc_spell_ks (4,9),50)
+452.8929841231365
 -}
 pitch_detune_to_cps :: Floating n => Pitch_Detune -> n
 pitch_detune_to_cps (p, d) = cps_shift_cents (pitch_to_cps p) (realToFrac d)
@@ -252,18 +267,47 @@ ratio_to_pitch_detune_24et_k0 zero = ratio_to_pitch_detune (nearest_24et_tone_k0
 pitch_detune_in_octave_nearest :: Pitch -> Pitch_Detune -> Pitch_Detune
 pitch_detune_in_octave_nearest p1 (p2, d2) = (pitch_in_octave_nearest p1 p2, d2)
 
--- | Markdown pretty-printer for 'Pitch_Detune'.
+{- | Markdown pretty-printer for 'Pitch_Detune'.
+
+>>> pitch_detune_md (nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365)
+"A4^+50^"
+
+>>> let cps = [174,285,396,417,528,639,741,852,963]
+>>> let f = pitch_detune_md . nearest_pitch_detune_12et_k0 (69,440)
+>>> putStr (unlines (map f cps))
+F3^-6^
+C♯4^+48^
+G4^+18^
+A♭4^+7^
+C5^+16^
+E♭5^+46^
+F♯5^+2^
+A♭5^+44^
+B5^-44^
+-}
 pitch_detune_md :: Pitch_Detune -> String
 pitch_detune_md (p, c) = pitch_pp p ++ cents_diff_md (round c :: Integer)
 
--- | HTML pretty-printer for 'Pitch_Detune'.
+{- | HTML pretty-printer for 'Pitch_Detune'.
+
+>>> pitch_detune_html (nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365)
+"A4<SUP>+50</SUP>"
+-}
 pitch_detune_html :: Pitch_Detune -> String
 pitch_detune_html (p, c) = pitch_pp p ++ cents_diff_html (round c :: Integer)
 
--- | No-octave variant of 'pitch_detune_md'.
+{- | No-octave variant of 'pitch_detune_md'.
+
+>>> pitch_class_detune_md (nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365)
+"A^+50^"
+-}
 pitch_class_detune_md :: Pitch_Detune -> String
 pitch_class_detune_md (p, c) = pitch_class_pp p ++ cents_diff_md (round c :: Integer)
 
--- | No-octave variant of 'pitch_detune_html'.
+{- | No-octave variant of 'pitch_detune_html'.
+
+>>> pitch_class_detune_html (nearest_pitch_detune_12et_k0 (69,440) 452.8929841231365)
+"A<SUP>+50</SUP>"
+-}
 pitch_class_detune_html :: Pitch_Detune -> String
 pitch_class_detune_html (p, c) = pitch_class_pp p ++ cents_diff_html (round c :: Integer)

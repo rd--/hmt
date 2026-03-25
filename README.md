@@ -23,12 +23,12 @@ related:
 [ply](http://rohandrape.net/?t=hmt&e=md/ply.md),
 [scala](http://rohandrape.net/?t=hmt&e=md/scala.md)
 
-© [rohan drape](http://rohandrape.net/), 2006-2025, [gpl](http://gnu.org/copyleft/).
+© [rohan drape](http://rohandrape.net/), 2006-2026, [gpl](http://gnu.org/copyleft/).
 
 * * *
 
 ```
 $ doctest Music/Theory/
-Examples: 1890 Tried: 1890  Errors: 0  Failures: 0
+Examples: 1939 Tried: 1939  Errors: 0  Failures: 0
 $
 ```
