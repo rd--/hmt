@@ -66,9 +66,9 @@ l = curry L
 (⋄) :: Integer -> Integer -> Sieve
 (⋄) = l
 
-infixl 3 ∪
-infixl 4 ∩
-infixl 5 ⋄
+infixl 3 ∪ -- Union
+infixl 4 ∩ -- Intersection
+infixl 5 ⋄ -- L
 
 {- | In a /normal/ 'Sieve' /m/ is '>' /i/.
 
@@ -289,6 +289,15 @@ Nomos Alpha (metabolae):
 
 >>> differentiate p
 [1,1,2,5,3,1,2,5,3,1,2,8,1,2,2,3,3,1,2,4,4,1,2,5,1,2,1,2,5,3,1,2]
+
+"one of the mixed Byzantine scales, a disjunct system consisting of a chromatic tetrachord and a diatonic tetrachord […], separated by a major tone, […] notated in Aristoxenean segments" (Xenakis 1992, 197)
+
+>>> let a = 8⋄0 ∩ (9⋄0 ∪ 9⋄6) -- 0,24(,72,96)
+>>> let b = 9⋄6 ∩ (8⋄2 ∪ 8⋄4) -- 42,60(,114,132)
+>>> let c = 8⋄5 ∩ (9⋄5 ∪ 9⋄8) -- 5,53(,77,125)
+>>> let d = (8⋄6 ∩ 9⋄3) -- 30(,102)
+>>> buildn 8 (a ∪ b ∪ c ∪ d)
+[0,5,24,30,42,53,60,72]
 -}
 buildn :: Int -> Sieve -> [Integer]
 buildn n = take n . build . reduce
