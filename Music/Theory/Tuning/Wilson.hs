@@ -1,10 +1,10 @@
 -- | Erv Wilson, archives <http://anaphoria.com/wilson.html>
 module Music.Theory.Tuning.Wilson where
 
-import Control.Monad {- base -}
-import Data.List {- base -}
-import Data.Maybe {- base -}
-import Data.Ord {- base -}
+import qualified Control.Monad {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
+import qualified Data.Ord {- base -}
 import Data.Ratio {- base -}
 import Text.Printf {- base -}
 
@@ -171,7 +171,7 @@ r_seq_limit = maximum . map Prime.rational_prime_limit
 [2,3,5,7,13,31]
 -}
 r_seq_factors :: [Rational] -> [Integer]
-r_seq_factors = nub . sort . concatMap (uncurry (++) . Prime.rational_prime_factors)
+r_seq_factors = List.nub_sort . concatMap (uncurry (++) . Prime.rational_prime_factors)
 
 r_seq_normalize :: [Rational] -> [Rational]
 r_seq_normalize r =
@@ -179,7 +179,7 @@ r_seq_normalize r =
     [] -> error "r_seq_normalize"
     r0 : _ ->
       let r' = map (Tuning.fold_ratio_to_octave_err . (/ r0)) r
-      in sort r'
+      in Data.List.sort r'
 
 r_seq_rotations :: [Rational] -> [[Rational]]
 r_seq_rotations = map r_seq_normalize . List.rotations
@@ -196,7 +196,7 @@ r_seq_inverse = r_seq_normalize . map recip
 -}
 rat_fact_lm :: Integer -> Rational -> Lattice_Position
 rat_fact_lm lm =
-  let k = fromMaybe 1 (Prime.prime_k lm) + 1
+  let k = Data.Maybe.fromMaybe 1 (Prime.prime_k lm) + 1
   in (\c -> (k, c))
       . Prime.rat_prime_factors_t k
       . Math.rational_nd
@@ -214,7 +214,7 @@ tbl_txt del lm_z rs =
         , Show.real_pp 2 c
         , Show.real_pp_unicode 2 h
         ]
-  in map (intersperse "=" . f) (zip5 [0 :: Int ..] scl rs cs hs)
+  in map (Data.List.intersperse "=" . f) (Data.List.zip5 [0 :: Int ..] scl rs cs hs)
 
 {- | Table write
 
@@ -230,7 +230,7 @@ tbl_wr del = putStr . unlines . Text.table_pp (False, True, False, " ", False) .
 type Ew_Gr_Opt = (Maybe (Lattice_Design Rational, Maybe [Integer]), [Dot.Dot_Meta_Attr], Rational -> String, (Rational, Rational) -> [(String, String)])
 
 ew_gr_opt_pos :: Ew_Gr_Opt -> Bool
-ew_gr_opt_pos (lc_m, _, _, _) = isJust lc_m
+ew_gr_opt_pos (lc_m, _, _, _) = Data.Maybe.isJust lc_m
 
 {- | Position attributes
 
@@ -273,7 +273,7 @@ ew_gr_udot_wr opt fn = writeFile fn . unlines . ew_gr_udot opt
 ew_gr_udot_wr_svg :: Ew_Gr_Opt -> FilePath -> Graph.Lbl Rational () -> IO ()
 ew_gr_udot_wr_svg opt fn gr = do
   ew_gr_udot_wr opt fn gr
-  void (Dot.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn)
+  Control.Monad.void (Dot.dot_to_svg (if ew_gr_opt_pos opt then ["-n"] else []) fn)
 
 -- * Zig-Zag
 
@@ -313,7 +313,7 @@ zz_seq k_seq = zz_recur k_seq [(0, 1), (1, 1)]
 
 -- * Mos
 
--- | Are integers co-prime.
+-- | Are integers co-prime (spl=isCoprime)
 are_coprime :: Integral i => i -> i -> Bool
 are_coprime x y = gcd x y == 1
 
@@ -428,7 +428,7 @@ mos_verify p g =
 mos_verified :: (Ord b, Integral b) => b -> b -> [(b, b)]
 mos_verified p g = if mos_verify p g then mos_unfold (mos_2 p g) else error "mos?"
 
-{- | Mos. p = period, g = generator
+{- | Mos sequence. p = period, g = generator (spl=momentOfSymmetry)
 
 >>> mos_seq 12 5 -- 5L2s
 [[5,7],[5,5,2],[3,2,3,2,2],[1,2,2,1,2,2,2]]
@@ -476,7 +476,9 @@ mos_seq_m m =
   in recur_f r [i0, j0]
 
 mos_cell_pp :: (Integral i, Show i) => i -> String
-mos_cell_pp x = let s = show x in s ++ genericReplicate (x - genericLength s) '-'
+mos_cell_pp x =
+  let s = show x
+  in s ++ Data.List.genericReplicate (x - Data.List.genericLength s) '-'
 
 mos_row_pp :: (Integral i, Show i) => [i] -> String
 mos_row_pp = concatMap mos_cell_pp
@@ -644,7 +646,7 @@ sbt_dot n =
 (^.) = (^)
 
 r_normalise :: [Rational] -> [Rational]
-r_normalise = nub . sortOn Tuning.fold_ratio_to_octave_err
+r_normalise = Data.List.nub . Data.List.sortOn Tuning.fold_ratio_to_octave_err
 
 -- | (ratio,multiplier,steps)
 type M_Gen = (Rational, Rational, Int)
@@ -1066,8 +1068,8 @@ ew_hel_12_scl = r_to_scale "ew_hel_12" "EW, hel.pdf, P.12" ew_hel_12_r
 -}
 she_div :: Eq a => [a] -> [[[a]]]
 she_div x =
-  let f = (== [1, length x - 1]) . sort . map length
-  in map (sortOn (Down . length)) (filter f (Set.partitions x))
+  let f = (== [1, length x - 1]) . Data.List.sort . map length
+  in map (Data.List.sortOn (Data.Ord.Down . length)) (filter f (Set.partitions x))
 
 {- | Product of complement divided by element.
 
@@ -1105,7 +1107,7 @@ True
 []
 -}
 she :: [Rational] -> [Rational]
-she r = nub (sort (map Tuning.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r)))
+she r = List.nub_sort (map Tuning.fold_ratio_to_octave_err (she_mul_r r ++ she_div_r r))
 
 -- * <http://anaphoria.com/meru.pdf>
 

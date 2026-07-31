@@ -6,7 +6,7 @@ module Music.Theory.Tuning.Anamark where
 
 import Text.Printf {- base -}
 
-import qualified Music.Theory.List as T
+import qualified Music.Theory.List as List {- hmt-base -}
 
 -- | Format section string
 tun_sec :: String -> String
@@ -87,7 +87,7 @@ tun_functional_tuning f0 =
         [ tun_sec "Functional Tuning"
         , printf "note 0 = \"# %f\"" f0
         ]
-  in (++) hdr . zipWith f [1 :: Int .. 127] . T.d_dx
+  in (++) hdr . zipWith f [1 :: Int .. 127] . List.d_dx
 
 -- | Format /Scale End/ section header.
 tun_end :: [String]

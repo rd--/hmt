@@ -1,10 +1,10 @@
 -- | Euler-Fokker genus <http://www.huygens-fokker.org/microtonality/efg.html>
 module Music.Theory.Tuning.Efg where
 
-import Data.List {- base -}
+import qualified Data.List {- base -}
 
-import qualified Music.Theory.List as T {- hmt -}
-import qualified Music.Theory.Set.List as T {- hmt -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Set.List as Set.List {- hmt-base -}
 
 import Music.Theory.Tuning {- hmt -}
 
@@ -29,11 +29,11 @@ efg_tones = product . map ((+ 1) . snd)
 
 {- | Collate a genus given as a multiset into standard form, ie. histogram.
 
->>> efg_collate [3,3,3,7,7] == [(3,3),(7,2)]
-True
+>>> efg_collate [3,3,3,7,7]
+[(3,3),(7,2)]
 -}
 efg_collate :: Ord i => [i] -> Efg i
-efg_collate = T.histogram . sort
+efg_collate = List.histogram . Data.List.sort
 
 {- | Factors of Efg given with co-ordinate of grid location.
 
@@ -49,17 +49,15 @@ efg_factors efg =
       k' =
         if length efg == 1
           then concatMap (map return) k
-          else T.nfold_cartesian_product k
+          else Set.List.nfold_cartesian_product k
       z = map fst efg
       f ix = (ix, concat (zipWith (\n m -> replicate n (z !! m)) ix [0 ..]))
   in map f k'
 
 {- | Ratios of Efg, taking /n/ as the 1:1 ratio, with indices, folded into one octave.
 
->>> import Data.List
->>> let r = sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
->>> r == [1/1,9/8,8/7,9/7,21/16,189/128,3/2,27/16,12/7,7/4,27/14,63/32]
-True
+>>> Data.List.sort $ map snd $ efg_ratios 7 [(3,3),(7,2)]
+[1 % 1,9 % 8,8 % 7,9 % 7,21 % 16,189 % 128,3 % 2,27 % 16,12 % 7,7 % 4,27 % 14,63 % 32]
 
 >>> map (round . ratio_to_cents) r
 [0,204,231,435,471,675,702,906,933,969,1137,1173]
@@ -118,7 +116,7 @@ efg_ratios n =
 -}
 efg_diagram_set :: (Enum n, Real n) => (Cents -> n, n, n, n) -> [Efg n] -> [(n, n, n, n)]
 efg_diagram_set (to_f, h, m, k) e =
-  let f = (++ [1200]) . sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
+  let f = (++ [1200]) . Data.List.sort . map (to_f . ratio_to_cents . snd) . efg_ratios 1
       g (c, y) =
         let y' = y + h
             b = [(0, y, 1200, y), (0, y', 1200, y')]
