@@ -1,8 +1,8 @@
 -- | Common music notation note and alteration values.
 module Music.Theory.Pitch.Note where
 
-import Data.Char {- base -}
-import Data.Maybe {- base -}
+import qualified Data.Char {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified Text.Parsec as Parsec {- parsec -}
 
@@ -25,7 +25,7 @@ note_pp = List.head_err . show
 
 -- | Note name in lilypond syntax (ie. lower case).
 note_pp_ly :: Note -> String
-note_pp_ly = map toLower . show
+note_pp_ly = map Data.Char.toLower . show
 
 -- | Table of 'Note' and corresponding pitch-classes.
 note_pc_tbl :: Num i => [(Note, i)]
@@ -66,10 +66,10 @@ note_t_transpose x n =
 parse_note_t :: Bool -> Char -> Maybe Note
 parse_note_t ci c =
   let tbl = zip "CDEFGAB" [C, D, E, F, G, A, B]
-  in lookup (if ci then toUpper c else c) tbl
+  in lookup (if ci then Data.Char.toUpper c else c) tbl
 
 char_to_note_t :: Bool -> Char -> Note
-char_to_note_t ci = fromMaybe (error "char_to_note_t") . parse_note_t ci
+char_to_note_t ci = Data.Maybe.fromMaybe (error "char_to_note_t") . parse_note_t ci
 
 {- | Inclusive set of 'Note' within indicated interval.
 This is not equal to 'enumFromTo' which is not circular.
@@ -127,7 +127,7 @@ alteration_to_diff = generic_alteration_to_diff
 
 -- | Is 'Alteration' 12-EList.
 alteration_is_12et :: Alteration -> Bool
-alteration_is_12et = isJust . alteration_to_diff
+alteration_is_12et = Data.Maybe.isJust . alteration_to_diff
 
 {- | Transform 'Alteration' to semitone alteration.
 
@@ -137,7 +137,7 @@ alteration_is_12et = isJust . alteration_to_diff
 alteration_to_diff_err :: Integral i => Alteration -> i
 alteration_to_diff_err =
   let err = error "alteration_to_diff: quarter tone"
-  in fromMaybe err . generic_alteration_to_diff
+  in Data.Maybe.fromMaybe err . generic_alteration_to_diff
 
 {- | Transform 'Alteration' to fractional semitone alteration, ie. allow quarter tones.
 
@@ -246,7 +246,10 @@ The @3/4@ symbols are non-standard, here they correspond to @MUSICAL SYMBOL FLAT
 True
 -}
 alteration_symbol :: Alteration -> Char
-alteration_symbol a = fromMaybe (error "alteration_symbol") (lookup a alteration_symbol_tbl)
+alteration_symbol a =
+  Data.Maybe.fromMaybe
+  (error "alteration_symbol")
+  (lookup a alteration_symbol_tbl)
 
 {- | Inverse of 'alteration_symbol'.
 
@@ -270,7 +273,7 @@ symbol_to_alteration_iso strict txt =
 
 symbol_to_alteration_iso_err :: Bool -> String -> Alteration
 symbol_to_alteration_iso_err strict =
-  fromMaybe (error "symbol_to_alteration_iso")
+  Data.Maybe.fromMaybe (error "symbol_to_alteration_iso")
     . symbol_to_alteration_iso strict
 
 -- | 'symbol_to_alteration' extended to allow single character ISO notations.
@@ -307,7 +310,7 @@ alteration_iso_m a = lookup a alteration_iso_tbl
 alteration_iso :: Alteration -> String
 alteration_iso =
   let qt = error "alteration_iso: quarter tone"
-  in fromMaybe qt . alteration_iso_m
+  in Data.Maybe.fromMaybe qt . alteration_iso_m
 
 -- | The /Tonhöhe/ ASCII spellings for alterations.
 alteration_tonh_tbl :: [(Alteration, String)]
@@ -343,7 +346,9 @@ tonh_to_alteration :: String -> Maybe Alteration
 tonh_to_alteration s = List.reverse_lookup s alteration_tonh_tbl
 
 tonh_to_alteration_err :: String -> Alteration
-tonh_to_alteration_err = fromMaybe (error "tonh_to_alteration") . tonh_to_alteration
+tonh_to_alteration_err =
+  Data.Maybe.fromMaybe (error "tonh_to_alteration")
+  . tonh_to_alteration
 
 -- * 12-ET
 
@@ -359,7 +364,9 @@ note_alteration_to_pc (n, a) =
 [11,0,11,10]
 -}
 note_alteration_to_pc_err :: (Note, Alteration) -> Int
-note_alteration_to_pc_err = fromMaybe (error "note_alteration_to_pc") . note_alteration_to_pc
+note_alteration_to_pc_err =
+  Data.Maybe.fromMaybe (error "note_alteration_to_pc")
+  . note_alteration_to_pc
 
 -- | Note & alteration sequence in key-signature spelling.
 note_alteration_ks :: [(Note, Alteration)]

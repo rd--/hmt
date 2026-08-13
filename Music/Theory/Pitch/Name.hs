@@ -5,8 +5,8 @@ tone sharp and /isis/ double sharp.
 -}
 module Music.Theory.Pitch.Name where
 
-import Music.Theory.Pitch
-import Music.Theory.Pitch.Note
+import Music.Theory.Pitch {- hmt -}
+import Music.Theory.Pitch.Note {- hmt -}
 
 a0, b0 :: Pitch
 a0 = Pitch A Natural 0
