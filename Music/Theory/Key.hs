@@ -213,7 +213,7 @@ key_fifths_tbl =
 {- | Lookup 'key_fifths' value in 'key_fifths_tbl'.
 
 >>> let a = [0,1,-1,2,-2,3,-3,4,-4,5,-5]
->>> let f md = map key_lc_iso_pp . mapMaybe (fifths_to_key md)
+>>> let f md = map key_lc_iso_pp . Data.Maybe.mapMaybe (fifths_to_key md)
 >>> f Minor_Mode a
 ["a","e","d","b","g","f#","c","c#","f","g#","bb"]
 
@@ -227,7 +227,7 @@ fifths_to_key md n =
 
 {- | Given sorted pitch-class set, find simplest implied key in given mode.
 
->>> mapMaybe (implied_key Major_Mode) [[0,2,4],[1,3],[4,10],[3,9],[8,9]]
+>>> Data.Maybe.mapMaybe (implied_key Major_Mode) [[0,2,4],[1,3],[4,10],[3,9],[8,9]]
 [(C,Natural,Major_Mode),(E,Natural,Major_Mode),(F,Natural,Major_Mode),(B,Flat,Major_Mode),(A,Natural,Major_Mode)]
 
 >>> map (implied_key Major_Mode) [[0,1,2],[0,1,3,4]]

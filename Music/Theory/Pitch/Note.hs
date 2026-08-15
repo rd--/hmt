@@ -41,7 +41,7 @@ note_to_pc n = List.lookup_err_msg "note_to_pc" n note_pc_tbl
 
 {- | Inverse of 'note_to_pc'.
 
->>> mapMaybe pc_to_note [0,4,7]
+>>> Data.Maybe.mapMaybe pc_to_note [0,4,7]
 [C,E,G]
 -}
 pc_to_note :: (Eq i, Num i) => i -> Maybe Note
@@ -60,7 +60,7 @@ note_t_transpose x n =
 
 {- | Parser from 'Char', case insensitive flag.
 
->>> mapMaybe (parse_note_t True) "CDEFGab"
+>>> Data.Maybe.mapMaybe (parse_note_t True) "CDEFGab"
 [C,D,E,F,G,A,B]
 -}
 parse_note_t :: Bool -> Char -> Maybe Note
@@ -253,7 +253,7 @@ alteration_symbol a =
 
 {- | Inverse of 'alteration_symbol'.
 
->>> mapMaybe symbol_to_alteration "♭♮♯"
+>>> Data.Maybe.mapMaybe symbol_to_alteration "♭♮♯"
 [Flat,Natural,Sharp]
 -}
 symbol_to_alteration :: Char -> Maybe Alteration
@@ -297,10 +297,10 @@ alteration_iso_tbl =
 
 {- | The @ISO@ ASCII spellings for alterations.  Naturals are written as the empty string.
 
->>> mapMaybe alteration_iso_m [Flat .. Sharp]
+>>> Data.Maybe.mapMaybe alteration_iso_m [Flat .. Sharp]
 ["b","","#"]
 
->>> mapMaybe alteration_iso_m [DoubleFlat,DoubleSharp]
+>>> Data.Maybe.mapMaybe alteration_iso_m [DoubleFlat,DoubleSharp]
 ["bb","x"]
 -}
 alteration_iso_m :: Alteration -> Maybe String
@@ -339,7 +339,7 @@ alteration_tonh a = List.lookup_err a alteration_tonh_tbl
 
 {- | Inverse of 'alteration_tonh'.
 
->>> mapMaybe tonh_to_alteration ["es","eh","","ih","is"]
+>>> Data.Maybe.mapMaybe tonh_to_alteration ["es","eh","","ih","is"]
 [Flat,QuarterToneFlat,Natural,QuarterToneSharp,Sharp]
 -}
 tonh_to_alteration :: String -> Maybe Alteration

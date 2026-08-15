@@ -1,10 +1,10 @@
 -- | Tom Johnson. /Other Harmony: Beyond Tonal and Atonal/. Editions 75, 2014.
 module Music.Theory.Graph.Johnson_2014 where
 
-import Control.Monad {- base -}
-import Data.Int {- base -}
-import Data.List {- base -}
-import Data.Maybe {- base -}
+import qualified Control.Monad {- base -}
+import qualified Data.Int {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified Control.Monad.Logic as Logic {- logict -}
 import qualified Data.Graph.Inductive as Fgl {- fgl -}
@@ -28,11 +28,13 @@ import qualified Music.Theory.Z.Tto as Z.Tto {- hmt -}
 
 -- * Common
 
-type Z12 = Int8
+type Z12 = Data.Int.Int8
 
+-- | Tuple minus
 dif :: Num a => (a, a) -> a
 dif = uncurry (-)
 
+-- | Absolute difference
 absdif :: Num a => (a, a) -> a
 absdif = abs . dif
 
@@ -45,7 +47,7 @@ p2_and p q i j = p i j && q i j
 
 -- | degree of intersection
 doi :: Eq t => [t] -> [t] -> Int
-doi p = length . intersect p
+doi p = length . Data.List.intersect p
 
 doi_of :: Eq t => Int -> [t] -> [t] -> Bool
 doi_of n p = (==) n . doi p
@@ -73,7 +75,7 @@ loc_dif_n p q =
 loc_dif_n_of :: Eq t => Int -> [t] -> [t] -> Bool
 loc_dif_n_of n p q = loc_dif_n p q == n
 
-{- Min vl
+{- | Min vl
 
 >>> min_vl [6,11,13] [6,10,14]
 2
@@ -81,7 +83,7 @@ loc_dif_n_of n p q = loc_dif_n p q == n
 min_vl :: (Num a, Ord a) => [a] -> [a] -> a
 min_vl p q =
   let f x = sum (zipWith (curry absdif) p x)
-  in minimum (map f (permutations q))
+  in minimum (map f (Data.List.permutations q))
 
 min_vl_of :: (Num a, Ord a) => a -> [a] -> [a] -> Bool
 min_vl_of n p q = min_vl p q == n
@@ -93,18 +95,18 @@ combinations2 :: Ord t => [t] -> [(t, t)]
 combinations2 p = [(i, j) | i <- p, j <- p, i < j]
 
 set_pp :: Show t => [t] -> String
-set_pp = intercalate "," . map show
+set_pp = Data.List.intercalate "," . map show
 
 tto_rel_to :: Integral t => Z.Z t -> [t] -> [t] -> [Z.Tto.Tto t]
 tto_rel_to z p q = Z.Tto.z_tto_rel 5 z (Set.List.set p) (Set.List.set q)
 
 set_pp_tto_rel :: (Integral t, Show t) => Z.Z t -> [t] -> [t] -> String
-set_pp_tto_rel z p = intercalate "," . map Z.Tto.tto_pp . tto_rel_to z p
+set_pp_tto_rel z p = Data.List.intercalate "," . map Z.Tto.tto_pp . tto_rel_to z p
 
 -- * Map
 
 m_get :: Ord k => Map.Map k v -> k -> v
-m_get m i = fromMaybe (error "get") (Map.lookup i m)
+m_get m i = Data.Maybe.fromMaybe (error "get") (Map.lookup i m)
 
 -- | degree of intersection
 m_doi_of :: Map.Map Int [Z12] -> Int -> Int -> Int -> Bool
@@ -190,8 +192,8 @@ p12_c5_gr =
 
 {- | P.12 Euler
 
->>> Tuning.Graph.Euler.euler_plane_r p12_euler_plane == [1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,16/9,15/8]
-True
+>>> Tuning.Graph.Euler.euler_plane_r p12_euler_plane
+[1 % 1,16 % 15,9 % 8,6 % 5,5 % 4,4 % 3,45 % 32,3 % 2,8 % 5,5 % 3,16 % 9,15 % 8]
 -}
 p12_euler_plane :: Tuning.Graph.Euler.Euler_Plane Rational
 p12_euler_plane =
@@ -218,7 +220,7 @@ p14_eset =
 
 p14_mk_e :: [(Int, Int)] -> [(Key.Key, Key.Key)]
 p14_mk_e =
-  let pc_to_key m pc = let (n, a) = fromMaybe (error "p14_mk_e?") (Pitch.Note.pc_to_note_alteration_ks pc) in (n, a, m)
+  let pc_to_key m pc = let (n, a) = Data.Maybe.fromMaybe (error "p14_mk_e?") (Pitch.Note.pc_to_note_alteration_ks pc) in (n, a, m)
       e_lift (lhs, rhs) = (pc_to_key Key.Major_Mode lhs, pc_to_key Key.Minor_Mode rhs)
   in map e_lift
 
@@ -264,7 +266,7 @@ p14_gen_tonnetz_n n k x =
   in if n == 0
       then x
       else
-        let r = nub (x ++ concatMap (gen_neighbours_n k) x)
+        let r = Data.List.nub (x ++ concatMap (gen_neighbours_n k) x)
         in p14_gen_tonnetz_n (n - 1) k r
 
 p14_gen_tonnetz_e :: Int -> [Int] -> [Int] -> [((Int, Int), Int)]
@@ -273,9 +275,9 @@ p14_gen_tonnetz_e n k =
       gen_e_n d_set x y = if abs (x - y) `elem` d_set then Just (gen_e x y) else Nothing
       f [p, q] = gen_e_n k p q
       f _ = error "p14_gen_tonnetz_e"
-  in mapMaybe f . Combinations.combinations 2 . p14_gen_tonnetz_n n k
+  in Data.Maybe.mapMaybe f . Combinations.combinations 2 . p14_gen_tonnetz_n n k
 
--- Neo-Riemannian Tonnettz
+-- | Neo-Riemannian Tonnettz
 p14_nrt_gr :: [String]
 p14_nrt_gr =
   let e = p14_gen_tonnetz_e 3 [7, 9, 16] [48]
@@ -294,7 +296,10 @@ p31_f_4_22 :: [Z12]
 p31_f_4_22 = [0, 2, 4, 7]
 
 p31_e_set :: [([Z12], [Z12])]
-p31_e_set = Graph.Fgl.e_univ_select_u_edges (doi_of 3) (map sort (Z.Sro.z_sro_ti_related Z.z12 p31_f_4_22))
+p31_e_set =
+  Graph.Fgl.e_univ_select_u_edges
+  (doi_of 3)
+  (map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 p31_f_4_22))
 
 p31_gr :: [String]
 p31_gr = gen_graph_ul [] set_pp p31_e_set
@@ -313,7 +318,7 @@ p114_mk_o el =
 
 p114_mk_gr :: Double -> ([Z12] -> [Z12] -> Bool) -> [String]
 p114_mk_gr el flt =
-  let n = map sort (Z.Sro.z_sro_ti_related Z.z12 p114_f_3_7)
+  let n = map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 p114_f_3_7)
   in gen_flt_graph (p114_mk_o el) flt n
 
 p114_f37_sc_pp :: [Z12] -> String
@@ -321,7 +326,7 @@ p114_f37_sc_pp = set_pp_tto_rel Z.z12 [0, 2, 5]
 
 p114_g0 :: [String]
 p114_g0 =
-  let mk_e flt = gen_u_edges flt (map sort (Z.Sro.z_sro_ti_related Z.z12 p114_f_3_7))
+  let mk_e flt = gen_u_edges flt (map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 p114_f_3_7))
   in gen_graph_ul (p114_mk_o (2.5 :: Double)) p114_f37_sc_pp (mk_e (doi_of 2))
 
 p114_g1 :: [String]
@@ -353,7 +358,7 @@ p125_gr =
       t = [[p, q, r] | p <- [0 .. 11], q <- [0 .. 11], q > p, r <- [0 .. 11], r > q]
       c = List.collate (zip (map sum t) t)
       with_h n = lookup n c
-      ch = fromJust (liftM2 (++) (with_h 15) (with_h 16))
+      ch = Data.Maybe.fromJust (Control.Monad.liftM2 (++) (with_h 15) (with_h 16))
   in gen_graph_ul [] set_pp (Graph.Fgl.e_univ_select_u_edges (doi_of 2) ch)
 
 -- * P.131
@@ -372,9 +377,9 @@ p148_mk_gr f =
   let mid_set_pp :: [Int] -> String
       mid_set_pp = concatMap show . take 3 . drop 1
       i_seq :: Num i => [[i]]
-      i_seq = permutations [1, 2, 3, 4]
+      i_seq = Data.List.permutations [1, 2, 3, 4]
       p_seq :: (Ord i, Num i) => [[i]]
-      p_seq = sort (map (List.dx_d 0) i_seq)
+      p_seq = Data.List.sort (map (List.dx_d 0) i_seq)
   in gen_graph_ul [("edge:len", "1.75")] mid_set_pp (Graph.Fgl.e_univ_select_u_edges f p_seq)
 
 p148_gr_set :: [(String, [String])]
@@ -426,7 +431,7 @@ p162_gr =
 -}
 p172_nd_map :: Map.Map Int [Z12]
 p172_nd_map =
-  let nd_exp = map sort (Z.Sro.z_sro_ti_related Z.z12 [0, 1, 3, 7])
+  let nd_exp = map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 [0, 1, 3, 7])
   in Map.fromList (zip [0 ..] nd_exp)
 
 p172_nd_e_set :: [(Int, Int)]
@@ -494,9 +499,7 @@ gen_tni_seq = gen_tto_alt_seq (tto_tn, tto_tni)
 
 {- | P.172, c4
 
-> putStrLn $ unlines $ map (unwords . map Z.Tto.tto_pp) p172_c4
-
-@
+>>> putStr $ unlines $ map (unwords . map Z.Tto.tto_pp) p172_c4
 T0 T9I T4 T1I T8 T5I
 T1 T10I T5 T2I T9 T6I
 T2 T11I T6 T3I T10 T7I
@@ -507,13 +510,15 @@ T2 T1I T8 T7I
 T3 T2I T9 T8I
 T4 T3I T10 T9I
 T5 T4I T11 T10I
-@
 -}
 p172_c4 :: [[Z.Tto.Tto Int]]
 p172_c4 = map (gen_tni_seq 3 4 9) [0 .. 3] ++ map (gen_tni_seq 2 6 11) [0 .. 5]
 
 tto_seq_edges :: (Show t, Num t, Eq t) => [[Z.Tto.Tto t]] -> [(String, String)]
-tto_seq_edges = nub . sort . concatMap (map Tuple.t2_sort . adj_cyc . map Z.Tto.tto_pp)
+tto_seq_edges =
+  Data.List.nub
+  . Data.List.sort
+  . concatMap (map Tuple.t2_sort . adj_cyc . map Z.Tto.tto_pp)
 
 p172_g4 :: [String]
 p172_g4 = gen_graph_ul [("edge:len", "2.0")] id (tto_seq_edges p172_c4)
@@ -534,8 +539,9 @@ p172_gr_set =
 -}
 partition_ic :: (Num t, Ord t, Show t) => t -> [t] -> ([t], [t])
 partition_ic n p =
-  case find ((== n) . i_to_ic . absdif) (combinations2 p) of
-    Just (i, j) -> let q = sort [i, j] in (q, sort (p \\ q))
+  case Data.List.find ((== n) . i_to_ic . absdif) (combinations2 p) of
+    Just (i, j) -> let q = Data.List.sort [i, j]
+                   in (q, Data.List.sort (p Data.List.\\ q))
     Nothing -> error (show ("partition_ic", n, p))
 
 p177_gr_set :: [(String, [String])]
@@ -572,7 +578,7 @@ mk_bridge :: Sc -> PcSet -> PcSet -> [PcSet]
 mk_bridge r p q =
   let n = length r - length p
       c = Combinations.combinations n [0 .. 11]
-      prime = Z.Forte_1973.z_forte_prime Z.z12 . nub
+      prime = Z.Forte_1973.z_forte_prime Z.z12 . Data.List.nub
       f s = prime (p ++ s) == r && prime (q ++ s) == r
   in filter f c
 
@@ -590,11 +596,13 @@ mk_bridge_set_seq r_set k_seq =
     p : q : k_seq' -> mk_bridge_set r_set p q : mk_bridge_set_seq r_set (q : k_seq')
     _ -> []
 
-{-
+{- | P.178
+
 >>> zip [0..] (mk_bridge_set_seq ait p178_i6_seq)
+[(0,[[2,5],[8,11],[2,11],[5,8]]),(1,[[0,9],[3,6],[0,3],[6,9]]),(2,[[1,10],[4,7],[1,4],[7,10]]),(3,[[2,11],[5,8],[2,5],[8,11]]),(4,[[0,3],[6,9],[0,9],[3,6]]),(5,[[1,4],[7,10],[1,10],[4,7]])]
 -}
 p178_i6_seq :: [PcSet]
-p178_i6_seq = map (sort . (\n -> Z.Tto.z_pcset Z.z12 [n, n + 6])) [0 .. 6]
+p178_i6_seq = map (Data.List.sort . (\n -> Z.Tto.z_pcset Z.z12 [n, n + 6])) [0 .. 6]
 
 p178_ch :: [(PcSet, [PcSet], PcSet)]
 p178_ch = zip3 p178_i6_seq (mk_bridge_set_seq ait p178_i6_seq) (List.tail_err p178_i6_seq)
@@ -663,8 +671,10 @@ bd_9_3_2_12 =
 
 p201_mk_e :: [Int] -> [E]
 p201_mk_e =
-  let f n s = if n `elem` s then Just ([n], sort (n `delete` s)) else Nothing
-      g n = mapMaybe (f n) bd_9_3_2_12
+  let f n s = if n `elem` s
+              then Just ([n], Data.List.sort (n `Data.List.delete` s))
+              else Nothing
+      g n = Data.Maybe.mapMaybe (f n) bd_9_3_2_12
   in concatMap g
 
 p201_e :: [[E]]
@@ -720,8 +730,10 @@ bd_9_3_2_34 =
 
 p205_mk_e :: [Int] -> [E]
 p205_mk_e =
-  let f n s = if n `elem` s then Just ([n], sort (n `delete` s)) else Nothing
-      g n = mapMaybe (f n) bd_9_3_2_34
+  let f n s = if n `elem` s
+              then Just ([n], Data.List.sort (n `Data.List.delete` s))
+              else Nothing
+      g n = Data.Maybe.mapMaybe (f n) bd_9_3_2_34
   in concatMap g
 
 p205_gr :: [String]
