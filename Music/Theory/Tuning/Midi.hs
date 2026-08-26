@@ -93,7 +93,7 @@ type Mnn_Fmnn_Table = [(Int, Double)]
 -- | Pretty print Mnn_Fmnn_Table
 mnn_fmnn_table_pp :: Mnn_Fmnn_Table -> [String]
 mnn_fmnn_table_pp tbl =
-  let f (n,m) = [show n, Show.real_pp 4 m]
+  let f (n, m) = [show n, Show.real_pp 4 m]
       txt_tbl = ["Midi Note", "Frequency"] : map f tbl
   in Array.Text.table_pp Array.Text.table_opt_simple txt_tbl
 

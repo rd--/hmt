@@ -71,7 +71,7 @@ harmonic_series_cps_derived k f1 =
 harmonic_series_folded_r :: Integer -> [Rational]
 harmonic_series_folded_r n =
   Data.List.nub
-  (Data.List.sort (map Tuning.fold_ratio_to_octave_err [1 .. n Data.Ratio.% 1]))
+    (Data.List.sort (map Tuning.fold_ratio_to_octave_err [1 .. n Data.Ratio.% 1]))
 
 -- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
 harmonic_series_folded_c :: Integer -> [Tuning.Cents]

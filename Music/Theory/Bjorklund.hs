@@ -426,8 +426,8 @@ on the circle of circumference n.
 orientedDistance :: (Ord a, Num a) => a -> a -> a -> a
 orientedDistance i j n =
   if i < j
-  then j - i
-  else n + j - i
+    then j - i
+    else n + j - i
 
 {- | The distance between two onsets i and j in R/n.
 The minimum of the oriented distance from i to j
@@ -446,10 +446,11 @@ is the multiset of all nonzero pairwise distances.
 -}
 distanceMultiset :: (Ord a, Num a) => [a] -> a -> [a]
 distanceMultiset l n =
-  [distance i j n |
-    i <- l,
-    j <- l,
-    i < j]
+  [ distance i j n
+  | i <- l
+  , j <- l
+  , i < j
+  ]
 
 {- | A rhythm is Erdos-deep if it has (exactly) one distance of multiplicity i,
 for i in 1 to k−1.

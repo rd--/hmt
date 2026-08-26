@@ -124,7 +124,7 @@ mnn_fmnn_table_load_csv fn = do
 -- | Load 'Mnn_Fmnn_Table' from Scala tuning file.
 mnn_fmnn_table_load_scl :: String -> IO Midi.Mnn_Fmnn_Table
 mnn_fmnn_table_load_scl nm = do
-  f <- load_tuning_cps (nm, Tuning.midi_to_cps (0::Int), 0)
+  f <- load_tuning_cps (nm, Tuning.midi_to_cps (0 :: Int), 0)
   let mnn = [0 .. 127]
       fmnn = map (Pitch.midi_detune_to_fmidi . Data.Maybe.fromJust . f) mnn
   return (zip mnn fmnn)

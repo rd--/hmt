@@ -69,6 +69,6 @@ itd_tbl r =
 itd_tbl_pp :: [Integer] -> String
 itd_tbl_pp =
   unlines
-  . Array.Text.table_pp Array.Text.table_opt_plain
-  . map (map Show.rational_pp)
-  . itd_tbl
+    . Array.Text.table_pp Array.Text.table_opt_plain
+    . map (map Show.rational_pp)
+    . itd_tbl

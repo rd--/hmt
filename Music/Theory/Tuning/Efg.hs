@@ -102,10 +102,11 @@ efg_factors efg =
 -}
 efg_ratios :: Real r => Rational -> Efg r -> [([Int], Rational)]
 efg_ratios n =
-  let to_r = Tuning.fold_ratio_to_octave_err
-             . (/ n)
-             . toRational
-             . product
+  let to_r =
+        Tuning.fold_ratio_to_octave_err
+          . (/ n)
+          . toRational
+          . product
       f (ix, i) = (ix, to_r i)
   in map f . efg_factors
 

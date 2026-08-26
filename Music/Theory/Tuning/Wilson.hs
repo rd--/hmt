@@ -12,12 +12,17 @@ import qualified Safe {- safe -}
 
 import qualified Music.Theory.Array.Text as Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
-import qualified Music.Theory.Graph.Type as Graph {- hmt-base -}
-import qualified Music.Theory.List as List {- hmt-base -}
-import qualified Music.Theory.Math as Math {- hmt-base -}
-import qualified Music.Theory.Math.Convert as Convert {- hmt-base -}
-import qualified Music.Theory.Show as Show {- hmt-base -}
+{- hmt-base -}
+{- hmt-base -}
+{- hmt-base -}
+{- hmt-base -}
+{- hmt-base -}
 import qualified Music.Theory.Geometry.Vector as Vector {- hmt-base -}
+import qualified Music.Theory.Graph.Type as Graph
+import qualified Music.Theory.List as List
+import qualified Music.Theory.Math as Math
+import qualified Music.Theory.Math.Convert as Convert
+import qualified Music.Theory.Show as Show
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
@@ -92,10 +97,11 @@ lc_pos_del ix (k, x) = (k - 1, List.remove_ix ix x)
 lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Design n -> Lattice_Position -> Vector.V2 n
 lc_pos_to_pt (_, lc) (_, x) =
   Vector.v2_sum
-  (zipWith
-    (Vector.v2_scale . fromIntegral)
-    x
-    (pt_set_normalise_sym lc))
+    ( zipWith
+        (Vector.v2_scale . fromIntegral)
+        x
+        (pt_set_normalise_sym lc)
+    )
 
 {- | White-space pretty printer for Lattice_Position.
 
@@ -373,10 +379,10 @@ mos_step (i, j) = if i < j then (i, j - i) else (i - j, j)
 mos_unfold_to :: (Ord t, Num t) => t -> (t, t) -> [(t, t)]
 mos_unfold_to z x =
   let y = mos_step x
-      (y0,y1) = y
+      (y0, y1) = y
   in if (y0 + y1) <= z
-     then [x, y]
-     else x : mos_unfold_to z y
+      then [x, y]
+      else x : mos_unfold_to z y
 
 {- | Given an interval pair, generate the subsequent pairs ending at (1,2).
 

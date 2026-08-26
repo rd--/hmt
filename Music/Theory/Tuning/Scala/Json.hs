@@ -57,7 +57,8 @@ scale_ji_tuning scl =
      , Scala.scale_description scl
      , i
      , o'
-     , i')
+     , i'
+     )
 
 quote :: String -> String
 quote =
@@ -119,15 +120,17 @@ scale_can_be_json (_, _, _, p) = all pitch_can_be_json p
 scale_json :: Scala.Scale -> Json.Association
 scale_json scl =
   let (nm, dsc, k, p) = scl
-      assoc = [ ("name", Json.string nm)
-              , ("description", Json.string dsc)
-              , ("degree", Json.int k)
-              , ("pitches", Json.array (map pitch_json (List.drop_last p)))
-              , ("octave", pitch_json (last p))
-              ]
-      ext = if Scala.scl_is_ji scl
-            then [ ("limit", Json.integer (Scala.scl_ji_limit scl)) ]
-            else []
+      assoc =
+        [ ("name", Json.string nm)
+        , ("description", Json.string dsc)
+        , ("degree", Json.int k)
+        , ("pitches", Json.array (map pitch_json (List.drop_last p)))
+        , ("octave", pitch_json (last p))
+        ]
+      ext =
+        if Scala.scl_is_ji scl
+          then [("limit", Json.integer (Scala.scl_ji_limit scl))]
+          else []
   in (nm, Json.object (assoc ++ ext))
 
 {- | Write Scala database to Json.

@@ -133,8 +133,8 @@ kbm_load_dist nm = fmap kbm_parse (Scala.load_dist_file (nm System.FilePath.<.> 
 kbm_load :: String -> IO Kbm
 kbm_load nm =
   if System.FilePath.hasExtension nm
-  then kbm_load_file nm
-  else kbm_load_dist nm
+    then kbm_load_file nm
+    else kbm_load_dist nm
 
 -- | Load all .kbm files at directory.
 kbm_load_dir_fn :: FilePath -> IO [(FilePath, Kbm)]

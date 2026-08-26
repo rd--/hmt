@@ -224,8 +224,9 @@ alteration_clear_quarter_tone x =
     ThreeQuarterToneSharp -> Sharp
     _ -> x
 
--- | Table of Unicode characters for alterations.
--- Use Gould arrow quartertone accidentals.
+{- | Table of Unicode characters for alterations.
+Use Gould arrow quartertone accidentals.
+-}
 alteration_symbol_tbl :: [(Alteration, Char)]
 alteration_symbol_tbl =
   [ (DoubleFlat, '𝄫')
@@ -248,8 +249,8 @@ True
 alteration_symbol :: Alteration -> Char
 alteration_symbol a =
   Data.Maybe.fromMaybe
-  (error "alteration_symbol")
-  (lookup a alteration_symbol_tbl)
+    (error "alteration_symbol")
+    (lookup a alteration_symbol_tbl)
 
 {- | Inverse of 'alteration_symbol'.
 
@@ -348,7 +349,7 @@ tonh_to_alteration s = List.reverse_lookup s alteration_tonh_tbl
 tonh_to_alteration_err :: String -> Alteration
 tonh_to_alteration_err =
   Data.Maybe.fromMaybe (error "tonh_to_alteration")
-  . tonh_to_alteration
+    . tonh_to_alteration
 
 -- * 12-ET
 
@@ -366,7 +367,7 @@ note_alteration_to_pc (n, a) =
 note_alteration_to_pc_err :: (Note, Alteration) -> Int
 note_alteration_to_pc_err =
   Data.Maybe.fromMaybe (error "note_alteration_to_pc")
-  . note_alteration_to_pc
+    . note_alteration_to_pc
 
 -- | Note & alteration sequence in key-signature spelling.
 note_alteration_ks :: [(Note, Alteration)]

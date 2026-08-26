@@ -49,8 +49,10 @@ db_summarise nm_lim dsc_lim = do
       dsc_seq = map Scala.scale_description db
       fmt (nm, dsc) =
         Text.Printf.printf
-        "%-*s : %s"
-        nm_max (take nm_max nm) (maybe dsc (flip take dsc) dsc_lim)
+          "%-*s : %s"
+          nm_max
+          (take nm_max nm)
+          (maybe dsc (flip take dsc) dsc_lim)
       tbl = map fmt (zip nm_seq dsc_seq)
   putStrLn (unlines tbl)
 
@@ -72,9 +74,10 @@ cut lm s = maybe s (\n -> take n s) lm
 search :: (IO [a], a -> String, a -> [String]) -> (Bool, Maybe Int) -> [String] -> IO ()
 search (load_f, descr_f, stat_f) (ci, lm) txt = do
   db <- load_f
-  let modify = if ci
-               then map Data.Char.toLower
-               else id
+  let modify =
+        if ci
+          then map Data.Char.toLower
+          else id
       txt' = map modify txt
       db' = filter (Function.predicate_all (map Data.List.isInfixOf txt') . modify . descr_f) db
   mapM_ (putStrLn . unlines . map (cut lm) . stat_f) db'

@@ -17,7 +17,8 @@ import qualified Music.Theory.Tuning as Tuning {- hmt -}
 octpc_to_pitch_cps_k0 :: (Floating n) => (n, n) -> Pitch.OctPc -> (Pitch.Pitch, n)
 octpc_to_pitch_cps_k0 zero x =
   ( Pitch.octpc_to_pitch Pitch.pc_spell_ks x
-  , Pitch.octpc_to_cps_k0 zero x)
+  , Pitch.octpc_to_cps_k0 zero x
+  )
 
 -- | 'octpc_to_pitch_cps_k0' of (69,440)
 octpc_to_pitch_cps :: (Floating n) => Pitch.OctPc -> (Pitch.Pitch, n)
@@ -183,8 +184,10 @@ pitch_72et_k0 zero (x, n) =
         _ -> error "pitch_72et: alteration?"
       a' = alteration_72et_monzo n'
       x' = fromIntegral x + (fromIntegral n / 6)
-      r = ( Pitch.Pitch_R t' (fromIntegral n' Data.Ratio.% 12, a') (Pitch.octave p)
-          , Tuning.fmidi_to_cps_k0 zero x')
+      r =
+        ( Pitch.Pitch_R t' (fromIntegral n' Data.Ratio.% 12, a') (Pitch.octave p)
+        , Tuning.fmidi_to_cps_k0 zero x'
+        )
       r' =
         if n > 3
           then pitch_72et_k0 zero (x + 1, n - 6)
@@ -293,7 +296,7 @@ B5^-44^
 pitch_detune_md :: Pitch_Detune -> String
 pitch_detune_md (p, c) =
   Pitch.pitch_pp p
-  ++ Tuning.cents_diff_md (round c :: Integer)
+    ++ Tuning.cents_diff_md (round c :: Integer)
 
 {- | HTML pretty-printer for 'Pitch_Detune'.
 
@@ -303,7 +306,7 @@ pitch_detune_md (p, c) =
 pitch_detune_html :: Pitch_Detune -> String
 pitch_detune_html (p, c) =
   Pitch.pitch_pp p
-  ++ Tuning.cents_diff_html (round c :: Integer)
+    ++ Tuning.cents_diff_html (round c :: Integer)
 
 {- | No-octave variant of 'pitch_detune_md'.
 
@@ -313,7 +316,7 @@ pitch_detune_html (p, c) =
 pitch_class_detune_md :: Pitch_Detune -> String
 pitch_class_detune_md (p, c) =
   Pitch.pitch_class_pp p
-  ++ Tuning.cents_diff_md (round c :: Integer)
+    ++ Tuning.cents_diff_md (round c :: Integer)
 
 {- | No-octave variant of 'pitch_detune_html'.
 
@@ -323,4 +326,4 @@ pitch_class_detune_md (p, c) =
 pitch_class_detune_html :: Pitch_Detune -> String
 pitch_class_detune_html (p, c) =
   Pitch.pitch_class_pp p
-  ++ Tuning.cents_diff_html (round c :: Integer)
+    ++ Tuning.cents_diff_html (round c :: Integer)

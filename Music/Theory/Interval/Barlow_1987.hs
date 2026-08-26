@@ -21,10 +21,11 @@ True
 barlow :: (Integral a, Fractional b) => a -> b
 barlow p =
   if Prime.is_prime p
-  then let p' = fromIntegral p
-           square n = n * n
-       in 2 * (square (p' - 1) / p')
-  else sum (map barlow (Prime.prime_factors p))
+    then
+      let p' = fromIntegral p
+          square n = n * n
+      in 2 * (square (p' - 1) / p')
+    else sum (map barlow (Prime.prime_factors p))
 
 {- | Compute the disharmonicity of the interval /(p,q)/ using the prime valuation function /pv/.
 

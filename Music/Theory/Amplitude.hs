@@ -1,4 +1,4 @@
-{- | Amplitude related functions -}
+-- | Amplitude related functions
 module Music.Theory.Amplitude where
 
 {- | <http://www.csounds.com/manual/html/ampmidid.html>

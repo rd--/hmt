@@ -138,7 +138,7 @@ i_complement =
 mnn_pp :: Integral i => i -> String
 mnn_pp =
   Pitch.pitch_pp_iso
-  . Pitch.midi_to_pitch (Pitch.pc_spell_sharp :: Pitch.Spelling Integer)
+    . Pitch.midi_to_pitch (Pitch.pc_spell_sharp :: Pitch.Spelling Integer)
 
 {- | Construct the sequence defined by a 'Sieve'.  Note that building
      a sieve that contains an intersection clause that has no elements

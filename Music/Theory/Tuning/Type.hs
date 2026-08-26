@@ -39,7 +39,7 @@ tn_as_cents = either Tuning.ratio_to_cents id
 tn_octave_def :: Tuning -> Either Rational Tuning.Cents
 tn_octave_def =
   Data.Maybe.fromMaybe (Left 2)
-  . tn_octave
+    . tn_octave
 
 -- | Tuning octave in cents.
 tn_octave_cents :: Tuning -> Tuning.Cents
@@ -69,7 +69,7 @@ tn_limit = fmap (maximum . map Math.Prime.rational_prime_limit) . tn_ratios
 tn_ratios_err :: Tuning -> [Rational]
 tn_ratios_err =
   Data.Maybe.fromMaybe (error "ratios")
-  . tn_ratios
+    . tn_ratios
 
 -- | Possibly inexact 'Cents' of tuning, NOT including the octave.
 tn_cents :: Tuning -> [Tuning.Cents]

@@ -60,7 +60,7 @@ mod_pos_err a b =
 to_r :: Integral n => n -> Double
 to_r = fromIntegral
 
-{- | Variant on 'div' with input constraints. -}
+-- | Variant on 'div' with input constraints.
 div_pos_err :: (Integral a, Show a) => String -> a -> a -> a
 div_pos_err m i j =
   if i < 0 || j < 0

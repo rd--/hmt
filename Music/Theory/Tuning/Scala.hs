@@ -154,12 +154,16 @@ scale_verify (_, _, n, p) = n == length p
 scale_verify_err :: Scale -> Scale
 scale_verify_err scl =
   if scale_verify scl
-  then scl
-  else let (_, _, n, p) = scl
-       in error
-          (Text.Printf.printf
-            "invalid scale: %s: %d != %d"
-            (scale_name scl) n (length p))
+    then scl
+    else
+      let (_, _, n, p) = scl
+      in error
+          ( Text.Printf.printf
+              "invalid scale: %s: %d != %d"
+              (scale_name scl)
+              n
+              (length p)
+          )
 
 -- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale -> Maybe Pitch
@@ -172,7 +176,7 @@ scale_octave (_, _, _, s) =
 scale_octave_err :: Scale -> Pitch
 scale_octave_err =
   Data.Maybe.fromMaybe (error "scale_octave?")
-  . scale_octave
+    . scale_octave
 
 -- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of @1200@.
 perfect_octave :: Scale -> Bool
@@ -190,8 +194,8 @@ perfect_octave s =
 is_scale_uniform :: Scale -> Bool
 is_scale_uniform =
   Data.Maybe.isJust
-  . uniform_pitch_type
-  . scale_pitches_excluding_octave
+    . uniform_pitch_type
+    . scale_pitches_excluding_octave
 
 {- | Are the pitches, excluding the octave, in ascending sequence.
 
@@ -237,9 +241,10 @@ scale_ratios_u :: Bool -> Scale -> Maybe [Rational]
 scale_ratios_u includingOctave scl =
   if scl_is_ji scl
     then
-      let r = map
-            (Data.Maybe.fromMaybe (error "scale_ratios_u?") . Either.from_right)
-            (scale_pitches includingOctave scl)
+      let r =
+            map
+              (Data.Maybe.fromMaybe (error "scale_ratios_u?") . Either.from_right)
+              (scale_pitches includingOctave scl)
       in Just (if scale_has_zero scl then r else 1 : r)
     else Nothing
 
@@ -247,8 +252,8 @@ scale_ratios_u includingOctave scl =
 scale_ratios_req :: Bool -> Scale -> [Rational]
 scale_ratios_req includingOctave scl =
   Data.Maybe.fromMaybe
-  (error ("scale_ratios_req: " ++ scale_name scl))
-  (scale_ratios_u includingOctave scl)
+    (error ("scale_ratios_req: " ++ scale_name scl))
+    (scale_ratios_u includingOctave scl)
 
 -- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix (if scale does not have 1) and excluding octave.
 scale_ratios_excluding_octave :: Epsilon -> Scale -> [Rational]
@@ -281,14 +286,14 @@ scale_eq (_, _, d0, p0) (_, _, d1, p1) = d0 == d1 && p0 == p1
 -- | Are scales equal at degree and 'intersect' to at least /k/ places of tuning data.
 scale_eq_n :: Int -> Scale -> Scale -> Bool
 scale_eq_n k (_, _, d0, p0) (_, _, d1, p1) =
-  d0 == d1 &&
-  length (p0 `Data.List.intersect` p1) >= k
+  d0 == d1
+    && length (p0 `Data.List.intersect` p1) >= k
 
 -- | Is `s1` a proper subset of `s2`.
 scale_sub :: Scale -> Scale -> Bool
 scale_sub (_, _, d0, p0) (_, _, d1, p1) =
   d0 < d1
-  && Data.List.intersect p0 p1 == p0
+    && Data.List.intersect p0 p1 == p0
 
 -- | Are scales equal at degree and equivalent to within /epsilon/ at 'pitch_cents'.
 scale_eqv :: Epsilon -> Scale -> Scale -> Bool
@@ -378,8 +383,8 @@ This is a sequence of colon separated directories used to locate scala files on.
 scl_get_path :: IO [FilePath]
 scl_get_path =
   fmap
-  System.FilePath.splitSearchPath
-  (System.Environment.getEnv "SCALA_SCL_PATH")
+    System.FilePath.splitSearchPath
+    (System.Environment.getEnv "SCALA_SCL_PATH")
 
 {- | Lookup the @SCALA_SCL_PATH@ environment variable, which must exist, and derive the filepath.
 It is an error if the name has a file extension.
@@ -505,8 +510,9 @@ scale_stat s =
      , "octave      : " ++ pitch_pp (scale_octave_err s)
      , "cents-i     : " ++ show (scale_cents_i False s)
      , if scl_is_ji s
-        then "ratios      : "
-             ++ Data.List.intercalate "," (map Show.rational_pp (scale_ratios_req False s))
+        then
+          "ratios      : "
+            ++ Data.List.intercalate "," (map Show.rational_pp (scale_ratios_req False s))
         else ""
      ]
 
@@ -574,8 +580,8 @@ load_dist_file_ln = fmap lines . load_dist_file
 scl_is_ji :: Scale -> Bool
 scl_is_ji =
   (==) (Just Pitch_Ratio)
-  . uniform_pitch_type
-  . scale_pitches_including_octave
+    . uniform_pitch_type
+    . scale_pitches_including_octave
 
 -- | Calculate limit for JI scale (ie. largest prime factor), including octave.
 scl_ji_limit :: Scale -> Integer

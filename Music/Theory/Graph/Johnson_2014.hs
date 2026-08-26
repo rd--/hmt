@@ -298,8 +298,8 @@ p31_f_4_22 = [0, 2, 4, 7]
 p31_e_set :: [([Z12], [Z12])]
 p31_e_set =
   Graph.Fgl.e_univ_select_u_edges
-  (doi_of 3)
-  (map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 p31_f_4_22))
+    (doi_of 3)
+    (map Data.List.sort (Z.Sro.z_sro_ti_related Z.z12 p31_f_4_22))
 
 p31_gr :: [String]
 p31_gr = gen_graph_ul [] set_pp p31_e_set
@@ -517,8 +517,8 @@ p172_c4 = map (gen_tni_seq 3 4 9) [0 .. 3] ++ map (gen_tni_seq 2 6 11) [0 .. 5]
 tto_seq_edges :: (Show t, Num t, Eq t) => [[Z.Tto.Tto t]] -> [(String, String)]
 tto_seq_edges =
   Data.List.nub
-  . Data.List.sort
-  . concatMap (map Tuple.t2_sort . adj_cyc . map Z.Tto.tto_pp)
+    . Data.List.sort
+    . concatMap (map Tuple.t2_sort . adj_cyc . map Z.Tto.tto_pp)
 
 p172_g4 :: [String]
 p172_g4 = gen_graph_ul [("edge:len", "2.0")] id (tto_seq_edges p172_c4)
@@ -540,8 +540,9 @@ p172_gr_set =
 partition_ic :: (Num t, Ord t, Show t) => t -> [t] -> ([t], [t])
 partition_ic n p =
   case Data.List.find ((== n) . i_to_ic . absdif) (combinations2 p) of
-    Just (i, j) -> let q = Data.List.sort [i, j]
-                   in (q, Data.List.sort (p Data.List.\\ q))
+    Just (i, j) ->
+      let q = Data.List.sort [i, j]
+      in (q, Data.List.sort (p Data.List.\\ q))
     Nothing -> error (show ("partition_ic", n, p))
 
 p177_gr_set :: [(String, [String])]
@@ -671,9 +672,10 @@ bd_9_3_2_12 =
 
 p201_mk_e :: [Int] -> [E]
 p201_mk_e =
-  let f n s = if n `elem` s
-              then Just ([n], Data.List.sort (n `Data.List.delete` s))
-              else Nothing
+  let f n s =
+        if n `elem` s
+          then Just ([n], Data.List.sort (n `Data.List.delete` s))
+          else Nothing
       g n = Data.Maybe.mapMaybe (f n) bd_9_3_2_12
   in concatMap g
 
@@ -730,9 +732,10 @@ bd_9_3_2_34 =
 
 p205_mk_e :: [Int] -> [E]
 p205_mk_e =
-  let f n s = if n `elem` s
-              then Just ([n], Data.List.sort (n `Data.List.delete` s))
-              else Nothing
+  let f n s =
+        if n `elem` s
+          then Just ([n], Data.List.sort (n `Data.List.delete` s))
+          else Nothing
       g n = Data.Maybe.mapMaybe (f n) bd_9_3_2_34
   in concatMap g
 

@@ -17,8 +17,9 @@ import qualified Data.List.Ordered {- data-ordlist -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 
-import Music.Theory.Time.Types {- hmt -}
+{- hmt -}
 import qualified Music.Theory.Time.Seq as Seq {- hmt -}
+import Music.Theory.Time.Types
 
 -- * Time
 
