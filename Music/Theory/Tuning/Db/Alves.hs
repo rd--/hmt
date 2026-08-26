@@ -1,16 +1,22 @@
 -- | Bill Alves.
 module Music.Theory.Tuning.Db.Alves where
 
-import Music.Theory.Tuning.Type {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 {- | Ratios for 'harrison_ditone' (SCALA=pyth_12)
 
-> import Music.Theory.Tuning
-> let c = [0,114,204,294,408,498,612,702,816,906,996,1110]
-> map (round . ratio_to_cents) harrison_ditone_r == c
+>>> import qualified Music.Theory.Tuning as Tuning
+>>> map (round . Tuning.ratio_to_cents) harrison_ditone_r
+[0,114,204,294,408,498,612,702,816,906,996,1110]
 
-> import Music.Theory.Tuning.Scala
-> scl_find_ji (harrison_ditone_r ++ [2])
+>>> import qualified Music.Theory.Tuning.Scala as Scala
+>>> db <- Scala.scl_load_db_dir
+>>> let scl = Scala.scl_find_ji True (==) (harrison_ditone_r ++ [2]) db
+>>> map Scala.scale_name scl
+["pyth_12"]
+
+>>> map Scala.scale_description scl
+["12-tone Pythagorean scale"]
 -}
 harrison_ditone_r :: [Rational]
 harrison_ditone_r =
@@ -30,8 +36,11 @@ harrison_ditone_r =
 
 {- | Ditone/pythagorean tuning, <http://www.billalves.com/porgitaro/ditonesettuning.html>
 
-> tn_divisions harrison_ditone == 12
-> tn_cents_i harrison_ditone == [0,114,204,294,408,498,612,702,816,906,996,1110]
+>>> Tuning.tn_divisions harrison_ditone
+12
+
+>>> Tuning.tn_cents_i harrison_ditone
+[0,114,204,294,408,498,612,702,816,906,996,1110]
 -}
-harrison_ditone :: Tuning
-harrison_ditone = Tuning (Left harrison_ditone_r) Nothing
+harrison_ditone :: Tuning.Tuning
+harrison_ditone = Tuning.Tuning (Left harrison_ditone_r) Nothing
