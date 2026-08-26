@@ -1,10 +1,10 @@
 -- | Syntonic tuning.
 module Music.Theory.Tuning.Syntonic where
 
-import Data.List {- base -}
+import qualified Data.List {- base -}
 
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
-import qualified Music.Theory.Tuning.Type as T {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 {- | Construct an isomorphic layout of /r/ rows and /c/ columns with an upper left value of /(i,j)/.
 
@@ -18,10 +18,10 @@ import qualified Music.Theory.Tuning.Type as T {- hmt -}
 >>> map (map snd) r
 [[0,2,4],[1,3,5],[2,4,6]]
 
->>> map (map fst) r == map (map fst) (transpose r)
+>>> map (map fst) r == map (map fst) (Data.List.transpose r)
 True
 
->>> map (map snd) (transpose r)
+>>> map (map snd) (Data.List.transpose r)
 [[0,1,2],[2,3,4],[4,5,6]]
 -}
 mk_isomorphic_layout :: Integral a => a -> a -> (a, a) -> [[(a, a)]]
@@ -60,26 +60,26 @@ mk_syntonic_tuning :: Int -> [Tuning.Cents]
 mk_syntonic_tuning b =
   let l = mk_isomorphic_layout 5 7 (3, -4)
       t = map (rank_two_regular_temperament 1200 b) l
-  in nub (sort (map (\x -> fromIntegral (x `mod` 1200)) (concat t)))
+  in Data.List.nub (Data.List.sort (map (\x -> fromIntegral (x `mod` 1200)) (concat t)))
 
 {- | 'mk_syntonic_tuning' of @697@.
 
->>> T.tn_divisions syntonic_697
+>>> Tuning.tn_divisions syntonic_697
 17
 
->>> T.tn_cents_i syntonic_697
+>>> Tuning.tn_cents_i syntonic_697
 [0,79,194,273,309,388,467,503,582,697,776,812,891,970,1006,1085,1164]
 -}
-syntonic_697 :: T.Tuning
-syntonic_697 = T.Tuning (Right (mk_syntonic_tuning 697)) Nothing
+syntonic_697 :: Tuning.Tuning
+syntonic_697 = Tuning.Tuning (Right (mk_syntonic_tuning 697)) Nothing
 
 {- | 'mk_syntonic_tuning' of @702@.
 
->>> T.tn_divisions syntonic_702
+>>> Tuning.tn_divisions syntonic_702
 17
 
->>> T.tn_cents_i syntonic_702
+>>> Tuning.tn_cents_i syntonic_702
 [0,24,114,204,294,318,408,498,522,612,702,792,816,906,996,1020,1110]
 -}
-syntonic_702 :: T.Tuning
-syntonic_702 = T.Tuning (Right (mk_syntonic_tuning 702)) Nothing
+syntonic_702 :: Tuning.Tuning
+syntonic_702 = Tuning.Tuning (Right (mk_syntonic_tuning 702)) Nothing

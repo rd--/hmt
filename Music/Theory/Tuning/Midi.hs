@@ -1,10 +1,10 @@
 -- | Midi + Tuning
 module Music.Theory.Tuning.Midi where
 
-import Data.List {- base -}
-import Data.Maybe {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
 
-import qualified Data.Map as Map {- containers -}
+import qualified Data.Map {- containers -}
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.Array.Text as Array.Text {- hmt-base -}
@@ -70,7 +70,7 @@ type Cps_Midi_Tuning = (Tuning.Tuning, Double, Pitch.Midi, Int)
 The function is sparse, it is only valid for /g/ values from /k/.
 
 >>> let f = cps_midi_tuning_f (Tuning.tn_equal_temperament 72,Tuning.midi_to_cps 59,59,72 * 4)
->>> map (fst . fromJust . f) [59 .. 59 + 72]
+>>> map (fst . Data.Maybe.fromJust . f) [59 .. 59 + 72]
 [59,59,59,59,59,59,60,60,60,60,60,60,61,61,61,61,61,61,62,62,62,62,62,62,63,63,63,63,63,63,64,64,64,64,64,64,65,65,65,65,65,65,66,66,66,66,66,66,67,67,67,67,67,67,68,68,68,68,68,68,69,69,69,69,69,69,70,70,70,70,70,70,71]
 -}
 cps_midi_tuning_f :: Cps_Midi_Tuning -> Sparse_Midi_Tuning_f
@@ -111,7 +111,7 @@ gen_cps_tuning_tbl tn_f =
   let f n = case tn_f n of
         Just r -> Just (n, Pitch.midi_detune_to_cps r)
         Nothing -> Nothing
-  in mapMaybe f [0 .. 127]
+  in Data.Maybe.mapMaybe f [0 .. 127]
 
 {- | Generates 'Mnn_Fmnn_Table' given 'Sparse_Midi_Tuning_f' with keys for all valid @Mnn@.
 
@@ -140,7 +140,7 @@ gen_fmnn_tuning_tbl tn_f =
   let f n = case tn_f n of
         Just r -> Just (n, Pitch.midi_detune_to_fmidi r)
         Nothing -> Nothing
-  in mapMaybe f [0 .. 127]
+  in Data.Maybe.mapMaybe f [0 .. 127]
 
 -- * Derived (secondary) tuning table (DTT) lookup.
 
@@ -164,10 +164,10 @@ dtt_lookup_err tbl cps n =
 gen_dtt_lookup_tbl :: Mnn_Cps_Table -> Mnn_Cps_Table -> Mnn_Cps_Table
 gen_dtt_lookup_tbl t0 t1 =
   let ix = [0 .. 127]
-      cps = sort (map (Tuple.p3_third . dtt_lookup_err t0 (map snd t1)) ix)
+      cps = Data.List.sort (map (Tuple.p3_third . dtt_lookup_err t0 (map snd t1)) ix)
   in zip ix cps
 
 gen_dtt_lookup_f :: Mnn_Cps_Table -> Mnn_Cps_Table -> Midi_Tuning_f
 gen_dtt_lookup_f t0 t1 =
-  let m = Map.fromList (gen_dtt_lookup_tbl t0 t1)
+  let m = Data.Map.fromList (gen_dtt_lookup_tbl t0 t1)
   in Pitch.cps_to_midi_detune . Map.map_ix_err m

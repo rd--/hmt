@@ -1,17 +1,17 @@
 -- | Scala Db Ji Json
 module Music.Theory.Tuning.Scala.Json where
 
-import Data.List {- base -}
-import Data.Maybe {- base -}
-import Data.Ratio {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
+import qualified Data.Ratio {- base -}
 
 import qualified Music.Theory.Json as Json {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
 
-import Music.Theory.Tuning.Scala {- hmt -}
-import Music.Theory.Tuning.Scala.Interval {- hmt -}
+import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
+import qualified Music.Theory.Tuning.Scala.Interval as Scala.Interval {- hmt -}
 
 type Name = String
 type Description = String
@@ -34,26 +34,30 @@ ji_tuning_limit (_, _, x, _, _) = maximum (concatMap Prime.prime_factors x)
 
 rational_to_integer :: Rational -> Integer
 rational_to_integer r =
-  if denominator r == 1
-    then numerator r
+  if Data.Ratio.denominator r == 1
+    then Data.Ratio.numerator r
     else error "rational_to_integer?"
 
-scale_ji_tuning :: Scale -> JiTuning
+scale_ji_tuning :: Scala.Scale -> JiTuning
 scale_ji_tuning scl =
-  let (r, o) = List.separate_last (scale_ratios_req True scl)
-      d = map denominator r
-      m = foldr1 lcm d % 1
+  let (r, o) = List.separate_last (Scala.scale_ratios_req True scl)
+      d = map Data.Ratio.denominator r
+      m = foldr1 lcm d Data.Ratio.% 1
       s = map (rational_to_integer . (* m)) r
-      i = nub (sort s)
+      i = Data.List.nub (Data.List.sort s)
       i' =
         if i == s
           then Nothing
-          else Just (map (\x -> fromMaybe (error "?") (elemIndex x i) + 1) s)
+          else Just (map (\x -> Data.Maybe.fromMaybe (error "?") (Data.List.elemIndex x i) + 1) s)
       o' =
         if o == 2
           then Nothing
           else Just o
-  in (scale_name scl, scale_description scl, i, o', i')
+  in ( Scala.scale_name scl
+     , Scala.scale_description scl
+     , i
+     , o'
+     , i')
 
 quote :: String -> String
 quote =
@@ -72,8 +76,8 @@ ji_tuning_json (nm, dsc, iseq, oct, sq) =
           , ("limit", Json.integer (maximum (concatMap Prime.prime_factors iseq)))
           , ("tuning", integerArray iseq)
           ]
-            ++ catMaybes
-              [ fmap (\x -> ("octave", integerArray [numerator x, denominator x])) oct
+            ++ Data.Maybe.catMaybes
+              [ fmap (\x -> ("octave", integerArray [Data.Ratio.numerator x, Data.Ratio.denominator x])) oct
               , fmap (\x -> ("sequence", intArray x)) sq
               ]
         )
@@ -88,31 +92,31 @@ Scales where the octave is not 2:1 store it as an [numerator, denominator] two-v
 -}
 write_ji_tuning_db :: FilePath -> IO ()
 write_ji_tuning_db fn = do
-  db <- scl_load_db_dir
-  let ji = map scale_ji_tuning (filter scl_is_ji db)
+  db <- Scala.scl_load_db_dir
+  let ji = map scale_ji_tuning (filter Scala.scl_is_ji db)
       lm = filter (not . ji_tuning_requires_large_integer) ji
       e = map ji_tuning_json lm
   Json.writeFile fn (Json.object e)
 
 -- | A pitch can be Json if the numerator and denominator can be respresented as small (53-bit) integers.
-pitch_can_be_json :: Pitch -> Bool
+pitch_can_be_json :: Scala.Pitch -> Bool
 pitch_can_be_json p =
   case p of
     Left _ -> True
-    Right r -> all Json.isSafeIntegral [numerator r, denominator r]
+    Right r -> all Json.isSafeIntegral [Data.Ratio.numerator r, Data.Ratio.denominator r]
 
 -- | Cents are written as numbers, ratios as [numerator, denominator] two-vectors.
-pitch_json :: Pitch -> Json.Value
+pitch_json :: Scala.Pitch -> Json.Value
 pitch_json p =
   case p of
     Left c -> Json.double c
-    Right r -> Json.array (map Json.integer [numerator r, denominator r])
+    Right r -> Json.array (map Json.integer [Data.Ratio.numerator r, Data.Ratio.denominator r])
 
-scale_can_be_json :: Scale -> Bool
+scale_can_be_json :: Scala.Scale -> Bool
 scale_can_be_json (_, _, _, p) = all pitch_can_be_json p
 
--- | Format Scale as Json string.
-scale_json :: Scale -> Json.Association
+-- | Format Scala.Scale as Json string.
+scale_json :: Scala.Scale -> Json.Association
 scale_json scl =
   let (nm, dsc, k, p) = scl
       assoc = [ ("name", Json.string nm)
@@ -121,8 +125,8 @@ scale_json scl =
               , ("pitches", Json.array (map pitch_json (List.drop_last p)))
               , ("octave", pitch_json (last p))
               ]
-      ext = if scl_is_ji scl
-            then [ ("limit", Json.integer (scl_ji_limit scl)) ]
+      ext = if Scala.scl_is_ji scl
+            then [ ("limit", Json.integer (Scala.scl_ji_limit scl)) ]
             else []
   in (nm, Json.object (assoc ++ ext))
 
@@ -132,7 +136,7 @@ scale_json scl =
 -}
 write_scala_db_json :: FilePath -> IO ()
 write_scala_db_json fn = do
-  db <- scl_load_db_dir
+  db <- Scala.scl_load_db_dir
   Json.writeFile fn (Json.object (map scale_json (filter scale_can_be_json db)))
 
 intnam_by_ratio_json :: (Rational, String) -> Json.Association
@@ -147,19 +151,21 @@ intnam_by_name_json (r, n) = (n, pitch_json (Right r))
 -}
 write_scala_intnam_json :: FilePath -> IO ()
 write_scala_intnam_json fn = do
-  (_k, intnam) <- load_intnam
+  (_k, intnam) <- Scala.Interval.load_intnam
   Json.writeFile fn (Json.object (map intnam_by_name_json intnam))
 
 {-
 
-db <- scl_load_db_dir -- v.92
-length db == 5233
+db <- scl_load_db_dir -- v.94
+length db == 5401
 
 filter (not . scale_can_be_json) db
 
 ji = map scale_ji_tuning (filter scl_is_ji db)
-length ji == 2740
+length ji == 2766
+
 lm = filter ji_tuning_requires_large_integer ji
 length lm == 63
+
 map ji_tuning_name lm
 -}

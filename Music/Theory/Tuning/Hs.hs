@@ -1,21 +1,22 @@
 -- | Harmonic series
 module Music.Theory.Tuning.Hs where
 
-import Data.List {- base -}
-import Data.Ratio {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Ratio {- base -}
+
 import qualified Safe {- safe -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
-import Music.Theory.Tuning {- hmt -}
-import Music.Theory.Tuning.Type {- hmt -}
+import qualified Music.Theory.Tuning as Tuning {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 {- | Harmonic series to /n/th partial, with indicated octave.
 
->>> tn_cents_i (harmonic_series 17 Nothing)
+>>> Tuning.tn_cents_i (harmonic_series 17 Nothing)
 [0,1200,1902,2400,2786,3102,3369,3600,3804,3986,4151,4302,4441,4569,4688,4800,4905]
 -}
-harmonic_series :: Integer -> Maybe Rational -> Tuning
-harmonic_series n o = Tuning (Left [1 .. n % 1]) (fmap Left o)
+harmonic_series :: Integer -> Maybe Rational -> Tuning.Tuning
+harmonic_series n o = Tuning.Tuning (Left [1 .. n Data.Ratio.% 1]) (fmap Left o)
 
 -- | Harmonic series on /n/.
 harmonic_series_cps :: (Num t, Enum t) => t -> [t]
@@ -68,19 +69,24 @@ harmonic_series_cps_derived k f1 =
 > map (round . ratio_to_cents) (harmonic_series_folded_r 17) == r
 -}
 harmonic_series_folded_r :: Integer -> [Rational]
-harmonic_series_folded_r n = nub (sort (map fold_ratio_to_octave_err [1 .. n % 1]))
+harmonic_series_folded_r n =
+  Data.List.nub
+  (Data.List.sort (map Tuning.fold_ratio_to_octave_err [1 .. n Data.Ratio.% 1]))
 
 -- | 'ratio_to_cents' variant of 'harmonic_series_folded'.
-harmonic_series_folded_c :: Integer -> [Cents]
-harmonic_series_folded_c = map ratio_to_cents . harmonic_series_folded_r
+harmonic_series_folded_c :: Integer -> [Tuning.Cents]
+harmonic_series_folded_c = map Tuning.ratio_to_cents . harmonic_series_folded_r
 
-harmonic_series_folded :: Integer -> Tuning
-harmonic_series_folded n = Tuning (Left (harmonic_series_folded_r n)) Nothing
+harmonic_series_folded :: Integer -> Tuning.Tuning
+harmonic_series_folded n = Tuning.Tuning (Left (harmonic_series_folded_r n)) Nothing
 
 {- | @12@-tone tuning of first @21@ elements of the harmonic series.
 
-> tn_cents_i harmonic_series_folded_21 == [0,105,204,298,386,471,551,702,841,969,1088]
-> tn_divisions harmonic_series_folded_21 == 11
+>>> Tuning.tn_cents_i harmonic_series_folded_21
+[0,105,204,298,386,471,551,702,841,969,1088]
+
+>>> Tuning.tn_divisions harmonic_series_folded_21
+11
 -}
-harmonic_series_folded_21 :: Tuning
+harmonic_series_folded_21 :: Tuning.Tuning
 harmonic_series_folded_21 = harmonic_series_folded 21

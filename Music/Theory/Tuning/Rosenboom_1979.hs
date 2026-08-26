@@ -5,8 +5,8 @@ kw: subharmonics, difference tones
 -}
 module Music.Theory.Tuning.Rosenboom_1979 where
 
-import Data.List {- base -}
-import Data.Ratio {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Ratio {- base -}
 
 import qualified Music.Theory.Function as Function {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
@@ -18,7 +18,7 @@ import qualified Music.Theory.Tuning.Et as Et {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 
 t2_to_ratio :: (Integer, Integer) -> Rational
-t2_to_ratio (n, d) = n % d
+t2_to_ratio (n, d) = n Data.Ratio.% d
 
 {- | Tuning, ratios for each octave.
 
@@ -83,7 +83,7 @@ dr_scale =
 >>> map (\(f,p,_,_,_) -> (Pitch.pitch_to_midi p,round f)) dr_scale_tbl_12et
 [(32,52),(37,69),(38,76),(40,83),(42,92),(44,104),(46,119),(49,138),(51,156),(52,166),(54,185),(56,208),(58,234),(60,260),(61,277),(62,286),(63,311),(64,332),(66,363)]
 -}
-dr_scale_tbl_12et :: [Et.HS_R Pitch.Pitch]
+dr_scale_tbl_12et :: [Et.Hs_R Pitch.Pitch]
 dr_scale_tbl_12et = map (Et.nearest_12et_tone_k0 (69, 440)) dr_scale
 
 {- | Scala
@@ -100,7 +100,7 @@ dr_scale_scala =
       g z k = case lookup k sq of
         Nothing -> (z, (k, z))
         Just r -> (r, (k, r))
-      r_seq = snd (mapAccumL g 1 [33 .. 32 + 12 * 3 - 1]) ++ [(68, 8)]
+      r_seq = snd (Data.List.mapAccumL g 1 [33 .. 32 + 12 * 3 - 1]) ++ [(68, 8)]
   in ("dr_itb_etude_1", "...", 3 * 12, map (Right . snd) r_seq)
 
 {- | 24et
@@ -129,7 +129,7 @@ dr_scale_scala =
 363.4 F𝄲4 359.5 18.8
 @
 -}
-dr_scale_tbl_24et :: [Et.HS_R Pitch.Pitch]
+dr_scale_tbl_24et :: [Et.Hs_R Pitch.Pitch]
 dr_scale_tbl_24et = map (Et.nearest_24et_tone_k0 (69, 440)) dr_scale
 
 dr_chords :: [[Pitch.Pitch]]

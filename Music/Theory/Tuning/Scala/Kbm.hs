@@ -4,13 +4,15 @@
 -}
 module Music.Theory.Tuning.Scala.Kbm where
 
-import Data.List {- base -}
-import Data.Maybe {- base -}
-import System.FilePath {- filepath -}
-import Text.Printf {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
+import qualified Text.Printf {- base -}
 
-import qualified Music.Theory.Directory as Directory {- hmt -}
-import qualified Music.Theory.List as List {- hmt -}
+import qualified System.FilePath {- filepath -}
+
+import qualified Music.Theory.Directory as Directory {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
@@ -32,12 +34,12 @@ type Kbm = (Int, (Int, Int), Int, (Int, Double), Int, [Maybe Int])
 kbm_pp :: Kbm -> String
 kbm_pp (sz, (m0, mN), mC, (mF, f), o, m) =
   unlines
-    [ printf "size = %d" sz
-    , printf "note-range = (%d,%d)" m0 mN
-    , printf "note-center = %d" mC
-    , printf "note-reference = (%d,%f)" mF f
-    , printf "formal-octave = %d" o
-    , printf "map = [%s] #%d" (intercalate "," (map (maybe "x" show) m)) (length m)
+    [ Text.Printf.printf "size = %d" sz
+    , Text.Printf.printf "note-range = (%d,%d)" m0 mN
+    , Text.Printf.printf "note-center = %d" mC
+    , Text.Printf.printf "note-reference = (%d,%f)" mF f
+    , Text.Printf.printf "formal-octave = %d" o
+    , Text.Printf.printf "map = [%s] #%d" (Data.List.intercalate "," (map (maybe "x" show) m)) (length m)
     ]
 
 -- | Is /mnn/ in range?
@@ -125,11 +127,14 @@ map = [0,1,1,2,2,3,4,5,5,6,7,7,8,9,10,10,11,12,12] #19
 > pp "61"
 -}
 kbm_load_dist :: String -> IO Kbm
-kbm_load_dist nm = fmap kbm_parse (Scala.load_dist_file (nm <.> "kbm"))
+kbm_load_dist nm = fmap kbm_parse (Scala.load_dist_file (nm System.FilePath.<.> "kbm"))
 
 -- | If /nm/ is a file name (has a .kbm) extension run 'kbm_load_file' else run 'kbm_load_dist'.
 kbm_load :: String -> IO Kbm
-kbm_load nm = if hasExtension nm then kbm_load_file nm else kbm_load_dist nm
+kbm_load nm =
+  if System.FilePath.hasExtension nm
+  then kbm_load_file nm
+  else kbm_load_dist nm
 
 -- | Load all .kbm files at directory.
 kbm_load_dir_fn :: FilePath -> IO [(FilePath, Kbm)]
@@ -195,14 +200,14 @@ kbm_oct_key_seq (sz, (m0, mN), mC, (_mF, _f), _o, _m) =
   let (o0, k0) = kbm_k0 sz mC
       dgr = map (`mod` sz) (take 128 [k0 ..])
       upd o j = if j == 0 then (o + 1, (o + 1, j)) else (o, (o, j))
-      key_seq = snd (mapAccumL upd (o0 - 1) dgr)
+      key_seq = snd (Data.List.mapAccumL upd (o0 - 1) dgr)
   in zip [m0 ..] (take (mN - m0 + 1) (drop m0 key_seq))
 
 -- | Given Kbm and SCL calculate frequency of note-center.
 kbm_mC_freq :: Kbm -> Scala.Scale -> Double
 kbm_mC_freq (sz, (_m0, _mN), mC, (mF, f), _o, m) scl =
   let dist_k = (mF - mC) `mod` sz
-      dgr = fromMaybe (error "kbm_mC_freq") (m !! dist_k)
+      dgr = Data.Maybe.fromMaybe (error "kbm_mC_freq") (m !! dist_k)
       c = Scala.scale_cents True scl !! dgr
   in Tuning.cps_shift_cents f (-c)
 

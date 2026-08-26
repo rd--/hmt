@@ -4,7 +4,7 @@
 -}
 module Music.Theory.Tuning.Sethares_1994 where
 
-import Data.Maybe {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 
@@ -48,7 +48,7 @@ local_minima =
       triples ix l = case l of
         i : j : k : _ -> (ix, i, j, k) : triples (ix + 1) (List.tail_err l)
         _ -> []
-  in mapMaybe f . triples 1
+  in Data.Maybe.mapMaybe f . triples 1
 
 {- | William A. Sethares "Adaptive Tunings for Musical Scales".
 

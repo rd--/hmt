@@ -1,8 +1,8 @@
 -- | Tuning type
 module Music.Theory.Tuning.Type where
 
-import Data.List {- base -}
-import Data.Maybe {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified Music.Theory.Either as Either {- hmt -}
 import qualified Music.Theory.Math.Prime as Math.Prime {- hmt -}
@@ -37,7 +37,9 @@ tn_as_cents = either Tuning.ratio_to_cents id
 
 -- | Tuning octave, defaulting to 2:1.
 tn_octave_def :: Tuning -> Either Rational Tuning.Cents
-tn_octave_def = fromMaybe (Left 2) . tn_octave
+tn_octave_def =
+  Data.Maybe.fromMaybe (Left 2)
+  . tn_octave
 
 -- | Tuning octave in cents.
 tn_octave_cents :: Tuning -> Tuning.Cents
@@ -65,7 +67,9 @@ tn_limit = fmap (maximum . map Math.Prime.rational_prime_limit) . tn_ratios
 
 -- | 'error'ing variant.
 tn_ratios_err :: Tuning -> [Rational]
-tn_ratios_err = fromMaybe (error "ratios") . tn_ratios
+tn_ratios_err =
+  Data.Maybe.fromMaybe (error "ratios")
+  . tn_ratios
 
 -- | Possibly inexact 'Cents' of tuning, NOT including the octave.
 tn_cents :: Tuning -> [Tuning.Cents]
@@ -129,7 +133,7 @@ tn_reconstructed_ratios epsilon =
 -- | Make /n/ division equal temperament.
 tn_equal_temperament :: Integral n => n -> Tuning
 tn_equal_temperament n =
-  let c = genericTake n [0, 1200 / fromIntegral n ..]
+  let c = Data.List.genericTake n [0, 1200 / fromIntegral n ..]
   in Tuning (Right c) Nothing
 
 {- | 12-tone equal temperament.

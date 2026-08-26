@@ -11,9 +11,9 @@ The terminology here is:
 -}
 module Music.Theory.Tuning.Scala.Mode where
 
-import Data.Char {- base -}
-import Data.List {- base -}
-import Data.Maybe {- base -}
+import qualified Data.Char {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified Music.Theory.Function as Function {- hmt -}
 import qualified Music.Theory.List as List {- hmt -}
@@ -34,7 +34,7 @@ mode_intervals (_, i, _) = i
 
 -- | Interval set of mode (ie. 'nub' of 'sort' of 'mode_intervals')
 mode_iset :: Mode -> [Int]
-mode_iset = nub . sort . mode_intervals
+mode_iset = Data.List.nub . Data.List.sort . mode_intervals
 
 -- | Histogram ('List.histogram') of 'mode_intervals'
 mode_histogram :: Mode -> [(Int, Int)]
@@ -69,7 +69,7 @@ modenam_search_seq (_, _, m) x = filter ((== x) . mode_intervals) m
 {- | Expect /one/ result.
 
 >>> mn <- load_modenam
->>> let sq = take 90 . mode_description . fromJust . modenam_search_seq1 mn
+>>> let sq = take 90 . mode_description . Data.Maybe.fromJust . modenam_search_seq1 mn
 >>> sq [2,2,1,2,2,2,1]
 "G.Lydian, M.Ionian, M.Hypolydian, Major, Bilaval That, Mela Shankarabharanam, Raga Atana, "
 
@@ -101,7 +101,7 @@ modenam_search_seq1 mn = List.unlist1 . modenam_search_seq mn
 [24,3,339]
 -}
 modenam_search_description :: ModeNam -> String -> [Mode]
-modenam_search_description (_, _, m) x = filter (isInfixOf x . mode_description) m
+modenam_search_description (_, _, m) x = filter (Data.List.isInfixOf x . mode_description) m
 
 -- | Is /p/ an element of the set of rotations of /q/.
 mode_rot_eqv :: Mode -> Mode -> Bool
@@ -135,14 +135,14 @@ mode_rot_eqv p q =
 mode_stat :: Mode -> [String]
 mode_stat m =
   let hst = mode_histogram m
-      comma_map f = intercalate "," . map f
+      comma_map f = Data.List.intercalate "," . map f
   in [ "mode-start-degree : " ++ show (mode_starting_degree m)
      , "mode-intervals    : " ++ comma_map show (mode_intervals m)
      , "mode-description  : " ++ mode_description m
      , "mode-length       : " ++ show (mode_length m)
      , "mode-univ         : " ++ show (mode_univ m)
-     , "mode-interval-set : " ++ intercalate "," (map show (mode_iset m))
-     , "mode-histogram    : " ++ intercalate "," (map (\(e, n) -> concat [show n, "×", show e]) hst)
+     , "mode-interval-set : " ++ comma_map show (mode_iset m)
+     , "mode-histogram    : " ++ comma_map (\(e, n) -> concat [show n, "×", show e]) hst
      , "mode-degree-seq   : " ++ comma_map show (mode_degree_seq m)
      ]
 
@@ -161,10 +161,10 @@ non_implicit_degree s =
 
 -- | Predicate form
 is_non_implicit_degree :: String -> Bool
-is_non_implicit_degree = isJust . non_implicit_degree
+is_non_implicit_degree = Data.Maybe.isJust . non_implicit_degree
 
 is_integer :: String -> Bool
-is_integer = all isDigit
+is_integer = all Data.Char.isDigit
 
 parse_modenam_entry :: [String] -> Mode
 parse_modenam_entry w =

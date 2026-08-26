@@ -2,24 +2,24 @@
 
 See <http://www.huygens-fokker.org/scala/scl_format.html> for details.
 
-This module succesfully parses all scales in v.92 of the scale library.
+This module succesfully parses all scales in v.94 of the scale library.
 -}
 module Music.Theory.Tuning.Scala where
 
-import Control.Monad {- base -}
-import Data.Either {- base -}
-import Data.List {- base -}
-import Data.Maybe {- base -}
-import Data.Ratio {- base -}
-import System.Directory {- directory -}
-import System.Environment {- base -}
-import System.FilePath {- filepath -}
-import Text.Printf {- base -}
+import qualified Control.Monad {- base -}
+import qualified Data.Either {- base -}
+import qualified Data.List {- base -}
+import qualified Data.Maybe {- base -}
+import qualified Data.Ratio {- base -}
+import qualified System.Environment {- base -}
+import qualified Text.Printf {- base -}
+
+import qualified System.Directory {- directory -}
+import qualified System.FilePath {- filepath -}
 
 import qualified Music.Theory.Array.Csv as Csv {- hmt-base -}
 import qualified Music.Theory.Directory as Directory {- hmt-base -}
 import qualified Music.Theory.Either as Either {- hmt-base -}
-import qualified Music.Theory.Function as Function {- hmt-base -}
 import qualified Music.Theory.Io as Io {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math.Prime as Prime {- hmt-base -}
@@ -156,7 +156,10 @@ scale_verify_err scl =
   if scale_verify scl
   then scl
   else let (_, _, n, p) = scl
-       in error (printf "invalid scale: %s: %d != %d" (scale_name scl) n (length p))
+       in error
+          (Text.Printf.printf
+            "invalid scale: %s: %d != %d"
+            (scale_name scl) n (length p))
 
 -- | The last 'Pitch' element of the scale (ie. the /octave/).  For empty scales give 'Nothing'.
 scale_octave :: Scale -> Maybe Pitch
@@ -167,7 +170,9 @@ scale_octave (_, _, _, s) =
 
 -- | Error variant.
 scale_octave_err :: Scale -> Pitch
-scale_octave_err = fromMaybe (error "scale_octave?") . scale_octave
+scale_octave_err =
+  Data.Maybe.fromMaybe (error "scale_octave?")
+  . scale_octave
 
 -- | Is 'scale_octave' perfect, ie. 'Ratio' of @2@ or 'Cents' of @1200@.
 perfect_octave :: Scale -> Bool
@@ -180,15 +185,18 @@ perfect_octave s =
 {- | Are all pitches, excluding the octave, of the same type.
 
 >>> length (filter (not . is_scale_uniform) db)
-518
+566
 -}
 is_scale_uniform :: Scale -> Bool
-is_scale_uniform = isJust . uniform_pitch_type . scale_pitches_excluding_octave
+is_scale_uniform =
+  Data.Maybe.isJust
+  . uniform_pitch_type
+  . scale_pitches_excluding_octave
 
 {- | Are the pitches, excluding the octave, in ascending sequence.
 
 >>> length (filter (not . is_scale_ascending) db)
-164
+165
 -}
 is_scale_ascending :: Scale -> Bool
 is_scale_ascending = List.is_ascending . map pitch_cents . scale_pitches_excluding_octave
@@ -229,13 +237,18 @@ scale_ratios_u :: Bool -> Scale -> Maybe [Rational]
 scale_ratios_u includingOctave scl =
   if scl_is_ji scl
     then
-      let r = map (fromMaybe (error "scale_ratios_u?") . Either.from_right) (scale_pitches includingOctave scl)
+      let r = map
+            (Data.Maybe.fromMaybe (error "scale_ratios_u?") . Either.from_right)
+            (scale_pitches includingOctave scl)
       in Just (if scale_has_zero scl then r else 1 : r)
     else Nothing
 
 -- | Erroring variant of 'scale_ratios_u.
 scale_ratios_req :: Bool -> Scale -> [Rational]
-scale_ratios_req includingOctave scl = fromMaybe (error ("scale_ratios_req: " ++ scale_name scl)) (scale_ratios_u includingOctave scl)
+scale_ratios_req includingOctave scl =
+  Data.Maybe.fromMaybe
+  (error ("scale_ratios_req: " ++ scale_name scl))
+  (scale_ratios_u includingOctave scl)
 
 -- | Scale as list of 'Rational' (ie. 'pitch_ratio') with @1@ prefix (if scale does not have 1) and excluding octave.
 scale_ratios_excluding_octave :: Epsilon -> Scale -> [Rational]
@@ -251,14 +264,14 @@ scale_ratios_excluding_octave_req = scale_ratios_req False
 {- | Are scales equal ('==') at degree and tuning data.
 
 >>> let r = [2187/2048,9/8,32/27,81/64,4/3,729/512,3/2,6561/4096,27/16,16/9,243/128,2/1]
->>> let Just py = find (scale_eq ("","",length r,map Right r)) db
+>>> let Just py = Data.List.find (scale_eq ("","",length r,map Right r)) db
 >>> scale_name py
 "pyth_12"
 
 'scale_eqv' provides an approximate equality function.
 
 >>> let c = map Tuning.ratio_to_cents r
->>> let Just py' = find (scale_eqv 0.00001 ("","",length c,map Left c)) db
+>>> let Just py' = Data.List.find (scale_eqv 0.00001 ("","",length c,map Left c)) db
 >>> scale_name py'
 "pyth_12"
 -}
@@ -267,11 +280,15 @@ scale_eq (_, _, d0, p0) (_, _, d1, p1) = d0 == d1 && p0 == p1
 
 -- | Are scales equal at degree and 'intersect' to at least /k/ places of tuning data.
 scale_eq_n :: Int -> Scale -> Scale -> Bool
-scale_eq_n k (_, _, d0, p0) (_, _, d1, p1) = d0 == d1 && length (p0 `intersect` p1) >= k
+scale_eq_n k (_, _, d0, p0) (_, _, d1, p1) =
+  d0 == d1 &&
+  length (p0 `Data.List.intersect` p1) >= k
 
 -- | Is `s1` a proper subset of `s2`.
 scale_sub :: Scale -> Scale -> Bool
-scale_sub (_, _, d0, p0) (_, _, d1, p1) = d0 < d1 && intersect p0 p1 == p0
+scale_sub (_, _, d0, p0) (_, _, d1, p1) =
+  d0 < d1
+  && Data.List.intersect p0 p1 == p0
 
 -- | Are scales equal at degree and equivalent to within /epsilon/ at 'pitch_cents'.
 scale_eqv :: Epsilon -> Scale -> Scale -> Bool
@@ -304,7 +321,7 @@ remove_eol_comments = takeWhile (/= '!')
 filter_comments :: [String] -> [String]
 filter_comments =
   map remove_eol_comments
-    . filter (not . Function.predicate_any [is_comment])
+    . filter (not . is_comment)
 
 {- | Pitches are either cents (with decimal point, possibly trailing) or ratios (with @/@).
 
@@ -324,7 +341,10 @@ parse_pitch_ln x =
     p : _ -> parse_pitch p
     _ -> error (show ("parse_pitch_ln", words x))
 
--- | Parse @.scl@ file.
+{- | Parse @.scl@ file.
+
+Trailing empty lines are allowed (the scala archive contains such files)
+-}
 parse_scl :: String -> String -> Scale
 parse_scl nm s =
   case filter_comments (lines (String.filter_cr s)) of
@@ -333,7 +353,7 @@ parse_scl nm s =
             ( nm
             , String.delete_trailing_whitespace t
             , Read.read_err_msg "degree" n
-            , map parse_pitch_ln p
+            , map parse_pitch_ln (filter (not . null) p)
             )
       in scale_verify_err scl
     _ -> error "parse"
@@ -344,49 +364,56 @@ parse_scl nm s =
 
 This is the directory of the standard Scala scale database.
 
-> setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/92/scl"
+> System.Environment.setEnv "SCALA_SCL_DIR" "/home/rohan/data/scala/94/scl"
 -}
 scl_get_dir :: IO FilePath
-scl_get_dir = getEnv "SCALA_SCL_DIR"
+scl_get_dir = System.Environment.getEnv "SCALA_SCL_DIR"
 
 {- | Read the environment variable @SCALA_SCL_PATH@.
 
 This is a sequence of colon separated directories used to locate scala files on.
 
-> setEnv "SCALA_SCL_PATH" "/home/rohan/data/scala/92/scl:/home/rohan/sw/hmt/data/scl"
+> System.Environment.setEnv "SCALA_SCL_PATH" "/home/rohan/data/scala/94/scl:/home/rohan/sw/hmt/data/scl"
 -}
 scl_get_path :: IO [FilePath]
-scl_get_path = fmap splitSearchPath (getEnv "SCALA_SCL_PATH")
+scl_get_path =
+  fmap
+  System.FilePath.splitSearchPath
+  (System.Environment.getEnv "SCALA_SCL_PATH")
 
 {- | Lookup the @SCALA_SCL_PATH@ environment variable, which must exist, and derive the filepath.
 It is an error if the name has a file extension.
 
 >>> mapM scl_derive_filename ["young-lm_piano","et12"]
-["/home/rohan/data/scala/92/scl/young-lm_piano.scl","/home/rohan/sw/hmt/data/scl/et12.scl"]
+["/home/rohan/data/scala/94/scl/young-lm_piano.scl","/home/rohan/sw/hmt/data/scl/et12.scl"]
 -}
 scl_derive_filename :: FilePath -> IO FilePath
 scl_derive_filename nm = do
   path <- scl_get_path
-  when (null path) (error "scl_derive_filename: SCALA_SCL_PATH: nil")
-  when (hasExtension nm) (error "scl_derive_filename: name has extension")
-  Directory.path_scan_err path (nm <.> "scl")
+  Control.Monad.when
+    (null path)
+    (error "scl_derive_filename: SCALA_SCL_PATH: nil")
+  Control.Monad.when
+    (System.FilePath.hasExtension nm)
+    (error "scl_derive_filename: name has extension")
+  Directory.path_scan_err path (nm System.FilePath.<.> "scl")
 
 {- | If the name is an absolute file path and has a @.scl@ extension,
 then return it, else run 'scl_derive_filename'.
 
 >>> scl_resolve_name "young-lm_piano"
-"/home/rohan/data/scala/92/scl/young-lm_piano.scl"
+"/home/rohan/data/scala/94/scl/young-lm_piano.scl"
 
->>> scl_resolve_name "/home/rohan/data/scala/92/scl/young-lm_piano.scl"
-"/home/rohan/data/scala/92/scl/young-lm_piano.scl"
+>>> scl_resolve_name "/home/rohan/data/scala/94/scl/young-lm_piano.scl"
+"/home/rohan/data/scala/94/scl/young-lm_piano.scl"
 
-> scl_resolve_name "/home/rohan/data/scala/92/scl/unknown-tuning.scl" -- error
+> scl_resolve_name "/home/rohan/data/scala/94/scl/unknown-tuning.scl" -- error
 -}
 scl_resolve_name :: String -> IO FilePath
 scl_resolve_name nm =
   let ex_f x = if x then return nm else error ("scl_resolve_name: file does not exist: " ++ nm)
-  in if isAbsolute nm && takeExtension nm == ".scl"
-      then doesFileExist nm >>= ex_f
+  in if System.FilePath.isAbsolute nm && System.FilePath.takeExtension nm == ".scl"
+      then System.Directory.doesFileExist nm >>= ex_f
       else scl_derive_filename nm
 
 {- | Load @.scl@ file, runs 'scl_resolve_name'.
@@ -402,13 +429,15 @@ scl_load :: String -> IO Scale
 scl_load nm = do
   fn <- scl_resolve_name nm
   s <- Io.read_file_iso_8859_1 fn
-  return (parse_scl (takeBaseName nm) s)
+  return (parse_scl (System.FilePath.takeBaseName nm) s)
 
 {- | Load all @.scl@ files at /dir/, associate with file-name.
 
-> db <- scl_load_dir_fn "/home/rohan/data/scala/92/scl"
-> length db == 5233 -- v.92
-> map (\(fn,s) -> (takeFileName fn,scale_name s)) db
+>>> db <- scl_load_dir_fn "/home/rohan/data/scala/94/scl"
+>>> length db -- v.94
+5401
+
+> map (\(fn,s) -> (System.FilePath.takeFileName fn,scale_name s)) db
 -}
 scl_load_dir_fn :: FilePath -> IO [(FilePath, Scale)]
 scl_load_dir_fn d = do
@@ -434,7 +463,7 @@ scl_load_db_dir = do
 >>> db_dir <- scl_load_db_dir
 >>> db_path <- scl_load_db_path
 >>> (length db_dir, length db_path)
-(5233,5251)
+(5401,5419)
 -}
 scl_load_db_path :: IO [Scale]
 scl_load_db_path = do
@@ -476,7 +505,8 @@ scale_stat s =
      , "octave      : " ++ pitch_pp (scale_octave_err s)
      , "cents-i     : " ++ show (scale_cents_i False s)
      , if scl_is_ji s
-        then "ratios      : " ++ intercalate "," (map Show.rational_pp (scale_ratios_req False s))
+        then "ratios      : "
+             ++ Data.List.intercalate "," (map Show.rational_pp (scale_ratios_req False s))
         else ""
      ]
 
@@ -485,7 +515,7 @@ pitch_pp :: Pitch -> String
 pitch_pp p =
   case p of
     Left c -> show c
-    Right r -> show (numerator r) ++ "/" ++ show (denominator r)
+    Right r -> show (Data.Ratio.numerator r) ++ "/" ++ show (Data.Ratio.denominator r)
 
 {- | Pretty print 'Scale' in @Scala@ format.
 
@@ -508,7 +538,7 @@ scale_wr fn = writeFile fn . unlines . scale_pp
 
 -- | Write /scl/ to /dir/ with the file-name 'scale_name'.scl
 scale_wr_dir :: FilePath -> Scale -> IO ()
-scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
+scale_wr_dir dir scl = scale_wr (dir System.FilePath.</> scale_name scl System.FilePath.<.> "scl") scl
 
 -- * Dist
 
@@ -517,13 +547,13 @@ scale_wr_dir dir scl = scale_wr (dir </> scale_name scl <.> "scl") scl
 > setEnv "SCALA_DIST_DIR" "/home/rohan/opt/build/scala-22"
 -}
 dist_get_dir :: IO String
-dist_get_dir = getEnv "SCALA_DIST_DIR"
+dist_get_dir = System.Environment.getEnv "SCALA_DIST_DIR"
 
 -- | Load file from 'dist_get_dir'.
 load_dist_file :: FilePath -> IO String
 load_dist_file nm = do
   d <- dist_get_dir
-  readFile (d </> nm)
+  readFile (d System.FilePath.</> nm)
 
 {- | 'fmap' 'lines' 'load_dist_file'
 
@@ -539,10 +569,13 @@ load_dist_file_ln = fmap lines . load_dist_file
 {- | Is scale just-intonation (ie. are all pitches ratios, including the octave)
 
 >>> length (filter (not . scl_is_ji) db)
-2493
+2635
 -}
 scl_is_ji :: Scale -> Bool
-scl_is_ji = (==) (Just Pitch_Ratio) . uniform_pitch_type . scale_pitches_including_octave
+scl_is_ji =
+  (==) (Just Pitch_Ratio)
+  . uniform_pitch_type
+  . scale_pitches_including_octave
 
 -- | Calculate limit for JI scale (ie. largest prime factor), including octave.
 scl_ji_limit :: Scale -> Integer
@@ -551,9 +584,10 @@ scl_ji_limit = maximum . map fst . concatMap Prime.rational_prime_factors_m . sc
 -- | Sum of absolute differences to scale given in cents, sorted, with rotation.
 scl_cdiff_abs_sum :: [Tuning.Cents] -> Scale -> [(Double, [Tuning.Cents], Int)]
 scl_cdiff_abs_sum c scl =
-  let r = map (List.dx_d 0) (List.rotations (List.d_dx (sort (scale_cents_including_octave scl))))
+  let rt = List.rotations (List.d_dx (Data.List.sort (scale_cents_including_octave scl)))
+      r = map (List.dx_d 0) rt
       ndiff x i = let d = zipWith (-) c x in (sum (map abs d), d, i)
-  in sort (zipWith ndiff r [0 ..])
+  in Data.List.sort (zipWith ndiff r [0 ..])
 
 {- | Variant selecting only nearest and with post-processing function.
 
@@ -587,7 +621,7 @@ scl_db_query_cdiff_asc :: Ord n => (Double -> n) -> [Scale] -> [Tuning.Cents] ->
 scl_db_query_cdiff_asc pp db c =
   let n = length c - 1
       db_n = filter ((== n) . scale_degree) db
-  in sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl, scl)) db_n)
+  in Data.List.sort (map (\scl -> (scl_cdiff_abs_sum_1 pp c scl, scl)) db_n)
 
 -- | Is /x/ the same scale as /scl/ under /cmp/.
 scale_cmp_ji :: Bool -> ([Rational] -> [Rational] -> Bool) -> [Rational] -> Scale -> Bool
@@ -599,7 +633,7 @@ scale_cmp_ji includingOctave cmp x scl =
 {- | Find scale(s) that are 'scale_cmp_ji' to /x/.
 Usual /cmp/ are (==) and 'is_subset', however various "prime form" comparisons can be written.
 
->>> let inv = nub . sort . map (Tuning.fold_ratio_to_octave_err . recip)
+>>> let inv = Data.List.nub . Data.List.sort . map (Tuning.fold_ratio_to_octave_err . recip)
 >>> let cmp p q = p == q || p == inv q
 >>> scl_find_ji False cmp [1, 6/5, 4/3, 8/5, 16/9] db -- prime_5
 [("malkauns","Raga Malkauns, inverse of prime_5.scl",5,[Right (6 % 5),Right (4 % 3),Right (8 % 5),Right (16 % 9),Right (2 % 1)]),("prime_5","What Lou Harrison calls \"the Prime Pentatonic\", a widely used scale",5,[Right (9 % 8),Right (5 % 4),Right (3 % 2),Right (5 % 3),Right (2 % 1)])]
@@ -633,7 +667,7 @@ True
 -}
 scale_to_tuning :: Scale -> Tuning.Tuning
 scale_to_tuning s@(_, _, _, p) =
-  case partitionEithers p of
+  case Data.Either.partitionEithers p of
     ([], r) ->
       let (r', o) = List.separate_last r
           r'' = if scale_has_zero s then r' else 1 : r'

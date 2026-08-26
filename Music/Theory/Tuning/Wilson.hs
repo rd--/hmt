@@ -5,12 +5,10 @@ import qualified Control.Monad {- base -}
 import qualified Data.List {- base -}
 import qualified Data.Maybe {- base -}
 import qualified Data.Ord {- base -}
-import Data.Ratio {- base -}
-import Text.Printf {- base -}
+import qualified Data.Ratio {- base -}
+import qualified Text.Printf {- base -}
 
 import qualified Safe {- safe -}
-
-import Music.Theory.Geometry.Vector {- hmt-base -}
 
 import qualified Music.Theory.Array.Text as Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
@@ -19,6 +17,7 @@ import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Math as Math {- hmt-base -}
 import qualified Music.Theory.Math.Convert as Convert {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
+import qualified Music.Theory.Geometry.Vector as Vector {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}
@@ -42,17 +41,17 @@ import qualified Music.Theory.Tuning.Scala as Scala {- hmt -}
 >>> pt_set_normalise_sym [(-10,0),(1,10)]
 [(-1.0,0.0),(0.1,1.0)]
 -}
-pt_set_normalise_sym :: (Fractional n, Ord n) => [V2 n] -> [V2 n]
+pt_set_normalise_sym :: (Fractional n, Ord n) => [Vector.V2 n] -> [Vector.V2 n]
 pt_set_normalise_sym x =
   let z = maximum (map (uncurry max . Function.bimap1 abs) x)
-  in map (v2_scale (recip z)) x
+  in map (Vector.v2_scale (recip z)) x
 
 -- * Lattice Design
 
 {- | /k/-unit co-ordinates for /k/-lattice.
 The coordinates are given as (x, y) for the unit vector.
 -}
-type Lattice_Design n = (Int, [V2 n])
+type Lattice_Design n = (Int, [Vector.V2 n])
 
 {- | Erv Wilson standard lattice, unit co-ordinates for 5-dimensions, ie. [3,5,7,11,13]
 
@@ -90,8 +89,13 @@ lc_pos_del :: Int -> Lattice_Position -> Lattice_Position
 lc_pos_del ix (k, x) = (k - 1, List.remove_ix ix x)
 
 -- | Resolve Lattice_Position against Lattice_Design to V2
-lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Design n -> Lattice_Position -> V2 n
-lc_pos_to_pt (_, lc) (_, x) = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_set_normalise_sym lc))
+lc_pos_to_pt :: (Fractional n, Ord n) => Lattice_Design n -> Lattice_Position -> Vector.V2 n
+lc_pos_to_pt (_, lc) (_, x) =
+  Vector.v2_sum
+  (zipWith
+    (Vector.v2_scale . fromIntegral)
+    x
+    (pt_set_normalise_sym lc))
 
 {- | White-space pretty printer for Lattice_Position.
 
@@ -99,19 +103,21 @@ lc_pos_to_pt (_, lc) (_, x) = v2_sum (zipWith (v2_scale . fromIntegral) x (pt_se
 "  0 -2  1"
 -}
 pos_pp_ws :: Lattice_Position -> String
-pos_pp_ws = let f x = printf "%3d" x in concatMap f . snd
+pos_pp_ws =
+  let f x = Text.Printf.printf "%3d" x
+  in concatMap f . snd
 
 {- | Given Lattice_Factors [X,Y,Z..] and Lattice_Position [x,y,z..], calculate the indicated ratio.
 
 >>> lat_res (2,[3,5]) (2,[-5,2]) == (5 * 5) / (3 * 3 * 3 * 3 * 3)
 True
 -}
-lat_res :: Integral i => Lattice_Factors i -> Lattice_Position -> Ratio i
+lat_res :: Integral i => Lattice_Factors i -> Lattice_Position -> Data.Ratio.Ratio i
 lat_res (_, p) (_, q) =
   let f i j = case compare j 0 of
-        GT -> (i ^ Convert.int_to_integer j) % 1
+        GT -> (i ^ Convert.int_to_integer j) Data.Ratio.% 1
         EQ -> 1
-        LT -> 1 % (i ^ abs (Convert.int_to_integer j))
+        LT -> 1 Data.Ratio.% (i ^ abs (Convert.int_to_integer j))
   in product (zipWith f p q)
 
 -- * Rat (n,d)
@@ -125,11 +131,11 @@ rat_rem_oct = Function.bimap1 (product . filter (/= 2)) . Prime.rat_prime_factor
 
 -- | Lift 'Rat' function to 'Rational'.
 rat_lift_1 :: (Rat -> Rat) -> Rational -> Rational
-rat_lift_1 f = uncurry (%) . f . Math.rational_nd
+rat_lift_1 f = uncurry (Data.Ratio.%) . f . Math.rational_nd
 
 -- | Convert 'Rat' to 'Rational'
 rat_to_ratio :: Rat -> Rational
-rat_to_ratio (n, d) = n % d
+rat_to_ratio (n, d) = n Data.Ratio.% d
 
 {- | Mediant, ie. n1+n2/d1+d2
 
@@ -323,7 +329,7 @@ Stops at mid-point.
 >>> gen_coprime 12
 [1,5]
 
->>> gen_coprime 49 == [1..24] \\ [7,14,21]
+>>> gen_coprime 49 == [1..24] Data.List.\\ [7,14,21]
 True
 -}
 gen_coprime :: Integral a => a -> [a]
@@ -623,7 +629,7 @@ sbt_k_from k = take k . sbt_from
 
 sbt_node_to_edge :: Sbt_Node -> String
 sbt_node_to_edge (dv, l, m, r) =
-  let edge_pp p q = printf "\"%s\" -- \"%s\"" (rat_pp p) (rat_pp q)
+  let edge_pp p q = Text.Printf.printf "\"%s\" -- \"%s\"" (rat_pp p) (rat_pp q)
   in case dv of
       Nil -> ""
       Lhs -> edge_pp r m
@@ -947,7 +953,7 @@ ew_el22_6_r =
 True
 -}
 ew_diamond_mk :: [Integer] -> [Rational]
-ew_diamond_mk u = r_normalise [x % y | x <- u, y <- u]
+ew_diamond_mk u = r_normalise [x Data.Ratio.% y | x <- u, y <- u]
 
 {- Diamond 12
 
@@ -994,7 +1000,7 @@ ew_diamond_13_r = ew_diamond_mk [1, 3, 5, 7, 9, 11, 13, 15]
 -- * <http://anaphoria.com/hel.pdf>
 
 hel_r_asc :: (Integer, Integer) -> [Rational]
-hel_r_asc (n, d) = n % d : hel_r_asc (n + 1, d + 1)
+hel_r_asc (n, d) = n Data.Ratio.% d : hel_r_asc (n + 1, d + 1)
 
 type Hel = ([Rational], [Rational])
 

@@ -1,7 +1,7 @@
 -- | Functions to load a tuning definition and transform it into a sparse tuning function.
 module Music.Theory.Tuning.Midi.Load where
 
-import Data.Maybe {- base -}
+import qualified Data.Maybe {- base -}
 
 import qualified System.FilePath as FilePath {- filepath -}
 import qualified System.Random {- random -}
@@ -28,7 +28,8 @@ load_cps_tbl nm = do
         _ -> error "load_cps_tbl"
   return (map f tbl)
 
-{- | Load scala scl file as 'Tuning.Tuning'.
+{- | Alias for Scala.scl_load_tuning.
+Load scala scl file as 'Tuning.Tuning'.
 
 >>> t <- load_tuning_scl "meanquar"
 >>> Tuning.tn_cents_i t
@@ -37,7 +38,9 @@ load_cps_tbl nm = do
 load_tuning_scl :: String -> IO Tuning.Tuning
 load_tuning_scl = Scala.scl_load_tuning
 
-{- | There are two forms.
+{- | Laod tuning options.
+
+There are two forms:
 
 For cps = (tuning-name,frequency-zero,midi-note-number-of-f0)
 
@@ -69,6 +72,7 @@ load_tuning_tbl (nm, dt, k) =
       f tbl mnn = fmap from_cps (lookup (mnn + k) tbl)
   in fmap f (load_cps_tbl nm)
 
+-- | Choose function.
 type Choose_f st t = [t] -> st -> (t, st)
 
 -- | Randomly choose from elements in table, equal weighting.
@@ -88,6 +92,7 @@ load_tuning_tbl_st choose_f (nm, dt, k) =
           in (g', Just (from_cps e))
   in fmap f (load_cps_tbl nm)
 
+-- | Load tuning of specified type.
 load_tuning_ty :: String -> Load_Tuning_Opt -> IO Midi.Sparse_Midi_Tuning_f
 load_tuning_ty ty opt =
   case ty of
@@ -96,6 +101,7 @@ load_tuning_ty ty opt =
     "tbl" -> load_tuning_tbl opt
     _ -> error "cps|d12|tbl"
 
+-- | Load statefule tuning of specified type.
 load_tuning_st_ty :: String -> Load_Tuning_Opt -> IO (Midi.Sparse_Midi_Tuning_St_f System.Random.StdGen)
 load_tuning_st_ty ty opt =
   case ty of

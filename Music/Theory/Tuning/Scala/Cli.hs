@@ -1,10 +1,10 @@
 -- | Command line interface to hmt/scala.
 module Music.Theory.Tuning.Scala.Cli where
 
-import Data.Char {- base -}
-import Data.List {- base -}
-import System.Environment {- base -}
-import Text.Printf {- base -}
+import qualified Data.Char {- base -}
+import qualified Data.List {- base -}
+import qualified System.Environment {- base -}
+import qualified Text.Printf {- base -}
 
 import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt-base -}
 import qualified Music.Theory.Array.Text as Array.Text {- hmt-base -}
@@ -14,6 +14,7 @@ import qualified Music.Theory.Read as Read {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Et as Et {- hmt -}
 import qualified Music.Theory.Tuning.Midi as Midi {- hmt -}
@@ -22,8 +23,7 @@ import qualified Music.Theory.Tuning.Scala.Functions as Functions {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Interval as Interval {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Kbm as Kbm {- hmt -}
 import qualified Music.Theory.Tuning.Scala.Mode as Mode {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
-import qualified Music.Theory.Tuning.Type as T {- hmt -}
+import qualified Music.Theory.Tuning.Type as Tuning {- hmt -}
 
 -- | Real
 type R = Double
@@ -47,7 +47,10 @@ db_summarise nm_lim dsc_lim = do
   let nm_seq = map Scala.scale_name db
       nm_max = maybe (maximum (map length nm_seq)) id nm_lim
       dsc_seq = map Scala.scale_description db
-      fmt (nm, dsc) = printf "%-*s : %s" nm_max (take nm_max nm) (maybe dsc (flip take dsc) dsc_lim)
+      fmt (nm, dsc) =
+        Text.Printf.printf
+        "%-*s : %s"
+        nm_max (take nm_max nm) (maybe dsc (flip take dsc) dsc_lim)
       tbl = map fmt (zip nm_seq dsc_seq)
   putStrLn (unlines tbl)
 
@@ -55,10 +58,13 @@ env :: IO ()
 env = do
   scl_dir <- Scala.scl_get_dir
   scl_path <- Scala.scl_get_path
-  dist_dir <- getEnv "SCALA_DIST_DIR"
-  putStrLn ("SCALA_SCL_DIR = " ++ if null scl_dir then "NOT SET" else scl_dir)
-  putStrLn ("SCALA_SCL_PATH = " ++ if null scl_path then "NOT SET" else intercalate ":" scl_path)
-  putStrLn ("SCALA_DIST_DIR = " ++ if null dist_dir then "NOT SET" else dist_dir)
+  dist_dir <- System.Environment.getEnv "SCALA_DIST_DIR"
+  let scl_dir' = if null scl_dir then "NOT SET" else scl_dir
+      scl_path' = if null scl_path then "NOT SET" else Data.List.intercalate ":" scl_path
+      dist_dir' = if null dist_dir then "NOT SET" else dist_dir
+  putStrLn ("SCALA_SCL_DIR = " ++ scl_dir')
+  putStrLn ("SCALA_SCL_PATH = " ++ scl_path')
+  putStrLn ("SCALA_DIST_DIR = " ++ dist_dir')
 
 cut :: Maybe Int -> [a] -> [a]
 cut lm s = maybe s (\n -> take n s) lm
@@ -66,9 +72,11 @@ cut lm s = maybe s (\n -> take n s) lm
 search :: (IO [a], a -> String, a -> [String]) -> (Bool, Maybe Int) -> [String] -> IO ()
 search (load_f, descr_f, stat_f) (ci, lm) txt = do
   db <- load_f
-  let modify = if ci then map toLower else id
+  let modify = if ci
+               then map Data.Char.toLower
+               else id
       txt' = map modify txt
-      db' = filter (Function.predicate_all (map isInfixOf txt') . modify . descr_f) db
+      db' = filter (Function.predicate_all (map Data.List.isInfixOf txt') . modify . descr_f) db
   mapM_ (putStrLn . unlines . map (cut lm) . stat_f) db'
 
 -- > search_scale (True,Nothing) ["xenakis"]
@@ -124,14 +132,14 @@ cps_tbl fmt tbl mnn_rng = do
       dat = map (t_pp . gen_t) (rng_enum mnn_rng)
       ln = case fmt of
         "md" -> Array.Text.table_pp Array.Text.table_opt_simple (hdr : dat)
-        "csv" -> map (intercalate ",") dat
+        "csv" -> map (Data.List.intercalate ",") dat
         _ -> error "cps_tbl: fmt?"
   putStr (unlines ln)
 
 -- > cps_tbl_d12 "md" ("young-lm_piano",-74.7,-3) (60,72)
 cps_tbl_d12 :: String -> (String, Tuning.Cents, Pitch.Midi) -> (Pitch.Midi, Pitch.Midi) -> IO ()
 cps_tbl_d12 fmt (nm, c, k) mnn_rng = do
-  t <- Scala.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO Tuning.Tuning
   let tbl = Midi.gen_cps_tuning_tbl (Midi.lift_tuning_f (Midi.d12_midi_tuning_f (t, c, k)))
   cps_tbl fmt tbl mnn_rng
 
@@ -153,14 +161,14 @@ csv_mnd_retune_d12 (nm, c, k) in_fn out_fn = do
 -- > fluidsynth_tuning_d12 ("young-lm_piano",0,0) ("young-lm_piano",-74.7,-3)
 fluidsynth_tuning_d12 :: (String, Int, Int) -> (String, Tuning.Cents, Pitch.Midi) -> IO ()
 fluidsynth_tuning_d12 (fs_name, fs_bank, fs_prog) (nm, c, k) = do
-  t <- Scala.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO Tuning.Tuning
   let tun_f = Midi.d12_midi_tuning_f (t, c, k)
       pp_f n =
         let (mnn, dt) = tun_f n
             cents = fromIntegral mnn * 100 + dt
             cents_non_neg = if cents < 0 then 0 else cents
-        in printf "tune %d %d %d %.2f" fs_bank fs_prog n cents_non_neg
-      l = printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
+        in Text.Printf.printf "tune %d %d %d %.2f" fs_bank fs_prog n cents_non_neg
+      l = Text.Printf.printf "tuning \"%s\" %d %d" fs_name fs_bank fs_prog : map pp_f [0 .. 127]
   putStrLn (unlines l)
 
 {-
@@ -175,9 +183,9 @@ int8_to_word8 = fromIntegral
 
 midi_tbl_binary_mnn_cents_tuning_d12 :: FilePath -> (String,Tuning.Cents,Int) -> IO ()
 midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
-  t <- Scala.scl_load_tuning nm :: IO T.Tuning
-  let tun_f = T.d12_midi_tuning_f (t,c,k)
-      pp_f n = let (mnn,dt) = T.midi_detune_normalise (tun_f n)
+  t <- Scala.scl_load_tuning nm :: IO Tuning.Tuning
+  let tun_f = Tuning.d12_midi_tuning_f (t,c,k)
+      pp_f n = let (mnn,dt) = Tuning.midi_detune_normalise (tun_f n)
                in [int_to_int8 mnn,int_to_int8 (round dt)]
   B.writeFile fn (B.pack (map int8_to_word8 (concatMap pp_f [0 .. 127])))
 -}
@@ -189,15 +197,15 @@ midi_tbl_binary_mnn_cents_tuning_d12 fn (nm,c,k) = do
 -}
 midi_tbl_tuning_d12 :: String -> (String, Tuning.Cents, Pitch.Midi) -> IO ()
 midi_tbl_tuning_d12 typ (nm, c, k) = do
-  t <- Scala.scl_load_tuning nm :: IO T.Tuning
+  t <- Scala.scl_load_tuning nm :: IO Tuning.Tuning
   let tun_f = Midi.d12_midi_tuning_f (t, c, k)
       pp_f n =
         case typ of
-          "fmidi" -> printf "%3d,%10.6f" n (Pitch.midi_detune_to_fmidi (tun_f n))
-          "freq" -> printf "%3d,%10.4f" n (Pitch.midi_detune_to_cps (tun_f n))
+          "fmidi" -> Text.Printf.printf "%3d,%10.6f" n (Pitch.midi_detune_to_fmidi (tun_f n))
+          "freq" -> Text.Printf.printf "%3d,%10.4f" n (Pitch.midi_detune_to_cps (tun_f n))
           "mts" ->
             let (mnn, dt) = Pitch.midi_detune_normalise_positive (tun_f n)
-            in printf "%3d,%3d,%7.4f" n (mnn `mod` 0x80) dt
+            in Text.Printf.printf "%3d,%3d,%7.4f" n (mnn `mod` 0x80) dt
           _ -> error "midi_tbl_tuning_d12"
   putStr (unlines (map pp_f [0 .. 127]))
 
@@ -228,7 +236,7 @@ kbm_tbl ty scl_nm kbm_nm = do
         "cps" -> Kbm.kbm_cps_tbl kbm scl
         "fmidi" -> Kbm.kbm_fmidi_tbl kbm scl
         _ -> error "kbm_tbl: unknown type"
-      fmt (i, j) = printf "%d,%.4f" i j
+      fmt (i, j) = Text.Printf.printf "%d,%.4f" i j
       txt = unlines (map fmt tbl)
   putStrLn txt
 

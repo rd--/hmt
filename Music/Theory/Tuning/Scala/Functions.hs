@@ -1,7 +1,7 @@
 -- | Scala functions, <http://www.huygens-fokker.org/scala/help.htm>
 module Music.Theory.Tuning.Scala.Functions where
 
-import Data.List {- base -}
+import qualified Data.List {- base -}
 
 import qualified Music.Theory.Array.Text as Text {- hmt -}
 import qualified Music.Theory.List as List {- hmt -}
@@ -38,7 +38,7 @@ lineartemp scale_size octave _degree_of_fifth fifth down =
       geom_oct i = map Tuning.fold_ratio_to_octave_err . geom i
       lhs = take (down + 1) (geom_oct 1 (1 / fifth))
       rhs = List.tail_err (take (scale_size - down) (geom_oct 1 fifth))
-  in sort (lhs ++ rhs) ++ [octave]
+  in Data.List.sort (lhs ++ rhs) ++ [octave]
 
 -- * Intervals
 
@@ -72,7 +72,7 @@ intervals_list_ratios scl_nm = do
 -- | Given interval function (ie. '-' or '/') and scale generate interval half-matrix.
 interval_half_matrix :: (t -> t -> u) -> [t] -> [[u]]
 interval_half_matrix interval_f =
-  let tails' = filter ((>= 2) . length) . tails
+  let tails' = filter ((>= 2) . length) . Data.List.tails
       f l = case l of
         [] -> []
         i : l' -> map (`interval_f` i) l'
