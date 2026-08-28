@@ -1,13 +1,13 @@
 -- | Spelling for chromatic clusters.
 module Music.Theory.Pitch.Spelling.Cluster where
 
-import Data.List {- base -}
+import qualified Data.List {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
-import Music.Theory.Pitch.Note.Name {- hmt -}
+import           Music.Theory.Pitch.Note.Name {- hmt -}
 
 {- | Form of cluster with smallest outer boundary interval.
 
@@ -36,7 +36,7 @@ cluster_normal_order_octpc o pc =
 [True,False,True]
 -}
 cluster_is_multiple_octave :: [Pitch.PitchClass] -> Bool
-cluster_is_multiple_octave x = sort x /= cluster_normal_order x
+cluster_is_multiple_octave x = Data.List.sort x /= cluster_normal_order x
 
 {- | Spelling table for chromatic and near-chromatic clusters, pitch-classes are in cluster order.
 
@@ -149,7 +149,7 @@ Just ["B3","D#4","B4","C#5"]
 -}
 spell_cluster_octpc :: [Pitch.OctPc] -> Maybe [Pitch.Pitch]
 spell_cluster_octpc o =
-  let p = cluster_normal_order (sort (nub (map snd o)))
+  let p = cluster_normal_order (Data.List.sort (Data.List.nub (map snd o)))
       na_f na =
         let na_tbl = map (\x -> (Pitch.Note.note_alteration_to_pc_err x, x)) na
             o_f (oct, pc) = let (n, alt) = List.lookup_err pc na_tbl in Pitch.Pitch n alt oct
@@ -163,8 +163,8 @@ Pitch class @0@ maps to 'c4', if there is no @0@ then all notes are in octave @4
 >>> map f [[11,0],[11],[0,11]]
 [Just ["B3","C4"],Just ["B4"],Nothing]
 
->>> fmap (map Pitch.pitch_pp) (spell_cluster_c4 [10,11]) == Just ["A♯4","B4"]
-True
+>>> fmap (map Pitch.pitch_pp_iso) (spell_cluster_c4 [10,11])
+Just ["A#4","B4"]
 -}
 spell_cluster_c4 :: [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_c4 p =
@@ -180,8 +180,8 @@ An octave of @4@ is the identitiy, @3@ an octave below, @5@ an octave above.
 >>> fmap (map Pitch.pitch_pp) (spell_cluster_c 3 [11,0])
 Just ["B2","C3"]
 
->>> fmap (map Pitch.pitch_pp) (spell_cluster_c 3 [10,11]) == Just ["A♯3","B3"]
-True
+>>> fmap (map Pitch.pitch_pp_iso) (spell_cluster_c 3 [10,11])
+Just ["A#3","B3"]
 -}
 spell_cluster_c :: Pitch.Octave -> [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_c o =
@@ -193,10 +193,9 @@ spell_cluster_c o =
 >>> import Data.Maybe
 
 >>> let f n = if n >= 11 then 3 else 4
->>> let g = map Pitch.pitch_pp .fromJust . spell_cluster_f f
->>> let r = [["B3","C4"],["B3"],["C4"],["A♯4","B4"]]
->>> map g [[11,0],[11],[0],[10,11]] == r
-True
+>>> let g = map Pitch.pitch_pp_iso . fromJust . spell_cluster_f f
+>>> map g [[11,0],[11],[0],[10,11]]
+[["B3","C4"],["B3"],["C4"],["A#4","B4"]]
 
 >>> map (map Pitch.pitch_pp) (mapMaybe (spell_cluster_f (const 4)) [[0,11],[11,0],[6,7],[7,6]])
 [["B4","C5"],["F\9839\&4","G4"]]
@@ -216,8 +215,8 @@ spell_cluster_f o_f p =
 >>> fmap (map Pitch.pitch_pp) (spell_cluster_left 3 [11,0])
 Just ["B3","C4"]
 
->>> fmap (map Pitch.pitch_pp) (spell_cluster_left 3 [10,11]) == Just ["A♯3","B3"]
-True
+>>> fmap (map Pitch.pitch_pp_iso) (spell_cluster_left 3 [10,11])
+Just ["A#3","B3"]
 -}
 spell_cluster_left :: Pitch.Octave -> [Pitch.PitchClass] -> Maybe [Pitch.Pitch]
 spell_cluster_left o p =
