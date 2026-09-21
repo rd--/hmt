@@ -17,8 +17,7 @@ import qualified Music.Theory.Array.Csv as Csv {- hmt-base -}
 import qualified Music.Theory.Math as Math {- hmt-base -}
 import qualified Music.Theory.Read as Read {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
-
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
 
 -- * Param ; Sound.Sc3.Server.Param
 

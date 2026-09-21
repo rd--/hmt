@@ -7,9 +7,9 @@ import Data.List {- base -}
 import Data.Maybe {- base -}
 
 import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
 
 import qualified Music.Theory.Duration.Rq as Rq {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 import qualified Music.Theory.Time_Signature as Time_Signature {- hmt -}
 
 -- | 1-indexed.

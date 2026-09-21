@@ -1,8 +1,8 @@
 -- | Csv Midi Cli
 module Music.Theory.Array.Csv.Midi.Cli where
 
-import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
+import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt-base -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
 
 usage :: [String]
 usage =

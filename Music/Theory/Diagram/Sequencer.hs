@@ -7,10 +7,10 @@ import System.Process {- process -}
 import Text.Printf {- base -}
 
 import qualified Music.Theory.Geometry.Vector as Vector {- hmt-base -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
 
 import qualified Music.Theory.Amplitude as Amplitude {- hmt -}
 import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 
 -- | Point
 type P2 = Vector.V2 Double

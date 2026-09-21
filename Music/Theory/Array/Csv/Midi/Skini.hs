@@ -6,8 +6,9 @@ module Music.Theory.Array.Csv.Midi.Skini where
 
 import Data.List {- base -}
 
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
+
 import qualified Music.Theory.Array.Csv.Midi.Mnd as Mnd {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 
 -- | Skini allows delta or absolute time-stamps.
 data Time t = Delta t | Absolute t

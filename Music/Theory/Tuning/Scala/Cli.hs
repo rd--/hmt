@@ -12,9 +12,9 @@ import qualified Music.Theory.Function as Function {- hmt-base -}
 import qualified Music.Theory.List as List {- hmt-base -}
 import qualified Music.Theory.Read as Read {- hmt-base -}
 import qualified Music.Theory.Show as Show {- hmt-base -}
+import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
-import qualified Music.Theory.Time.Seq as Seq {- hmt -}
 import qualified Music.Theory.Tuning as Tuning {- hmt -}
 import qualified Music.Theory.Tuning.Et as Et {- hmt -}
 import qualified Music.Theory.Tuning.Midi as Midi {- hmt -}

@@ -1,23 +1,23 @@
 -- | Common music notation tempo indications.
 module Music.Theory.Tempo_Marking where
 
-import Data.List {- base -}
+import qualified Data.List {- base -}
 
-import Music.Theory.Duration
-import Music.Theory.Duration.Rq
-import Music.Theory.Time_Signature
+import qualified Music.Theory.Duration as Duration {- hmt -}
+import qualified Music.Theory.Duration.Rq as Rq {- hmt -}
+import qualified Music.Theory.Time_Signature as Time_Signature {- hmt -}
 
 -- | A tempo marking is in terms of a common music notation 'Duration'.
-type Tempo_Marking = (Duration, Rational)
+type Tempo_Marking = (Duration.Duration, Rational)
 
 {- | Duration of a Rq value, in seconds, given indicated tempo.
 
 >>> rq_to_seconds (Duration 4 0 1,90) 1 == 60/90
 True
 -}
-rq_to_seconds :: Tempo_Marking -> Rq -> Rational
+rq_to_seconds :: Tempo_Marking -> Rq.Rq -> Rational
 rq_to_seconds (d, n) x =
-  let d' = duration_to_rq d
+  let d' = Rq.duration_to_rq d
       s = 60 / n
   in (x * s) / d'
 
@@ -27,9 +27,9 @@ rq_to_seconds (d, n) x =
 >>> pulse_duration (6,8) (quarter_note,60) == 1/2
 True
 -}
-pulse_duration :: Time_Signature -> Tempo_Marking -> Rational
+pulse_duration :: Time_Signature.Time_Signature -> Tempo_Marking -> Rational
 pulse_duration t (x, i) =
-  let j = recip (ts_duration_pulses t x)
+  let j = recip (Time_Signature.ts_duration_pulses t x)
       s = 60 / i
   in j * s
 
@@ -42,11 +42,11 @@ True
 >>> measure_duration (6,8) (quarter_note,120) == 3/2
 True
 -}
-measure_duration :: Time_Signature -> Tempo_Marking -> Rational
+measure_duration :: Time_Signature.Time_Signature -> Tempo_Marking -> Rational
 measure_duration (n, d) t = pulse_duration (n, d) t * fromIntegral n
 
 -- | 'Fractional' variant of 'measure_duration'.
-measure_duration_f :: Fractional c => Time_Signature -> Tempo_Marking -> c
+measure_duration_f :: Fractional c => Time_Signature.Time_Signature -> Tempo_Marking -> c
 measure_duration_f ts = fromRational . measure_duration ts
 
 {- | Italian terms and markings from Wittner metronome (W.-Germany).
@@ -95,4 +95,4 @@ Just "Andante"
 mm_name :: Ord a => [(String, (a, a))] -> a -> Maybe String
 mm_name tbl x =
   let f (_, (p, q)) = x >= p && x < q
-  in fmap fst (find f tbl)
+  in fmap fst (Data.List.find f tbl)
