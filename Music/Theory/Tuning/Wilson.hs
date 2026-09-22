@@ -12,17 +12,12 @@ import qualified Safe {- safe -}
 
 import qualified Music.Theory.Array.Text as Text {- hmt-base -}
 import qualified Music.Theory.Function as Function {- hmt-base -}
-{- hmt-base -}
-{- hmt-base -}
-{- hmt-base -}
-{- hmt-base -}
-{- hmt-base -}
 import qualified Music.Theory.Geometry.Vector as Vector {- hmt-base -}
-import qualified Music.Theory.Graph.Type as Graph
-import qualified Music.Theory.List as List
-import qualified Music.Theory.Math as Math
-import qualified Music.Theory.Math.Convert as Convert
-import qualified Music.Theory.Show as Show
+import qualified Music.Theory.Graph.Type as Graph {- hmt-base -}
+import qualified Music.Theory.List as List {- hmt-base -}
+import qualified Music.Theory.Math as Math {- hmt-base -}
+import qualified Music.Theory.Math.Convert as Convert {- hmt-base -}
+import qualified Music.Theory.Show as Show {- hmt-base -}
 
 import qualified Music.Theory.Graph.Dot as Dot {- hmt -}
 import qualified Music.Theory.Interval.Barlow_1987 as Barlow {- hmt -}

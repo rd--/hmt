@@ -7,7 +7,7 @@ import qualified Music.Theory.List as List {- hmt-base -}
 
 import qualified Music.Theory.Pitch as Pitch {- hmt -}
 import qualified Music.Theory.Pitch.Note as Pitch.Note {- hmt -}
-import           Music.Theory.Pitch.Note.Name {- hmt -}
+import Music.Theory.Pitch.Note.Name {- hmt -}
 
 {- | Form of cluster with smallest outer boundary interval.
 

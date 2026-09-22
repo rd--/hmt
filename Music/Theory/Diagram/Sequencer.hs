@@ -1,10 +1,11 @@
 -- | Sequencer type diagram.
 module Music.Theory.Diagram.Sequencer where
 
-import Data.Char {- base -}
-import System.FilePath {- filepath -}
-import System.Process {- process -}
-import Text.Printf {- base -}
+import qualified Data.Char {- base -}
+import qualified Text.Printf {- base -}
+
+import qualified System.FilePath {- filepath -}
+import qualified System.Process {- process -}
 
 import qualified Music.Theory.Geometry.Vector as Vector {- hmt-base -}
 import qualified Music.Theory.Time.Seq as Seq {- hmt-base -}
@@ -29,7 +30,7 @@ k_rect_gnuplot :: K_Rect -> String
 k_rect_gnuplot (i, ((x0, y0), (x1, y1), c)) =
   let fmt = "set object %d rect from %f,%f to %f,%f fc rgbcolor \"#%02x%02x%02x\""
       c' = floor (c * 255) :: Int
-  in printf fmt i x0 y0 x1 y1 c' c' c'
+  in Text.Printf.printf fmt i x0 y0 x1 y1 c' c' c'
 
 {- | Sequencer plot options, (image-size(w,h),x-range,y-range).  For
 standard midi data x-range is the time window and y-range is the
@@ -48,7 +49,7 @@ to_k_rect = zip [1 ..]
 -- | Names for Svg terminal have character restrictions.
 clean_name :: String -> String
 clean_name =
-  let f c = if isAlphaNum c then c else '_'
+  let f c = if Data.Char.isAlphaNum c then c else '_'
   in map f
 
 -- | Arbitrary Gnuplot commands can be given.
@@ -59,8 +60,8 @@ type Opt = (Gnuplot_Opt, Seq_Plot_Opt)
 
 sequencer_plot_rect :: Opt -> FilePath -> String -> [C_Rect] -> IO ()
 sequencer_plot_rect (gopt, ((w, h), (x0, x1), (y0, y1))) fs_dir fs_nm sq = do
-  let nm_plot = fs_dir </> fs_nm <.> "plot"
-      nm_svg = fs_dir </> fs_nm <.> "svg"
+  let nm_plot = fs_dir System.FilePath.</> fs_nm System.FilePath.<.> "plot"
+      nm_svg = fs_dir System.FilePath.</> fs_nm System.FilePath.<.> "svg"
       x_range = concat ["[", show x0, ":", show x1, "]"]
       y_range = concat ["[", show y0, ":", show y1, "]"]
       pre =
@@ -75,7 +76,7 @@ sequencer_plot_rect (gopt, ((w, h), (x0, x1), (y0, y1))) fs_dir fs_nm sq = do
           ++ gopt
       post = ["plot \"/dev/null\" with xyerrorbars lc rgbcolor \"black\""]
   writeFile nm_plot (unlines (pre ++ map k_rect_gnuplot (to_k_rect sq) ++ post))
-  _ <- system ("gnuplot " ++ nm_plot)
+  _ <- System.Process.system ("gnuplot " ++ nm_plot)
   return ()
 
 -- * Midi
